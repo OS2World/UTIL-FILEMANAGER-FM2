@@ -6,7 +6,7 @@
   Display/edit EAs
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2008 Steven H. Levine
+  Copyright (c) 2004, 2010 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   06 Jun 05 SHL Indent -i2
@@ -23,6 +23,7 @@
   29 Feb 08 GKY Use xfree where appropriate
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -161,7 +162,7 @@ MRESULT EXPENTRY AddEAProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             if (!fAlertBeepOff)
               DosBeep(50, 100);
             WinSetDlgItemText(hwnd, EAC_TEXT,
-                              GetPString(IDS_EANAMEEXISTSTEXT));
+                              (CHAR *) GetPString(IDS_EANAMEEXISTSTEXT));
             break;
           }
           for (x = 0; *forbidden[x]; x++) {
@@ -169,7 +170,7 @@ MRESULT EXPENTRY AddEAProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
               if (!fAlertBeepOff)
                 DosBeep(50, 100);
               WinSetDlgItemText(hwnd, EAC_TEXT,
-                                GetPString(IDS_EANAMERESERVEDTEXT));
+                                (CHAR *) GetPString(IDS_EANAMERESERVEDTEXT));
               return 0;
             }
           }
@@ -183,7 +184,7 @@ MRESULT EXPENTRY AddEAProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                 if (!fAlertBeepOff)
                   DosBeep(50, 100);
                 WinSetDlgItemText(hwnd, EAC_TEXT,
-                                  GetPString(IDS_EAWRONGTYPETEXT));
+                                  (CHAR *) GetPString(IDS_EAWRONGTYPETEXT));
                 return 0;
               }
               break;
@@ -422,7 +423,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                         MPFROM2SHORT(0, 0), MPFROM2SHORT(TRUE, 0));
     }
     else
-      WinSetDlgItemText(hwnd, EA_TEXT, GetPString(IDS_EANOEAS));
+      WinSetDlgItemText(hwnd, EA_TEXT, (CHAR *) GetPString(IDS_EANOEAS));
     return 0;
 
   case WM_PAINT:
@@ -440,7 +441,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case EA_NAMES:
       switch (SHORT2FROMMP(mp1)) {
       case LN_SETFOCUS:
-        WinSetDlgItemText(hwnd, EA_HELP, GetPString(IDS_EAFILENAMESHELPTEXT));
+        WinSetDlgItemText(hwnd, EA_HELP, (CHAR *) GetPString(IDS_EAFILENAMESHELPTEXT));
         break;
       case LN_KILLFOCUS:
         WinSetDlgItemText(hwnd, EA_HELP, NullStr);
@@ -475,7 +476,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case EA_LISTBOX:
       switch (SHORT2FROMMP(mp1)) {
       case LN_SETFOCUS:
-        WinSetDlgItemText(hwnd, EA_HELP, GetPString(IDS_EATYPESHELPTEXT));
+        WinSetDlgItemText(hwnd, EA_HELP, (CHAR *) GetPString(IDS_EATYPESHELPTEXT));
         break;
       case LN_KILLFOCUS:
         WinSetDlgItemText(hwnd, EA_HELP, NullStr);
@@ -787,7 +788,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case EA_ENTRY:
       switch (SHORT2FROMMP(mp1)) {
       case EN_SETFOCUS:
-        WinSetDlgItemText(hwnd, EA_HELP, GetPString(IDS_EADATAHELPTEXT));
+        WinSetDlgItemText(hwnd, EA_HELP, (CHAR *) GetPString(IDS_EADATAHELPTEXT));
         break;
       case EN_KILLFOCUS:
         WinSetDlgItemText(hwnd, EA_HELP, NullStr);
@@ -801,7 +802,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case EA_HEXDUMP:
       switch (SHORT2FROMMP(mp1)) {
       case LN_SETFOCUS:
-        WinSetDlgItemText(hwnd, EA_HELP, GetPString(IDS_EADATAHELPTEXT));
+        WinSetDlgItemText(hwnd, EA_HELP, (CHAR *) GetPString(IDS_EADATAHELPTEXT));
         break;
       case LN_KILLFOCUS:
         WinSetDlgItemText(hwnd, EA_HELP, NullStr);
@@ -812,7 +813,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case EA_MLE:
       switch (SHORT2FROMMP(mp1)) {
       case MLN_SETFOCUS:
-        WinSetDlgItemText(hwnd, EA_HELP, GetPString(IDS_EADATAHELPTEXT));
+        WinSetDlgItemText(hwnd, EA_HELP, (CHAR *) GetPString(IDS_EADATAHELPTEXT));
         break;
       case MLN_KILLFOCUS:
         WinSetDlgItemText(hwnd, EA_HELP, NullStr);
@@ -982,7 +983,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         }
       }
       if (!eap->head)
-        WinSetDlgItemText(hwnd, EA_TEXT, GetPString(IDS_EANOEAS));
+        WinSetDlgItemText(hwnd, EA_TEXT, (CHAR *) GetPString(IDS_EANOEAS));
       break;
 
     case IDM_HELP:

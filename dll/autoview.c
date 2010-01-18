@@ -6,7 +6,7 @@
   Auto view
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2008 Steven H.Levine
+  Copyright (c) 2001, 2010 Steven H.Levine
 
   12 Sep 02 SHL AutoObjProc: catch buff2 overflows
   25 Oct 02 SHL CreateHexDump: catch buffer overflow
@@ -34,6 +34,7 @@
                 miniapp; FM3Str should be used for setting only relavent to FM/2 or that
                 aren't user settable; realappname should be used for setting applicable to
                 one or more miniapp but not to FM/2
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -675,10 +676,10 @@ static VOID MakeAutoWinThread(VOID * args)
     if (hmq2) {
       DosError(FERR_DISABLEHARDERR);
       WinRegisterClass(hab2,
-		       WC_OBJECTWINDOW,
+		       (CHAR *) WC_OBJECTWINDOW,
 		       AutoObjProc, 0, sizeof(PVOID));
       hwndAutoObj = WinCreateWindow(HWND_OBJECT,
-				    WC_OBJECTWINDOW,
+				    (CHAR *) WC_OBJECTWINDOW,
 				    (PSZ) NULL,
 				    0,
 				    0L,

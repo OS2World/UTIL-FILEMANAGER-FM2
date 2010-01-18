@@ -6,7 +6,7 @@
   arccnrs common definitions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2008 Steven H. Levine
+  Copyright (c) 2001, 2010 Steven H. Levine
 
   05 Jan 08 SHL Move arccnrs.c definitions here
   30 Nov 08 GKY Add the option of creating a subdirectory from the arcname

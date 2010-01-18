@@ -6,12 +6,13 @@
   Path search functions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2008 Steven H. Levine
+  Copyright (c) 2003, 2010 Steven H. Levine
 
   22 Apr 07 GKY Add RunFM2Util to find and run apps from the FM2Utilities
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   23 Aug 07 SHL Comments
   04 Oct 08 JBS Make searchapath non-static
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -47,8 +48,8 @@ INT RunFM2Util(PCSZ appname, CHAR *filename)
     APIRET rc, ret = -1;
 
     rc = DosSearchPath(SEARCH_IGNORENETERRS |SEARCH_ENVIRONMENT |
-		       SEARCH_CUR_DIRECTORY, PCSZ_PATH,
-		       appname, (PBYTE)fbuf, CCHMAXPATH - 1);
+		       SEARCH_CUR_DIRECTORY, (CHAR *) PCSZ_PATH,
+		       (CHAR *) appname, (PBYTE)fbuf, CCHMAXPATH - 1);
       if (rc != 0) {
 	if (rc != 2){
 	Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
@@ -57,7 +58,7 @@ INT RunFM2Util(PCSZ appname, CHAR *filename)
 	}
 	else {
 	rc = DosSearchPath(0, "UTILS;..\\FM2Utils",
-			   appname, (PBYTE)fbuf, CCHMAXPATH - 1);
+			   (CHAR *) appname, (PBYTE)fbuf, CCHMAXPATH - 1);
 	    if (rc != 0 && rc != 2){
 	      Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 			PCSZ_DOSSEARCHPATH, appname);
@@ -122,7 +123,7 @@ CHAR *searchapath(PCSZ pathvar, PCSZ filename)
   *fbuf = 0;
   if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
 		    SEARCH_CUR_DIRECTORY,
-		    pathvar, filename, (PBYTE)fbuf, CCHMAXPATH - 1))
+		    (CHAR *) pathvar, (CHAR *) filename, (PBYTE)fbuf, CCHMAXPATH - 1))
     *fbuf = 0;
   return fbuf;
 }

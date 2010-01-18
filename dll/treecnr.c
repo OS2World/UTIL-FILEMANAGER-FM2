@@ -6,7 +6,7 @@
   Tree containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2009 Steven H. Levine
+  Copyright (c) 2001, 2010 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   11 Jun 03 SHL Add JFS and FAT32 support
@@ -79,6 +79,7 @@
   15 Nov 09 GKY Add semaphore to fix double names in tree container caused by UM_SHOWME
                 before scan completes
   22 Nov 09 GKY Add LVM.EXE to partition submenu
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -1495,8 +1496,9 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  pDItem = DrgQueryDragitemPtr(pDInfo,	/* Access DRAGITEM */
 				       0);	/* Index to DRAGITEM */
 	  if (DrgVerifyRMF(pDItem,	/* Check valid rendering */
-			   DRM_OS2FILE,	/* mechanisms and data */
-			   NULL) || DrgVerifyRMF(pDItem, DRM_FM2ARCMEMBER, DRF_FM2ARCHIVE)) {	/* formats */
+			   (CHAR *) DRM_OS2FILE,	/* mechanisms and data */
+                           NULL) || DrgVerifyRMF(pDItem, (CHAR *) DRM_FM2ARCMEMBER,
+                                                 (CHAR *) DRF_FM2ARCHIVE)) {	/* formats */
 	    DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO */
 	    if (!pci || (INT) pci == -1)
 	      return MRFROM2SHORT(DOR_DROP, DO_MOVE);
@@ -1533,10 +1535,10 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    }
 	    if (hwndStatus2) {
 	      WinSetWindowText(hwndStatus2, (IsRoot(pci->pszFileName)) ?
-			       GetPString(IDS_DRAGROOTTEXT) :
+			       (CHAR *) GetPString(IDS_DRAGROOTTEXT) :
 			       (pci->attrFile & FILE_DIRECTORY) ?
-			       GetPString(IDS_DRAGDIRTEXT) :
-			       GetPString(IDS_DRAGFILETEXT));
+			       (CHAR *) GetPString(IDS_DRAGDIRTEXT) :
+			       (CHAR *) GetPString(IDS_DRAGFILETEXT));
 	    }
 	    DoFileDrag(hwnd, dcd->hwndObject, mp2, NULL, NULL, TRUE);
 	    if (hwndStatus2) {
@@ -1909,7 +1911,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (!fAlertBeepOff)
 	    DosBeep(50, 100);
 	  if (hwndStatus)
-	    WinSetWindowText(hwndStatus, GetPString(IDS_RESCANSUGTEXT));
+	    WinSetWindowText(hwndStatus, (CHAR *) GetPString(IDS_RESCANSUGTEXT));
 	  DosReleaseMutexSem(hmtFillingTreeCnr);
 	  return 0;
 	}
@@ -3041,7 +3043,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       WinQueryWindowPos(dcd->hwndFrame, &swp);
       if (!(swp.fl & (SWP_HIDE | SWP_MINIMIZE | SWP_MAXIMIZE)))
-	WinStoreWindowPos(FM2Str, "VTreeWindowPos", dcd->hwndFrame);
+	WinStoreWindowPos((CHAR *) FM2Str, "VTreeWindowPos", dcd->hwndFrame);
     }
     break;
 
@@ -3159,7 +3161,7 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
   hwndFrame = WinCreateStdWindow(hwndParent,
 				 WS_VISIBLE,
 				 &FrameFlags,
-				 WC_TREECONTAINER,
+				 (CHAR *) WC_TREECONTAINER,
 				 NULL,
 				 WS_VISIBLE | fwsAnimate,
 				 FM3ModHandle, TREE_FRAME, &hwndClient);
@@ -3189,7 +3191,7 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
       WinQueryWindowPos(hwndFrame, &swp);
       if (*(ULONG *) realappname == FM3UL) {
 	if (!WinCreateWindow(hwndFrame,
-			     WC_TREEOPENBUTTON,
+			     (CHAR *) WC_TREEOPENBUTTON,
 			     "#303",
 			     WS_VISIBLE | BS_PUSHBUTTON | BS_NOPOINTERFOCUS | BS_BITMAP,
 			     ((swp.cx -
@@ -3213,8 +3215,8 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
       }
       else {
 	if (!WinCreateWindow(hwndFrame,
-			     WC_TREESTATUS,
-			     GetPString(IDS_YOUAREHERETEXT),
+			     (CHAR *) WC_TREESTATUS,
+			     (CHAR *) GetPString(IDS_YOUAREHERETEXT),
 			     WS_VISIBLE | SS_TEXT | DT_LEFT | DT_VCENTER,
 			     swp.x + 4 + WinQuerySysValue(HWND_DESKTOP,
 							  SV_CXSIZEBORDER),
@@ -3274,9 +3276,9 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 	  fInitialDriveScan = FALSE;
 	}
 	else {
-	  WinSetWindowText(hwndFrame, GetPString(IDS_TREETEXT));
+	  WinSetWindowText(hwndFrame, (CHAR *) GetPString(IDS_TREETEXT));
 	  WinSetWindowText(WinWindowFromID(hwndFrame, FID_TITLEBAR),
-			   GetPString(IDS_TREETEXT));
+			   (CHAR *) GetPString(IDS_TREETEXT));
 	}
 	dcd->oldproc = WinSubclassWindow(dcd->hwndCnr, TreeCnrWndProc);
 	// fixme to document 01 test?

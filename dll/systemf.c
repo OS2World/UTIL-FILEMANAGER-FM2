@@ -6,7 +6,7 @@
   System Interfaces
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2009 Steven H.Levine
+  Copyright (c) 2003, 2010 Steven H.Levine
 
   21 Nov 03 SHL Comments
   31 Jul 04 SHL Indent -i2
@@ -29,6 +29,11 @@
   21 Dec 09 GKY Added CheckExecutibleFlags to streamline code in command.c assoc.c & cmdline.c
   27 Dec 09 GKY Provide human readable error message when DosQueryAppType fails because it
                 couldn't find the exe (such as missing archivers).
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  17 JAN 10 GKY Changes to environment handling in ExecuteOnList to facilitate move of commands to INI and allow
+                the same commandline to have different environments (multiple different command titles).
+  17 JAN 10 GKY Add ENVIRONMENT_SIZE vaiable to replace multiple (often different hard coded sizes) set to 2048
+                (the largest value I found).
 
 ***********************************************************************/
 
@@ -647,12 +652,17 @@ BreakOut:
 
   {
     EXECARGS ex;
-    //ULONG size;
     int ret;
 
     memset(&ex, 0, sizeof(EXECARGS));
-    //size = sizeof(ex.environment) - 1;
-    //PrfQueryProfileData(fmprof, FM3Str, command, ex.environment, &size);
+    if (!environment) {
+      ULONG size;
+
+      size = ENVIRONMENT_SIZE;
+      PrfQueryProfileData(fmprof, (CHAR *) FM3Str, command, ex.environment, &size);
+    }
+    else
+      strcpy(ex.environment, environment);
     if (flags & PROMPT) {
       /* allow editing command line */
       ex.flags = (flags & (~PROMPT));
@@ -669,10 +679,10 @@ BreakOut:
     }
     else
       ex.flags = flags;
-    ex.flags &= (~PROMPT);
+    //ex.flags &= (~PROMPT);  redundant GKY 1-9-10
     //DbgMsg(pszSrcFile, __LINE__, "Inserted %s", environment);
     ret = runemf2(ex.flags, hwnd, pszCallingFile, uiLineNumber, path,
-		   environment ? environment : NULL,
+		   *ex.environment ? ex.environment : NULL,
 		   "%s", commandline);
     free(commandline);
     return ret;

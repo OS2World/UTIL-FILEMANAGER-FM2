@@ -1,4 +1,3 @@
-
 /***********************************************************************
 
   $Id$
@@ -6,7 +5,7 @@
   Drop support
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2009 Steven H.Levine
+  Copyright (c) 2003, 2010 Steven H.Levine
 
   22 Nov 02 SHL Baseline
   08 Feb 03 SHL DropHelp: calc EA size consistently
@@ -21,6 +20,7 @@
   02 Aug 07 SHL Lock in DoFileDrop sanity checks
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   08 Mar 09 GKY Additional strings move to PCSZs
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -203,7 +203,7 @@ BOOL GetOneDrop(HWND hwnd, MPARAM mp1, MPARAM mp2, char *buffer, ULONG buflen)
       pDItem = DrgQueryDragitemPtr(pDInfo,0);
       if (buflen && buffer) {
 	if (DrgVerifyRMF(pDItem,	/* Check valid rendering */
-			 DRM_OS2FILE,	/* mechanisms and data */
+			 (CHAR *) DRM_OS2FILE,	/* mechanisms and data */
 			 NULL) && !(pDItem->fsControl & DC_PREPARE))
 	  ret = FullDrgName(pDItem, buffer, buflen);
       }
@@ -237,7 +237,7 @@ BOOL AcceptOneDrop(HWND hwnd, MPARAM mp1, MPARAM mp2)
       pDItem = DrgQueryDragitemPtr(pDInfo, 0);
 
       /* Check valid rendering mechanisms and data formats */
-      if (DrgVerifyRMF(pDItem, DRM_OS2FILE, NULL))
+      if (DrgVerifyRMF(pDItem, (CHAR *) DRM_OS2FILE, NULL))
 	ret = TRUE;
 
       DrgFreeDraginfo(pDInfo);
@@ -371,12 +371,12 @@ LISTINFO *DoFileDrop(HWND hwndCnr, PCSZ directory, BOOL arcfilesok,
     }
 
     if (DrgVerifyRMF(pDItem,
-		     DRM_OS2FILE,
+		     (CHAR *) DRM_OS2FILE,
 		     NULL) ||
 	(arcfilesok &&
 	 ((arctest = DrgVerifyRMF(pDItem,
-				  DRM_FM2ARCMEMBER,
-				  DRF_FM2ARCHIVE)) != FALSE))) {
+				  (CHAR *) DRM_FM2ARCMEMBER,
+				  (CHAR *) DRF_FM2ARCHIVE)) != FALSE))) {
       if (pDItem->fsControl & DC_PREPARE) {
 	DrgSendTransferMsg(pDItem->hwndItem,
 			   DM_ENDCONVERSATION,

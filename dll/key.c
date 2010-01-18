@@ -6,13 +6,14 @@
   About dialogs
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2009 Steven H. Levine
+  Copyright (c) 2004, 2010 Steven H. Levine
 
   Revisions
   01 Nov 04 SHL Rename SKULL? defines to avoid rc issues
   06 Aug 07 GKY Reduce DosSleep times (ticket 148)
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   13 Jul 09 SHL Sync with renames
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -78,7 +79,7 @@ MRESULT EXPENTRY AboutDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSetDlgItemText(hwnd, ABT_VERSION, s);
     }
     if (!strcmp(realappname, "FM/4"))
-      WinSetDlgItemText(hwnd, ABT_PROGNAME, GetPString(IDS_FM2LITETEXT));
+      WinSetDlgItemText(hwnd, ABT_PROGNAME, (CHAR *) GetPString(IDS_FM2LITETEXT));
     if (!noanimation) {
       stick1 = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, ID_STICK1);
       stick2 = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, ID_STICK2);

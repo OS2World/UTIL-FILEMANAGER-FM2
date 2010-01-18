@@ -6,7 +6,7 @@
   Custom commands
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2008 Steven H. Levine
+  Copyright (c) 2004, 2010 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   06 Jun 05 SHL Drop unused code
@@ -35,6 +35,7 @@
   27 Dec 09 GKY Moved Commands to the INI file this makes commands.dat obsolete
   27 Dec 09 GKY Added QueryCommandSettings to streamline code
   27 Dec 09 GKY Made command hotkeys user selectable.
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -373,12 +374,12 @@ VOID load_commands(VOID)
 
 
   size = sizeof(BOOL) * 300;
-  PrfQueryProfileData(fmprof, FM3Str, "COMMANDS.UsedCommandIDs", &UsedCommandIDs,
+  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "COMMANDS.UsedCommandIDs", &UsedCommandIDs,
                       &size);
   size = sizeof(BOOL) * 40;
-  PrfQueryProfileData(fmprof, FM3Str, "COMMANDS.UsedHotKeyIDs", &UsedHotKeyIDs,
+  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "COMMANDS.UsedHotKeyIDs", &UsedHotKeyIDs,
                         &size); size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "COMMANDS.LoadCommandsFromINI",
+  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "COMMANDS.LoadCommandsFromINI",
                       &fLoadCommandsFromINI, &size);
   if (!fLoadCommandsFromINI) {
     if (cmdhead)
@@ -479,11 +480,11 @@ VOID load_inicommands(VOID)
         free_commands();
       cmdloaded = TRUE;
       size = sizeof(ULONG);
-      PrfQueryProfileData(fmprof, FM3Str, "COMMANDS.SizeSortOrder",
+      PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "COMMANDS.SizeSortOrder",
                           &ulSizeCommandsList, &size);
       pszCommandsList = xmallocz(ulSizeCommandsList, pszSrcFile, __LINE__);
       if (pszCommandsList) {
-        PrfQueryProfileString(fmprof, FM3Str, "COMMANDS.SortOrder",
+        PrfQueryProfileString(fmprof, (CHAR *) FM3Str, "COMMANDS.SortOrder",
                               NullStr, pszCommandsList, ulSizeCommandsList);
         p = pszCommandsList;
         while (*p == ';')
@@ -500,17 +501,17 @@ VOID load_inicommands(VOID)
             bstripcr(szTitle);
             sprintf(key, "COMMAND.%sID", szTitle);
             size = sizeof(ULONG);
-            PrfQueryProfileData(fmprof, FM3Str, key, &ID, &size);
+            PrfQueryProfileData(fmprof, (CHAR *) FM3Str, key, &ID, &size);
             sprintf(key, "COMMAND.%sHotKeyID", szTitle);
             size = sizeof(ULONG);
-            PrfQueryProfileData(fmprof, FM3Str, key, &HotKeyID, &size);
+            PrfQueryProfileData(fmprof, (CHAR *) FM3Str, key, &HotKeyID, &size);
             sprintf(key, "COMMAND.%sflags", szTitle);
             size = sizeof(ULONG);
-            PrfQueryProfileData(fmprof, FM3Str, key, &flags, &size);
+            PrfQueryProfileData(fmprof, (CHAR *) FM3Str, key, &flags, &size);
             sprintf(key, "COMMAND.%senv", szTitle);
-            PrfQueryProfileString(fmprof, FM3Str, key, NullStr, env, sizeof(env));
+            PrfQueryProfileString(fmprof, (CHAR *) FM3Str, key, NullStr, env, sizeof(env));
             sprintf(key, "COMMAND.%sCmdLine", szTitle);
-            PrfQueryProfileString(fmprof, FM3Str, key, NullStr, pszCmdLine, MaxComLineStrg);
+            PrfQueryProfileString(fmprof, (CHAR *) FM3Str, key, NullStr, pszCmdLine, MaxComLineStrg);
           }
           info = xmallocz(sizeof(LINKCMDS), pszSrcFile, __LINE__);
           if (info) {
@@ -549,12 +550,12 @@ VOID load_inicommands(VOID)
         bstripcr(info->title);
         sprintf(key, "COMMAND.%sID", info->title);
         size = sizeof(ULONG);
-        PrfQueryProfileData(fmprof, FM3Str, key, &ID, &size);
+        PrfQueryProfileData(fmprof, (CHAR *) FM3Str, key, &ID, &size);
         sprintf(key, "COMMAND.%sHotKeyID", info->title);
         size = sizeof(ULONG);
-        PrfQueryProfileData(fmprof, FM3Str, key, &HotKeyID, &size);
+        PrfQueryProfileData(fmprof, (CHAR *) FM3Str, key, &HotKeyID, &size);
         sprintf(key, "COMMAND.%senv", info->title);
-        PrfQueryProfileString(fmprof, FM3Str, key, NullStr, env, sizeof(env));
+        PrfQueryProfileString(fmprof, (CHAR *) FM3Str, key, NullStr, env, sizeof(env));
         if (ID != 0) {
           if (env != NullStr)
             info->env = xstrdup(env, pszSrcFile, __LINE__);
@@ -583,7 +584,7 @@ VOID load_inicommands(VOID)
                      GetPString(IDS_COMMANDSLIMITTITLETEXT),
                      GetPString(IDS_COMMANDSLIMITREACHEDTEXT ));
           }
-          PrfQueryProfileString(fmprof, FM3Str, info->pszCmdLine, NullStr, env, sizeof(env));
+          PrfQueryProfileString(fmprof, (CHAR *) FM3Str, info->pszCmdLine, NullStr, env, sizeof(env));
           info->env = xstrdup(env, pszSrcFile, __LINE__);
         }
         ID = 0;
@@ -609,17 +610,17 @@ VOID save_commands(VOID)
   pszCommandsList[0] = 0;
     while (info) {
       sprintf(key, "COMMAND.%sflags", info->title);
-      PrfWriteProfileData(fmprof, FM3Str, key, &info->flags, sizeof(ULONG));
+      PrfWriteProfileData(fmprof, (CHAR *) FM3Str, key, &info->flags, sizeof(ULONG));
       sprintf(key, "COMMAND.%sCmdLine", info->title);
-      PrfWriteProfileString(fmprof, FM3Str, key, info->pszCmdLine);
+      PrfWriteProfileString(fmprof, (CHAR *) FM3Str, key, info->pszCmdLine);
       bstripcr(info->title);
       sprintf(key, "COMMAND.%sID", info->title);
-      PrfWriteProfileData(fmprof, FM3Str, key, &info->ID, sizeof(INT));
+      PrfWriteProfileData(fmprof, (CHAR *) FM3Str, key, &info->ID, sizeof(INT));
       sprintf(key, "COMMAND.%sHotKeyID", info->title);
-      PrfWriteProfileData(fmprof, FM3Str, key, &info->HotKeyID, sizeof(INT));
+      PrfWriteProfileData(fmprof, (CHAR *) FM3Str, key, &info->HotKeyID, sizeof(INT));
       if (info->env != NullStr) {
         sprintf(key, "COMMAND.%senv", info->title);
-        PrfWriteProfileString(fmprof, FM3Str, key, info->env);
+        PrfWriteProfileString(fmprof, (CHAR *) FM3Str, key, info->env);
       }
       if ((strlen(pszCommandsList) + strlen(info->title) + 1) > ulSizeCommandsList)
         pszCommandsList = xrealloc(pszCommandsList,
@@ -629,15 +630,15 @@ VOID save_commands(VOID)
       strcpy(pszCommandsList + strlen(pszCommandsList), ";");
       info = info->next;
     } // while info
-    PrfWriteProfileData(fmprof, FM3Str, "COMMANDS.UsedCommandIDs", &UsedCommandIDs,
+    PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "COMMANDS.UsedCommandIDs", &UsedCommandIDs,
                         sizeof(BOOL) * 300);
-    PrfWriteProfileData(fmprof, FM3Str, "COMMANDS.UsedHotKeyIDs", &UsedHotKeyIDs,
+    PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "COMMANDS.UsedHotKeyIDs", &UsedHotKeyIDs,
                         sizeof(BOOL) * 40);
     ulSizeCommandsList = strlen(pszCommandsList) + 1;
-    PrfWriteProfileData(fmprof, FM3Str, "COMMANDS.SizeSortOrder",
+    PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "COMMANDS.SizeSortOrder",
                         &ulSizeCommandsList, sizeof(ULONG));
-    PrfWriteProfileString(fmprof, FM3Str, "COMMANDS.SortOrder", pszCommandsList);
-    PrfWriteProfileData(fmprof, FM3Str, "COMMANDS.LoadCommandsFromINI",
+    PrfWriteProfileString(fmprof, (CHAR *) FM3Str, "COMMANDS.SortOrder", pszCommandsList);
+    PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "COMMANDS.LoadCommandsFromINI",
                         &fLoadCommandsFromINI, sizeof(BOOL));
 }
 
@@ -746,7 +747,7 @@ LINKCMDS *add_command(COMMAND *addme, BOOL fDontCheckHotKey)
   else {
     pszCommandsList = xmallocz(ulSizeCommandsList, pszSrcFile, __LINE__);
     if (pszCommandsList)
-      PrfQueryProfileString(fmprof, FM3Str, "COMMANDS.SortOrder",
+      PrfQueryProfileString(fmprof, (CHAR *) FM3Str, "COMMANDS.SortOrder",
                             NullStr, pszCommandsList, ulSizeCommandsList);
     return 0;
   }
@@ -1101,9 +1102,9 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           sprintf(keyID, "COMMAND.%sID", temp);
           sprintf(keyHotKeyID, "COMMAND.%sHotKeyID", temp);
           sprintf(keyenv, "COMMAND.%senv", temp);
-          PrfWriteProfileData(fmprof, FM3Str, keyID, NULL, 0);
-          PrfWriteProfileData(fmprof, FM3Str, keyHotKeyID, NULL, 0);
-          PrfWriteProfileString(fmprof, FM3Str, keyenv, NULL);
+          PrfWriteProfileData(fmprof, (CHAR *) FM3Str, keyID, NULL, 0);
+          PrfWriteProfileData(fmprof, (CHAR *) FM3Str, keyHotKeyID, NULL, 0);
+          PrfWriteProfileString(fmprof, (CHAR *) FM3Str, keyenv, NULL);
 	  x = (SHORT) WinSendDlgItemMsg(hwnd,
 					CMD_LISTBOX,
 					LM_QUERYSELECTION,
@@ -1156,15 +1157,15 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         sprintf(keyID, "COMMAND.%sID", temp->title);
         sprintf(keyHotKeyID, "COMMAND.%sHotKeyID", temp->title);
         sprintf(keyenv, "COMMAND.%senv", temp->title);
-        PrfQueryProfileData(fmprof, FM3Str, keyID, &ID, &size);
-        PrfQueryProfileData(fmprof, FM3Str, keyHotKeyID, &HotKeyID, &size);
+        PrfQueryProfileData(fmprof, (CHAR *) FM3Str, keyID, &ID, &size);
+        PrfQueryProfileData(fmprof, (CHAR *) FM3Str, keyHotKeyID, &HotKeyID, &size);
         temp->ID = ID;
         if (temp->HotKeyID == HotKeyID || temp->HotKeyID == 0)
           fDontCheckHotKey = TRUE;
         if (kill_command(temp->title)) {
-          PrfWriteProfileData(fmprof, FM3Str, keyID, NULL, 0);
-          PrfWriteProfileData(fmprof, FM3Str, keyHotKeyID, NULL, 0);
-          PrfWriteProfileString(fmprof, FM3Str, keyenv, NULL);
+          PrfWriteProfileData(fmprof, (CHAR *) FM3Str, keyID, NULL, 0);
+          PrfWriteProfileData(fmprof, (CHAR *) FM3Str, keyHotKeyID, NULL, 0);
+          PrfWriteProfileString(fmprof, (CHAR *) FM3Str, keyenv, NULL);
 	  x = (SHORT) WinSendDlgItemMsg(hwnd,
 					CMD_LISTBOX,
 					LM_QUERYSELECTION,

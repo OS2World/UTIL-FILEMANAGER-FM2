@@ -6,7 +6,7 @@
   Info windows
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2008 Steven H. Levine
+  Copyright (c) 2001, 2010 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   12 Feb 03 SHL FileInfoProc: standardize EA math
@@ -34,6 +34,7 @@
   12 Jul 09 GKY Remove code to update recursive scan setting which isn't user setable
   22 Jul 09 GKY Check if drives support EAs add driveflag for this
   22 Jul 09 GKY Add LocalHD driveflag
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -272,7 +273,7 @@ MRESULT EXPENTRY DrvInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      WinSetDlgItemText(hwnd, INFO_FREEPERCENT, s);
 	      }
 	      else
-		 WinSetDlgItemText(hwnd, INFO_AVAILABLE, GetPString(IDS_STATSMEANINGLESSTEXT));
+		 WinSetDlgItemText(hwnd, INFO_AVAILABLE, (CHAR *) GetPString(IDS_STATSMEANINGLESSTEXT));
 	    }
 	    else {
 	      sprintf(FileSystem,

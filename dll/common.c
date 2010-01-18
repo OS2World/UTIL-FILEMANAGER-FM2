@@ -6,7 +6,7 @@
   Common window functions
 
   Copyright (c) 1993, 1998 M. Kimes
-  Copyright (c) 2001, 2008 Steven H. Levine
+  Copyright (c) 2001, 2010 Steven H. Levine
 
   13 Aug 05 SHL Renames
   22 Jul 06 SHL Check more run time errors
@@ -31,6 +31,7 @@
 		and rescans drive in tree container depending on container focus, greyed out
 		inappropriate menu context choices
   14 Sep 09 SHL Blink thread LEDs while threads working
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -234,7 +235,7 @@ void CommonCreateTextChildren(HWND hwnd, PCSZ class, USHORT * ids)
       attrs = SS_TEXT | DT_CENTER | DT_VCENTER;
       break;
     }
-    hwndTmp = WinCreateWindow(hwnd, class, s, attrs, 0, 0, 0, 0, hwnd,
+    hwndTmp = WinCreateWindow(hwnd, (CHAR *) class, s, attrs, 0, 0, 0, 0, hwnd,
 			      HWND_TOP, ids[x], NULL, NULL);
     if (!hwndTmp)
       Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
@@ -436,7 +437,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
   // Create a children of frame window
   // Left status window
   hwndStatus = WinCreateWindow(hwndFrame,
-			       WC_STATUS,
+			       (CHAR *) WC_STATUS,
 			       "Status",
 			       WS_VISIBLE | SS_TEXT | DT_LEFT |
 			       DT_VCENTER,
@@ -457,7 +458,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 
   // Right status window
   hwndStatus2 = WinCreateWindow(hwndFrame,
-				WC_STATUS,
+				(CHAR *) WC_STATUS,
 				"Status2",
 				WS_VISIBLE | SS_TEXT | DT_LEFT |
 				DT_VCENTER,
@@ -478,7 +479,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 	      PCSZ_WINCREATEWINDOW);
 
   hwndAttr = WinCreateWindow(hwndFrame,
-			     WC_STATUS,
+			     (CHAR *) WC_STATUS,
 			     "Attr",
 			     WS_VISIBLE | SS_TEXT | DT_CENTER |
 			     DT_VCENTER,
@@ -497,7 +498,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 	      PCSZ_WINCREATEWINDOW);
 
   hwndDate = WinCreateWindow(hwndFrame,
-			     WC_STATUS,
+			     (CHAR *) WC_STATUS,
 			     "Date",
 			     WS_VISIBLE | SS_TEXT | DT_CENTER |
 			     DT_VCENTER,
@@ -516,7 +517,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 	      PCSZ_WINCREATEWINDOW);
 
   hwndName = WinCreateWindow(hwndFrame,
-			     WC_STATUS,
+			     (CHAR *) WC_STATUS,
 			     "Name",
 			     WS_VISIBLE | SS_TEXT | DT_LEFT |
 			     DT_VCENTER,
@@ -535,7 +536,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 	      PCSZ_WINCREATEWINDOW);
 
   hwndTmp = WinCreateWindow(hwndFrame,
-			    WC_TOOLBACK,
+			    (CHAR *) WC_TOOLBACK,
 			    NullStr,
 			    WS_VISIBLE | SS_TEXT | DT_CENTER | DT_VCENTER,
 			    swp->x +
@@ -553,7 +554,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 	      PCSZ_WINCREATEWINDOW);
 
   hwndBack = WinCreateWindow(hwndFrame,
-			     WC_DRIVEBACK,
+			     (CHAR *) WC_DRIVEBACK,
 			     NullStr,
 			     WS_VISIBLE | SS_TEXT | DT_RIGHT | DT_BOTTOM,
 			     swp->x +
@@ -574,7 +575,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 	      PCSZ_WINCREATEWINDOW);
 
   hwndLED = WinCreateWindow(hwndFrame,
-			    WC_LED,
+			    (CHAR *) WC_LED,
 			    "#920",	// LEDOFF_BMP
 			    WS_VISIBLE | SS_BITMAP,
 			    swp->cx - 58,
@@ -586,7 +587,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 	      PCSZ_WINCREATEWINDOW);
 
   hwndLEDHdr = WinCreateWindow(hwndFrame,
-			       WC_LED,
+			       (CHAR *) WC_LED,
 			       "0",
 			       WS_VISIBLE | SS_TEXT | DT_VCENTER |
 			       DT_CENTER,
@@ -600,7 +601,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 	      PCSZ_WINCREATEWINDOW);
 
   hwndAutoview = WinCreateWindow(hwndFrame,
-				 WC_AUTOVIEW,
+				 (CHAR *) WC_AUTOVIEW,
 				 NullStr,
 				 WS_VISIBLE | SS_TEXT | DT_LEFT |
 				 DT_TOP | DT_WORDBREAK,
@@ -622,7 +623,7 @@ void CommonCreateMainChildren(HWND hwnd, SWP * swp)
 
   hwndAutoMLE = WinCreateWindow(hwndFrame,
 				// GetPString(IDS_WCAUTOVIEW),
-				WC_MLE,
+				(CHAR *) WC_MLE,
 				NullStr,
 				WS_VISIBLE | MLS_HSCROLL |
 				MLS_VSCROLL | MLS_BORDER,

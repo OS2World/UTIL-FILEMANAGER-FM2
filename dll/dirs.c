@@ -4,11 +4,12 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2008 Steven H.Levine
+  Copyright (c) 2003, 2010 Steven H.Levine
 
   Directory manipulation
 
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -88,7 +89,7 @@ APIRET switch_to(CHAR * s)
     if (!DosQCurDisk(&curdrive, &drivemap)) {
       if ((CHAR) ((CHAR) curdrive + '@') != (CHAR) toupper(*HomePath) &&
           (CHAR) ((CHAR) curdrive + '@') != (CHAR) toupper(*path))
-        DosChDir(PCSZ_BACKSLASH);
+        DosChDir((CHAR *) PCSZ_BACKSLASH);
     }
     ret = DosSelectDisk(toupper(*path) - '@');
     return (ret) ? ret : DosChDir(path);

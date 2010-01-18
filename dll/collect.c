@@ -6,7 +6,7 @@
   Collector
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2009 Steven H. Levine
+  Copyright (c) 2003, 2010 Steven H. Levine
 
   15 Oct 02 MK Baseline
   10 Jan 04 SHL Avoid -1L byte counts
@@ -69,6 +69,7 @@
 		for tree container
   13 Jul 09 GKY Fixed double free of memory buffer in UM_COLLECTFROMFILE
   15 Sep 09 SHL Use UM_GREP when passing pathname
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -652,11 +653,11 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 
       if (!hwndStatus) {
 	WinSetWindowText(WinWindowFromID(dcd->hwndClient, DIR_SELECTED),
-			 GetPString(IDS_COLLECTINGTEXT));
+			 (CHAR *) GetPString(IDS_COLLECTINGTEXT));
       }
       else {
 	if (WinQueryFocus(HWND_DESKTOP) == dcd->hwndCnr)
-	  WinSetWindowText(hwndStatus, GetPString(IDS_COLLECTINGTEXT));
+	  WinSetWindowText(hwndStatus, (CHAR *) GetPString(IDS_COLLECTINGTEXT));
       }
 
       for (ulMaxFiles = 0; li->list[ulMaxFiles]; ulMaxFiles++) ;	// Count
@@ -1265,7 +1266,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  WinSendMsg(hwndMain, UM_LOADFILE, MPVOID, MPVOID);
       }
       if (dcd->amextracted)
-	WinSetWindowText(hwndStatus2, GetPString(IDS_INSEEKSCANTEXT));	// Say working
+	WinSetWindowText(hwndStatus2, (CHAR *) GetPString(IDS_INSEEKSCANTEXT));	// Say working
       WinSendMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
     }
     break;
@@ -1368,12 +1369,12 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    WinSetWindowText(hwndAttr, pci->pszDispAttr);
 	  }
 	  if (dcd->amextracted && hwndStatus2 && !fStatus2Used)
-	    WinSetWindowText(hwndStatus2, GetPString(IDS_INSEEKSCANTEXT));	// Say working
+	    WinSetWindowText(hwndStatus2, (CHAR *) GetPString(IDS_INSEEKSCANTEXT));	// Say working
 	}
 	else {
 	  if (hwndStatus2) {
 	    if (dcd->amextracted)
-	      WinSetWindowText(hwndStatus2, GetPString(IDS_INSEEKSCANTEXT));	// Say working
+	      WinSetWindowText(hwndStatus2, (CHAR *) GetPString(IDS_INSEEKSCANTEXT));	// Say working
 	    else
 	      WinSetWindowText(hwndStatus2, NullStr);
 	  }
@@ -2474,7 +2475,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  pDItem = DrgQueryDragitemPtr(pDInfo,	/* Access DRAGITEM */
 				       0);	/* Index to DRAGITEM */
 	  if (DrgVerifyRMF(pDItem,	/* Check valid rendering */
-			   DRM_OS2FILE,	/* mechanisms and data */
+			   (CHAR *) DRM_OS2FILE,	/* mechanisms and data */
 			   NULL)) {
 	    DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO */
 	    if (pci) {
@@ -2509,7 +2510,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		break;
 	      if (hwndStatus2)
 		WinSetWindowText(hwndStatus2,
-				 GetPString(IDS_DRAGFILEOBJTEXT));
+				 (CHAR *) GetPString(IDS_DRAGFILEOBJTEXT));
 	      if (DoFileDrag(hwnd, dcd->hwndObject, mp2, NULL, NULL, TRUE)) {
 		if ((fUnHilite && wasemphasized) || dcd->ulItemsToUnHilite)
 		  UnHilite(hwnd, TRUE, &dcd->lastselection, dcd->ulItemsToUnHilite);
@@ -2992,7 +2993,7 @@ HWND StartCollector(HWND hwndParent, INT flags)
   hwndFrame = WinCreateStdWindow(hwndParent,
 				 WS_VISIBLE,
 				 &FrameFlags,
-				 WC_COLLECTOR,
+				 (CHAR *) WC_COLLECTOR,
 				 NULL,
 				 WS_VISIBLE | fwsAnimate,
 				 FM3ModHandle, COLLECTOR_FRAME, &hwndClient);
@@ -3046,7 +3047,7 @@ HWND StartCollector(HWND hwndParent, INT flags)
       else {
 	Collector = dcd->hwndCnr;
 	WinSetWindowPtr(dcd->hwndCnr, QWL_USER, (PVOID) dcd);
-	WinSetWindowText(hwndFrame, GetPString(IDS_COLLECTORTITLETEXT));
+	WinSetWindowText(hwndFrame, (CHAR *) GetPString(IDS_COLLECTORTITLETEXT));
 	if (FrameFlags & FCF_MENU) {
 	  PFNWP oldmenuproc;
 	  HWND hwndMenu = WinWindowFromID(hwndFrame, FID_MENU);

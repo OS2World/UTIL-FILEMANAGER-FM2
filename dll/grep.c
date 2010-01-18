@@ -6,7 +6,7 @@
   grep tools
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2009 Steven H. Levine
+  Copyright (c) 2001, 2010 Steven H. Levine
 
   12 Feb 03 SHL InsertGrepFile: standardize EA math
   12 Feb 03 SHL doonefile: standardize EA math
@@ -32,6 +32,7 @@
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   08 Mar 09 GKY Additional strings move to String Table
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -311,7 +312,7 @@ VOID GrepThread(VOID *arg)
       // DosSleep(100); //05 Aug 07 GKY 128     // 07 Feb 08 SHL
       // hwndStatus does not exist for applet
       WinSetWindowText(hwndStatus ? hwndStatus : grep.hwndCurFile,
-                       GetPString(grep.finddupes ? IDS_GREPDUPETEXT :
+                       (CHAR *) GetPString(grep.finddupes ? IDS_GREPDUPETEXT :
                                                    IDS_GREPSCANTEXT));
 
       pp = grep.searchPattern;
@@ -721,10 +722,10 @@ static BOOL DoInsertion(GREP *grep,
   else {
     if (grep->sayfiles) {
       if (!hwndStatus)
-        WinSetWindowText(grep->hwndCurFile, GetPString(IDS_GREPINSERTINGTEXT));
+        WinSetWindowText(grep->hwndCurFile, (CHAR *) GetPString(IDS_GREPINSERTINGTEXT));
       else {
         if (WinQueryFocus(HWND_DESKTOP) == grep->hwndFiles)
-          WinSetWindowText(hwndStatus, GetPString(IDS_GREPINSERTINGTEXT));
+          WinSetWindowText(hwndStatus, (CHAR *) GetPString(IDS_GREPINSERTINGTEXT));
       }
     }
     pciFirst = pci;
@@ -1328,9 +1329,9 @@ static VOID FillDupes(GREP *grep,
 
   if (x) {
     if (!hwndStatus)
-      WinSetWindowText(grep->hwndCurFile, GetPString(IDS_GREPDUPESORTINGTEXT));
+      WinSetWindowText(grep->hwndCurFile, (CHAR *) GetPString(IDS_GREPDUPESORTINGTEXT));
     else if (WinQueryFocus(HWND_DESKTOP) == grep->hwndFiles)
-      WinSetWindowText(hwndStatus, GetPString(IDS_GREPDUPESORTINGTEXT));
+      WinSetWindowText(hwndStatus, (CHAR *) GetPString(IDS_GREPDUPESORTINGTEXT));
     // DosSleep(0);  //26 Aug 07 GKY 1  // 07 Feb 08 SHL
     grep->dupenames = xmalloc(sizeof(DUPES *) * (x + 1), pszSrcFile, __LINE__);
     if (!grep->nosizedupes)
@@ -1364,9 +1365,9 @@ static VOID FillDupes(GREP *grep,
       }
 
       if (!hwndStatus)
-        WinSetWindowText(grep->hwndCurFile, GetPString(IDS_GREPDUPECOMPARINGTEXT));
+        WinSetWindowText(grep->hwndCurFile, (CHAR *) GetPString(IDS_GREPDUPECOMPARINGTEXT));
       else if (WinQueryFocus(HWND_DESKTOP) == grep->hwndFiles)
-        WinSetWindowText(hwndStatus, GetPString(IDS_GREPDUPECOMPARINGTEXT));
+        WinSetWindowText(hwndStatus, (CHAR *) GetPString(IDS_GREPDUPECOMPARINGTEXT));
 
       InitITimer(pitdSleep, 0);         // Reset rate estimator
       i = grep->dupehead;
@@ -1522,9 +1523,9 @@ static VOID FillDupes(GREP *grep,
       if (!fErrorBeepOff)
         DosBeep(50, 100);
       if (!hwndStatus)
-        WinSetWindowText(grep->hwndCurFile, GetPString(IDS_GREPDUPECOMPARINGTEXT));
+        WinSetWindowText(grep->hwndCurFile, (CHAR *) GetPString(IDS_GREPDUPECOMPARINGTEXT));
       else if (WinQueryFocus(HWND_DESKTOP) == grep->hwndFiles)
-        WinSetWindowText(hwndStatus, GetPString(IDS_GREPDUPECOMPARINGTEXT));
+        WinSetWindowText(hwndStatus, (CHAR *) GetPString(IDS_GREPDUPECOMPARINGTEXT));
       x = y = 0;
       xfree(grep->dupenames, pszSrcFile, __LINE__);
       grep->dupenames = NULL;

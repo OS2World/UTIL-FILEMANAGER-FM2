@@ -5,7 +5,7 @@
   Misc GUI support functions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2009 Steven H. Levine
+  Copyright (c) 2003, 2010 Steven H. Levine
 
   11 Jun 03 SHL Add JFS and FAT32 support
   01 Aug 04 SHL Rework lstrip/rstrip usage
@@ -64,6 +64,7 @@
   22 Jul 09 GKY Allow .LONGNAME to be displayed for FAT drives.
   21 Dec 09 GKY Allow command menu reorder without changing the "ID" or hot key for a command.
                 Added load_inicommand to load the IDs from the ini file.
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -1056,7 +1057,7 @@ BOOL SetMenuCheck(HWND hwndMenu, USHORT id, BOOL * bool, BOOL toggle,
   if (toggle) {
     *bool = *bool ? FALSE : TRUE;
     if (savename && *savename)
-      PrfWriteProfileData(fmprof, appname, savename, bool, sizeof(BOOL));
+      PrfWriteProfileData(fmprof, appname, (CHAR *) savename, bool, sizeof(BOOL));
   }
   WinSendMsg(hwndMenu, MM_SETITEMATTR,
 	     MPFROM2SHORT(id, 1),
@@ -1548,27 +1549,27 @@ VOID RemoveCnrSwitches(PCSZ keyroot, PCSZ statename)
 #endif
 
   strcpy(eos, "Pos");;
-  PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, s, NULL, 0);
   strcpy(eos, "Sort");
-  PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, s, NULL, 0);
   strcpy(eos, "Filter");
-  PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, s, NULL, 0);
   strcpy(eos, "View");
-  PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, s, NULL, 0);
   strcpy(eos, "Dir");
-  PrfWriteProfileString(fmprof, FM3Str, s, NULL);
+  PrfWriteProfileString(fmprof, (CHAR *) FM3Str, s, NULL);
   if (statename && strstr(s, ".0.")) {
     strcpy(s, statename);
     strcat(s, ".");
     eos = &s[strlen(s)];
     strcpy(eos, "LastTreePos");
-    PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+    PrfWriteProfileData(fmprof, (CHAR *) FM3Str, s, NULL, 0);
     strcpy(eos, "MySizeLastTime");
-    PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
+    PrfWriteProfileData(fmprof, (CHAR *) FM3Str, s, NULL, 0);
     strcpy(eos, "Toolbar");
-    PrfWriteProfileString(fmprof, FM3Str, s, NULL);
+    PrfWriteProfileString(fmprof, (CHAR *) FM3Str, s, NULL);
     strcpy(eos, "TargetDir");
-    PrfWriteProfileString(fmprof, FM3Str, s, NULL);
+    PrfWriteProfileString(fmprof, (CHAR *) FM3Str, s, NULL);
   }
 
 }
@@ -1581,15 +1582,15 @@ VOID RemoveOldCnrSwitches(PCSZ szPrefix, ULONG ulTemp)
   CHAR szKey[STATE_NAME_MAX_BYTES + 80];
 
   sprintf(szKey, "%sDirCnrPos.%lu", szPrefix, ulTemp);
-  PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0);
+  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, szKey, NULL, 0);
   sprintf(szKey, "%sDirCnrSort.%lu", szPrefix, ulTemp);
-  PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0);
+  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, szKey, NULL, 0);
   sprintf(szKey, "%sDirCnrFilter.%lu", szPrefix, ulTemp);
-  PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0);
+  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, szKey, NULL, 0);
   sprintf(szKey, "%sDirCnrView.%lu", szPrefix, ulTemp);
-  PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0);
+  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, szKey, NULL, 0);
   sprintf(szKey, "%sDirCnrDir.%lu", szPrefix, ulTemp);
-  PrfWriteProfileString(fmprof, FM3Str, szKey, NULL);
+  PrfWriteProfileString(fmprof, (CHAR *) FM3Str, szKey, NULL);
   sprintf(szKey, "%sDirCnr.%lu.", szPrefix, ulTemp);
 }
 
@@ -2155,7 +2156,7 @@ VOID LoadLibPath(PSZ str, LONG len)
       if (!DosLoadModule(var, sizeof(var), "DOSCALL1.DLL", &hmod)) {
 	if (!DosQueryProcAddr(hmod,
 			      ORD_DOS32QUERYEXTLIBPATH,
-			      NULL, (PFN *) & DQELIBPATH)) {
+			      NULL, (PFN *) &DQELIBPATH)) {
 	  DQELIBPATH(beg, BEGIN_LIBPATH);
 	  DQELIBPATH(end, END_LIBPATH);
 	}

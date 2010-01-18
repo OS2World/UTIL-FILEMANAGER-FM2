@@ -6,10 +6,14 @@
   <<<description here>>>
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2008, 2009 Steven H. Levine
+  Copyright (c) 2008, 2010 Steven H. Levine
 
   Change log
   21 Dec 09 GKY Added CheckExecutibleFlags to streamline code in command.c assoc.c & cmdline.c
+  17 JAN 10 GKY Changes to environment handling in ExecuteOnList to facilitate move of commands to INI and allow
+                the same commandline to have different environments (multiple different command titles).
+  17 JAN 10 GKY Add ENVIRONMENT_SIZE vaiable to replace multiple (often different hard coded sizes) set to 2048
+                (the largest value I found).
 
 ***********************************************************************/
 
@@ -36,12 +40,14 @@
 #define SEAMLESS      32768
 #define CHILD         65536
 
+#define ENVIRONMENT_SIZE 2048
+
 typedef struct
 {
   ULONG flags;
   CHAR *commandline;
   CHAR path[CCHMAXPATH];
-  CHAR environment[1001];
+  CHAR environment[ENVIRONMENT_SIZE];
   CHAR tempprompt[128];
   CHAR title[80];
   BOOL dropped;

@@ -6,12 +6,13 @@
   Set colors
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2006, 2008 Steven H. Levine
+  Copyright (c) 2006, 2010 Steven H. Levine
 
   14 Jul 06 SHL Use Runtime_Error
   22 Mar 07 GKY Use QWL_USER
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -47,7 +48,7 @@ MRESULT EXPENTRY ColorDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSetWindowPtr(hwnd, QWL_USER, mp2);
       co = (COLORS *) mp2;
       if (co->prompt)
-	WinSetWindowText(hwnd, GetPString(co->prompt));
+	WinSetWindowText(hwnd, (CHAR *) GetPString(co->prompt));
       for (x = 0; x < co->numcolors; x++)
 	WinSendDlgItemMsg(hwnd,
 			  COLOR_LISTBOX,

@@ -6,7 +6,7 @@
   fm/4 main window
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2008 Steven H. Levine
+  Copyright (c) 2005, 2010 Steven H. Levine
 
   23 May 05 SHL Use datamin.h
   26 May 05 SHL Comments and localize code
@@ -37,6 +37,7 @@
                 miniapp; FM3Str should be used for setting only relavent to FM/2 or that
                 aren't user settable; realappname should be used for setting applicable to
                 one or more miniapp but not to FM/2
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -603,7 +604,7 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1,
     WinSendMsg(hwnd, UM_SETUP2, MPFROMLONG(1), MPVOID);
     fTileBackwards = (fTileBackwards) ? FALSE : TRUE;
     PrfWriteProfileData(fmprof,
-			FM3Str,
+			(CHAR *) FM3Str,
 			"TileBackwards",
 			(PVOID) & fTileBackwards, sizeof(BOOL));
     PostMsg(hwnd, UM_SIZE, MPVOID, MPVOID);
@@ -992,7 +993,7 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
     return 0;
 
   case WM_SAVEAPPLICATION:
-    WinStoreWindowPos(FM2Str,
+    WinStoreWindowPos((CHAR *) FM2Str,
 		      "MainWindowPos2", WinQueryWindow(hwnd, QW_PARENT));
     pd = WinQueryWindowPtr(hwnd, QWL_USER + 4);
     if (pd) {
@@ -1415,7 +1416,7 @@ HWND StartFM32(HAB hab, INT argc, CHAR ** argv)
     FILESTATUS3 fsa;
 
     if (PrfQueryProfileString(HINI_USERPROFILE,
-			      FM2Str,
+			      (CHAR *) FM2Str,
 			      "Home", NULL, inipath, sizeof(inipath))) {
       if (!DosQueryPathInfo(inipath, FIL_STANDARD, &fsa, sizeof(fsa))) {
 	if (fsa.attrFile & FILE_DIRECTORY) {
@@ -1431,13 +1432,13 @@ HWND StartFM32(HAB hab, INT argc, CHAR ** argv)
   hwndFrame = WinCreateStdWindow(HWND_DESKTOP,
 				 WS_VISIBLE,
 				 &FrameFlags,
-				 WC_MAINWND2,
+				 (CHAR *) WC_MAINWND2,
 				 NULL,
 				 WS_VISIBLE | WS_ANIMATE,
 				 FM3ModHandle, MAIN2_FRAME, &hwndClient);
   if (hwndFrame) {
     hwndMainMenu = WinWindowFromID(hwndFrame, FID_MENU);
-    if (!WinRestoreWindowPos(FM2Str, "MainWindowPos2", hwndFrame)) {
+    if (!WinRestoreWindowPos((CHAR *) FM2Str, "MainWindowPos2", hwndFrame)) {
 
       ULONG fl = SWP_MOVE | SWP_SIZE;
       RECTL rcl;

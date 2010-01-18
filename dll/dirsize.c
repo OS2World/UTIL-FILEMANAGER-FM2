@@ -6,7 +6,7 @@
   Directory sizes
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2009 Steven H. Levine
+  Copyright (c) 2001, 2010 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   12 Feb 03 SHL Use CBLIST_TO_EASIZE
@@ -50,6 +50,7 @@
                 miniapp; FM3Str should be used for setting only relavent to FM/2 or that
                 aren't user settable; realappname should be used for setting applicable to
                 one or more miniapp but not to FM/2
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -527,7 +528,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       SWP swp;
       ULONG size = sizeof(SWP);
 
-      PrfQueryProfileData(fmprof, FM3Str, "DirSizes.Position", (PVOID) &swp, &size);
+      PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "DirSizes.Position", (PVOID) &swp, &size);
       swp.fl &= ~SWP_SIZE;		// 04 Feb 09 SHL ignore saved size
       WinSetWindowPos(hwnd,
 		      HWND_TOP,
@@ -605,8 +606,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinSetDlgItemText(hwnd, DSZ_FREESPACE, s);
 	}
 	else
-	  WinSetDlgItemText(hwnd,
-			    DSZ_FREESPACE, GetPString(IDS_FREESPACEUTEXT));
+	  WinSetDlgItemText(hwnd, DSZ_FREESPACE, (CHAR *) GetPString(IDS_FREESPACEUTEXT));
       }
     }
     return 0;
@@ -1018,8 +1018,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	ULONG size = sizeof(SWP);
 
 	WinQueryWindowPos(hwnd, &swp);
-	PrfWriteProfileData(fmprof, FM3Str, "DirSizes.Position", (PVOID) &swp,
-			    size);
+	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "DirSizes.Position", (PVOID) &swp,	size);
       }
       pState = INSTDATA(hwnd);
       if (!pState)

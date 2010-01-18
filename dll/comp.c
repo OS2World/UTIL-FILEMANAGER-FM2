@@ -6,7 +6,7 @@
   Compare directories
 
   Copyright (c) 1993-02 M. Kimes
-  Copyright (c) 2003, 2009 Steven H. Levine
+  Copyright (c) 2003, 2010 Steven H. Levine
 
   16 Oct 02 MK Baseline
   04 Nov 03 SHL Force window refresh after subdir toggle
@@ -72,6 +72,7 @@
   27 Sep 09 SHL Rework CompSelect for size and speed
   27 Sep 09 SHL Allow fast cancel
   27 Sep 09 SHL Drop unused reset logic
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -295,14 +296,14 @@ static VOID CompareFilesThread(VOID *args)
 	if (!fp1) {
 	  sprintf(s, GetPString(IDS_COMPCANTOPENTEXT), fc.file1);
 	  AddToListboxBottom(fc.hwndList, s);
-	  WinSetWindowText(fc.hwndHelp, GetPString(IDS_ERRORTEXT));
+	  WinSetWindowText(fc.hwndHelp, (CHAR *) GetPString(IDS_ERRORTEXT));
 	}
 	else {
 	  fp2 = _fsopen(fc.file2, "rb", SH_DENYNO);
 	  if (!fp2) {
 	    sprintf(s, GetPString(IDS_COMPCANTOPENTEXT), fc.file2);
 	    AddToListboxBottom(fc.hwndList, s);
-	    WinSetWindowText(fc.hwndHelp, GetPString(IDS_ERRORTEXT));
+	    WinSetWindowText(fc.hwndHelp, (CHAR *) GetPString(IDS_ERRORTEXT));
 	  }
 	  else {
 	    len1 = filelength(fileno(fp1));
@@ -313,11 +314,11 @@ static VOID CompareFilesThread(VOID *args)
 	      sprintf(s, GetPString(IDS_COMPVSBYTESTEXT), len1, len2);
 	      AddToListboxBottom(fc.hwndList, s);
 	      WinSetWindowText(fc.hwndHelp,
-			       GetPString(IDS_COMPDONTMATCHTEXT));
+			       (CHAR *) GetPString(IDS_COMPDONTMATCHTEXT));
 	    }
 	    else {
 	      WinSetWindowText(fc.hwndHelp,
-			       GetPString(IDS_COMPCOMPARINGTEXT));
+			       (CHAR *) GetPString(IDS_COMPCOMPARINGTEXT));
 	      while (WinIsWindow(hab2, fc.hwndList)) {
 		numread1 = fread(s, 1, 1024, fp1);
 		numread2 = fread(ss, 1, 1024, fp2);
@@ -325,7 +326,7 @@ static VOID CompareFilesThread(VOID *args)
 		  sprintf(s, GetPString(IDS_COMPREADERRORTEXT),
 			  offset, offset);
 		  AddToListboxBottom(fc.hwndList, s);
-		  WinSetWindowText(fc.hwndHelp, GetPString(IDS_ERRORTEXT));
+		  WinSetWindowText(fc.hwndHelp, (CHAR *) GetPString(IDS_ERRORTEXT));
 		  break;
 		}
 		else if (!numread1 && feof(fp1) && feof(fp2)) {
@@ -335,7 +336,7 @@ static VOID CompareFilesThread(VOID *args)
 		    AddToListboxBottom(fc.hwndList,
 				       GetPString(IDS_COMPWONDERWHYTEXT));
 		  WinSetWindowText(fc.hwndHelp,
-				   GetPString(IDS_COMPCOMPLETETEXT));
+				   (CHAR *) GetPString(IDS_COMPCOMPLETETEXT));
 		  break;
 		}
 		else if (numread1 <= 0 || numread2 <= 0) {
@@ -345,7 +346,7 @@ static VOID CompareFilesThread(VOID *args)
 		    sprintf(s, GetPString(IDS_COMPMATCHREADERRORTEXT),
 			    offset, offset);
 		    WinSetWindowText(fc.hwndHelp,
-				     GetPString(IDS_COMPODDERRORTEXT));
+				     (CHAR *) GetPString(IDS_COMPODDERRORTEXT));
 		    AddToListboxBottom(fc.hwndList, s);
 		    break;
 		  }
@@ -359,7 +360,7 @@ static VOID CompareFilesThread(VOID *args)
 			      offset + (p1 - s), offset + (p1 - s));
 		      AddToListboxBottom(fc.hwndList, s);
 		      WinSetWindowText(fc.hwndHelp,
-				       GetPString(IDS_COMPDONTMATCHTEXT));
+				       (CHAR *) GetPString(IDS_COMPDONTMATCHTEXT));
 		      break;
 		    }
 		    p1++;
@@ -2198,7 +2199,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	SWP swp;
 	ULONG size = sizeof(SWP);
 
-	PrfQueryProfileData(fmprof, FM3Str, "CompDir.Position", (PVOID) &swp, &size);
+	PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "CompDir.Position", (PVOID) &swp, &size);
 	swp.fl &= ~SWP_SIZE;		// 04 Feb 09 SHL ignore saved size
 	WinSetWindowPos(hwnd,
 			HWND_TOP,
@@ -2386,12 +2387,12 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_CONTAINERHWND:
     // Building list
-    WinSetDlgItemText(hwnd, COMP_NOTE, GetPString(IDS_COMPHOLDBLDLISTTEXT));
+    WinSetDlgItemText(hwnd, COMP_NOTE, (CHAR *) GetPString(IDS_COMPHOLDBLDLISTTEXT));
     return 0;
 
   case UM_CONTAINERDIR:
     // Filling container
-    WinSetDlgItemText(hwnd, COMP_NOTE, GetPString(IDS_COMPHOLDFILLCNRTEXT));
+    WinSetDlgItemText(hwnd, COMP_NOTE, (CHAR *) GetPString(IDS_COMPHOLDFILLCNRTEXT));
     return 0;
 
   case WM_TIMER:
@@ -2444,7 +2445,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSetDlgItemText(hwnd, COMP_NOTE, s);
       }
       else
-	WinSetDlgItemText(hwnd, COMP_NOTE, GetPString(IDS_COMPREADYTEXT));
+	WinSetDlgItemText(hwnd, COMP_NOTE, (CHAR *) GetPString(IDS_COMPREADYTEXT));
     }
     break;
 
@@ -2708,7 +2709,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	else {
 	  WinSetDlgItemText(hwnd, COMP_NOTE,
-			    GetPString(IDS_COMPHOLDREADDISKTEXT));
+			    (CHAR *) GetPString(IDS_COMPHOLDREADDISKTEXT));
 	  SetButtonEnables(cmp, FALSE);
 	  cmp->selleft = 0;
 	  cmp->selright = 0;
@@ -2726,7 +2727,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	//DosExitCritSec();
       }
       WinSetDlgItemText(hwnd, COMP_NOTE,
-			GetPString(IDS_COMPHOLDFILTERINGTEXT));
+			(CHAR *) GetPString(IDS_COMPHOLDFILTERINGTEXT));
       // cmp->dcd.suspendview = 1;	// 12 Jan 08 SHL appears not to be used here
       priority_idle();			// Don't hog resources
       WinSendMsg(GetHwndLeft(hwnd), CM_FILTER, MPFROMP(Filter),
@@ -2742,7 +2743,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSetDlgItemText(hwnd, COMP_NOTE, s);
       }
       else
-	WinSetDlgItemText(hwnd, COMP_NOTE, GetPString(IDS_COMPREADYTEXT));
+	WinSetDlgItemText(hwnd, COMP_NOTE, (CHAR *) GetPString(IDS_COMPREADYTEXT));
     }
     return 0;
 
@@ -2804,7 +2805,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSetDlgItemText(hwnd, COMP_NOTE, s);
       }
       else
-	WinSetDlgItemText(hwnd, COMP_NOTE, GetPString(IDS_COMPREADYTEXT));
+	WinSetDlgItemText(hwnd, COMP_NOTE, (CHAR *) GetPString(IDS_COMPREADYTEXT));
       WinCheckButton(hwnd, COMP_HIDENOTSELECTED, nowHidden);
     }
     return 0;
@@ -3094,17 +3095,17 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    case COMP_DELETELEFT:
 	    case COMP_DELETERIGHT:
 	      WinSetDlgItemText(hwnd, COMP_NOTE,
-				GetPString(IDS_COMPHOLDDELETINGTEXT));
+				(CHAR *) GetPString(IDS_COMPHOLDDELETINGTEXT));
 	      break;
 	    case COMP_MOVELEFT:
 	    case COMP_MOVERIGHT:
 	      WinSetDlgItemText(hwnd, COMP_NOTE,
-				GetPString(IDS_COMPHOLDMOVINGTEXT));
+				(CHAR *) GetPString(IDS_COMPHOLDMOVINGTEXT));
 	      break;
 	    case COMP_COPYLEFT:
 	    case COMP_COPYRIGHT:
 	      WinSetDlgItemText(hwnd, COMP_NOTE,
-				GetPString(IDS_COMPHOLDCOPYINGTEXT));
+				(CHAR *) GetPString(IDS_COMPHOLDCOPYINGTEXT));
 	      break;
 	    default:
 	      Runtime_Error(pszSrcFile, __LINE__, "mp1 %u unexpected", SHORT1FROMMP(mp1));
@@ -3121,7 +3122,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	ULONG size = sizeof(SWP);
 
 	WinQueryWindowPos(hwnd, &swp);
-	PrfWriteProfileData(fmprof, FM3Str, "CompDir.Position", (PVOID) &swp,
+	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "CompDir.Position", (PVOID) &swp,
 			    size);
       }
       WinDismissDlg(hwnd, 0);
@@ -3139,7 +3140,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	SWP swp;
 	ULONG size = sizeof(SWP);
 	WinQueryWindowPos(hwnd, &swp);
-	PrfWriteProfileData(fmprof, FM3Str, "CompDir.Position", (PVOID) &swp,
+	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "CompDir.Position", (PVOID) &swp,
 			    size);
       }
       WinDismissDlg(hwnd, 1);
@@ -3203,15 +3204,15 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    case IDM_DESELECTONE:
 	    case IDM_DESELECTBOTH:
 	      WinSetDlgItemText(hwnd, COMP_NOTE,
-				GetPString(IDS_COMPHOLDDESELTEXT));
+				(CHAR *) GetPString(IDS_COMPHOLDDESELTEXT));
 	      break;
 	    case IDM_INVERT:
 	      WinSetDlgItemText(hwnd, COMP_NOTE,
-				GetPString(IDS_COMPHOLDINVERTTEXT));
+				(CHAR *) GetPString(IDS_COMPHOLDINVERTTEXT));
 	      break;
 	    default:
 	      WinSetDlgItemText(hwnd, COMP_NOTE,
-				GetPString(IDS_COMPHOLDSELTEXT));
+				(CHAR *) GetPString(IDS_COMPHOLDSELTEXT));
 	      break;
 	    }
 	    SetButtonEnables(cmp, FALSE);

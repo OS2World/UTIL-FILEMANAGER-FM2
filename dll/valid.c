@@ -6,7 +6,7 @@
   File name manipulation routines
 
   Copyright (c) 1993, 1998 M. Kimes
-  Copyright (c) 2002, 2009 Steven H.Levine
+  Copyright (c) 2002, 2010 Steven H.Levine
 
   23 Nov 02 SHL RootName: rework for sanity
   27 Nov 02 SHL MakeFullName: correct typo
@@ -39,6 +39,7 @@
   22 Jul 09 GKY Check if drives support EAs add driveflag for this
   22 Jul 09 GKY Add LocalHD driveflag
   22 Jul 09 GKY Streamline scanning code for faster Tree rescans
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -483,7 +484,7 @@ INT IsFile(PCSZ filename)
 
   if (filename && *filename) {
     DosError(FERR_DISABLEHARDERR);
-    ret = DosQueryPathInfo(filename, FIL_STANDARD, &fsa, (ULONG) sizeof(fsa));
+    ret = DosQueryPathInfo((CHAR *) filename, FIL_STANDARD, &fsa, (ULONG) sizeof(fsa));
     if (!ret)
       return ((fsa.attrFile & FILE_DIRECTORY) == 0);
     else if (IsValidDrive(*filename) && IsRoot(filename))

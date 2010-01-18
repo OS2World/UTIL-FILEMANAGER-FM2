@@ -6,7 +6,7 @@
   Kill a process
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2008 Steven H. Levine
+  Copyright (c) 2005, 2010 Steven H. Levine
 
   24 May 05 SHL Rework Win_Error usage
   14 Jul 06 SHL Use Runtime_Error
@@ -26,6 +26,7 @@
                 miniapp; FM3Str should be used for setting only relavent to FM/2 or that
                 aren't user settable; realappname should be used for setting applicable to
                 one or more miniapp but not to FM/2
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -387,7 +388,7 @@ MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     switch (SHORT1FROMMP(mp1)) {
     case KILL_CHECKBOX:
       fUseQProcStat = WinQueryButtonCheckstate(hwnd, KILL_CHECKBOX);
-      PrfWriteProfileData(fmprof, FM3Str, "UseQProcStat",
+      PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "UseQProcStat",
                           &fUseQProcStat, sizeof(BOOL));
       PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(KILL_RESCAN, 0), MPVOID);
       if (WinQueryButtonCheckstate(hwnd, KILL_CHECKBOX)) {
@@ -399,7 +400,7 @@ MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
     case KILL2_CHECKBOX:
       fUseQSysState = WinQueryButtonCheckstate(hwnd, KILL2_CHECKBOX);
-      PrfWriteProfileData(fmprof, FM3Str, "UseQSysState",
+      PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "UseQSysState",
                           &fUseQSysState, sizeof(BOOL));
       PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(KILL_RESCAN, 0), MPVOID);
       if (WinQueryButtonCheckstate(hwnd, KILL2_CHECKBOX)) {

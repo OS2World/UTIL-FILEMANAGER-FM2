@@ -6,12 +6,13 @@
   Directory containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2006, 2009 Steven H. Levine
+  Copyright (c) 2006, 2010 Steven H. Levine
 
   23 Aug 06 SHL Comments
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -117,7 +118,7 @@ MRESULT EXPENTRY CustomFileDlg(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       switch (SHORT2FROMMP(mp1)) {
       case CBN_SHOWLIST:
 	WinSetDlgItemText(hwnd,
-			  FDLG_HELP, GetPString(IDS_CLICKDRIVEHELPTEXT));
+			  FDLG_HELP, (CHAR *) GetPString(IDS_CLICKDRIVEHELPTEXT));
 	break;
       }
       break;
@@ -126,10 +127,10 @@ MRESULT EXPENTRY CustomFileDlg(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       switch (SHORT2FROMMP(mp1)) {
       case EN_SETFOCUS:
 	WinSetDlgItemText(hwnd,
-			  FDLG_HELP, GetPString(IDS_ENTERFILEORMASKHELPTEXT));
+			  FDLG_HELP, (CHAR *) GetPString(IDS_ENTERFILEORMASKHELPTEXT));
 	break;
       case EN_KILLFOCUS:
-	WinSetDlgItemText(hwnd, FDLG_HELP, GetPString(IDS_NAMEDEFHELPTEXT));
+	WinSetDlgItemText(hwnd, FDLG_HELP, (CHAR *) GetPString(IDS_NAMEDEFHELPTEXT));
 	break;
       }
       break;
@@ -138,10 +139,10 @@ MRESULT EXPENTRY CustomFileDlg(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       switch (SHORT2FROMMP(mp1)) {
       case LN_SETFOCUS:
 	WinSetDlgItemText(hwnd,
-			  FDLG_HELP, GetPString(IDS_DBLCLKDIRSWITCHHELPTEXT));
+			  FDLG_HELP, (CHAR *) GetPString(IDS_DBLCLKDIRSWITCHHELPTEXT));
 	break;
       case LN_KILLFOCUS:
-	WinSetDlgItemText(hwnd, FDLG_HELP, GetPString(IDS_NAMEDEFHELPTEXT));
+	WinSetDlgItemText(hwnd, FDLG_HELP, (CHAR *) GetPString(IDS_NAMEDEFHELPTEXT));
 	break;
       }
       break;
@@ -150,10 +151,10 @@ MRESULT EXPENTRY CustomFileDlg(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       switch (SHORT2FROMMP(mp1)) {
       case LN_SETFOCUS:
 	WinSetDlgItemText(hwnd, FDLG_HELP,
-			  GetPString(IDS_DBLCLKFILEUSEHELPTEXT));
+			  (CHAR *) GetPString(IDS_DBLCLKFILEUSEHELPTEXT));
 	break;
       case LN_KILLFOCUS:
-	WinSetDlgItemText(hwnd, FDLG_HELP, GetPString(IDS_NAMEDEFHELPTEXT));
+	WinSetDlgItemText(hwnd, FDLG_HELP, (CHAR *) GetPString(IDS_NAMEDEFHELPTEXT));
 	break;
       }
       break;
@@ -162,7 +163,7 @@ MRESULT EXPENTRY CustomFileDlg(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       switch (SHORT2FROMMP(mp1)) {
       case CBN_SHOWLIST:
 	WinSetDlgItemText(hwnd,
-			  FDLG_HELP, GetPString(IDS_DBLCLKDIRSWITCHHELPTEXT));
+			  FDLG_HELP, (CHAR *) GetPString(IDS_DBLCLKDIRSWITCHHELPTEXT));
 	break;
       case CBN_ENTER:
 	{

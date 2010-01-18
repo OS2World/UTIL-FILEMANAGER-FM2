@@ -6,7 +6,7 @@
   Archive containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2009 Steven H. Levine
+  Copyright (c) 2001, 2010 Steven H. Levine
 
   11 Jun 02 SHL Ensure archive name not garbage
   22 May 03 SHL ArcObjWndProc: fix UM_RESCAN now that we understand it
@@ -80,13 +80,14 @@
                 miniapp; FM3Str should be used for setting only relavent to FM/2 or that
                 aren't user settable; realappname should be used for setting applicable to
                 one or more miniapp but not to FM/2
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
 #include <stdlib.h>			// free..
 #include <string.h>
 #include <ctype.h>
-#include <direct.h>			// rmdir
+#include <direct.h>	        	// rmdir
 #include <share.h>			// SH_DENYWR
 #include <limits.h>			// ULONG_MAX
 
@@ -3253,7 +3254,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  pDItem = DrgQueryDragitemPtr(pDInfo,	/* Access DRAGITEM */
 				       0);	/* Index to DRAGITEM */
 	  if (DrgVerifyRMF(pDItem,	/* Check valid rendering */
-			   DRM_OS2FILE,	/* mechanisms and data */
+			   (CHAR *) DRM_OS2FILE,	/* mechanisms and data */
 			   NULL) && !(pDItem->fsControl & DC_PREPARE)) {
 	    DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO */
 	    return MRFROM2SHORT(DOR_DROP,	/* Return okay to drop */
@@ -3277,7 +3278,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		wasemphasized = TRUE;
 	      if (!ParentIsDesktop(hwnd, dcd->hwndParent) &&
 		  fSplitStatus && hwndStatus2)
-		WinSetWindowText(hwndStatus2, GetPString(IDS_DRAGARCMEMTEXT));
+		WinSetWindowText(hwndStatus2, (CHAR *) GetPString(IDS_DRAGARCMEMTEXT));
 	      if (DoFileDrag(hwnd,
 			     dcd->hwndObject,
 			     mp2, dcd->arcname, NULL, TRUE)) {
@@ -3293,7 +3294,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      if (!ParentIsDesktop(hwnd, dcd->hwndParent) &&
 		  fSplitStatus && hwndStatus2)
 		WinSetWindowText(hwndStatus2,
-				 GetPString(IDS_DRAGARCFILETEXT));
+				 (CHAR *) GetPString(IDS_DRAGARCFILETEXT));
 	      DragOne(hwnd, dcd->hwndObject, dcd->arcname, FALSE);
 	      if (!ParentIsDesktop(hwnd, dcd->hwndParent) &&
 		  fSplitStatus && hwndStatus2)
@@ -3637,7 +3638,7 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
     hwndFrame = WinCreateStdWindow(hwndParent,
 				   WS_VISIBLE,
 				   &FrameFlags,
-				   WC_ARCCONTAINER,
+				   (CHAR *) WC_ARCCONTAINER,
 				   title,
 				   WS_VISIBLE | fwsAnimate,
 				   FM3ModHandle, ARC_FRAME, &hwndClient);

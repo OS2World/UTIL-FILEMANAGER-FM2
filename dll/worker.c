@@ -43,6 +43,7 @@
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
   26 Jul 09 GKY Fix failure of containers to update when Tree container isn't open in FM2 lite
   13 Dec 09 GKY Attempt to fix container update issues with FM/2 lite
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -1155,7 +1156,7 @@ VOID MassAction(VOID * args)
 
 	      if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
 				SEARCH_CUR_DIRECTORY,
-				PCSZ_PATH, PCSZ_FM2PLAYEXE, (PBYTE)fbuf, CCHMAXPATH - 1))
+				(CHAR *) PCSZ_PATH, (CHAR *) PCSZ_FM2PLAYEXE, (PBYTE)fbuf, CCHMAXPATH - 1))
 		total += MaxFM2playStrLen;
 	      else
 		total = strlen(fbuf);
@@ -1204,7 +1205,7 @@ VOID MassAction(VOID * args)
 	      else {
 		if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
 				  SEARCH_CUR_DIRECTORY,
-				  PCSZ_PATH, PCSZ_FM2PLAYEXE, (PBYTE)fbuf, CCHMAXPATH - 1))
+				  (CHAR *) PCSZ_PATH, (CHAR *) PCSZ_FM2PLAYEXE, (PBYTE)fbuf, CCHMAXPATH - 1))
 		  strcpy(szBuffer, "UTILS\\FM2PLAY.EXE");
 		else
 		  strcpy(szBuffer, PCSZ_FM2PLAYEXE);

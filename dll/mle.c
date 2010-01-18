@@ -6,7 +6,7 @@
   MLE text editor/viewer
 
   Copyright (c) 1993-97 M. Kimes
-  Copyright (c) 2004, 2008 Steven H.Levine
+  Copyright (c) 2004, 2010 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   16 Apr 06 SHL MLEexportfile: rework to avoid wrap problems
@@ -23,6 +23,7 @@
   10 Dec 08 SHL Integrate exception handler support
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -204,10 +205,10 @@ VOID MLEinternet(HWND h, BOOL ftp)
 	      CHAR WPSDefaultFtpRun[CCHMAXPATH], WPSDefaultFtpRunDir[CCHMAXPATH];
 
 	      size = sizeof(WPSDefaultFtpRun);
-	      PrfQueryProfileData(HINI_USERPROFILE, PCSZ_WPURLDEFAULTSETTINGS,
+	      PrfQueryProfileData(HINI_USERPROFILE, (CHAR *) PCSZ_WPURLDEFAULTSETTINGS,
 				  "DefaultBrowserExe", WPSDefaultFtpRun, &size);
 	      size = sizeof(WPSDefaultFtpRunDir);
-	      PrfQueryProfileData(HINI_USERPROFILE, PCSZ_WPURLDEFAULTSETTINGS,
+	      PrfQueryProfileData(HINI_USERPROFILE, (CHAR *) PCSZ_WPURLDEFAULTSETTINGS,
 				  "DefaultWorkingDir", WPSDefaultFtpRunDir, &size);
 	      runemf2(SEPARATE | WINDOWED,
 		      h, pszSrcFile, __LINE__,
@@ -225,10 +226,10 @@ VOID MLEinternet(HWND h, BOOL ftp)
 	      CHAR WPSDefaultHttpRun[CCHMAXPATH], WPSDefaultHttpRunDir[CCHMAXPATH];
 
 	      size = sizeof(WPSDefaultHttpRun);
-	      PrfQueryProfileData(HINI_USERPROFILE, PCSZ_WPURLDEFAULTSETTINGS,
+	      PrfQueryProfileData(HINI_USERPROFILE, (CHAR *) PCSZ_WPURLDEFAULTSETTINGS,
 				  "DefaultBrowserExe", WPSDefaultHttpRun, &size);
 	      size = sizeof(WPSDefaultHttpRunDir);
-	      PrfQueryProfileData(HINI_USERPROFILE, PCSZ_WPURLDEFAULTSETTINGS,
+	      PrfQueryProfileData(HINI_USERPROFILE, (CHAR *) PCSZ_WPURLDEFAULTSETTINGS,
 				  "DefaultWorkingDir", WPSDefaultHttpRunDir, &size);
 	      runemf2(SEPARATE | WINDOWED,
 		      h, pszSrcFile, __LINE__,

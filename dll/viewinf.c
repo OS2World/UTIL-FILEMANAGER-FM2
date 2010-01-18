@@ -6,7 +6,7 @@
   Launch inf viewer
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2008 Steven H.Levine
+  Copyright (c) 2004, 2010 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   17 Jul 06 SHL Use Runtime_Error
@@ -20,6 +20,7 @@
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -191,10 +192,10 @@ static VOID FillListboxThread(VOID * args)
             if (dummy->help)
               key = "HLPPaths";
             repeating = TRUE;
-            if (PrfQueryProfileSize(fmprof, FM3Str, key, &size) && size) {
+            if (PrfQueryProfileSize(fmprof, (CHAR *) FM3Str, key, &size) && size) {
               holdenv = xmalloc(size + 2, pszSrcFile, __LINE__);
               if (holdenv) {
-                if (!PrfQueryProfileData(fmprof, FM3Str, key, holdenv, &size)) {
+                if (!PrfQueryProfileData(fmprof, (CHAR *) FM3Str, key, holdenv, &size)) {
                   Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
                             PCSZ_PRFQUERYPROFILEDATA);
                   free(holdenv);
@@ -264,7 +265,7 @@ MRESULT EXPENTRY ViewInfProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                         strlen(FNT_10SYSTEMMONOTEXT) + 1,
                         (PVOID) FNT_10SYSTEMMONOTEXT);
       }
-      WinSetWindowText(hwnd, GetPString(IDS_VIEWHELPFILESTEXT));
+      WinSetWindowText(hwnd, (CHAR *) GetPString(IDS_VIEWHELPFILESTEXT));
       WinShowWindow(WinWindowFromID(hwnd, VINF_SRCH), FALSE);
       WinShowWindow(WinWindowFromID(hwnd, VINF_FILTER), FALSE);
       WinShowWindow(WinWindowFromID(hwnd, VINF_TOPIC), FALSE);
@@ -519,7 +520,7 @@ MRESULT EXPENTRY ViewInfProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         WinQueryDlgItemText(hwnd, VINF_ENTRY, 1000, szBuffer);
         bstrip(szBuffer);
         PrfWriteProfileData(fmprof,
-                            FM3Str,
+                            (CHAR *) FM3Str,
                             key,
                             (*szBuffer) ? szBuffer : NULL, strlen(szBuffer));
         PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);

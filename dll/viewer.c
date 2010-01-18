@@ -6,7 +6,7 @@
   MLE text editor/viewer
 
   Copyright (c) 1993-97 M. Kimes
-  Copyright (c) 2005, 2009 Steven H. Levine
+  Copyright (c) 2005, 2010 Steven H. Levine
 
   23 May 05 SHL Use QWL_USER
   17 Jul 06 SHL Use Runtime_Error
@@ -19,6 +19,7 @@
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   08 Mar 09 GKY Additional strings move to String Table
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -153,7 +154,7 @@ HWND StartMLEEditor(HWND hwndClient, INT flags, CHAR * filename,
   hwndFrame = WinCreateStdWindow(hwndClient,
 				 0,
 				 &flFrameFlags,
-				 WC_MLEEDITOR,
+				 (CHAR *) WC_MLEEDITOR,
 				 NullStr,
 				 fwsAnimate,
 				 FM3ModHandle, MLE_FRAME, &hwnd);
@@ -438,17 +439,17 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (hwndStatus2)
 	  WinSetWindowText(hwndStatus2,
 			   (*vw->exportfilename) ?
-			   vw->exportfilename : GetPString(IDS_UNTITLEDTEXT));
+			   vw->exportfilename : (CHAR *) GetPString(IDS_UNTITLEDTEXT));
 	if (fMoreButtons) {
 	  WinSetWindowText(hwndName,
 			   (*vw->exportfilename) ?
-			   vw->exportfilename : GetPString(IDS_UNTITLEDTEXT));
+			   vw->exportfilename : (CHAR *) GetPString(IDS_UNTITLEDTEXT));
 	  WinSetWindowText(hwndDate, NullStr);
 	  WinSetWindowText(hwndAttr, NullStr);
 	}
 	if (hwndStatus)
 	  WinSetWindowText(hwndStatus,
-			   GetPString(IDS_INTERNALVIEWEREDITORTITLETEXT));
+			   (CHAR *) GetPString(IDS_INTERNALVIEWEREDITORTITLETEXT));
       }
     }
     return 0;
@@ -476,29 +477,29 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	size = sizeof(BOOL);
 	PrfQueryProfileData(fmprof,
-			    FM3Str, "MLEWrap", (PVOID) & vw->fWrap, &size);
+			    (CHAR *) (CHAR *) FM3Str, "MLEWrap", (PVOID) & vw->fWrap, &size);
 	size = sizeof(BOOL);
 	PrfQueryProfileData(fmprof,
-			    FM3Str,
+			    (CHAR *) FM3Str,
 			    "MLEstriptrail",
 			    (PVOID) & vw->fStripTrail, &size);
 	size = sizeof(BOOL);
 	PrfQueryProfileData(fmprof,
-			    FM3Str,
+			    (CHAR *) FM3Str,
 			    "MLEstriptraillines",
 			    (PVOID) & vw->fStripTrailLines, &size);
 	size = sizeof(BOOL);
 	PrfQueryProfileData(fmprof,
-			    FM3Str,
+			    (CHAR *) FM3Str,
 			    "MLEInsensitve",
 			    (PVOID) & vw->srch.fInsensitive, &size);
 	size = sizeof(INT);
 	PrfQueryProfileData(fmprof,
-			    FM3Str,
+			    (CHAR *) FM3Str,
 			    "MLEExpandTabs", (PVOID) & vw->ExpandTabs, &size);
 	size = sizeof(INT);
 	PrfQueryProfileData(fmprof,
-			    FM3Str,
+			    (CHAR *) FM3Str,
 			    "MLETabStops", (PVOID) & vw->TabStops, &size);
       }
       vw->accel = WinQueryAccelTable(vw->hab,
@@ -539,7 +540,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  HMQ hmq;
 
 	  if (!PrfQueryProfileData(fmprof,
-				   FM3Str,
+				   (CHAR *) FM3Str,
 				   "MLEFont",
 				   &vw->fattrs,
 				   &size) || size != sizeof(FATTRS)) {
@@ -570,12 +571,12 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  Firsttime = FALSE;
 	  size = sizeof(ULONG);
 	  PrfQueryProfileData(fmprof,
-			      FM3Str,
+			      (CHAR *) FM3Str,
 			      "MLEBackgroundcolor",
 			      &Colors[COLORS_BACKGROUND], &size);
 	  size = sizeof(ULONG);
 	  PrfQueryProfileData(fmprof,
-			      FM3Str,
+			      (CHAR *) FM3Str,
 			      "MLEForegroundcolor",
 			      &Colors[COLORS_FOREGROUND], &size);
 	}
@@ -751,7 +752,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     MPFROMLONG(standardcolors[Colors[COLORS_FOREGROUND]]),
 		     MPVOID);
 	  PrfWriteProfileData(fmprof,
-			      FM3Str,
+			      (CHAR *) FM3Str,
 			      "MLEForegroundcolor",
 			      &Colors[COLORS_FOREGROUND], sizeof(LONG));
 	  WinSendMsg(hwndMLE,
@@ -759,7 +760,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     MPFROMLONG(standardcolors[Colors[COLORS_BACKGROUND]]),
 		     MPVOID);
 	  PrfWriteProfileData(fmprof,
-			      FM3Str,
+			      (CHAR *) FM3Str,
 			      "MLEBackgroundcolor",
 			      &Colors[COLORS_BACKGROUND], sizeof(LONG));
 	}
@@ -777,7 +778,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       vw->fattrs.usCodePage = (USHORT) vw->cp;
       WinSendMsg(hwndMLE, MLM_SETFONT, MPFROMP(&vw->fattrs), MPVOID);
       PrfWriteProfileData(fmprof,
-			  FM3Str, "MLEFont", &vw->fattrs, sizeof(FATTRS));
+			  (CHAR *) FM3Str, "MLEFont", &vw->fattrs, sizeof(FATTRS));
       break;
 
     case MLE_NEWFILE:
@@ -1005,7 +1006,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinSendMsg(hwndMLE,
 		     MLM_SETTABSTOP, MPFROMLONG(vw->TabStops), MPVOID);
 	  PrfWriteProfileData(fmprof,
-			      FM3Str,
+			      (CHAR *) FM3Str,
 			      "MLETabStops", &vw->TabStops, sizeof(INT));
 	}
       }
@@ -1030,7 +1031,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  tempbool = (vw->ExpandTabs != 0);
 	  SetMenuCheck(vw->hwndMenu, MLE_EXPANDTABS, &tempbool, FALSE, NULL);
 	  PrfWriteProfileData(fmprof,
-			      FM3Str,
+			      (CHAR *) FM3Str,
 			      "MLEExpandTabs", &vw->ExpandTabs, sizeof(INT));
 	}
       }
@@ -1142,7 +1143,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case MLE_SETFONT:			/* select a new font */
       SetMLEFont(hwndMLE, &vw->fattrs, 0);
       PrfWriteProfileData(fmprof,
-			  FM3Str, "MLEFont", &vw->fattrs, sizeof(FATTRS));
+			  (CHAR *) FM3Str, "MLEFont", &vw->fattrs, sizeof(FATTRS));
       break;
 
     case MLE_SELECTALL:

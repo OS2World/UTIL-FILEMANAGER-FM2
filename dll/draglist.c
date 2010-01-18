@@ -6,7 +6,7 @@
   Drag drop support
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2008 Steven H.Levine
+  Copyright (c) 2001, 2010 Steven H.Levine
 
   16 Oct 02 SHL DoFileDrag: don't free stack
   26 Jul 06 SHL Check more run time errors
@@ -24,6 +24,7 @@
   08 Mar 09 GKY Additional strings move to PCSZs
   12 Sep 09 GKY Fix (probably spurrious) error message generated on drag of
                 items from a pmmail mail message (PMERR_INVALID_PARAMETER)
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -182,7 +183,7 @@ HWND DragOne(HWND hwndCnr, HWND hwndObj, CHAR * filename, BOOL moveok)
       // DItem.hwndItem = hwndCnr;
       DItem.ulItemID = 1;
       DItem.hstrType = DrgAddStrHandle(DRT_UNKNOWN);
-      DItem.hstrRMF = DrgAddStrHandle(DRMDRFLIST);
+      DItem.hstrRMF = DrgAddStrHandle((CHAR *) DRMDRFLIST);
       DItem.hstrContainerName = DrgAddStrHandle(szDir);
       DItem.hstrSourceName = DrgAddStrHandle(szFile);
       if (!DItem.hstrSourceName)
@@ -363,7 +364,7 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
       pDItem->ulItemID = (ULONG) pci;
       pDItem->hstrType = DrgAddStrHandle(DRT_UNKNOWN);
       ok = pDItem->hstrType;
-      pDItem->hstrRMF = DrgAddStrHandle(DRMDRFLIST);
+      pDItem->hstrRMF = DrgAddStrHandle((CHAR *) DRMDRFLIST);
       ok = ok && pDItem->hstrRMF;
       pDItem->hstrContainerName = DrgAddStrHandle(szBuffer);
       ok = ok && pDItem->hstrContainerName;
@@ -439,7 +440,7 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
       pDItem->ulItemID = (ULONG) pci;
       pDItem->hstrType = DrgAddStrHandle(DRT_UNKNOWN);
       ok = pDItem->hstrType;
-      pDItem->hstrRMF = DrgAddStrHandle(DRMDRFOS2FILE);
+      pDItem->hstrRMF = DrgAddStrHandle((CHAR *) DRMDRFOS2FILE);
       ok = ok && pDItem->hstrRMF;
       pDItem->hstrContainerName = DrgAddStrHandle(arcfile);
       ok = ok && pDItem->hstrContainerName;
@@ -478,7 +479,7 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
 	pDItem->ulItemID = ulSelect++;
 	pDItem->hstrType = DrgAddStrHandle(DRT_UNKNOWN);
 	ok = ok && pDItem->hstrType;
-	pDItem->hstrRMF = DrgAddStrHandle(DRMDRFFM2ARC);
+	pDItem->hstrRMF = DrgAddStrHandle((CHAR *) DRMDRFFM2ARC);
 	ok = ok && pDItem->hstrRMF;
 	pDItem->hstrContainerName = DrgAddStrHandle(arcfile);
 	ok = ok && pDItem->hstrContainerName;
@@ -690,7 +691,7 @@ HWND DragList(HWND hwnd, HWND hwndObj, CHAR ** list, BOOL moveok)
       pDItem->ulItemID = (ULONG) ulSelect;
       pDItem->hstrType = DrgAddStrHandle(DRT_UNKNOWN);
       ok = pDItem->hstrType;
-      pDItem->hstrRMF = DrgAddStrHandle(DRMDRFLIST);
+      pDItem->hstrRMF = DrgAddStrHandle((CHAR *) DRMDRFLIST);
       ok = ok && pDItem->hstrRMF;
       pDItem->hstrContainerName = DrgAddStrHandle(szBuffer);
       ok = ok && pDItem->hstrContainerName;

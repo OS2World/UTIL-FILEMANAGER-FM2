@@ -6,7 +6,7 @@
   See all matching files
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2009 Steven H. Levine
+  Copyright (c) 2001, 2010 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   25 Nov 03 SHL StartSeeAll: avoid forgetting startpath
@@ -48,6 +48,7 @@
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -784,7 +785,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		INT cntr;
 
 		WinSetWindowText(WinWindowFromID(hwndFrame, SEEALL_STATUS),
-				 GetPString(IDS_FITTINGTEXT));
+				 (CHAR *) GetPString(IDS_FITTINGTEXT));
 		DosError(FERR_DISABLEHARDERR);
 		if (!DosQueryFSInfo(toupper(*newname) - '@',
 				    FSIL_ALLOC, &fsa, sizeof(fsa))) {
@@ -810,7 +811,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    }
 		    WinSetWindowText(WinWindowFromID(hwndFrame,
 						     SEEALL_STATUS),
-				     GetPString(IDS_COULDNTFITTEXT));
+				     (CHAR *) GetPString(IDS_COULDNTFITTEXT));
 		  }
 		}
 		rc = saymsg(MB_ABORTRETRYIGNORE | MB_ICONEXCLAMATION,
@@ -1206,10 +1207,10 @@ static VOID MakeSeeObjWinThread(VOID * args)
       if (hmq2) {
 	DosError(FERR_DISABLEHARDERR);
 	WinRegisterClass(hab2,
-			 WC_OBJECTWINDOW,
+			 (CHAR *) WC_OBJECTWINDOW,
 			 SeeObjWndProc, 0, sizeof(PVOID));
 	hwndObj = WinCreateWindow(HWND_OBJECT,
-				  WC_OBJECTWINDOW,
+				  (CHAR *) WC_OBJECTWINDOW,
 				  (PSZ) NULL,
 				  0,
 				  0,
@@ -2634,7 +2635,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       {
 	if (!DosCreateMutexSem(NULL, &pAD->hmtxScan, 0, FALSE)) {
 	  pAD->hwndStatus = WinCreateWindow(hwndFrame,
-					    WC_SEESTATUS,
+					    (CHAR *) WC_SEESTATUS,
 					    NullStr,
 					    WS_VISIBLE | SS_TEXT |
 					    DT_LEFT | DT_VCENTER,
@@ -3134,7 +3135,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (!list)
 	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
-	WinSetWindowText(pAD->hwndStatus, GetPString(IDS_DRAGGINGFILESTEXT));
+	WinSetWindowText(pAD->hwndStatus, (CHAR *) GetPString(IDS_DRAGGINGFILESTEXT));
 	DragList(hwnd, (HWND) 0, list, TRUE);
 	FreeList(list);
 	PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
@@ -4396,8 +4397,8 @@ HWND StartSeeAll(HWND hwndParent, BOOL standalone,      // called by applet
   hwndFrame = WinCreateStdWindow(hwndParent,
 				 WS_VISIBLE,
 				 &FrameFlags,
-				 WC_SEEALL,
-				 GetPString(IDS_SEEALLTITLETEXT),
+				 (CHAR *) WC_SEEALL,
+				 (CHAR *) GetPString(IDS_SEEALLTITLETEXT),
 				 WS_VISIBLE | fwsAnimate,
 				 FM3ModHandle, SEEALL_FRAME, &hwndClient);
   if (hwndFrame) {

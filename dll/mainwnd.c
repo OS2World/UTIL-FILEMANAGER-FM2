@@ -6,7 +6,7 @@
   fm/2 main window
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2009 Steven H. Levine
+  Copyright (c) 2001, 2010 Steven H. Levine
 
   11 Jun 02 SHL Drop obsolete xor code
   16 Oct 02 SHL Handle large partitions
@@ -103,6 +103,7 @@
                 miniapp; FM3Str should be used for setting only relavent to FM/2 or that
                 aren't user settable; realappname should be used for setting applicable to
                 one or more miniapp but not to FM/2
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -389,7 +390,7 @@ VOID MakeMainObjWin(VOID * args)
 		       (PSZ) WC_OBJECTWINDOW,
 		       MainObjectWndProc, 0, sizeof(PVOID));
       MainObjectHwnd = WinCreateWindow(HWND_OBJECT,
-				       WC_OBJECTWINDOW,
+				       (CHAR *) WC_OBJECTWINDOW,
 				       (PSZ) NULL,
 				       0,
 				       0L,
@@ -851,19 +852,19 @@ static MRESULT EXPENTRY DropDownListProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	case EN_SETFOCUS:
 	  switch (id) {
 	  case MAIN_CMDLIST:
-	    WinSetWindowText(hwndStatus2, GetPString(IDS_CMDLISTHELP));
+	    WinSetWindowText(hwndStatus2, (CHAR *) GetPString(IDS_CMDLISTHELP));
 	    break;
 	  case MAIN_SETUPLIST:
-	    WinSetWindowText(hwndStatus2, GetPString(IDS_SETUPLISTHELP));
+	    WinSetWindowText(hwndStatus2, (CHAR *) GetPString(IDS_SETUPLISTHELP));
 	    break;
 	  case MAIN_USERLIST:
-	    WinSetWindowText(hwndStatus2, GetPString(IDS_USERLISTHELP));
+	    WinSetWindowText(hwndStatus2, (CHAR *) GetPString(IDS_USERLISTHELP));
 	    break;
 	  case MAIN_DRIVELIST:
-	    WinSetWindowText(hwndStatus2, GetPString(IDS_DRIVELISTHELP));
+	    WinSetWindowText(hwndStatus2, (CHAR *) GetPString(IDS_DRIVELISTHELP));
 	    break;
 	  case MAIN_BUTTONLIST:
-	    WinSetWindowText(hwndStatus2, GetPString(IDS_BUTTONLISTHELP));
+	    WinSetWindowText(hwndStatus2, (CHAR *) GetPString(IDS_BUTTONLISTHELP));
 	    break;
 	  default:
 	    break;
@@ -1001,8 +1002,8 @@ VOID MakeBubble(HWND hwnd, BOOL above, PCSZ help)
   }
 
   hwndBubble = WinCreateWindow(HWND_DESKTOP,
-			       WC_BUBBLE,
-			       help,
+			       (CHAR *) WC_BUBBLE,
+			       (CHAR *) help,
 			       WS_CLIPSIBLINGS | SS_TEXT |
 			       DT_CENTER | DT_VCENTER,
 			       0,
@@ -1470,7 +1471,7 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	pDItem = DrgQueryDragitemPtr(pDInfo,    /* Access DRAGITEM */
 				     0);        /* Index to DRAGITEM */
 	if (DrgVerifyRMF(pDItem,        /* Check valid rendering */
-			 DRM_OS2FILE,   /* mechanisms and data */
+			 (CHAR *) DRM_OS2FILE,   /* mechanisms and data */
 			 NULL)) {       /* formats */
 	  if (!(tool->flags & T_EMPHASIZED)) {
 	    tool->flags |= T_EMPHASIZED;
@@ -1571,7 +1572,7 @@ static VOID BuildTools(HWND hwndT, BOOL resize)
     if (!fTextTools) {
       if (!(tool->flags & T_MYICON)) {
 	hwndTool = WinCreateWindow(hwndT,
-				   WC_TOOLBUTTONS,
+				   (CHAR *) WC_TOOLBUTTONS,
 				   s,
 				   BS_NOPOINTERFOCUS |
 				   BS_BITMAP | BS_PUSHBUTTON,
@@ -1590,7 +1591,7 @@ static VOID BuildTools(HWND hwndT, BOOL resize)
 	  btc.cb = sizeof(btc);
 	  btc.hImage = hbm;
 	  hwndTool = WinCreateWindow(hwndT,
-				     WC_TOOLBUTTONS,
+				     (CHAR *) WC_TOOLBUTTONS,
 				     NullStr,
 				     BS_NOPOINTERFOCUS |
 				     BS_BITMAP | BS_PUSHBUTTON,
@@ -1608,7 +1609,7 @@ static VOID BuildTools(HWND hwndT, BOOL resize)
     }
     if (!hwndTool) {
       hwndTool = WinCreateWindow(hwndT,
-				 WC_TOOLBUTTONS,
+				 (CHAR *) WC_TOOLBUTTONS,
 				 (!tool->text && tool->id >= IDM_COMMANDSTART
 				  && tool->id <
 				  IDM_QUICKTOOLSTART) ? command_title(tool->id -
@@ -1624,7 +1625,7 @@ static VOID BuildTools(HWND hwndT, BOOL resize)
     }
     if (fToolTitles && !fTextTools) {
       hwndTool = WinCreateWindow(hwndT,
-				 WC_STATIC,
+				 (CHAR *) WC_STATIC,
 				 tool->text,
 				 SS_TEXT | DT_LEFT | DT_VCENTER,
 				 ctrlxpos,
@@ -1650,7 +1651,7 @@ static VOID BuildTools(HWND hwndT, BOOL resize)
   }                                     // while tool
 
   hwndTool = WinCreateWindow(hwndT,
-			     WC_BUTTON,
+			     (CHAR *) WC_BUTTON,
 			     "#6010",
 			     BS_NOPOINTERFOCUS |
 			     BS_BITMAP | BS_PUSHBUTTON,
@@ -1662,7 +1663,7 @@ static VOID BuildTools(HWND hwndT, BOOL resize)
     Win_Error(hwndT, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      PCSZ_WINCREATEWINDOW);
   hwndTool =
-    WinCreateWindow(hwndT, WC_BUTTON, "#6011",
+    WinCreateWindow(hwndT, (CHAR *) WC_BUTTON, "#6011",
 		    BS_NOPOINTERFOCUS | BS_BITMAP | BS_PUSHBUTTON, 1, 4, 14,
 		    13, hwndT, HWND_TOP, IDM_TOOLRIGHT, NULL, NULL);
   if (!hwndTool)
@@ -2354,7 +2355,7 @@ VOID BuildDriveBarButtons(HWND hwndT)
     for (x = 0; x < 26; x++) {
       if ((ulDriveMap & (1L << x)) && !(driveflags[x] & DRIVE_IGNORE)) {
 	hwndB = WinCreateWindow(hwndT,
-				WC_DRIVEBUTTONS,
+				(CHAR *) WC_DRIVEBUTTONS,
 				0,
 				BS_NOPOINTERFOCUS | BS_USERBUTTON,
 				0,
@@ -2371,7 +2372,7 @@ VOID BuildDriveBarButtons(HWND hwndT)
       }
     }                                   // for
     hwndB = WinCreateWindow(hwndT,
-			    WC_DRIVEBUTTONS,
+			    (CHAR *) WC_DRIVEBUTTONS,
 			    "#7001",
 			    BS_NOPOINTERFOCUS | BS_BITMAP | BS_PUSHBUTTON,
 			    0,
@@ -2383,7 +2384,7 @@ VOID BuildDriveBarButtons(HWND hwndT)
     Win_Error(hwndT, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      PCSZ_WINCREATEWINDOW);
   hwndB = WinCreateWindow(hwndT,
-			  WC_DRIVEBUTTONS,
+			  (CHAR *) WC_DRIVEBUTTONS,
 			  "#7000",
 			  BS_NOPOINTERFOCUS | BS_BITMAP | BS_PUSHBUTTON,
 			  0,
@@ -2621,7 +2622,7 @@ MRESULT EXPENTRY StatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	TopWindowName(hwndMain, (HWND) 0, directory);
 	WinQueryWindowPos(hwnd, &swp);
 	hwndB = WinCreateWindow(hwnd,
-				WC_BUTTON,
+				(CHAR *) WC_BUTTON,
 				"+",
 				WS_VISIBLE | BS_PUSHBUTTON |
 				BS_NOPOINTERFOCUS,
@@ -2634,7 +2635,7 @@ MRESULT EXPENTRY StatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
 		    PCSZ_WINCREATEWINDOW);
 	hwndE = WinCreateWindow(hwnd,
-				WC_ENTRYFIELD,
+				(CHAR *) WC_ENTRYFIELD,
 				NULL,
 				WS_VISIBLE | ES_AUTOSCROLL,
 				0,
@@ -2654,7 +2655,7 @@ MRESULT EXPENTRY StatusProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (*lastcmd)
 	  WinSetWindowText(hwndE, lastcmd);
 	else
-	  WinSetWindowText(hwndE, GetPString(IDS_HELPCMDTEXT));
+	  WinSetWindowText(hwndE, (CHAR *) GetPString(IDS_HELPCMDTEXT));
 	oldproce = WinSubclassWindow(hwndE, (PFNWP) CommandLineProc);
 	if (oldproce)
 	  WinSetWindowPtr(hwndE, QWL_USER, (PVOID) oldproce);
@@ -3055,14 +3056,14 @@ INT SaveDirCnrState(HWND hwndClient, PCSZ pszStateName)
 
   if (*lasttoolbar) {
     sprintf(szKey, "%sToolbar", szPrefix);
-    PrfWriteProfileString(fmprof, FM3Str, szKey, lasttoolbar);
+    PrfWriteProfileString(fmprof, (CHAR *) (CHAR *) FM3Str, szKey, lasttoolbar);
   }
 
   if (!fIsShutDownState) {
     sprintf(szKey, "%sTargetDir", szPrefix);
-    PrfWriteProfileString(fmprof, FM3Str, szKey, targetdir);
+    PrfWriteProfileString(fmprof, (CHAR *) FM3Str, szKey, targetdir);
     sprintf(szKey, "%sVersion", szPrefix);
-    PrfWriteProfileString(fmprof, FM3Str, szKey, "3.16");
+    PrfWriteProfileString(fmprof, (CHAR *) FM3Str, szKey, "3.16");
   }
 
   henum = WinBeginEnumWindows(hwndClient);
@@ -3086,15 +3087,15 @@ INT SaveDirCnrState(HWND hwndClient, PCSZ pszStateName)
 	    strcat(szKey, ".");
 	    eos = &szKey[strlen(szKey)];
 	    strcpy(eos, "Pos");
-	    PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & swp,
+	    PrfWriteProfileData(fmprof, (CHAR *) FM3Str, szKey, (PVOID) & swp,
 				sizeof(SWP));
 	    dcd = WinQueryWindowPtr(WinWindowFromID(hwndC, DIR_CNR), QWL_USER);
 	    if (dcd) {
 	      strcpy(eos, "Sort");
-	      PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->sortFlags,
+	      PrfWriteProfileData(fmprof, (CHAR *) FM3Str, szKey, (PVOID) & dcd->sortFlags,
 				  sizeof(INT));
 	      strcpy(eos, "Filter");
-	      PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) & dcd->mask,
+	      PrfWriteProfileData(fmprof, (CHAR *) FM3Str, szKey, (PVOID) & dcd->mask,
 				  sizeof(MASK));
 	      strcpy(eos, "View");
 	      flWindowAttr = dcd->flWindowAttr;
@@ -3113,13 +3114,13 @@ INT SaveDirCnrState(HWND hwndClient, PCSZ pszStateName)
 		else
 		  flWindowAttr |= CV_NAME;
 	      }
-	      PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) &flWindowAttr,
+	      PrfWriteProfileData(fmprof, (CHAR *) FM3Str, szKey, (PVOID) &flWindowAttr,
 				  sizeof(ULONG));
 	      WriteDetailsSwitches(szKeyBase, &dcd->ds, TRUE);
 	      SavePresParams(hwndDir, szKeyBase);
 	    }
 	    strcpy(eos, "Dir");
-	    PrfWriteProfileString(fmprof, FM3Str, szKey, szDir);
+	    PrfWriteProfileString(fmprof, (CHAR *) FM3Str, szKey, szDir);
 	    numsaves++;
 	  }
 	}
@@ -3129,16 +3130,16 @@ INT SaveDirCnrState(HWND hwndClient, PCSZ pszStateName)
   WinEndEnumWindows(henum);
 
   sprintf(szKey, "%sNumDirsLastTime", szPrefix);
-  if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) &previous_numsaves, &ulTemp)) {
+  if (PrfQueryProfileData(fmprof, (CHAR *) FM3Str, szKey, (PVOID) &previous_numsaves, &ulTemp)) {
     ULONG size = 0;
 
     sprintf(szKey, "%sVersion", szPrefix);
-    PrfQueryProfileSize(fmprof, FM3Str, szKey, &size);
+    PrfQueryProfileSize(fmprof, (CHAR *) FM3Str, szKey, &size);
     if (!size && fSaveState) {
       for (ulTemp = 0; ulTemp < previous_numsaves; ulTemp++)
 	RemoveOldCnrSwitches(szPrefix, ulTemp);
        sprintf(szKey, "%sVersion", szPrefix);
-       PrfWriteProfileString(fmprof, FM3Str, szKey, "3.16");
+       PrfWriteProfileString(fmprof, (CHAR *) FM3Str, szKey, "3.16");
       }
     for (ulTemp = numsaves; ulTemp < previous_numsaves; ulTemp++) {
       sprintf(szKeyBase, "%sDirCnr.%lu", szPrefix, ulTemp);
@@ -3147,17 +3148,17 @@ INT SaveDirCnrState(HWND hwndClient, PCSZ pszStateName)
   }
   sprintf(szKey, "%sNumDirsLastTime", szPrefix);
   if (numsaves) {
-    PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) &numsaves, sizeof(ULONG));
+    PrfWriteProfileData(fmprof, (CHAR *) FM3Str, szKey, (PVOID) &numsaves, sizeof(ULONG));
     WinQueryWindowPos(WinQueryWindow(hwndClient, QW_PARENT), &swp);
     sprintf(szKey, "%sMySizeLastTime", szPrefix);
-    PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) &swp, sizeof(SWP));
+    PrfWriteProfileData(fmprof, (CHAR *) FM3Str, szKey, (PVOID) &swp, sizeof(SWP));
     if (WinQueryWindowPos(hwndTree, &swp)) {
       sprintf(szKey, "%sLastTreePos", szPrefix);
-      PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) &swp, sizeof(SWP));
+      PrfWriteProfileData(fmprof, (CHAR *) FM3Str, szKey, (PVOID) &swp, sizeof(SWP));
     }
   }
   else if (fIsShutDownState) {
-    PrfWriteProfileData(fmprof, FM3Str, szKey, (PVOID) &numsaves, sizeof(ULONG));
+    PrfWriteProfileData(fmprof, (CHAR *) FM3Str, szKey, (PVOID) &numsaves, sizeof(ULONG));
   }
   return numsaves;
 }
@@ -3238,27 +3239,27 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
   {
     if (fToolsChanged)
       save_tools(NULL);
-    PrfQueryProfileString(fmprof, FM3Str, szKey, NULL, lasttoolbar, sizeof(lasttoolbar));
-    PrfWriteProfileString(fmprof, FM3Str, "LastToolbar", lasttoolbar);
+    PrfQueryProfileString(fmprof, (CHAR *) FM3Str, szKey, NULL, lasttoolbar, sizeof(lasttoolbar));
+    PrfWriteProfileString(fmprof, (CHAR *) FM3Str, "LastToolbar", lasttoolbar);
     load_tools(NULL);
     PostMsg(hwndToolback, UM_SETUP2, MPVOID, MPVOID);
   }
   sprintf(szKey, "%sTargetDir", szPrefix);
   {
-    PrfQueryProfileString(fmprof, FM3Str, szKey, NULL, targetdir, sizeof(targetdir));
-    PrfWriteProfileString(fmprof, FM3Str, "TargetDir", targetdir);
+    PrfQueryProfileString(fmprof, (CHAR *) FM3Str, szKey, NULL, targetdir, sizeof(targetdir));
+    PrfWriteProfileString(fmprof, (CHAR *) FM3Str, "TargetDir", targetdir);
     SetTargetDir(NULLHANDLE, TRUE);
   }
   size = sizeof(SWP);
   sprintf(szKey, "%sMySizeLastTime", szPrefix);
-  if (!PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) &swpO, &size) ||
+  if (!PrfQueryProfileData(fmprof, (CHAR *) FM3Str, szKey, (PVOID) &swpO, &size) ||
       size != sizeof(SWP) || !swp.cx || !swp.cy)
   {
     WinQueryWindowPos(WinQueryWindow(hwndClient, QW_PARENT), &swpO);
   }
   // If restoring internally saved state, forget info
   if (fDeleteState)
-    PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
+    PrfWriteProfileData(fmprof, (CHAR *) FM3Str, szKey, NULL, 0L);
   WinQueryWindowPos(WinQueryWindow(hwndClient, QW_PARENT), &swpN);
   if (swpN.fl & (SWP_MINIMIZE | SWP_HIDE))
     swpN = swpO;
@@ -3266,9 +3267,9 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
   ytrans = ((double)swpO.cy * 100.0) / (double)swpN.cy;
   size = sizeof(SWP);
   sprintf(szKey, "%sLastTreePos", szPrefix);
-  if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) &swp, &size)) {
+  if (PrfQueryProfileData(fmprof, (CHAR *) FM3Str, szKey, (PVOID) &swp, &size)) {
     if (fDeleteState)
-      PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
+      PrfWriteProfileData(fmprof, (CHAR *) FM3Str, szKey, NULL, 0L);
     swp.hwnd = hwndTree;
     TransformSwp(&swp, xtrans, ytrans);
     if (!fFreeTree) {
@@ -3297,9 +3298,9 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
   }
   sprintf(szKey, "%sNumDirsLastTime", szPrefix);
   size = sizeof(ULONG);
-  if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) &numsaves, &size)) {
+  if (PrfQueryProfileData(fmprof, (CHAR *) FM3Str, szKey, (PVOID) &numsaves, &size)) {
     if (fDeleteState)
-      PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
+      PrfWriteProfileData(fmprof, (CHAR *) FM3Str, szKey, NULL, 0L);
     for (x = numsaves - 1; x >= 0; x--) {
       CHAR *eos = szKey;
 
@@ -3309,10 +3310,10 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
       eos = &szKey[strlen(szKey)];
       strcpy(eos, "Pos");
       size = sizeof(SWP);
-      if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) &swp, &size)) {
+      if (PrfQueryProfileData(fmprof, (CHAR *) FM3Str, szKey, (PVOID) &swp, &size)) {
 	strcpy(eos, "Dir"); ;
 	size = sizeof(szDir);
-	if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) szDir, &size)) {
+	if (PrfQueryProfileData(fmprof, (CHAR *) FM3Str, szKey, (PVOID) szDir, &size)) {
 	  // If restoring shutdown state and drive marked no prescan
 	  // bypass window restore
 	  if (fIsShutDownState &&
@@ -3331,7 +3332,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 	      HWND hwndCnr = WinWindowFromID(hwndC, DIR_CNR);
 	      if (!hwndPPSave) {
 		hwndPPSave = WinCreateWindow(hwndCnr,         // Create a window (used to save default presparams)
-					     WC_CONTAINER,
+					     (CHAR *) WC_CONTAINER,
 					     NULL,
 					     CCS_AUTOPOSITION | CCS_MINIICONS |
 					     CCS_MINIRECORDCORE | ulCnrType,
@@ -3361,14 +3362,14 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 		dcd->ds.detailslwtime   = localdcd.ds.detailslwtime  ;
 		strcpy(eos, "Sort");
 		size = sizeof(INT);
-		if (PrfQueryProfileData(fmprof,	FM3Str,	szKey, (PVOID) &dcd->sortFlags,
+		if (PrfQueryProfileData(fmprof,	(CHAR *) FM3Str,	szKey, (PVOID) &dcd->sortFlags,
 					&size)) {
 		  if (!dcd->sortFlags)
 		    dcd->sortFlags = SORT_PATHNAME;
 		}
 		size = sizeof(MASK);
 		strcpy(eos, "Filter");
-		if (PrfQueryProfileData(fmprof, FM3Str,	szKey, (PVOID) &dcd->mask, &size)) {
+		if (PrfQueryProfileData(fmprof, (CHAR *) FM3Str,	szKey, (PVOID) &dcd->mask, &size)) {
 		  if (*dcd->mask.szMask)
 		    WinSendMsg(WinWindowFromID(hwndC, DIR_CNR),
 			       UM_FILTER, MPFROMP(dcd->mask.szMask), MPVOID);
@@ -3377,7 +3378,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 		strcpy(eos, "View");
 		if (!noview) {
 		  size = sizeof(ULONG);
-		  if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) &dcd->flWindowAttr,
+		  if (PrfQueryProfileData(fmprof, (CHAR *) FM3Str, szKey, (PVOID) &dcd->flWindowAttr,
 					  &size)) {
 
 		    CNRINFO cnri;
@@ -4695,7 +4696,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		saymsg(MB_ENTER | MB_ICONASTERISK, hwnd,
 		       GetPString(IDS_WARNINGTEXT),
 		       GetPString(IDS_STATEADDFAILEDTEXT), szStateName);      // 15 Apr 07 SHL failed
-		WinSetWindowText(hwndStatelist, GetPString(IDS_STATETEXT));
+		WinSetWindowText(hwndStatelist, (CHAR *) GetPString(IDS_STATETEXT));
 	      }
 	    }
 	    else {
@@ -4703,7 +4704,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     hwnd,
 		     GetPString(IDS_WARNINGTEXT),
 		     GetPString(IDS_STATEDATASAVEFAILED));
-	      WinSetWindowText(hwndStatelist, GetPString(IDS_STATETEXT));
+	      WinSetWindowText(hwndStatelist, (CHAR *) GetPString(IDS_STATETEXT));
 	    }
 	  }
 	  else {
@@ -4716,7 +4717,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      save_setups();
 	    sprintf(szKey, "%s.NumDirsLastTime", szStateName);
 	    size = sizeof(ULONG);
-	    if (!PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) &numsaves, &size)) {
+	    if (!PrfQueryProfileData(fmprof, (CHAR *) FM3Str, szKey, (PVOID) &numsaves, &size)) {
 	      saymsg(MB_ENTER | MB_ICONASTERISK, hwnd,
 		     GetPString(IDS_WARNINGTEXT),
 		     GetPString(IDS_DOESNTEXISTTEXT), szStateName);
@@ -4724,13 +4725,13 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    else if (!size)
 	      Runtime_Error(pszSrcFile, __LINE__, NULL);
 	    else {
-	      PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
+	      PrfWriteProfileData(fmprof, (CHAR *) FM3Str, szKey, NULL, 0L);
 	      for (x = 0; x < numsaves; x++) {
 		sprintf(szKeyBase, "%s.DirCnr.%lu", szStateName, x);
 		RemoveCnrSwitches(szKeyBase, szStateName);
 		size = 0;
 		sprintf(szKey, "%sVersion", szStateName);
-		if (PrfQueryProfileSize(fmprof, FM3Str, szKey, &size) && size)
+		if (PrfQueryProfileSize(fmprof, (CHAR *) FM3Str, szKey, &size) && size)
 		  RemoveOldCnrSwitches(szStateName, x);
 	      }
 	    }
@@ -5051,7 +5052,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       fComments = FALSE;
     else
       fComments = TRUE;
-    PrfWriteProfileData(fmprof, FM3Str, "Comments", &fComments, sizeof(BOOL));
+    PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Comments", &fComments, sizeof(BOOL));
     WinSetWindowText((fComments) ? hwndAutoview : hwndAutoMLE, NullStr);
     goto AutoChange;
 
@@ -5123,7 +5124,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       PostMsg(WinQueryWindow(hwnd, QW_PARENT), WM_UPDATEFRAME,
 	      MPFROMLONG(FCF_MENU), MPVOID);
-      PrfWriteProfileData(fmprof, FM3Str, "MenuInvisible",
+      PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "MenuInvisible",
 			  &MenuInvisible, sizeof(BOOL));
     }
     break;
@@ -5397,7 +5398,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  else {
 	    strcpy(lasttoolbar,
 		   quicktool[SHORT1FROMMP(mp1) - IDM_QUICKTOOLSTART - 1]);
-	    PrfWriteProfileString(fmprof, FM3Str, "LastToolbar", lasttoolbar);
+	    PrfWriteProfileString(fmprof, (CHAR *) FM3Str, "LastToolbar", lasttoolbar);
 	  }
 	  PostMsg(hwndToolback, UM_SETUP2, MPVOID, MPVOID);
 	}
@@ -5463,7 +5464,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
     CommonCreateMainChildren(hwnd, &swp);
 
     if (!WinCreateWindow(hwndFrame,
-			 WC_BUTTON,
+			 (CHAR *) WC_BUTTON,
 			 "I",
 			 WS_VISIBLE | BS_PUSHBUTTON | BS_NOPOINTERFOCUS,
 			 ((swp.cx -
@@ -5495,7 +5496,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
     }
 
     hwndTmp = WinCreateWindow(hwndFrame,
-			      WC_BUTTON,
+			      (CHAR *) WC_BUTTON,
 			      "#1019",
 			      WS_VISIBLE | BS_PUSHBUTTON | BS_NOPOINTERFOCUS |
 			      BS_BITMAP,
@@ -5508,7 +5509,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
 		PCSZ_WINCREATEWINDOW);
 
     hwndTmp = WinCreateWindow(hwndFrame,
-			      WC_BUTTON,
+			      (CHAR *) WC_BUTTON,
 			      "#3062",
 			      WS_VISIBLE | BS_PUSHBUTTON | BS_NOPOINTERFOCUS |
 			      BS_BITMAP,
@@ -5521,7 +5522,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
 		PCSZ_WINCREATEWINDOW);
 
     hwndUserlist = WinCreateWindow(hwndFrame,
-				   WC_COMBOBOX,
+				   (CHAR *) WC_COMBOBOX,
 				   (PSZ) NULL,
 				   WS_VISIBLE | CBS_DROPDOWN |
 				   LS_HORZSCROLL,
@@ -5540,7 +5541,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
       Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
 		PCSZ_WINCREATEWINDOW);
     hwndCmdlist = WinCreateWindow(hwndFrame,
-				  WC_COMBOBOX,
+				  (CHAR *) WC_COMBOBOX,
 				  (PSZ) NULL,
 				  WS_VISIBLE | CBS_DROPDOWN |
 				  LS_HORZSCROLL,
@@ -5558,9 +5559,9 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
     if (!hwndCmdlist)
       Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
 		PCSZ_WINCREATEWINDOW);
-    WinSetWindowText(hwndCmdlist, GetPString(IDS_COMMANDSTEXT));
+    WinSetWindowText(hwndCmdlist, (CHAR *) GetPString(IDS_COMMANDSTEXT));
     hwndStatelist = WinCreateWindow(hwndFrame,
-				    WC_COMBOBOX,
+				    (CHAR *) WC_COMBOBOX,
 				    (PSZ) NULL,
 				    WS_VISIBLE | CBS_DROPDOWN |
 				    LS_HORZSCROLL,
@@ -5580,7 +5581,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
 		PCSZ_WINCREATEWINDOW);
 
     hwndDrivelist = WinCreateWindow(hwndFrame,
-				    WC_COMBOBOX,
+				    (CHAR *) WC_COMBOBOX,
 				    (PSZ) NULL,
 				    //WS_VISIBLE |
 				    CBS_DROPDOWN,
@@ -5601,7 +5602,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
     SetPresParams(hwndDrivelist,
 		  NULL, NULL, NULL, FNT_10SYSTEMMONOTEXT);
     hwndButtonlist = WinCreateWindow(hwndFrame,
-				     WC_COMBOBOX,
+				     (CHAR *) WC_COMBOBOX,
 				     (PSZ) NULL,
 				     WS_VISIBLE | CBS_DROPDOWN |
 				     LS_HORZSCROLL,
@@ -5705,15 +5706,15 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
     SetSysMenu(hwndSysMenu);
 
     size = sizeof(BOOL);
-    if (PrfQueryProfileData(fmprof, FM3Str, "MenuInvisible", &temp, &size) &&
+    if (PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "MenuInvisible", &temp, &size) &&
         size && temp)
       WinSendMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_HIDEMENU, 0), MPVOID);
     size = sizeof(BOOL);
-    if (PrfQueryProfileData(fmprof, FM3Str, "FreeTree", &temp, &size) &&
+    if (PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "FreeTree", &temp, &size) &&
         size && temp)
       WinSendMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_FREETREE, 0), MPVOID);
     size = sizeof(BOOL);
-    if (PrfQueryProfileData(fmprof, FM3Str, "AutoTile", &temp, &size) &&
+    if (PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "AutoTile", &temp, &size) &&
         size && !temp)
       WinSendMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_AUTOTILE, 0), MPVOID);
     size = sizeof(BOOL);
@@ -5744,7 +5745,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
       else {
 	if (!fSaveState ||
 	    !PrfQueryProfileData(fmprof,
-				 FM3Str,
+				 (CHAR *) FM3Str,
 				 "LastTreePos",
 				 &swp, &size) || size != sizeof(SWP)) {
 
@@ -5754,7 +5755,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
 	    height = WinQuerySysValue(HWND_DESKTOP, SV_CYICON) * 2;
 	  size = sizeof(ratio);
 	  if (!PrfQueryProfileData(fmprof,
-				   FM3Str,
+				   (CHAR *) FM3Str,
 				   "TreeWindowRatio",
 				   (PVOID) & ratio,
 				   &size) || size < sizeof(ratio))
@@ -5945,7 +5946,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       WinQueryWindowPos(WinQueryWindow(hwnd, QW_PARENT), &swp);
       if (!(swp.fl & (SWP_HIDE | SWP_MINIMIZE))) {
-	WinStoreWindowPos(FM2Str,
+	WinStoreWindowPos((CHAR *) FM2Str,
 			  "MainWindowPos", WinQueryWindow(hwnd, QW_PARENT));
 	if (!fNoSaveState && fSaveState)
 	  SaveDirCnrState(hwnd, PCSZ_SHUTDOWNSTATE);
@@ -6083,7 +6084,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	DosFindClose(hDir);
 	priority_bumped();
       }
-      WinSetWindowText(hwndButtonlist, GetPString(IDS_TOOLBARTEXT));
+      WinSetWindowText(hwndButtonlist, (CHAR *) GetPString(IDS_TOOLBARTEXT));
     }
     return 0;
 
@@ -6190,7 +6191,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSendMsg(hwndUserlist, LM_INSERTITEM,
 		 MPFROM2SHORT(0, 0),
 		 MPFROMP(GetPString(IDS_NEWDIRECTORYTEXT)));
-      WinSetWindowText(hwndUserlist, GetPString(IDS_COMMONDIRTEXT));
+      WinSetWindowText(hwndUserlist, (CHAR *) GetPString(IDS_COMMONDIRTEXT));
     }
     return 0;
 
@@ -6264,7 +6265,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				UM_CONTAINERDIR, MPFROMP(path), MPVOID))
 		  strcpy(path, pFM2SaveDirectory);
 		if (!PMMkDir(hwnd, path, TRUE)) {
-		  WinSetWindowText(hwndUL, GetPString(IDS_COMMONDIRTEXT));
+		  WinSetWindowText(hwndUL, (CHAR *) GetPString(IDS_COMMONDIRTEXT));
 		  break;
 		}
 	      }
@@ -6294,9 +6295,9 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      strcat(path, PCSZ_DOTTLS);
 	      load_tools(path);
 	      PrfWriteProfileString(fmprof,
-				    FM3Str, "LastToolbar", lasttoolbar);
+				    (CHAR *) FM3Str, "LastToolbar", lasttoolbar);
 	      PostMsg(hwndToolback, UM_SETUP2, MPVOID, MPVOID);
-	      WinSetWindowText(hwndButtonlist, GetPString(IDS_TOOLBARTEXT));
+	      WinSetWindowText(hwndButtonlist, (CHAR *) GetPString(IDS_TOOLBARTEXT));
 	    }
 	    else if (SHORT1FROMMP(mp1) == MAIN_SETUPLIST) {
 	      CHAR szKey[80];
@@ -6307,7 +6308,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  break;
 	      sprintf(szKey, "%s.NumDirsLastTime", path);       // path is state name
 	      if (!PrfQueryProfileData(fmprof,
-				       FM3Str,
+				       (CHAR *) FM3Str,
 				       szKey,
 				       (PVOID)&numsaves,
 				       &size))
@@ -6365,7 +6366,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			   MPFROM2SHORT(atol(p), 0), //IDM_COMMANDSTART + sSelect, 0),
                            MPVOID);
               }
-                WinSetWindowText(hwndCmdlist, GetPString(IDS_COMMANDSTEXT));
+                WinSetWindowText(hwndCmdlist, (CHAR *) GetPString(IDS_COMMANDSTEXT));
 	    }
 	  }
 	} // CBN_ENTER

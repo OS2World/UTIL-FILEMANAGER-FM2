@@ -6,7 +6,7 @@
   Archive create/update dialog procedure
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2008 Steven H.Levine
+  Copyright (c) 2004, 2010 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   28 Jun 06 SHL Drop obsoletes
@@ -14,6 +14,7 @@
   22 Mar 07 GKY Use QWL_USER
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -92,26 +93,26 @@ MRESULT EXPENTRY ArchiveDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case ARCH_ARCNAME:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, ARCH_HELP,
-			  GetPString(IDS_ARCDEFAULTHELPTEXT));
+			  (CHAR *) GetPString(IDS_ARCDEFAULTHELPTEXT));
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
 	WinSetDlgItemText(hwnd, ARCH_HELP,
-			  GetPString(IDS_ARCARCNAMEHELPTEXT));
+			  (CHAR *) GetPString(IDS_ARCARCNAMEHELPTEXT));
       break;
 
     case ARCH_COMMAND:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, ARCH_HELP,
-			  GetPString(IDS_ARCDEFAULTHELPTEXT));
+			  (CHAR *) GetPString(IDS_ARCDEFAULTHELPTEXT));
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, ARCH_HELP, GetPString(IDS_ARCCMDHELPTEXT));
+	WinSetDlgItemText(hwnd, ARCH_HELP, (CHAR *) GetPString(IDS_ARCCMDHELPTEXT));
       break;
 
     case ARCH_MASKS:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, ARCH_HELP,
-			  GetPString(IDS_ARCDEFAULTHELPTEXT));
+			  (CHAR *) GetPString(IDS_ARCDEFAULTHELPTEXT));
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, ARCH_HELP, GetPString(IDS_ARCMASKHELPTEXT));
+	WinSetDlgItemText(hwnd, ARCH_HELP, (CHAR *) GetPString(IDS_ARCMASKHELPTEXT));
 
       break;
 

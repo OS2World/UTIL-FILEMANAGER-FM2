@@ -6,7 +6,7 @@
   Object windows
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2006, 2008 Steven H.Levine
+  Copyright (c) 2006, 2010 Steven H.Levine
 
   26 Jul 06 SHL Check more run time errors
   02 Nov 06 SHL Comments
@@ -14,6 +14,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   08 Jul 08 SHL Correct Fortify_LeaveScope usage and avoid spurious reports
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -72,10 +73,10 @@ VOID MakeObjWin(VOID * args)
     if (hmq2) {
       DosError(FERR_DISABLEHARDERR);
       WinRegisterClass(hab2,
-		       WC_OBJECTWINDOW,
+		       (CHAR *) WC_OBJECTWINDOW,
 		       ObjectWndProc, 0, sizeof(PVOID));
       ObjectHwnd = WinCreateWindow(HWND_OBJECT,
-				   WC_OBJECTWINDOW,
+				   (CHAR *) WC_OBJECTWINDOW,
 				   (PSZ) NULL,
 				   0,
 				   0L,

@@ -6,11 +6,12 @@
   attributes editor
 
   Copyright (c) 1993, 1998 M. Kimes
-  Copyright (c) 2006, 2008 Steven H.Levine
+  Copyright (c) 2006, 2010 Steven H.Levine
 
   14 Jul 06 SHL Use Runtime_Error
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -168,43 +169,43 @@ MRESULT EXPENTRY AttrListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSetDlgItemText(hwnd, ATR_HELP, NullStr);
       else if (SHORT2FROMMP(mp1) == LN_SETFOCUS)
 	WinSetDlgItemText(hwnd, ATR_HELP,
-			  GetPString(IDS_ATTRLISTBOXHELPTEXT));
+			  (CHAR *) GetPString(IDS_ATTRLISTBOXHELPTEXT));
       break;
     case ATR_YEAR:
       if (SHORT2FROMMP(mp1) == SPBN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, ATR_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == SPBN_SETFOCUS)
-	WinSetDlgItemText(hwnd, ATR_HELP, GetPString(IDS_ATTRYEARHELPTEXT));
+	WinSetDlgItemText(hwnd, ATR_HELP, (CHAR *) GetPString(IDS_ATTRYEARHELPTEXT));
       break;
     case ATR_MONTH:
       if (SHORT2FROMMP(mp1) == SPBN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, ATR_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == SPBN_SETFOCUS)
-	WinSetDlgItemText(hwnd, ATR_HELP, GetPString(IDS_ATTRMONTHHELPTEXT));
+	WinSetDlgItemText(hwnd, ATR_HELP, (CHAR *) GetPString(IDS_ATTRMONTHHELPTEXT));
       break;
     case ATR_DAY:
       if (SHORT2FROMMP(mp1) == SPBN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, ATR_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == SPBN_SETFOCUS)
-	WinSetDlgItemText(hwnd, ATR_HELP, GetPString(IDS_ATTRDAYHELPTEXT));
+	WinSetDlgItemText(hwnd, ATR_HELP, (CHAR *) GetPString(IDS_ATTRDAYHELPTEXT));
       break;
     case ATR_HOUR:
       if (SHORT2FROMMP(mp1) == SPBN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, ATR_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == SPBN_SETFOCUS)
-	WinSetDlgItemText(hwnd, ATR_HELP, GetPString(IDS_ATTRHOURHELPTEXT));
+	WinSetDlgItemText(hwnd, ATR_HELP, (CHAR *) GetPString(IDS_ATTRHOURHELPTEXT));
       break;
     case ATR_MINUTES:
       if (SHORT2FROMMP(mp1) == SPBN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, ATR_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == SPBN_SETFOCUS)
-	WinSetDlgItemText(hwnd, ATR_HELP, GetPString(IDS_ATTRMINHELPTEXT));
+	WinSetDlgItemText(hwnd, ATR_HELP, (CHAR *) GetPString(IDS_ATTRMINHELPTEXT));
       break;
     case ATR_SECONDS:
       if (SHORT2FROMMP(mp1) == SPBN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, ATR_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == SPBN_SETFOCUS)
-	WinSetDlgItemText(hwnd, ATR_HELP, GetPString(IDS_ATTRSECHELPTEXT));
+	WinSetDlgItemText(hwnd, ATR_HELP, (CHAR *) GetPString(IDS_ATTRSECHELPTEXT));
       break;
     case ATR_READONLY:
     case ATR_SYSTEM:

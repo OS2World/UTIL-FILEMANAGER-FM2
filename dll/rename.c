@@ -4,7 +4,7 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2007 Steven H.Levine
+  Copyright (c) 2004, 2010 Steven H.Levine
 
   Revisions
   01 Aug 04 SHL - Rework lstrip/rstrip usage
@@ -17,6 +17,7 @@
   07 Feb 09 GKY Add *DateFormat functions to format dates based on locale
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -122,7 +123,7 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	else
 	  WinSetDlgItemText(hwnd,
-			    REN_SOURCEINFO, GetPString(IDS_DOESNTEXIST2TEXT));
+			    REN_SOURCEINFO, (CHAR *) GetPString(IDS_DOESNTEXIST2TEXT));
 	strcpy(chkname, mv->target);
 	p = strrchr(s, '\\');
 	if (p && (strchr(p, '*') || strchr(p, '?'))) {
@@ -149,7 +150,7 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	else {
 	  WinSetDlgItemText(hwnd,
-			    REN_TARGETINFO, GetPString(IDS_DOESNTEXIST2TEXT));
+			    REN_TARGETINFO, (CHAR *) GetPString(IDS_DOESNTEXIST2TEXT));
 	  WinEnableWindow(WinWindowFromID(hwnd, REN_RENEXIST), FALSE);
 	}
 	*s = 0;

@@ -4,7 +4,7 @@
   $Id$
 
   Copyright (c) 1993, 1998 M. Kimes
-  Copyright (c) 2004, 2009 Steven H.Levine
+  Copyright (c) 2004, 2010 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   06 Aug 05 SHL Renames
@@ -15,6 +15,7 @@
   29 Feb 08 GKY Use xfree where appropriate
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory and use BldFullPathName
   24 Aug 08 GKY Warn full drive on save of .DAT file; prevent loss of existing file
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -332,12 +333,12 @@ MRESULT EXPENTRY RemapDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		else
 		  WinSetDlgItemText(hwnd,
 				    MAP_ATTACHTO,
-				    GetPString(IDS_UNKNOWNBRKTTEXT));
+				    (CHAR *) GetPString(IDS_UNKNOWNBRKTTEXT));
 	      }
 	      else
 		WinSetDlgItemText(hwnd,
 				  MAP_ATTACHTO,
-				  GetPString(IDS_UNKNOWNBRKTTEXT));
+				  (CHAR *) GetPString(IDS_UNKNOWNBRKTTEXT));
 	    }
 	  }
 	}

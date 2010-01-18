@@ -6,11 +6,12 @@
   Select code page
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2006, 2008 Steven H.Levine
+  Copyright (c) 2006, 2010 Steven H.Levine
 
   14 Jul 06 SHL Use Runtime_Error
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   11 Jan 09 GKY Moved codepage names to a character array here from the string file.
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -92,7 +93,7 @@ MRESULT EXPENTRY PickCodePageDlgBox(HWND hwnd, ULONG msg, MPARAM mp1,
     WinSendDlgItemMsg(hwnd,
 		      PICK_INPUT,
 		      EM_SETTEXTLIMIT, MPFROM2SHORT(256, 0), MPVOID);
-    WinSetWindowText(hwnd, GetPString(IDS_PICKCODEPAGETEXT));
+    WinSetWindowText(hwnd, (CHAR *) GetPString(IDS_PICKCODEPAGETEXT));
     PostMsg(hwnd, UM_STRETCH, MPVOID, MPVOID);
     break;
 

@@ -4,7 +4,7 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2008 Steven H. Levine
+  Copyright (c) 2004, 2010 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   05 Jun 05 SHL Use QWL_USER
@@ -17,6 +17,7 @@
   29 Nov 08 GKY Add the option of creating a subdirectory from the arcname
                 for the extract path.
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -119,13 +120,13 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSetWindowPtr(WinWindowFromID(hwnd, EXT_DIRECTORY),
                         QWL_USER, (PVOID) oldproc);
       size = sizeof(BOOL);
-      PrfQueryProfileData(fmprof, FM3Str, "RememberExt",
+      PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "RememberExt",
                           (PVOID) & fRemember, &size);
       size = sizeof(BOOL);
-      PrfQueryProfileData(fmprof, FM3Str, "DirectoryExt",
+      PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "DirectoryExt",
                           (PVOID) & fDirectory, &size);
       size = sizeof(BOOL);
-      PrfQueryProfileData(fmprof, FM3Str, "FileNamePathExt",
+      PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "FileNamePathExt",
                           (PVOID) & fFileNameExtPath, &size);
       WinCheckButton(hwnd, EXT_REMEMBER, fRemember);
       WinCheckButton(hwnd, EXT_AWDIRS, fDirectory);
@@ -141,7 +142,7 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (arcdata->arcname && *arcdata->arcname)
 	WinSetDlgItemText(hwnd, EXT_FILENAME, arcdata->arcname);
       else
-        WinSetDlgItemText(hwnd, EXT_FILENAME, GetPString(IDS_EXTVARIOUSTEXT));
+        WinSetDlgItemText(hwnd, EXT_FILENAME, (CHAR *) GetPString(IDS_EXTVARIOUSTEXT));
 
       if (fFileNameExtPath && arcdata->arcname) {
 
@@ -175,10 +176,10 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
         CHAR textdir[CCHMAXPATH];
 
-	PrfQueryProfileString(fmprof, FM3Str, "Ext_ExtractDir", NULL, textdir, sizeof(textdir));
+	PrfQueryProfileString(fmprof, (CHAR *) FM3Str, "Ext_ExtractDir", NULL, textdir, sizeof(textdir));
 	if (*textdir && !IsFile(textdir))
 	  strcpy(arcdata->extractdir, textdir);
-	PrfQueryProfileString(fmprof, FM3Str, "Ext_Mask", NULL, textdir, sizeof(textdir));
+	PrfQueryProfileString(fmprof, (CHAR *) FM3Str, "Ext_Mask", NULL, textdir, sizeof(textdir));
 	WinSetDlgItemText(hwnd, EXT_MASK, textdir);
       }
       if (*extractpath && (!fRemember || !*arcdata->extractdir)) {
@@ -222,7 +223,7 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       else if (fRemember) {
         fRemember = FALSE;
         size = sizeof(BOOL);
-	PrfQueryProfileData(fmprof, FM3Str, "Ext_WDirs",
+	PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Ext_WDirs",
 			    (PVOID) &fRemember, &size);
 	if (fRemember)
 	  PostMsg(WinWindowFromID(hwnd, EXT_WDIRS), BM_CLICK, MPVOID, MPVOID);
@@ -248,7 +249,7 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       {
 	BOOL fRemember = WinQueryButtonCheckstate(hwnd, EXT_REMEMBER);
         size = sizeof(BOOL);
-	PrfWriteProfileData(fmprof, FM3Str, "RememberExt",
+	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "RememberExt",
                             (PVOID) &fRemember, size);
         WinSendDlgItemMsg(hwnd, EXT_FILENAMEEXT, BM_SETCHECK,
 			    MPFROM2SHORT(FALSE, 0), MPVOID);
@@ -259,7 +260,7 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       {
 	BOOL fDirectory = WinQueryButtonCheckstate(hwnd, EXT_AWDIRS);
         size = sizeof(BOOL);
-	PrfWriteProfileData(fmprof, FM3Str, "DirectoryExt",
+	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "DirectoryExt",
 			    (PVOID) &fDirectory, size);
 
 	if (fDirectory) {
@@ -280,7 +281,7 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         BOOL fFileNameExtPath = WinQueryButtonCheckstate(hwnd, EXT_FILENAMEEXT);
         BOOL fRemember = WinQueryButtonCheckstate(hwnd, EXT_REMEMBER);
         size = sizeof(BOOL);
-	PrfWriteProfileData(fmprof, FM3Str, "FileNamePathExt",
+	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "FileNamePathExt",
                             fRemember ? FALSE : (PVOID) &fFileNameExtPath, size);
         if (fRemember) {
           WinSendDlgItemMsg(hwnd, EXT_FILENAMEEXT, BM_SETCHECK,
@@ -345,31 +346,30 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
     case EXT_FILENAME:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
-	WinSetDlgItemText(hwnd, EXT_HELP, GetPString(IDS_ARCDEFAULTHELPTEXT));
+	WinSetDlgItemText(hwnd, EXT_HELP, (CHAR *) GetPString(IDS_ARCDEFAULTHELPTEXT));
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, EXT_HELP, GetPString(IDS_ARCARCNAMEHELPTEXT));
+	WinSetDlgItemText(hwnd, EXT_HELP, (CHAR *) GetPString(IDS_ARCARCNAMEHELPTEXT));
       break;
 
     case EXT_DIRECTORY:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
-	WinSetDlgItemText(hwnd, EXT_HELP, GetPString(IDS_ARCDEFAULTHELPTEXT));
+	WinSetDlgItemText(hwnd, EXT_HELP, (CHAR *) GetPString(IDS_ARCDEFAULTHELPTEXT));
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, EXT_HELP,
-			  GetPString(IDS_EXTEXTRACTDIRHELPTEXT));
+	WinSetDlgItemText(hwnd, EXT_HELP, (CHAR *) GetPString(IDS_EXTEXTRACTDIRHELPTEXT));
       break;
 
     case EXT_COMMAND:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
-	WinSetDlgItemText(hwnd, EXT_HELP, GetPString(IDS_ARCDEFAULTHELPTEXT));
+	WinSetDlgItemText(hwnd, EXT_HELP, (CHAR *) GetPString(IDS_ARCDEFAULTHELPTEXT));
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, EXT_HELP, GetPString(IDS_ARCCMDHELPTEXT));
+	WinSetDlgItemText(hwnd, EXT_HELP, (CHAR *) GetPString(IDS_ARCCMDHELPTEXT));
       break;
 
     case EXT_MASK:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
-	WinSetDlgItemText(hwnd, EXT_HELP, GetPString(IDS_ARCDEFAULTHELPTEXT));
+	WinSetDlgItemText(hwnd, EXT_HELP, (CHAR *) GetPString(IDS_ARCDEFAULTHELPTEXT));
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, EXT_HELP, GetPString(IDS_ARCMASKHELPTEXT));
+	WinSetDlgItemText(hwnd, EXT_HELP, (CHAR *) GetPString(IDS_ARCMASKHELPTEXT));
       break;
 
     case EXT_NORMAL:
@@ -429,10 +429,10 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    break;
 	  strcpy(lastextractpath, s);
 	  if (fRemember) {
-	    PrfWriteProfileString(fmprof, FM3Str, "Ext_ExtractDir", s);
+	    PrfWriteProfileString(fmprof, (CHAR *) FM3Str, "Ext_ExtractDir", s);
             fRemember = WinQueryButtonCheckstate(hwnd, EXT_WDIRS);
             size = sizeof(BOOL);
-	    PrfWriteProfileData(fmprof, FM3Str, "Ext_WDirs",
+	    PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Ext_WDirs",
 				(PVOID) &fRemember, size);
 	    fRemember = TRUE;
 	  }
@@ -445,7 +445,7 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    *arcdata->masks = 0;
 	    strcpy(arcdata->masks, s);
 	    if (fRemember)
-	      PrfWriteProfileString(fmprof, FM3Str, "Ext_Mask", s);
+	      PrfWriteProfileString(fmprof, (CHAR *) FM3Str, "Ext_Mask", s);
 	    arcdata->ret = 1;
 	    WinDismissDlg(hwnd, 1);
 	    break;

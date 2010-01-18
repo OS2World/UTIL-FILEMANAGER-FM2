@@ -6,7 +6,7 @@
   Directory containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2009 Steven H. Levine
+  Copyright (c) 2001, 2010 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   01 Aug 04 SHL Rework lstrip/rstrip usage
@@ -73,6 +73,7 @@
                 miniapp; FM3Str should be used for setting only relavent to FM/2 or that
                 aren't user settable; realappname should be used for setting applicable to
                 one or more miniapp but not to FM/2
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -866,7 +867,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSetDlgItemText(dcd->hwndClient, DIR_SELECTED, "0 / 0k");
       if (hwndStatus &&
 	  dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
-	WinSetWindowText(hwndStatus, GetPString(IDS_PLEASEWAITSCANNINGTEXT));
+	WinSetWindowText(hwndStatus, (CHAR *) GetPString(IDS_PLEASEWAITSCANNINGTEXT));
 	if (hwndMain)
 	  WinSendMsg(hwndMain, UM_LOADFILE, MPVOID, MPVOID);
       }
@@ -2987,9 +2988,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	   * Check valid rendering mechanisms and data
 	   */
 	  pDItem = DrgQueryDragitemPtr(pDInfo, 0);
-	  if (DrgVerifyRMF(pDItem, DRM_OS2FILE, NULL) ||
+	  if (DrgVerifyRMF(pDItem, (CHAR *) DRM_OS2FILE, NULL) ||
 	      ((!pci || (pci->attrFile & FILE_DIRECTORY)) &&
-	       DrgVerifyRMF(pDItem, DRM_FM2ARCMEMBER, DRF_FM2ARCHIVE))) {
+	       DrgVerifyRMF(pDItem, (CHAR *) DRM_FM2ARCMEMBER, (CHAR *) DRF_FM2ARCHIVE))) {
 	    DrgFreeDraginfo(pDInfo);
 	    if (driveflags[toupper(*dcd->directory) - 'A'] &
 		DRIVE_NOTWRITEABLE)
@@ -3028,10 +3029,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    }
 	    if (hwndStatus2) {
 	      if (pci)
-		WinSetWindowText(hwndStatus2,
-				 GetPString(IDS_DRAGFILEOBJTEXT));
+		WinSetWindowText(hwndStatus2, (CHAR *) GetPString(IDS_DRAGFILEOBJTEXT));
 	      else
-		WinSetWindowText(hwndStatus2, GetPString(IDS_DRAGDIRTEXT));
+		WinSetWindowText(hwndStatus2, (CHAR *) GetPString(IDS_DRAGDIRTEXT));
 	    }
 	    if (DoFileDrag(hwnd,
 			   dcd->hwndObject,
@@ -3434,7 +3434,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		RemoveCnrItems(hwnd, pci, 1, CMA_FREE | CMA_INVALIDATE | CMA_ERASE);
 		if (hwndStatus)
 		  WinSetWindowText(hwndStatus,
-				   GetPString(IDS_RESCANSUGGESTEDTEXT));
+				   (CHAR *) GetPString(IDS_RESCANSUGGESTEDTEXT));
 	      }
 	      else {
 		//DosEnterCritSec();  // GKY 11-27-08
@@ -3718,7 +3718,7 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
     hwndFrame = WinCreateStdWindow(hwndParent,
 				   WS_VISIBLE,
 				   &FrameFlags,
-				   WC_DIRCONTAINER,
+				   (CHAR *) WC_DIRCONTAINER,
 				   NULL,
 				   WS_VISIBLE | fwsAnimate,
 				   FM3ModHandle, DIR_FRAME, &hwndClient);

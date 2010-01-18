@@ -6,7 +6,7 @@
   Flesh
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2009 Steven H. Levine
+  Copyright (c) 2005, 2010 Steven H. Levine
 
   24 May 05 SHL Rework Win_Error usage
   25 May 05 SHL Rework for ProcessDirectory
@@ -29,6 +29,7 @@
                 miniapp; FM3Str should be used for setting only relavent to FM/2 or that
                 aren't user settable; realappname should be used for setting applicable to
                 one or more miniapp but not to FM/2
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -369,13 +370,13 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 		   GetPString(IDS_LANERROR2TITLETEXT),
 		   GetPString(IDS_LANERROR2TEXT));
 	    NoBrokenNotify = 255;
-	    PrfWriteProfileData(fmprof,	FM3Str,	"NoBrokenNotify",
+	    PrfWriteProfileData(fmprof,	(CHAR *) FM3Str, "NoBrokenNotify",
 				&NoBrokenNotify, sizeof(ULONG));
 	  }
 	}
 	else {
 	  NoBrokenNotify--;
-	  PrfWriteProfileData(fmprof, FM3Str, "NoBrokenNotify",
+	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "NoBrokenNotify",
 			      &NoBrokenNotify, sizeof(ULONG));
 	}
       }
@@ -438,13 +439,13 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 		       GetPString(IDS_FSDERROR2TITLETEXT),
 		       GetPString(IDS_FSDERROR2TEXT));
 		NoBrokenNotify = 255;
-		PrfWriteProfileData(fmprof, FM3Str, "NoBrokenNotify",
+		PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "NoBrokenNotify",
 				    &NoBrokenNotify, sizeof(ULONG));
 	      }
 	    }
 	    else {
 	      NoBrokenNotify--;
-	      PrfWriteProfileData(fmprof, FM3Str, "NoBrokenNotify",
+	      PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "NoBrokenNotify",
 				  &NoBrokenNotify, sizeof(ULONG));
 	    }
 	  }

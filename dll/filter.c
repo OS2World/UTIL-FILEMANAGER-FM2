@@ -6,7 +6,7 @@
   Filter mask select dialog
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2009 Steven H.Levine
+  Copyright (c) 2004, 2010 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   22 Jul 06 SHL Check more run time errors
@@ -18,7 +18,7 @@
   24 Aug 08 GKY Warn full drive on save of .DAT file; prevent loss of existing file
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
-  28 Sep 09 SHL Remember last selected mask listbox entry
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -39,7 +39,7 @@
 #include "fm3str.h"
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
-#include "pathutil.h"			// BldFullPathName
+#include "pathutil.h"                   // BldFullPathName
 #include "filter.h"
 #include "select.h"			// SetMask
 #include "literal.h"			// wildcard
@@ -50,8 +50,6 @@
 #include "fortify.h"
 
 #pragma data_seg(FILTER_DATA)
-
-static PCSZ PSCZ_FILTER_LASTMASK_SELECT = "Filter.LastMaskSelect";
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -73,7 +71,8 @@ static VOID save_masks(VOID);
 
 INT APIENTRY Filter(PMINIRECORDCORE rmini, PVOID arg)
 {
-  MASK *mask = (MASK *)arg;
+
+  MASK *mask = (MASK *) arg;
   PCNRITEM r;
   INT x;
   INT ret = FALSE;
@@ -99,41 +98,41 @@ INT APIENTRY Filter(PMINIRECORDCORE rmini, PVOID arg)
 	    && !(r->attrFile & FILE_ARCHIVED))
 	|| ((mask->antiattr & FILE_DIRECTORY)
 	    && !(r->attrFile & FILE_DIRECTORY)))
-	return FALSE;
+        return FALSE;
     if (*mask->szMask) {
       file = strrchr(r->pszFileName, '\\');
       if (!file)
-	file = strrchr(r->pszFileName, ':');
+        file = strrchr(r->pszFileName, ':');
       if (file)
-	file++;
+        file++;
       else
-	file = r->pszFileName;
+        file = r->pszFileName;
       if (mask->pszMasks[1]) {
-	for (x = 0; mask->pszMasks[x]; x++) {
-	  if (*mask->pszMasks[x]) {
-	    if (*mask->pszMasks[x] != '/') {
-	      if (wildcard((strchr(mask->pszMasks[x], '\\') ||
-			    strchr(mask->pszMasks[x], ':')) ?
-			   r->pszFileName : file, mask->pszMasks[x], FALSE))
-		ret = TRUE;
-	    }
-	    else {
-	      if (wildcard((strchr(mask->pszMasks[x], '\\') ||
-			    strchr(mask->pszMasks[x], ':')) ?
-			   r->pszFileName : file, mask->pszMasks[x] + 1,
-			   FALSE)) {
-		ret = FALSE;
-		break;
-	      }
-	    }
-	  }
-	}
+        for (x = 0; mask->pszMasks[x]; x++) {
+          if (*mask->pszMasks[x]) {
+            if (*mask->pszMasks[x] != '/') {
+              if (wildcard((strchr(mask->pszMasks[x], '\\') ||
+                            strchr(mask->pszMasks[x], ':')) ?
+                           r->pszFileName : file, mask->pszMasks[x], FALSE))
+                ret = TRUE;
+            }
+            else {
+              if (wildcard((strchr(mask->pszMasks[x], '\\') ||
+                            strchr(mask->pszMasks[x], ':')) ?
+                           r->pszFileName : file, mask->pszMasks[x] + 1,
+                           FALSE)) {
+                ret = FALSE;
+                break;
+              }
+            }
+          }
+        }
       }
       else {
-	if (wildcard((strchr(mask->szMask, '\\') ||
-		      strchr(mask->szMask, ':')) ?
-		     r->pszFileName : file, mask->szMask, FALSE))
-	  ret = TRUE;
+        if (wildcard((strchr(mask->szMask, '\\') ||
+                      strchr(mask->szMask, ':')) ?
+                     r->pszFileName : file, mask->szMask, FALSE))
+          ret = TRUE;
       }
     }
     else
@@ -150,6 +149,7 @@ INT APIENTRY Filter(PMINIRECORDCORE rmini, PVOID arg)
 
 static VOID load_masks(VOID)
 {
+
   FILE *fp;
   LINKMASKS *info, *last = NULL;
   CHAR s[CCHMAXPATH + 24];
@@ -177,7 +177,7 @@ static VOID load_masks(VOID)
 	    free(info);
 	}
       }
-    } //while
+    }  //while
     fclose(fp);
   }
 }
@@ -217,6 +217,7 @@ static VOID save_masks(VOID)
 
 static VOID add_mask(CHAR * mask)
 {
+
   LINKMASKS *info;
   LINKMASKS *last = NULL;
 
@@ -252,6 +253,7 @@ static VOID add_mask(CHAR * mask)
 
 static VOID remove_mask(CHAR * mask)
 {
+
   LINKMASKS *info, *last = NULL;
 
   if (!mask || !*mask)
@@ -284,8 +286,6 @@ MRESULT EXPENTRY PickMaskDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   MASK *mask;
   SHORT sSelect;
   CHAR s[CCHMAXPATH];
-  ULONG size;
-  static SHORT sLastMaskSelect = LIT_NONE;
 
   switch (msg) {
   case WM_INITDLG:
@@ -296,15 +296,9 @@ MRESULT EXPENTRY PickMaskDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDismissDlg(hwnd, 0);
       break;
     }
-
-    if (!loadedmasks) {
+    if (!loadedmasks)
       load_masks();
-      size = sizeof(sLastMaskSelect);
-      PrfQueryProfileData(fmprof, appname, PSCZ_FILTER_LASTMASK_SELECT, &sLastMaskSelect, &size);
-    }
-
     WinSetWindowPtr(hwnd, QWL_USER, mp2);
-
     info = maskhead;
     while (info) {
       WinSendDlgItemMsg(hwnd, MSK_LISTBOX, LM_INSERTITEM,
@@ -312,12 +306,7 @@ MRESULT EXPENTRY PickMaskDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			MPFROMP(info->mask));
       info = info->next;
     }
-    if (sLastMaskSelect >= 0)
-      WinSendDlgItemMsg(hwnd, MSK_LISTBOX, LM_SELECTITEM,
-			MPFROMSHORT(sLastMaskSelect), MPFROMSHORT(TRUE));
-
-    mask = (MASK *)mp2;
-
+    mask = (MASK *) mp2;
     if (mask->fNoAttribs) {
       WinEnableWindow(WinWindowFromID(hwnd, MSK_SYSTEM), FALSE);
       WinEnableWindow(WinWindowFromID(hwnd, MSK_HIDDEN), FALSE);
@@ -335,73 +324,70 @@ MRESULT EXPENTRY PickMaskDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinCheckButton(hwnd, MSK_SYSTEM, (mask->attrFile & FILE_SYSTEM) != 0);
       WinCheckButton(hwnd, MSK_HIDDEN, (mask->attrFile & FILE_HIDDEN) != 0);
       WinCheckButton(hwnd, MSK_READONLY,
-		     (mask->attrFile & FILE_READONLY) != 0);
+                     (mask->attrFile & FILE_READONLY) != 0);
       WinCheckButton(hwnd, MSK_ARCHIVED,
-		     (mask->attrFile & FILE_ARCHIVED) != 0);
+                     (mask->attrFile & FILE_ARCHIVED) != 0);
       WinCheckButton(hwnd, MSK_DIRECTORY,
-		     (mask->attrFile & FILE_DIRECTORY) != 0);
+                     (mask->attrFile & FILE_DIRECTORY) != 0);
       WinCheckButton(hwnd, MSK_MUSTSYSTEM,
-		     (mask->antiattr & FILE_SYSTEM) != 0);
+                     (mask->antiattr & FILE_SYSTEM) != 0);
       WinCheckButton(hwnd, MSK_MUSTHIDDEN,
-		     (mask->antiattr & FILE_HIDDEN) != 0);
+                     (mask->antiattr & FILE_HIDDEN) != 0);
       WinCheckButton(hwnd, MSK_MUSTREADONLY,
-		     (mask->antiattr & FILE_READONLY) != 0);
+                     (mask->antiattr & FILE_READONLY) != 0);
       WinCheckButton(hwnd, MSK_MUSTARCHIVED,
-		     (mask->antiattr & FILE_ARCHIVED) != 0);
+                     (mask->antiattr & FILE_ARCHIVED) != 0);
       WinCheckButton(hwnd, MSK_MUSTDIRECTORY,
-		     (mask->antiattr & FILE_DIRECTORY) != 0);
+                     (mask->antiattr & FILE_DIRECTORY) != 0);
       if (mask->fNoDirs)
-	WinEnableWindow(WinWindowFromID(hwnd, MSK_SHOWDIRS), FALSE);
+        WinEnableWindow(WinWindowFromID(hwnd, MSK_SHOWDIRS), FALSE);
       else
-	WinCheckButton(hwnd, MSK_SHOWDIRS, (mask->fShowDirs != FALSE));
+        WinCheckButton(hwnd, MSK_SHOWDIRS, (mask->fShowDirs != FALSE));
       WinEnableWindow(WinWindowFromID(hwnd, MSK_MUSTSYSTEM),
-		      (mask->attrFile & FILE_SYSTEM) != 0);
+                      (mask->attrFile & FILE_SYSTEM) != 0);
       WinEnableWindow(WinWindowFromID(hwnd, MSK_MUSTHIDDEN),
-		      (mask->attrFile & FILE_HIDDEN) != 0);
+                      (mask->attrFile & FILE_HIDDEN) != 0);
       WinEnableWindow(WinWindowFromID(hwnd, MSK_MUSTARCHIVED),
-		      (mask->attrFile & FILE_ARCHIVED) != 0);
+                      (mask->attrFile & FILE_ARCHIVED) != 0);
       WinEnableWindow(WinWindowFromID(hwnd, MSK_MUSTREADONLY),
-		      (mask->attrFile & FILE_READONLY) != 0);
+                      (mask->attrFile & FILE_READONLY) != 0);
       WinEnableWindow(WinWindowFromID(hwnd, MSK_MUSTDIRECTORY),
-		      (mask->attrFile & FILE_DIRECTORY) != 0);
-
-      if (*mask->szMask) {
-	CHAR *p;
-	strcpy(s, mask->szMask);
-	if (!strchr(mask->szMask, '?') && !strchr(mask->szMask, '*')) {
-	  p = strrchr(mask->szMask, '.');
-	  if (p && *(p + 1)) {
-	    *s = '*';
-	    strcpy(s + 1, p);
-	  }
-	}
-	WinSetDlgItemText(hwnd, MSK_MASK, s);
-	WinSendDlgItemMsg(hwnd, MSK_MASK, EM_SETSEL,
-			  MPFROM2SHORT(0, CCHMAXPATH), MPVOID);
-	PostMsg(hwnd, UM_SETDIR, MPVOID, MPVOID);
-      }
-
-      if (mask->fIsTree) {
-	WinCheckButton(hwnd, MSK_DIRECTORY, TRUE);
-	WinCheckButton(hwnd, MSK_SHOWDIRS, FALSE);
-	WinEnableWindow(WinWindowFromID(hwnd, MSK_DIRECTORY), FALSE);
-	WinEnableWindow(WinWindowFromID(hwnd, MSK_SHOWDIRS), FALSE);
-      }
-
-      if (mask->fIsSeeAll) {
-	WinCheckButton(hwnd, MSK_DIRECTORY, FALSE);
-	WinCheckButton(hwnd, MSK_MUSTDIRECTORY, FALSE);
-	WinCheckButton(hwnd, MSK_SHOWDIRS, FALSE);
-	WinEnableWindow(WinWindowFromID(hwnd, MSK_DIRECTORY), FALSE);
-	WinEnableWindow(WinWindowFromID(hwnd, MSK_MUSTDIRECTORY), FALSE);
-	WinEnableWindow(WinWindowFromID(hwnd, MSK_SHOWDIRS), FALSE);
-      }
-
-      if (*mask->prompt)
-	WinSetWindowText(hwnd, mask->prompt);
-      if (!PostMsg(hwnd, UM_SETUP, MPVOID, MPVOID))
-	WinSendMsg(hwnd, UM_SETUP, MPVOID, MPVOID);
+                    (mask->attrFile & FILE_DIRECTORY) != 0);
     }
+    if (*mask->szMask) {
+      CHAR *p;
+
+      strcpy(s, mask->szMask);
+      if (!strchr(mask->szMask, '?') && !strchr(mask->szMask, '*')) {
+        p = strrchr(mask->szMask, '.');
+        if (p && *(p + 1)) {
+          *s = '*';
+          strcpy(s + 1, p);
+        }
+      }
+      WinSetDlgItemText(hwnd, MSK_MASK, s);
+      WinSendDlgItemMsg(hwnd, MSK_MASK, EM_SETSEL,
+                        MPFROM2SHORT(0, CCHMAXPATH), MPVOID);
+      PostMsg(hwnd, UM_SETDIR, MPVOID, MPVOID);
+    }
+    if (mask->fIsTree) {
+      WinCheckButton(hwnd, MSK_DIRECTORY, TRUE);
+      WinCheckButton(hwnd, MSK_SHOWDIRS, FALSE);
+      WinEnableWindow(WinWindowFromID(hwnd, MSK_DIRECTORY), FALSE);
+      WinEnableWindow(WinWindowFromID(hwnd, MSK_SHOWDIRS), FALSE);
+    }
+    if (mask->fIsSeeAll) {
+      WinCheckButton(hwnd, MSK_DIRECTORY, FALSE);
+      WinCheckButton(hwnd, MSK_MUSTDIRECTORY, FALSE);
+      WinCheckButton(hwnd, MSK_SHOWDIRS, FALSE);
+      WinEnableWindow(WinWindowFromID(hwnd, MSK_DIRECTORY), FALSE);
+      WinEnableWindow(WinWindowFromID(hwnd, MSK_MUSTDIRECTORY), FALSE);
+      WinEnableWindow(WinWindowFromID(hwnd, MSK_SHOWDIRS), FALSE);
+    }
+    if (*mask->prompt)
+      WinSetWindowText(hwnd, mask->prompt);
+    if (!PostMsg(hwnd, UM_SETUP, MPVOID, MPVOID))
+      WinSendMsg(hwnd, UM_SETUP, MPVOID, MPVOID);
     break;
 
   case UM_SETUP:
@@ -429,15 +415,15 @@ MRESULT EXPENTRY PickMaskDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	if (!WinCreateWindow(hwnd,
 			     WC_STATIC,
-			     GetPString(IDS_TEXTTITLETEXT),
+			     (CHAR *) GetPString(IDS_TEXTTITLETEXT),
 			     SS_TEXT |
 			     DT_VCENTER | DT_RIGHT,
 			     swpL.x,
 			     swpL.y + swpL.cy + 4,
 			     50,
 			     swpE.cy, hwnd, HWND_TOP, 65535, NULL, NULL)) {
-	  Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
-		    PCSZ_WINCREATEWINDOW);
+          Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                    PCSZ_WINCREATEWINDOW);
 	}
 	if (!WinCreateWindow(hwnd,
 			     WC_ENTRYFIELD,
@@ -448,15 +434,15 @@ MRESULT EXPENTRY PickMaskDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			     swpL.y + swpL.cy + 4,
 			     swpL.cx - 54,
 			     swpE.cy, hwnd, HWND_TOP, MSK_TEXT, NULL, NULL)) {
-	  Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
-		    PCSZ_WINCREATEWINDOW);
+          Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                    PCSZ_WINCREATEWINDOW);
 	}
-	WinSendDlgItemMsg(hwnd,	MSK_TEXT, EM_SETTEXTLIMIT,
-			  MPFROM2SHORT(256, 0), MPVOID);
+	WinSendDlgItemMsg(hwnd,	MSK_TEXT,
+			  EM_SETTEXTLIMIT, MPFROM2SHORT(256, 0), MPVOID);
 	if (mask->szText) {
 	  WinSetDlgItemText(hwnd, MSK_TEXT, mask->szText);
-	  WinSendDlgItemMsg(hwnd, MSK_TEXT, EM_SETSEL,
-			    MPFROM2SHORT(0, 256), MPVOID);
+	  WinSendDlgItemMsg(hwnd, MSK_TEXT,
+			    EM_SETSEL, MPFROM2SHORT(0, 256), MPVOID);
 	}
       }
       *mask->szText = 0;
@@ -532,15 +518,14 @@ MRESULT EXPENTRY PickMaskDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       switch (SHORT2FROMMP(mp1)) {
       case LN_SELECT:
 	{
-	  sSelect = (SHORT) WinSendDlgItemMsg(hwnd, MSK_LISTBOX, LM_QUERYSELECTION,
+          sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
+					      MSK_LISTBOX,
+					      LM_QUERYSELECTION,
 					      MPFROMSHORT(LIT_FIRST), MPVOID);
 	  *s = 0;
-	  if (sSelect >= 0) {
-	    sLastMaskSelect = sSelect;
+	  if (sSelect >= 0)
 	    WinSendDlgItemMsg(hwnd, MSK_LISTBOX, LM_QUERYITEMTEXT,
-			      MPFROM2SHORT(sSelect,
-					   CCHMAXPATH), MPFROMP(s));
-	  }
+			      MPFROM2SHORT(sSelect, CCHMAXPATH), MPFROMP(s));
 	  WinSetDlgItemText(hwnd, MSK_MASK, s);
 	}
 	break;
@@ -556,41 +541,44 @@ MRESULT EXPENTRY PickMaskDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_COMMAND:
     switch (SHORT1FROMMP(mp1)) {
     case MSK_ALL:
-      mask = (MASK *)INSTDATA(hwnd);
-      if (mask) {
-	if (!mask->fNoAttribs) {
-	  WinCheckButton(hwnd, MSK_SYSTEM, TRUE);
-	  WinCheckButton(hwnd, MSK_HIDDEN, TRUE);
-	  WinCheckButton(hwnd, MSK_READONLY, TRUE);
-	  WinCheckButton(hwnd, MSK_ARCHIVED, TRUE);
-	  WinCheckButton(hwnd, MSK_DIRECTORY, TRUE);
-	  WinCheckButton(hwnd, MSK_MUSTSYSTEM, FALSE);
-	  WinCheckButton(hwnd, MSK_MUSTHIDDEN, FALSE);
-	  WinCheckButton(hwnd, MSK_MUSTREADONLY, FALSE);
-	  WinCheckButton(hwnd, MSK_MUSTARCHIVED, FALSE);
-	  WinCheckButton(hwnd, MSK_MUSTDIRECTORY, FALSE);
-	  if (!mask->fNoDirs)
-	    WinCheckButton(hwnd, MSK_SHOWDIRS, TRUE);
-	  WinEnableWindow(WinWindowFromID(hwnd, MSK_MUSTSYSTEM), TRUE);
-	  WinEnableWindow(WinWindowFromID(hwnd, MSK_MUSTHIDDEN), TRUE);
-	  WinEnableWindow(WinWindowFromID(hwnd, MSK_MUSTARCHIVED), TRUE);
-	  WinEnableWindow(WinWindowFromID(hwnd, MSK_MUSTREADONLY), TRUE);
-	  WinEnableWindow(WinWindowFromID(hwnd, MSK_MUSTDIRECTORY), TRUE);
-	}
-	if (mask->fIsTree) {
-	  WinCheckButton(hwnd, MSK_DIRECTORY, TRUE);
-	  WinCheckButton(hwnd, MSK_MUSTDIRECTORY, FALSE);
-	  WinCheckButton(hwnd, MSK_SHOWDIRS, FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, MSK_DIRECTORY), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, MSK_SHOWDIRS), FALSE);
-	}
-	if (mask->fIsSeeAll) {
-	  WinCheckButton(hwnd, MSK_DIRECTORY, FALSE);
-	  WinCheckButton(hwnd, MSK_MUSTDIRECTORY, FALSE);
-	  WinCheckButton(hwnd, MSK_SHOWDIRS, FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, MSK_DIRECTORY), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, MSK_MUSTDIRECTORY), FALSE);
-	  WinEnableWindow(WinWindowFromID(hwnd, MSK_SHOWDIRS), FALSE);
+      {
+	mask = (MASK *) INSTDATA(hwnd);
+
+	if (mask) {
+	  if (!mask->fNoAttribs) {
+	    WinCheckButton(hwnd, MSK_SYSTEM, TRUE);
+	    WinCheckButton(hwnd, MSK_HIDDEN, TRUE);
+	    WinCheckButton(hwnd, MSK_READONLY, TRUE);
+	    WinCheckButton(hwnd, MSK_ARCHIVED, TRUE);
+	    WinCheckButton(hwnd, MSK_DIRECTORY, TRUE);
+	    WinCheckButton(hwnd, MSK_MUSTSYSTEM, FALSE);
+	    WinCheckButton(hwnd, MSK_MUSTHIDDEN, FALSE);
+	    WinCheckButton(hwnd, MSK_MUSTREADONLY, FALSE);
+	    WinCheckButton(hwnd, MSK_MUSTARCHIVED, FALSE);
+	    WinCheckButton(hwnd, MSK_MUSTDIRECTORY, FALSE);
+	    if (!mask->fNoDirs)
+	      WinCheckButton(hwnd, MSK_SHOWDIRS, TRUE);
+	    WinEnableWindow(WinWindowFromID(hwnd, MSK_MUSTSYSTEM), TRUE);
+	    WinEnableWindow(WinWindowFromID(hwnd, MSK_MUSTHIDDEN), TRUE);
+	    WinEnableWindow(WinWindowFromID(hwnd, MSK_MUSTARCHIVED), TRUE);
+	    WinEnableWindow(WinWindowFromID(hwnd, MSK_MUSTREADONLY), TRUE);
+	    WinEnableWindow(WinWindowFromID(hwnd, MSK_MUSTDIRECTORY), TRUE);
+	  }
+	  if (mask->fIsTree) {
+	    WinCheckButton(hwnd, MSK_DIRECTORY, TRUE);
+	    WinCheckButton(hwnd, MSK_MUSTDIRECTORY, FALSE);
+	    WinCheckButton(hwnd, MSK_SHOWDIRS, FALSE);
+	    WinEnableWindow(WinWindowFromID(hwnd, MSK_DIRECTORY), FALSE);
+	    WinEnableWindow(WinWindowFromID(hwnd, MSK_SHOWDIRS), FALSE);
+	  }
+	  if (mask->fIsSeeAll) {
+	    WinCheckButton(hwnd, MSK_DIRECTORY, FALSE);
+	    WinCheckButton(hwnd, MSK_MUSTDIRECTORY, FALSE);
+	    WinCheckButton(hwnd, MSK_SHOWDIRS, FALSE);
+	    WinEnableWindow(WinWindowFromID(hwnd, MSK_DIRECTORY), FALSE);
+	    WinEnableWindow(WinWindowFromID(hwnd, MSK_MUSTDIRECTORY), FALSE);
+	    WinEnableWindow(WinWindowFromID(hwnd, MSK_SHOWDIRS), FALSE);
+	  }
 	}
       }
       /* intentional fallthru */
@@ -600,88 +588,72 @@ MRESULT EXPENTRY PickMaskDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
     case MSK_DELETE:
     case DID_OK:
-      mask = INSTDATA(hwnd);
-      *s = 0;
-      WinQueryDlgItemText(hwnd, MSK_MASK, CCHMAXPATH, s);	// Entry field
-      s[CCHMAXPATH - 1] = 0;
-      bstrip(s);
-      if (SHORT1FROMMP(mp1) == DID_OK) {
-	mask->attrFile =
-	  (WinQueryButtonCheckstate(hwnd, MSK_SYSTEM) *
-	   FILE_SYSTEM) | (WinQueryButtonCheckstate(hwnd,
-						    MSK_HIDDEN) *
-			   FILE_HIDDEN) | (WinQueryButtonCheckstate(hwnd,
-								    MSK_READONLY)
-					   *
-					   FILE_READONLY) |
-	  (WinQueryButtonCheckstate(hwnd, MSK_ARCHIVED) *
-	   FILE_ARCHIVED) | (WinQueryButtonCheckstate(hwnd,
-						      MSK_DIRECTORY) *
-			     FILE_DIRECTORY);
-	mask->antiattr =
-	  (WinQueryButtonCheckstate(hwnd, MSK_MUSTSYSTEM) *
-	   FILE_SYSTEM) | (WinQueryButtonCheckstate(hwnd,
-						    MSK_MUSTHIDDEN) *
-			   FILE_HIDDEN) | (WinQueryButtonCheckstate(hwnd,
-								    MSK_MUSTREADONLY)
-					   *
-					   FILE_READONLY) |
-	  (WinQueryButtonCheckstate(hwnd, MSK_MUSTARCHIVED) *
-	   FILE_ARCHIVED) | (WinQueryButtonCheckstate(hwnd,
-						      MSK_MUSTDIRECTORY) *
-			     FILE_DIRECTORY);
-	mask->fShowDirs =
-	  (WinQueryButtonCheckstate(hwnd, MSK_SHOWDIRS) != FALSE);
-	if (mask->fText)
-	  WinQueryDlgItemText(hwnd, MSK_TEXT, 256, mask->szText);
-      }
-      if (*s) {
+      {
+
+	mask = INSTDATA(hwnd);
+	*s = 0;
+	WinQueryDlgItemText(hwnd, MSK_MASK, CCHMAXPATH, s);
+	s[CCHMAXPATH - 1] = 0;
+	bstrip(s);
 	if (SHORT1FROMMP(mp1) == DID_OK) {
-	  strcpy(mask->szMask, s);
-	  add_mask(s);
-	  save_masks();
-	  SetMask(mask->szMask, mask);
-	  sLastMaskSelect = (SHORT)WinSendDlgItemMsg(hwnd, MSK_LISTBOX, LM_INSERTITEM,
-						     MPFROM2SHORT(LIT_SORTASCENDING, 0),
-						     MPFROMP(s));
-	  PrfWriteProfileData(fmprof, appname,
-			      PSCZ_FILTER_LASTMASK_SELECT, &sLastMaskSelect, sizeof(sLastMaskSelect));
-	  WinDismissDlg(hwnd, 1);
+	  mask->attrFile =
+	    (WinQueryButtonCheckstate(hwnd, MSK_SYSTEM) *
+	     FILE_SYSTEM) | (WinQueryButtonCheckstate(hwnd,
+						      MSK_HIDDEN) *
+			     FILE_HIDDEN) | (WinQueryButtonCheckstate(hwnd,
+								      MSK_READONLY)
+					     *
+					     FILE_READONLY) |
+	    (WinQueryButtonCheckstate(hwnd, MSK_ARCHIVED) *
+	     FILE_ARCHIVED) | (WinQueryButtonCheckstate(hwnd,
+							MSK_DIRECTORY) *
+			       FILE_DIRECTORY);
+	  mask->antiattr =
+	    (WinQueryButtonCheckstate(hwnd, MSK_MUSTSYSTEM) *
+	     FILE_SYSTEM) | (WinQueryButtonCheckstate(hwnd,
+						      MSK_MUSTHIDDEN) *
+			     FILE_HIDDEN) | (WinQueryButtonCheckstate(hwnd,
+								      MSK_MUSTREADONLY)
+					     *
+					     FILE_READONLY) |
+	    (WinQueryButtonCheckstate(hwnd, MSK_MUSTARCHIVED) *
+	     FILE_ARCHIVED) | (WinQueryButtonCheckstate(hwnd,
+							MSK_MUSTDIRECTORY) *
+			       FILE_DIRECTORY);
+	  mask->fShowDirs =
+	    (WinQueryButtonCheckstate(hwnd, MSK_SHOWDIRS) != FALSE);
+	  if (mask->fText)
+	    WinQueryDlgItemText(hwnd, MSK_TEXT, 256, mask->szText);
 	}
-	else {
-	  // MSK_DELETE
-	  WinSetDlgItemText(hwnd, MSK_MASK, NullStr);
-	  remove_mask(s);
-	  save_masks();
-	  sSelect = (SHORT) WinSendDlgItemMsg(hwnd, MSK_LISTBOX, LM_SEARCHSTRING,
-					      MPFROM2SHORT(0, LIT_FIRST), MPFROMP(s));
-	  if (sSelect >= 0) {
-	    WinSendDlgItemMsg(hwnd, MSK_LISTBOX, LM_DELETEITEM,
-			      MPFROM2SHORT(sSelect, 0), MPVOID);
-	    // Try to select next item
-	    if (!WinSendDlgItemMsg(hwnd, MSK_LISTBOX, LM_SELECTITEM,
-		 MPFROMSHORT(sSelect), MPFROMSHORT(TRUE))) {
-	      sSelect = (SHORT)WinSendDlgItemMsg(hwnd, MSK_LISTBOX, LM_QUERYITEMCOUNT,
-						     MPVOID, MPVOID);
-	      sSelect--;
-	      if (sSelect >= 0)
-		WinSendDlgItemMsg(hwnd, MSK_LISTBOX, LM_SELECTITEM,
-				  MPFROMSHORT(sSelect), MPFROMSHORT(TRUE));
-	    }
-	    sLastMaskSelect = sSelect;
+	if (*s) {
+	  if (SHORT1FROMMP(mp1) == DID_OK) {
+	    strcpy(mask->szMask, s);
+	    add_mask(s);
+	    save_masks();
+	    SetMask(mask->szMask, mask);
+	    WinDismissDlg(hwnd, 1);
+	  }
+          else {
+            // MSK_DELETE
+	    WinSetDlgItemText(hwnd, MSK_MASK, NullStr);
+	    remove_mask(s);
+	    save_masks();
+	    sSelect = (SHORT) WinSendDlgItemMsg(hwnd, MSK_LISTBOX, LM_SEARCHSTRING,
+						MPFROM2SHORT(0, LIT_FIRST), MPFROMP(s));
+	    if (sSelect >= 0)
+	      WinSendDlgItemMsg(hwnd, MSK_LISTBOX, LM_DELETEITEM,
+				MPFROM2SHORT(sSelect, 0), MPVOID);
 	  }
 	}
-      }
-      else {
-	if (SHORT1FROMMP(mp1) == DID_OK) {
-	  *mask->szMask = 0;
-	  SetMask(mask->szMask, mask);
-	  PrfWriteProfileData(fmprof, appname,
-			      PSCZ_FILTER_LASTMASK_SELECT, &sLastMaskSelect, sizeof(sLastMaskSelect));
-	  WinDismissDlg(hwnd, 1);
+	else {
+	  if (SHORT1FROMMP(mp1) == DID_OK) {
+	    *mask->szMask = 0;
+	    SetMask(mask->szMask, mask);
+	    WinDismissDlg(hwnd, 1);
+	  }
+	  else if (!fAlertBeepOff)
+	    DosBeep(50, 100);		// MSK_DELETE
 	}
-	else if (!fAlertBeepOff)
-	  DosBeep(50, 100);		// MSK_DELETE
       }
       break;
 
@@ -693,8 +665,6 @@ MRESULT EXPENTRY PickMaskDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
 
     case DID_CANCEL:
-      PrfWriteProfileData(fmprof, appname,
-			  PSCZ_FILTER_LASTMASK_SELECT, &sLastMaskSelect, sizeof(sLastMaskSelect));
       WinDismissDlg(hwnd, 0);
       break;
     }

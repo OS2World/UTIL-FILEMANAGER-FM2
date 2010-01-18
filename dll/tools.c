@@ -6,7 +6,7 @@
   Toolbar support routines
 
   Copyright (c) 1994-97 M. Kimes
-  Copyright (c) 2004, 2008 Steven H.Levine
+  Copyright (c) 2004, 2010 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   23 May 05 SHL Use QWL_USER
@@ -23,6 +23,7 @@
   01 Sep 08 GKY Save toolbars immediately on change.
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -232,7 +233,7 @@ VOID save_tools(CHAR * filename)
     filename = "FM3TOOLS.TLS";
   if (toolhead && filename && *filename) {
     strcpy(lasttoolbar, filename);
-    PrfWriteProfileString(fmprof, FM3Str, "LastToolbar", filename);
+    PrfWriteProfileString(fmprof, (CHAR *) FM3Str, "LastToolbar", filename);
   }
   if (!toolhead) {
     unlinkf(filename);
@@ -423,7 +424,7 @@ MRESULT EXPENTRY ReOrderToolsProc(HWND hwnd, ULONG msg, MPARAM mp1,
   case WM_INITDLG:
     if (!toolhead || !toolhead->next)
       WinDismissDlg(hwnd, 0);
-    WinSetWindowText(hwnd, GetPString(IDS_RETOOLTEXT));
+    WinSetWindowText(hwnd, (CHAR *) GetPString(IDS_RETOOLTEXT));
     {
       TOOL *tool;
       CHAR s[133];
@@ -611,7 +612,7 @@ MRESULT EXPENTRY AddToolProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_INITDLG:
     WinSetWindowPtr(hwnd, QWL_USER, mp2);
     if (mp2) {
-      WinSetWindowText(hwnd, GetPString(IDS_EDITTOOLTEXT));
+      WinSetWindowText(hwnd, (CHAR *) GetPString(IDS_EDITTOOLTEXT));
       WinSendDlgItemMsg(hwnd, ADDBTN_ID, EM_SETREADONLY,
 			MPFROM2SHORT(TRUE, 0), MPVOID);
     }
@@ -699,7 +700,7 @@ MRESULT EXPENTRY AddToolProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSetDlgItemText(hwnd, ADDBTN_HELPME, NullStr);
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
 	WinSetDlgItemText(hwnd, ADDBTN_HELPME,
-			  GetPString(IDS_ADDTOOLQUICKHELPTEXT));
+			  (CHAR *) GetPString(IDS_ADDTOOLQUICKHELPTEXT));
       break;
 
     case ADDBTN_TEXT:
@@ -707,7 +708,7 @@ MRESULT EXPENTRY AddToolProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSetDlgItemText(hwnd, ADDBTN_HELPME, NullStr);
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
 	WinSetDlgItemText(hwnd, ADDBTN_HELPME,
-			  GetPString(IDS_ADDTOOLBUTTONTEXT));
+			  (CHAR *) GetPString(IDS_ADDTOOLBUTTONTEXT));
       break;
 
     case ADDBTN_ID:
@@ -717,7 +718,7 @@ MRESULT EXPENTRY AddToolProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
 	WinSetDlgItemText(hwnd,
-			  ADDBTN_HELPME, GetPString(IDS_ADDTOOLBUTTONIDTEXT));
+			  ADDBTN_HELPME, (CHAR *) GetPString(IDS_ADDTOOLBUTTONIDTEXT));
       break;
 
     case ADDBTN_MYICON:
@@ -941,7 +942,7 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSetWindowULong(hwnd, QWL_USER, TRUE);
     else {
       WinSetWindowULong(hwnd, QWL_USER, FALSE);
-      WinSetWindowText(hwnd, GetPString(IDS_LOADTOOLBARTITLETEXT));
+      WinSetWindowText(hwnd, (CHAR *) GetPString(IDS_LOADTOOLBARTITLETEXT));
     }
     WinSendDlgItemMsg(hwnd,
 		      SVBTN_ENTRY,
@@ -990,7 +991,7 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     WinSetDlgItemText(hwnd,
 		      SVBTN_CURRENT,
-		      (*lasttoolbar) ? lasttoolbar : PCSZ_FM3TOOLSDAT);
+		      (*lasttoolbar) ? lasttoolbar : (CHAR *) PCSZ_FM3TOOLSDAT);
     break;
 
   case UM_SETUP:
@@ -1068,7 +1069,7 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    }
 	  }
 	}
-	PrfWriteProfileString(fmprof, FM3Str, "LastToolbar", lasttoolbar);
+	PrfWriteProfileString(fmprof, (CHAR *) FM3Str, "LastToolbar", lasttoolbar);
       }
       WinDismissDlg(hwnd, 1);
       break;

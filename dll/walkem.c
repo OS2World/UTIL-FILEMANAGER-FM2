@@ -35,6 +35,7 @@
   24 Aug 08 GKY Warn full drive on save of .DAT file; prevent loss of existing file
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
   06 Oct 09 SHL Ctrl-select selects Walk Dialog listbox entry, but suppresses action
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -127,7 +128,7 @@ VOID fill_setups_list(VOID)
 		 MPFROM2SHORT(LIT_SORTASCENDING, 0),
 		 MPFROMP(pld->path));
     }
-    WinSetWindowText(hwndStatelist, GetPString(IDS_STATETEXT));
+    WinSetWindowText(hwndStatelist, (CHAR *) GetPString(IDS_STATETEXT));
   }
 }
 
@@ -203,12 +204,12 @@ VOID load_setups(VOID)
   if (fSetupsLoaded)
     return;
 
-  if (!PrfQueryProfileSize(fmprof, FM3Str, pszLastSetups, &ulDataBytes)) {
+  if (!PrfQueryProfileSize(fmprof, (CHAR *) FM3Str, pszLastSetups, &ulDataBytes)) {
     // fixme to use generic hab
     ERRORID eid = WinGetLastError((HAB)0);
     if ((eid & 0xffff) != PMERR_NOT_IN_IDX) {
       // Get error info back
-      PrfQueryProfileSize(fmprof, FM3Str, pszLastSetups, &ulDataBytes);
+      PrfQueryProfileSize(fmprof, (CHAR *) FM3Str, pszLastSetups, &ulDataBytes);
       Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_PRFQUERYPROFILESIZE);
     }
     else
@@ -225,7 +226,7 @@ VOID load_setups(VOID)
   if (!pszBuf)
     return;
   l = ulDataBytes;
-  if (!PrfQueryProfileData(fmprof, FM3Str, pszLastSetups, pszBuf, &l)) {
+  if (!PrfQueryProfileData(fmprof, (CHAR *) FM3Str, pszLastSetups, pszBuf, &l)) {
     Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_PRFQUERYPROFILEDATA);
     free(pszBuf);
     return;
@@ -320,7 +321,7 @@ VOID save_setups(VOID)
   }
 
   if (!PrfWriteProfileData(fmprof,
-			   FM3Str,
+			   (CHAR *) FM3Str,
 			    pszLastSetups, pszBuf, ulBufBytes)) {
     ERRORID eid = WinGetLastError((HAB)0);
     if ((eid & 0xffff) != PMERR_NOT_IN_IDX)
@@ -328,7 +329,7 @@ VOID save_setups(VOID)
   }
 
   // Delete obsolete INI entry
-  PrfWriteProfileData(fmprof, FM3Str, "LastSetup", NULL, 0);
+  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "LastSetup", NULL, 0);
 }
 
 /**
@@ -776,7 +777,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       SWP swp;
       ULONG size = sizeof(SWP);
 
-      PrfQueryProfileData(fmprof, FM3Str, "WalkDir.Position", (PVOID) &swp, &size);
+      PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "WalkDir.Position", (PVOID) &swp, &size);
       swp.fl &= ~SWP_SIZE;		// 04 Feb 09 SHL ignore saved size
       WinSetWindowPos(hwnd,
 		      HWND_TOP,
@@ -899,7 +900,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      continue;
 	    }
 	    WinSetDlgItemText(hwnd, WALK_RECENT,
-			      GetPString(IDS_WALKRECENTDIRSTEXT));
+			      (CHAR *) GetPString(IDS_WALKRECENTDIRSTEXT));
 	  }
 	  else if (!(ulDriveMap & (1 << (toupper(*info->path) - 'A')))) {
 	    temp = info->next;
@@ -1005,10 +1006,10 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     switch (SHORT1FROMMP(mp1)) {
     case WALK_PATH:
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, WALK_HELP, GetPString(IDS_WALKCURRDIRTEXT));
+	WinSetDlgItemText(hwnd, WALK_HELP, (CHAR *) GetPString(IDS_WALKCURRDIRTEXT));
       else if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, WALK_HELP,
-			  GetPString(IDS_WALKDEFAULTHELPTEXT));
+			  (CHAR *) GetPString(IDS_WALKDEFAULTHELPTEXT));
       break;
 
     case WALK_RECENT:
@@ -1058,7 +1059,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(DID_OK, 0), MPVOID);
       else if (SHORT2FROMMP(mp1) == CBN_SHOWLIST)
 	WinSetDlgItemText(hwnd, WALK_HELP,
-			  GetPString(IDS_WALKRECENTDIRSHELPTEXT));
+			  (CHAR *) GetPString(IDS_WALKRECENTDIRSHELPTEXT));
       break;
 
     case WALK_USERLIST:
@@ -1110,10 +1111,10 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(DID_OK, 0), MPVOID);
       else if (SHORT2FROMMP(mp1) == LN_SETFOCUS)
 	WinSetDlgItemText(hwnd,
-			  WALK_HELP, GetPString(IDS_WALKUSERDIRSHELPTEXT));
+			  WALK_HELP, (CHAR *) GetPString(IDS_WALKUSERDIRSHELPTEXT));
       else if (SHORT2FROMMP(mp1) == LN_KILLFOCUS)
 	WinSetDlgItemText(hwnd,
-			  WALK_HELP, GetPString(IDS_WALKDEFAULTHELPTEXT));
+			  WALK_HELP, (CHAR *) GetPString(IDS_WALKDEFAULTHELPTEXT));
       break;
 
     case WALK_DRIVELIST:
@@ -1135,10 +1136,10 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       else if (SHORT2FROMMP(mp1) == LN_SETFOCUS)
 	WinSetDlgItemText(hwnd, WALK_HELP,
-			  GetPString(IDS_WALKDRIVELISTHELPTEXT));
+			  (CHAR *) GetPString(IDS_WALKDRIVELISTHELPTEXT));
       else if (SHORT2FROMMP(mp1) == LN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, WALK_HELP,
-			  GetPString(IDS_WALKDEFAULTHELPTEXT));
+			  (CHAR *) GetPString(IDS_WALKDEFAULTHELPTEXT));
       break;
 
     case WALK_DIRLIST:
@@ -1188,10 +1189,10 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       else if (SHORT2FROMMP(mp1) == LN_SETFOCUS)
 	WinSetDlgItemText(hwnd, WALK_HELP,
-			  GetPString(IDS_WALKDIRLISTHELPTEXT));
+			  (CHAR *) GetPString(IDS_WALKDIRLISTHELPTEXT));
       else if (SHORT2FROMMP(mp1) == LN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, WALK_HELP,
-			  GetPString(IDS_WALKDEFAULTHELPTEXT));
+			  (CHAR *) GetPString(IDS_WALKDEFAULTHELPTEXT));
       break;
     }
     return 0;
@@ -1267,7 +1268,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	SWP swp;
 	ULONG size = sizeof(SWP);
 	WinQueryWindowPos(hwnd, &swp);
-	PrfWriteProfileData(fmprof, FM3Str, "WalkDir.Position", (PVOID) &swp,
+	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "WalkDir.Position", (PVOID) &swp,
 			    size);
       }
       if (wa->changed)
@@ -1288,7 +1289,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	ULONG size = sizeof(SWP);
 
 	WinQueryWindowPos(hwnd, &swp);
-	PrfWriteProfileData(fmprof, FM3Str, "WalkDir.Position", (PVOID) &swp,
+	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "WalkDir.Position", (PVOID) &swp,
 			    size);
       }
       if (wa->changed)
@@ -1318,7 +1319,7 @@ MRESULT EXPENTRY WalkCopyDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   switch (msg) {
   case WM_INITDLG:
-    WinSetWindowText(hwnd, GetPString(IDS_WALKCOPYDLGTEXT));
+    WinSetWindowText(hwnd, (CHAR *) GetPString(IDS_WALKCOPYDLGTEXT));
     return WalkDlgProc(hwnd, UM_SETUP2, mp1, mp2);
   }
   return WalkDlgProc(hwnd, msg, mp1, mp2);
@@ -1328,7 +1329,7 @@ MRESULT EXPENTRY WalkMoveDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   switch (msg) {
   case WM_INITDLG:
-    WinSetWindowText(hwnd, GetPString(IDS_WALKMOVEDLGTEXT));
+    WinSetWindowText(hwnd, (CHAR *) GetPString(IDS_WALKMOVEDLGTEXT));
     return WalkDlgProc(hwnd, UM_SETUP2, mp1, mp2);
   }
   return WalkDlgProc(hwnd, msg, mp1, mp2);
@@ -1339,7 +1340,7 @@ MRESULT EXPENTRY WalkExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 {
   switch (msg) {
   case WM_INITDLG:
-    WinSetWindowText(hwnd, GetPString(IDS_WALKEXTRACTDLGTEXT));
+    WinSetWindowText(hwnd, (CHAR *) GetPString(IDS_WALKEXTRACTDLGTEXT));
     return WalkDlgProc(hwnd, UM_SETUP2, mp1, mp2);
   }
   return WalkDlgProc(hwnd, msg, mp1, mp2);
@@ -1402,7 +1403,7 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       SWP swp;
       ULONG size = sizeof(SWP);
 
-      PrfQueryProfileData(fmprof, FM3Str, "WalkDir2.Position", (PVOID) &swp, &size);
+      PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "WalkDir2.Position", (PVOID) &swp, &size);
       swp.fl &= ~SWP_SIZE;		// 04 Feb 09 SHL ignore saved size
       WinSetWindowPos(hwnd,
 		      HWND_TOP,
@@ -1684,7 +1685,7 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       ULONG size = sizeof(SWP);
 
       WinQueryWindowPos(hwnd, &swp);
-      PrfWriteProfileData(fmprof, FM3Str, "WalkDir2.Position", (PVOID) &swp,
+      PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "WalkDir2.Position", (PVOID) &swp,
 			  size);
       }
       WinDismissDlg(hwnd, 1);
@@ -1703,7 +1704,7 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       ULONG size = sizeof(SWP);
 
       WinQueryWindowPos(hwnd, &swp);
-      PrfWriteProfileData(fmprof, FM3Str, "WalkDir2.Position", (PVOID) &swp,
+      PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "WalkDir2.Position", (PVOID) &swp,
 			  size);
       }
       WinDismissDlg(hwnd, 0);
@@ -1722,7 +1723,7 @@ MRESULT EXPENTRY WalkTwoCmpDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 {
   switch (msg) {
   case WM_INITDLG:
-    WinSetWindowText(hwnd, GetPString(IDS_WALKCOMPAREDLGTEXT));
+    WinSetWindowText(hwnd, (CHAR *) GetPString(IDS_WALKCOMPAREDLGTEXT));
     return WalkTwoDlgProc(hwnd, UM_SETUP2, mp1, mp2);
   }
   return WalkTwoDlgProc(hwnd, msg, mp1, mp2);
@@ -1733,7 +1734,7 @@ MRESULT EXPENTRY WalkTwoSetDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 {
   switch (msg) {
   case WM_INITDLG:
-    WinSetWindowText(hwnd, GetPString(IDS_WALKSETDIRSDLGTEXT));
+    WinSetWindowText(hwnd, (CHAR *) GetPString(IDS_WALKSETDIRSDLGTEXT));
     return WalkTwoDlgProc(hwnd, UM_SETUP2, mp1, mp2);
   }
   return WalkTwoDlgProc(hwnd, msg, mp1, mp2);

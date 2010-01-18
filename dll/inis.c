@@ -4,7 +4,7 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2008 Steven H. Levine
+  Copyright (c) 2004, 2010 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   01 Aug 04 SHL Rework fixup usage
@@ -35,6 +35,7 @@
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   14 Mar 09 GKY Additional strings move to PCSZs
   12 Sep 09 GKY Add FM3.INI User ini and system ini to submenu for view ini
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -669,7 +670,7 @@ MRESULT EXPENTRY FilterIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSetDlgItemText(hwnd, IAF_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
 	WinSetDlgItemText(hwnd,
-			  IAF_HELP, GetPString(IDS_MASKLISTNAMEHELPTEXT));
+			  IAF_HELP, (CHAR *) GetPString(IDS_MASKLISTNAMEHELPTEXT));
       break;
 
     case IAF_LISTBOX:
@@ -677,7 +678,7 @@ MRESULT EXPENTRY FilterIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSetDlgItemText(hwnd, IAF_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == LN_SETFOCUS)
 	WinSetDlgItemText(hwnd,
-			  IAF_HELP, GetPString(IDS_MASKLISTFILESHELPTEXT));
+			  IAF_HELP, (CHAR *) GetPString(IDS_MASKLISTFILESHELPTEXT));
       else if (SHORT2FROMMP(mp1) == LN_ENTER)
 	PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IAF_LOAD, 0), MPVOID);
       break;
@@ -687,7 +688,7 @@ MRESULT EXPENTRY FilterIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSetDlgItemText(hwnd, IAF_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == MLN_SETFOCUS)
 	WinSetDlgItemText(hwnd,
-			  IAF_HELP, GetPString(IDS_MASKLISTMASKSHELPTEXT));
+			  IAF_HELP, (CHAR *) GetPString(IDS_MASKLISTMASKSHELPTEXT));
       break;
     }
     return 0;
@@ -735,7 +736,7 @@ MRESULT EXPENTRY FilterIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	else {
 	  WinSetPointer(HWND_DESKTOP, hptrBusy);
-	  WinSetDlgItemText(hwnd, IAF_HELP, GetPString(IDS_FILTERINGTEXT));
+	  WinSetDlgItemText(hwnd, IAF_HELP, (CHAR *) GetPString(IDS_FILTERINGTEXT));
 	  sSelect = 0;
 	  while (numitems) {
 	    *app = 0;
@@ -901,10 +902,10 @@ MRESULT EXPENTRY IntraIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinEnableWindow(WinWindowFromID(hwnd, INII_NEWKEYHDR), FALSE);
       switch (inirec->action) {
       case IDM_MOVE:
-	WinSetWindowText(hwnd, GetPString(IDS_INIRENAMEAPPTITLETEXT));
+	WinSetWindowText(hwnd, (CHAR *) GetPString(IDS_INIRENAMEAPPTITLETEXT));
 	break;
       case IDM_COPY:
-	WinSetWindowText(hwnd, GetPString(IDS_INICOPYAPPTITLETEXT));
+	WinSetWindowText(hwnd, (CHAR *) GetPString(IDS_INICOPYAPPTITLETEXT));
 	break;
       }
     }
@@ -921,10 +922,10 @@ MRESULT EXPENTRY IntraIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			EM_SETSEL, MPFROM2SHORT(0, CCHMAXPATH), MPVOID);
       switch (inirec->action) {
       case IDM_MOVE:
-	WinSetWindowText(hwnd, GetPString(IDS_INIRENAMEKEYTITLETEXT));
+	WinSetWindowText(hwnd, (CHAR *) GetPString(IDS_INIRENAMEKEYTITLETEXT));
 	break;
       case IDM_COPY:
-	WinSetWindowText(hwnd, GetPString(IDS_INICOPYKEYTITLETEXT));
+	WinSetWindowText(hwnd, (CHAR *) GetPString(IDS_INICOPYKEYTITLETEXT));
 	break;
       }
     }
@@ -1089,7 +1090,7 @@ MRESULT EXPENTRY SwapIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinSendDlgItemMsg(hwnd,
 		      INIR_SYSTEMPROFILE,
 		      EM_SETTEXTLIMIT, MPFROM2SHORT(CCHMAXPATH, 0), MPVOID);
-    WinSetWindowText(hwnd, GetPString(IDS_INISWAPOS2INISTITLETEXT));
+    WinSetWindowText(hwnd, (CHAR *) GetPString(IDS_INISWAPOS2INISTITLETEXT));
     break;
 
   case WM_COMMAND:
@@ -1332,7 +1333,7 @@ MRESULT EXPENTRY AddIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     inidata = (INIDATA *) mp2;
     if (inidata->edit)
-      WinSetWindowText(hwnd, GetPString(IDS_INIEDITINITITLETEXT));
+      WinSetWindowText(hwnd, (CHAR *) GetPString(IDS_INIEDITINITITLETEXT));
     WinSetWindowPtr(hwnd, QWL_USER, (PVOID) mp2);
     WinSendDlgItemMsg(hwnd,
 		      IAD_APPNAME,
@@ -1548,7 +1549,7 @@ HWND StartIniEditor(HWND hwnd, CHAR *fname, INT flags)
   hwndFrame = WinCreateStdWindow(hwnd,
 				 0,
 				 &flFrameFlags,
-				 WC_INIEDITOR,
+				 (CHAR *) WC_INIEDITOR,
 				 NullStr,
 				 fwsAnimate,
 				 FM3ModHandle, INI_FRAME, &hwndClient);
@@ -1563,7 +1564,7 @@ HWND StartIniEditor(HWND hwnd, CHAR *fname, INT flags)
 		      SWP_SIZE | SWP_MOVE);
     }
     else if (ParentIsDesktop(hwndFrame, hwnd)) {
-      if (!WinRestoreWindowPos(FM2Str, "INIWindowPos", hwndFrame)) {
+      if (!WinRestoreWindowPos((CHAR *) FM2Str, "INIWindowPos", hwndFrame)) {
 
 	ULONG fl = SWP_MOVE | SWP_SIZE;
 	SWP swp;
@@ -1699,11 +1700,11 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       else {
 	pDItem = DrgQueryDragitemPtr(pDInfo,0);
 	/* Check valid rendering mechanisms and data */
-	if (DrgVerifyRMF(pDItem, DRM_OS2FILE, NULL)) {
+	if (DrgVerifyRMF(pDItem, (CHAR *) DRM_OS2FILE, NULL)) {
 	  DrgFreeDraginfo(pDInfo);
 	  return (MRFROM2SHORT(DOR_DROP, DO_LINK));     /* OK to drop */
 	}
-	else if (DrgVerifyRMF(pDItem, DRM_FM2INIRECORD, DRF_FM2INI)) {
+	else if (DrgVerifyRMF(pDItem, (CHAR *) DRM_FM2INIRECORD, (CHAR *) DRF_FM2INI)) {
 	  if (WinQueryWindow(pDInfo->hwndSource, QW_PARENT) !=
 	      WinQueryWindow(hwnd, QW_PARENT))
 	  {
@@ -1739,7 +1740,7 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       numitems = DrgQueryDragitemCount(pDInfo);
       for (curitem = 0; curitem < numitems; curitem++) {
 	pDItem = DrgQueryDragitemPtr(pDInfo, curitem);
-	if (DrgVerifyRMF(pDItem, DRM_OS2FILE, NULL)) {
+	if (DrgVerifyRMF(pDItem, (CHAR *) DRM_OS2FILE, NULL)) {
 	  if (pDItem->fsControl & DC_PREPARE)
 	    DrgSendTransferMsg(pDItem->hwndItem,
 			       DM_ENDCONVERSATION,
@@ -1756,7 +1757,7 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			       MPFROMLONG(DMFL_TARGETFAIL));
 	  }
 	}
-	else if (DrgVerifyRMF(pDItem, DRM_FM2INIRECORD, DRF_FM2INI)) {
+	else if (DrgVerifyRMF(pDItem, (CHAR *) DRM_FM2INIRECORD, (CHAR *) DRF_FM2INI)) {
 	  *szDir = *szFrom = *szTemp = 0;
 	  len = DrgQueryStrName(pDItem->hstrContainerName, CCHMAXPATH, szDir);
 	  szDir[len] = 0;
@@ -1883,7 +1884,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     if (!WinCreateWindow(hwnd,
 			 WC_STATIC,
-			 GetPString(IDS_APPLICATIONSTITLETEXT),
+			 (CHAR *) GetPString(IDS_APPLICATIONSTITLETEXT),
 			 WS_VISIBLE | SS_TEXT |
 			 DT_CENTER | DT_VCENTER,
 			 0,
@@ -1893,7 +1894,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     if (!WinCreateWindow(hwnd,
 			 WC_STATIC,
-			 GetPString(IDS_KEYWORDSTITLETEXT),
+			 (CHAR *) GetPString(IDS_KEYWORDSTITLETEXT),
 			 WS_VISIBLE | SS_TEXT |
 			 DT_CENTER | DT_VCENTER,
 			 0,
@@ -1903,7 +1904,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     if (!WinCreateWindow(hwnd,
 			 WC_STATIC,
-			 GetPString(IDS_DATABYTESTITLETEXT),
+			 (CHAR *) GetPString(IDS_DATABYTESTITLETEXT),
 			 WS_VISIBLE | SS_TEXT |
 			 DT_CENTER | DT_VCENTER,
 			 0,
@@ -1940,7 +1941,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else if (hwndStatus) {
 	if (*inidata->ininame) {
-	  WinSetWindowText(hwndStatus, GetPString(IDS_INTERNALINIVIEWERTEXT));
+	  WinSetWindowText(hwndStatus, (CHAR *) GetPString(IDS_INTERNALINIVIEWERTEXT));
 	  if (hwndStatus2)
 	    WinSetWindowText(hwndStatus2, inidata->ininame);
 	}
@@ -2293,8 +2294,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				 (WinQueryWindow(hwnd, QW_PARENT),
 				  QW_PARENT))) {
 	  if (hwndStatus)
-	    WinSetWindowText(hwndStatus,
-			     GetPString(IDS_INTERNALINIVIEWERTEXT));
+	    WinSetWindowText(hwndStatus, (CHAR *) GetPString(IDS_INTERNALINIVIEWERTEXT));
 	  if (hwndStatus2)
 	    WinSetWindowText(hwndStatus2, inidata->ininame);
 	}
@@ -2833,7 +2833,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       WinQueryWindowPos(WinQueryWindow(hwnd, QW_PARENT), &swp);
       if (!(swp.fl & (SWP_HIDE | SWP_MINIMIZE)))
-	WinStoreWindowPos(FM2Str,
+	WinStoreWindowPos((CHAR *) FM2Str,
 			  "INIWindowPos", WinQueryWindow(hwnd, QW_PARENT));
       // inidata = WinQueryWindowPtr(hwnd, QWL_USER);   // 09 Jan 08 SHL
     }

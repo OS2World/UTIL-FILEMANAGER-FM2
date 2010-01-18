@@ -6,7 +6,7 @@
   grep dialog for collector
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2009 Steven H. Levine
+  Copyright (c) 2004, 2010 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   23 May 05 SHL Use QWL_USER
@@ -26,6 +26,7 @@
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   07 Oct 09 SHL Remember last search mask across runs
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
   fixme for more excess locals to be gone
 
@@ -228,9 +229,9 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       sLastMaskSelect = LIT_NONE;
       fInitDone = TRUE;
     }
-    else if (sLastMaskSelect == LIT_NONE) {
+    else {//if (sLastMaskSelect == LIT_NONE) {
       size = sizeof(sLastMaskSelect);
-      PrfQueryProfileData(fmprof, appname, PSCZ_GREP_LASTMASK_SELECT, &sLastMaskSelect, &size);
+      PrfQueryProfileData(fmprof, appname, (CHAR *) PSCZ_GREP_LASTMASK_SELECT, &sLastMaskSelect, &size);
       if (sLastMaskSelect >= 0)
       fInitDone = TRUE;
     }
@@ -261,27 +262,27 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinSendDlgItemMsg(hwnd,
 		      GREP_MASK, EM_SETSEL, MPFROM2SHORT(0, 8192), MPVOID);
     size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, FM3Str, "RememberFlagsGrep",
+    PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "RememberFlagsGrep",
 			(PVOID) & gRemember, &size);
     WinCheckButton(hwnd, GREP_REMEMBERFLAGS, gRemember);
     if (gRemember) {
       size = sizeof(BOOL);
-      PrfQueryProfileData(fmprof, FM3Str, "Grep_Recurse",
+      PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Grep_Recurse",
 			  (PVOID) & recurse, &size);
       size = sizeof(BOOL);
-      PrfQueryProfileData(fmprof, FM3Str, "Grep_Absolute",
+      PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Grep_Absolute",
 			  (PVOID) & absolute, &size);
       size = sizeof(BOOL);
-      PrfQueryProfileData(fmprof, FM3Str, "Grep_Case",
+      PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Grep_Case",
 			  (PVOID) & sensitive, &size);
       size = sizeof(BOOL);
-      PrfQueryProfileData(fmprof, FM3Str, "Grep_Sayfiles",
+      PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Grep_Sayfiles",
 			  (PVOID) & sayfiles, &size);
       size = sizeof(BOOL);
-      PrfQueryProfileData(fmprof, FM3Str, "Grep_Searchfiles",
+      PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Grep_Searchfiles",
 			  (PVOID) & searchFiles, &size);
       size = sizeof(BOOL);
-      PrfQueryProfileData(fmprof, FM3Str, "Grep_SearchfEAs",
+      PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Grep_SearchfEAs",
 			  (PVOID) & searchEAs, &size);
     }
     if (!gRemember) {
@@ -337,9 +338,9 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       fclose(fp);
     }
     // 25 Sep 09 SHL Reselect last last used item
-    if (sLastMaskSelect >= 0)
-      WinSendDlgItemMsg(hwnd, GREP_LISTBOX, LM_SELECTITEM,
-			MPFROMSHORT(sLastMaskSelect), MPFROMSHORT(TRUE));
+    //if (sLastMaskSelect >= 0)
+    //  WinSendDlgItemMsg(hwnd, GREP_LISTBOX, LM_SELECTITEM,
+    //    		MPFROMSHORT(sLastMaskSelect), MPFROMSHORT(TRUE));
 
     FillPathListBox(hwnd,
 		    WinWindowFromID(hwnd, GREP_DRIVELIST),
@@ -368,7 +369,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       {
 	BOOL gRemember = WinQueryButtonCheckstate(hwnd, GREP_REMEMBERFLAGS);
 
-	PrfWriteProfileData(fmprof, FM3Str, "RememberFlagsGrep",
+	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "RememberFlagsGrep",
 			    (PVOID) & gRemember, sizeof(BOOL));
       }
       break;
@@ -377,11 +378,11 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       switch (SHORT2FROMMP(mp1)) {
       case LN_KILLFOCUS:
 	WinSetDlgItemText(hwnd,
-			  GREP_HELP, GetPString(IDS_ARCDEFAULTHELPTEXT));
+			  GREP_HELP, (CHAR *) GetPString(IDS_ARCDEFAULTHELPTEXT));
 	break;
       case LN_SETFOCUS:
 	WinSetDlgItemText(hwnd,
-			  GREP_HELP, GetPString(IDS_2CLICKADDDRVMASKTEXT));
+			  GREP_HELP, (CHAR *) GetPString(IDS_2CLICKADDDRVMASKTEXT));
 	break;
       case LN_ENTER:
 	WinQueryDlgItemText(hwnd, GREP_MASK, 8192, s);
@@ -440,10 +441,10 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       switch (SHORT2FROMMP(mp1)) {
       case LN_KILLFOCUS:
 	WinSetDlgItemText(hwnd,
-			  GREP_HELP, GetPString(IDS_ARCDEFAULTHELPTEXT));
+			  GREP_HELP, (CHAR *) GetPString(IDS_ARCDEFAULTHELPTEXT));
 	break;
       case LN_SETFOCUS:
-	WinSetDlgItemText(hwnd, GREP_HELP, GetPString(IDS_ADDSELDELMASKTEXT));
+	WinSetDlgItemText(hwnd, GREP_HELP, (CHAR *) GetPString(IDS_ADDSELDELMASKTEXT));
 	break;
       case LN_ENTER:
       case LN_SELECT:
@@ -483,44 +484,44 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case GREP_MASK:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd,
-			  GREP_HELP, GetPString(IDS_ARCDEFAULTHELPTEXT));
+			  GREP_HELP, (CHAR *) GetPString(IDS_ARCDEFAULTHELPTEXT));
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, GREP_HELP, GetPString(IDS_MASKSFINDTEXT));
+	WinSetDlgItemText(hwnd, GREP_HELP, (CHAR *) GetPString(IDS_MASKSFINDTEXT));
       break;
     case GREP_SEARCH:
       if (SHORT2FROMMP(mp1) == MLN_KILLFOCUS)
 	WinSetDlgItemText(hwnd,
-			  GREP_HELP, GetPString(IDS_ARCDEFAULTHELPTEXT));
+			  GREP_HELP, (CHAR *) GetPString(IDS_ARCDEFAULTHELPTEXT));
       if (SHORT2FROMMP(mp1) == MLN_SETFOCUS)
-	WinSetDlgItemText(hwnd, GREP_HELP, GetPString(IDS_TEXTFINDTEXT));
+	WinSetDlgItemText(hwnd, GREP_HELP, (CHAR *) GetPString(IDS_TEXTFINDTEXT));
       break;
     case GREP_GREATER:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd,
-			  GREP_HELP, GetPString(IDS_ARCDEFAULTHELPTEXT));
+			  GREP_HELP, (CHAR *) GetPString(IDS_ARCDEFAULTHELPTEXT));
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, GREP_HELP, GetPString(IDS_MINSIZEFINDTEXT));
+	WinSetDlgItemText(hwnd, GREP_HELP, (CHAR *) GetPString(IDS_MINSIZEFINDTEXT));
       break;
     case GREP_LESSER:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd,
-			  GREP_HELP, GetPString(IDS_ARCDEFAULTHELPTEXT));
+			  GREP_HELP, (CHAR *) GetPString(IDS_ARCDEFAULTHELPTEXT));
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, GREP_HELP, GetPString(IDS_MAXSIZEFINDTEXT));
+	WinSetDlgItemText(hwnd, GREP_HELP, (CHAR *) GetPString(IDS_MAXSIZEFINDTEXT));
       break;
     case GREP_NEWER:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd,
-			  GREP_HELP, GetPString(IDS_ARCDEFAULTHELPTEXT));
+			  GREP_HELP, (CHAR *) GetPString(IDS_ARCDEFAULTHELPTEXT));
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, GREP_HELP, GetPString(IDS_MAXAGEFINDTEXT));
+	WinSetDlgItemText(hwnd, GREP_HELP, (CHAR *) GetPString(IDS_MAXAGEFINDTEXT));
       break;
     case GREP_OLDER:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd,
-			  GREP_HELP, GetPString(IDS_ARCDEFAULTHELPTEXT));
+			  GREP_HELP, (CHAR *) GetPString(IDS_ARCDEFAULTHELPTEXT));
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, GREP_HELP, GetPString(IDS_MINAGEFINDTEXT));
+	WinSetDlgItemText(hwnd, GREP_HELP, (CHAR *) GetPString(IDS_MINAGEFINDTEXT));
       break;
     case GREP_FINDDUPES:
       {
@@ -854,21 +855,21 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	findifany = WinQueryButtonCheckstate(hwnd, GREP_FINDIFANY) != 0;
 	gRemember = WinQueryButtonCheckstate(hwnd, GREP_REMEMBERFLAGS);
 	if (gRemember) {
-	  PrfWriteProfileData(fmprof, FM3Str, "Grep_Recurse",
+	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Grep_Recurse",
 			      (PVOID) & recurse, sizeof(BOOL));
-	  PrfWriteProfileData(fmprof, FM3Str, "Grep_Absolute",
+	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Grep_Absolute",
 			      (PVOID) & absolute, sizeof(BOOL));
-	  PrfWriteProfileData(fmprof, FM3Str, "Grep_Case",
+	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Grep_Case",
 			      (PVOID) & sensitive, sizeof(BOOL));
-	  PrfWriteProfileData(fmprof, FM3Str, "Grep_Sayfiles",
+	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Grep_Sayfiles",
 			      (PVOID) & sayfiles, sizeof(BOOL));
-	  PrfWriteProfileData(fmprof, FM3Str, "Grep_Searchfiles",
+	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Grep_Searchfiles",
 			      (PVOID) & searchFiles, sizeof(BOOL));
-	  PrfWriteProfileData(fmprof, FM3Str, "Grep_SearchfEAs",
+	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Grep_SearchfEAs",
 			      (PVOID) & searchEAs, sizeof(BOOL));
 	}
 	PrfWriteProfileData(fmprof, appname,
-			    PSCZ_GREP_LASTMASK_SELECT, &sLastMaskSelect, sizeof(sLastMaskSelect));
+			    (CHAR *) PSCZ_GREP_LASTMASK_SELECT, &sLastMaskSelect, sizeof(sLastMaskSelect));
 	g.finddupes = WinQueryButtonCheckstate(hwnd, GREP_FINDDUPES) != 0;
 	if (g.finddupes) {
 	  g.CRCdupes = WinQueryButtonCheckstate(hwnd, GREP_CRCDUPES) != 0;

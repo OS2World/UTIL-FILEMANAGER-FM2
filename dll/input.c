@@ -6,12 +6,13 @@
   Input dialog procecedure
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2009 Steven H. Levine
+  Copyright (c) 2005, 2010 Steven H. Levine
 
   28 May 05 SHL Use saymsg
   14 Jul 06 SHL Use Runtime_Error
   22 Mar 07 GKY Use QWL_USER
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -54,7 +55,7 @@ MRESULT EXPENTRY InputDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
     }
     if (psip->prompt && *psip->prompt)
-      WinSetDlgItemText(hwnd, STR_PROMPT, psip->prompt);
+      WinSetDlgItemText(hwnd, STR_PROMPT, (CHAR *) psip->prompt);
     if (psip->ret && *psip->ret) {
       WinSetDlgItemText(hwnd, STR_INPUT, psip->ret);
       WinSendDlgItemMsg(hwnd, STR_INPUT, EM_SETSEL,
@@ -62,7 +63,7 @@ MRESULT EXPENTRY InputDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     *psip->ret = 0;
     if (psip->title && *psip->title)
-      WinSetWindowText(hwnd, psip->title);
+      WinSetWindowText(hwnd, (CHAR *) psip->title);
     break;
 
   case WM_CONTROL:			// don't care

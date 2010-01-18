@@ -13,6 +13,7 @@
   11 Jul 08 JBS Ticket 230: Simplified code and eliminated some local variables by incorporating
                 all the details view settings (both the global variables and those in the
                 DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -143,7 +144,9 @@ typedef struct DIRCNRDATA
   CHAR szCommonName[CCHMAXPATH];
   ULONG lasttime;
   BOOL arcfilled;
+#ifdef INCL_DOSSEMAPHORES
   HMTX filling;
+#endif
   BOOL firsttree;
   ULONG lastattr;
   ULONG ulItemsToUnHilite;

@@ -4,7 +4,7 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2008 Steven H.Levine
+  Copyright (c) 2004, 2010 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   14 Jul 06 SHL Use Runtime_Error
@@ -21,6 +21,7 @@
   24 Aug 08 GKY Warn full drive on save of .DAT file; prevent loss of existing file
   15 Nov 09 GKY Add check for attempt to open zero byte file (avoids MMPM trying to play them)
   21 Dec 09 GKY Added CheckExecutibleFlags to streamline code in command.c assoc.c & cmdline.c
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 **************************************************************************************/
 
@@ -233,7 +234,7 @@ VOID display_associations(HWND hwnd, ASSOC *temp, LINKASSOC *info)
   WinQueryDlgItemText(hwnd, ASS_ENVIRON, 2048, szEnviroment);
   bstripcr(szEnviroment);
   if (*szEnviroment)
-    PrfWriteProfileString(fmprof, FM3Str, temp->pszCmdLine, szEnviroment);
+    PrfWriteProfileString(fmprof, (CHAR *) FM3Str, temp->pszCmdLine, szEnviroment);
   pszDisplayStr = xmallocz((CCHMAXPATH * 2) + MaxComLineStrg + 6,
 			   pszSrcFile, __LINE__);
   if (pszDisplayStr) {
@@ -637,7 +638,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    *env = 0;
 	    size = sizeof(env) - 1;
 	    if (PrfQueryProfileData(fmprof,
-				    FM3Str, info->pszCmdLine, env, &size) && *env)
+				    (CHAR *) FM3Str, info->pszCmdLine, env, &size) && *env)
 	      WinSetDlgItemText(hwnd, ASS_ENVIRON, env);
 	    else
 	      WinSetDlgItemText(hwnd, ASS_ENVIRON, NullStr);
@@ -882,7 +883,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  temp.offset = atol(dummy);
 	}
 	bstrip(temp.mask);
-	PrfWriteProfileData(fmprof, FM3Str, temp.mask, NULL, 0L);
+	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, temp.mask, NULL, 0L);
 	if (kill_association(&temp)) {
 	  x = (SHORT) WinSendDlgItemMsg(hwnd,
 					ASS_LISTBOX,
@@ -988,7 +989,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  temp.offset = atol(dummy);
 	}
 	bstrip(temp.mask);
-	PrfWriteProfileData(fmprof, FM3Str, temp.mask, NULL, 0L);
+	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, temp.mask, NULL, 0L);
 	if (!kill_association(&temp))
 	  Runtime_Error(pszSrcFile, __LINE__, "kill_association");
 	else {

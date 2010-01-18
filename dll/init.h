@@ -6,7 +6,7 @@
   <<<description here>>>
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2008 Steven H. Levine
+  Copyright (c) 2008-10 Steven H. Levine
 
   Change log
   29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
@@ -22,6 +22,7 @@
                 and rescans drive in tree container depending on container focus, greyed out
                 inappropriate menu context choices
   15 Nov 09 GKY Add more PCSZs
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -201,9 +202,11 @@ extern CHAR *pTmpDir;
 extern CHAR profile[CCHMAXPATH];
 extern CHAR *pLibPathStrict;
 extern ULONGLONG ullTmpSpaceNeeded;
+#ifdef INCL_DOSSEMAPHORES
 extern HMTX hmtxFM2Globals;
 extern HMTX hmtxFM2Delete;
 extern HMTX hmtFillingTreeCnr;
 extern HEV  hevInitialCnrScanComplete;
+#endif
 
 #endif // INIT_H

@@ -6,13 +6,14 @@
   Utility windows and mouse positioning
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2009 Steven H.Levine
+  Copyright (c) 2005, 2010 Steven H.Levine
 
   10 Jan 05 SHL Allow DND_TARGET to hold CCHMAXPATH
   14 Jul 06 SHL Use Runtime_Error
   22 Mar 07 GKY Use QWL_USER
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   29 Nov 08 GKY Add flag to tell CheckListProc file is in an archive so it won't try to open it.
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -373,10 +374,10 @@ MRESULT EXPENTRY DropListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case DND_LISTBOX:
       switch (SHORT2FROMMP(mp1)) {
       case LN_SETFOCUS:
-	WinSetDlgItemText(hwnd, DND_HELP, GetPString(IDS_DNDLISTBOXHELPTEXT));
+	WinSetDlgItemText(hwnd, DND_HELP, (CHAR *) GetPString(IDS_DNDLISTBOXHELPTEXT));
 	break;
       case LN_KILLFOCUS:
-	WinSetDlgItemText(hwnd, DND_HELP, GetPString(IDS_DNDHELPTEXT));
+	WinSetDlgItemText(hwnd, DND_HELP, (CHAR *) GetPString(IDS_DNDHELPTEXT));
 	break;
       case LN_ENTER:
 	{
@@ -399,10 +400,10 @@ MRESULT EXPENTRY DropListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case DND_TARGET:
       switch (SHORT2FROMMP(mp1)) {
       case EN_SETFOCUS:
-	WinSetDlgItemText(hwnd, DND_HELP, GetPString(IDS_DNDTARGETHELPTEXT));
+	WinSetDlgItemText(hwnd, DND_HELP, (CHAR *) GetPString(IDS_DNDTARGETHELPTEXT));
 	break;
       case EN_KILLFOCUS:
-	WinSetDlgItemText(hwnd, DND_HELP, GetPString(IDS_DNDHELPTEXT));
+	WinSetDlgItemText(hwnd, DND_HELP, (CHAR *) GetPString(IDS_DNDHELPTEXT));
 	break;
       }
       break;

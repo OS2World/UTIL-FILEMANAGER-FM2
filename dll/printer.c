@@ -5,7 +5,7 @@
   Print file list
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2008 Steven H.Levine
+  Copyright (c) 2004, 2010 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   17 Jul 06 SHL Use Runtime_Error
@@ -14,6 +14,7 @@
   22 Mar 07 GKY Use QWL_USER
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -476,20 +477,20 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	prnformat = WinQueryButtonCheckstate(hwnd, PRN_FORMAT);
-	PrfWriteProfileData(fmprof, FM3Str, "Prnformat",
+	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Prnformat",
 			    (PVOID) & prnformat, sizeof(prnformat));
 	prnalt = WinQueryButtonCheckstate(hwnd, PRN_ALT);
-	PrfWriteProfileData(fmprof, FM3Str, "Prnalt",
+	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Prnalt",
 			    (PVOID) & prnalt, sizeof(prnalt));
 	prnpagenums = WinQueryButtonCheckstate(hwnd, PRN_PAGENUMS);
-	PrfWriteProfileData(fmprof, FM3Str, "Prnpagenums",
+	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Prnpagenums",
 			    (PVOID) & prnpagenums, sizeof(prnpagenums));
 	prnformfeedbefore = WinQueryButtonCheckstate(hwnd, PRN_FORMBEFORE);
-	PrfWriteProfileData(fmprof, FM3Str, "Prnformfeedbefore",
+	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Prnformfeedbefore",
 			    (PVOID) & prnformfeedbefore,
 			    sizeof(prnformfeedbefore));
 	prnformfeedafter = WinQueryButtonCheckstate(hwnd, PRN_FORMAFTER);
-	PrfWriteProfileData(fmprof, FM3Str, "Prnformfeedafter",
+	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Prnformfeedafter",
 			    (PVOID) & prnformfeedafter,
 			    sizeof(prnformfeedafter));
 	{
@@ -504,7 +505,7 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    break;
 	  }
 	  prnwidth = atol(s);
-	  PrfWriteProfileData(fmprof, FM3Str, "Prnwidth",
+	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Prnwidth",
 			      (PVOID) & prnwidth, sizeof(prnwidth));
 	  *s = 0;
 	  WinQueryDlgItemText(hwnd, PRN_LENGTH, sizeof(s), s);
@@ -515,7 +516,7 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    break;
 	  }
 	  prnlength = atol(s);
-	  PrfWriteProfileData(fmprof, FM3Str, "Prnlength",
+	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Prnlength",
 			      (PVOID) & prnlength, sizeof(prnlength));
 	  *s = 0;
 	  WinQueryDlgItemText(hwnd, PRN_LMARGIN, sizeof(s), s);
@@ -526,7 +527,7 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    break;
 	  }
 	  prnlmargin = atol(s);
-	  PrfWriteProfileData(fmprof, FM3Str, "Prnlmargin",
+	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Prnlmargin",
 			      (PVOID) & prnlmargin, sizeof(prnlmargin));
 	  *s = 0;
 	  WinQueryDlgItemText(hwnd, PRN_RMARGIN, sizeof(s), s);
@@ -537,7 +538,7 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    break;
 	  }
 	  prnrmargin = atol(s);
-	  PrfWriteProfileData(fmprof, FM3Str, "Prnrmargin",
+	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Prnrmargin",
 			      (PVOID) & prnrmargin, sizeof(prnrmargin));
 	  *s = 0;
 	  WinQueryDlgItemText(hwnd, PRN_TABSPACES, sizeof(s), s);
@@ -549,7 +550,7 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    break;
 	  }
 	  prntabspaces = atol(s);
-	  PrfWriteProfileData(fmprof, FM3Str, "Prntabspaces",
+	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Prntabspaces",
 			      (PVOID) & prntabspaces, sizeof(prntabspaces));
 	  *s = 0;
 	  WinQueryDlgItemText(hwnd, PRN_TMARGIN, sizeof(s), s);
@@ -560,7 +561,7 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    break;
 	  }
 	  prntmargin = atol(s);
-	  PrfWriteProfileData(fmprof, FM3Str, "Prntmargin",
+	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Prntmargin",
 			      (PVOID) & prntmargin, sizeof(prntmargin));
 	  *s = 0;
 	  WinQueryDlgItemText(hwnd, PRN_BMARGIN, sizeof(s), s);
@@ -571,7 +572,7 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    break;
 	  }
 	  prnbmargin = atol(s);
-	  PrfWriteProfileData(fmprof, FM3Str, "Prnbmargin",
+	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Prnbmargin",
 			      (PVOID) & prnbmargin, sizeof(prnbmargin));
 	  *s = 0;
 	  WinQueryDlgItemText(hwnd, PRN_SPACING, sizeof(s), s);
@@ -583,7 +584,7 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    break;
 	  }
 	  prnspacing = atol(s);
-	  PrfWriteProfileData(fmprof, FM3Str, "Prnspacing",
+	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Prnspacing",
 			      (PVOID) & prnspacing, sizeof(prnspacing));
 	  WinQueryDlgItemText(hwnd, PRN_PRINTER, sizeof(printer), printer);
 	  bstrip(printer);

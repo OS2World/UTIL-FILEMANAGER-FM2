@@ -6,7 +6,7 @@
   Fill Directory Tree Containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2009 Steven H. Levine
+  Copyright (c) 2001, 2010 Steven H. Levine
 
   10 Jan 04 SHL ProcessDirectory: avoid most large drive failures
   24 May 05 SHL Rework Win_Error usage
@@ -83,6 +83,7 @@
   13 Oct 09 SHL Restore missing drives in drive drop-down listbox; optimize updates
   15 Nov 09 GKY Avoid szBuf overflow in FillTreeCnr
   15 Nov 09 GKY Optimize some check code
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -1094,7 +1095,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	  // 04 Jan 08 SHL fixme like comp.c to handle less than ulSelCnt records
 	  if (hwndStatus && dcd &&
 	      dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
-	    WinSetWindowText(hwndStatus, GetPString(IDS_PLEASEWAITCOUNTINGTEXT));
+	    WinSetWindowText(hwndStatus, (CHAR *) GetPString(IDS_PLEASEWAITCOUNTINGTEXT));
 	  }
 	  pci = pciFirst;
 	  ullTotalBytes = 0;
@@ -1708,20 +1709,20 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
       if (MBID_YES) {
 	char s[64];
 	sprintf(s, "PARAMETERS=%s", szSuggest);
-	WinCreateObject(WPProgram, "FM/2", s, FM3Folder, CO_UPDATEIFEXISTS);
-	WinCreateObject(WPProgram,
-			"FM/2 Lite", s, FM3Folder, CO_UPDATEIFEXISTS);
-	WinCreateObject(WPProgram,
-			"Archive Viewer/2", s, FM3Tools, CO_UPDATEIFEXISTS);
-	WinCreateObject(WPProgram,
-			"Dir Sizes", s, FM3Tools, CO_UPDATEIFEXISTS);
-	WinCreateObject(WPProgram,
-			"Visual Tree", s, FM3Tools, CO_UPDATEIFEXISTS);
-	WinCreateObject(WPProgram,
-			"Visual Directory", s, FM3Tools, CO_UPDATEIFEXISTS);
-	WinCreateObject(WPProgram,
-			"Global File Viewer", s, FM3Tools, CO_UPDATEIFEXISTS);
-	WinCreateObject(WPProgram, "Databar", s, FM3Tools, CO_UPDATEIFEXISTS);
+	WinCreateObject((CHAR *) WPProgram, "FM/2", s, (CHAR *) FM3Folder, CO_UPDATEIFEXISTS);
+	WinCreateObject((CHAR *) WPProgram,
+			"FM/2 Lite", s, (CHAR *) FM3Folder, CO_UPDATEIFEXISTS);
+	WinCreateObject((CHAR *) WPProgram,
+			"Archive Viewer/2", s, (CHAR *) FM3Tools, CO_UPDATEIFEXISTS);
+	WinCreateObject((CHAR *) WPProgram,
+			"Dir Sizes", s, (CHAR *) FM3Tools, CO_UPDATEIFEXISTS);
+	WinCreateObject((CHAR *) WPProgram,
+			"Visual Tree", s, (CHAR *) FM3Tools, CO_UPDATEIFEXISTS);
+	WinCreateObject((CHAR *) WPProgram,
+			"Visual Directory", s, (CHAR *) FM3Tools, CO_UPDATEIFEXISTS);
+	WinCreateObject((CHAR *) WPProgram,
+			"Global File Viewer", s, (CHAR *) FM3Tools, CO_UPDATEIFEXISTS);
+	WinCreateObject((CHAR *) WPProgram, "Databar", s, (CHAR *) FM3Tools, CO_UPDATEIFEXISTS);
       }
       else if (MBID_CANCEL) {
 	fDontSuggestAgain = TRUE;

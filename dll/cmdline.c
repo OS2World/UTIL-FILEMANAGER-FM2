@@ -6,7 +6,7 @@
   User defined commands support
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2008 Steven H.Levine
+  Copyright (c) 2004, 2010 Steven H.Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   05 Jun 05 SHL Use QWL_USER
@@ -26,6 +26,7 @@
                 aren't user settable; realappname should be used for setting applicable to
                 one or more miniapp but not to FM/2
   21 Dec 09 GKY Added CheckExecutibleFlags to streamline code in command.c assoc.c & cmdline.c
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -434,7 +435,7 @@ MRESULT EXPENTRY CmdLineDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  else {
 	    WinSetDlgItemText(hwnd,
 			      EXEC_WARNING2,
-			      GetPString(IDS_CANTFINDFILETEXT));
+			      (CHAR *) GetPString(IDS_CANTFINDFILETEXT));
 	    break;
 	  }
 	}
@@ -454,20 +455,18 @@ MRESULT EXPENTRY CmdLineDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
               !stricmp(p, PCSZ_DOTBTM)) {
 	    WinSetDlgItemText(hwnd,
 			      EXEC_WARNING2,
-			      GetPString(IDS_RUNTHRUCMDEXETEXT));
+			      (CHAR *) GetPString(IDS_RUNTHRUCMDEXETEXT));
 	    break;
 	  }
 	}
-	WinSetDlgItemText(hwnd,
-			  EXEC_WARNING2, GetPString(IDS_NOTDIRECTEXETEXT));
+	WinSetDlgItemText(hwnd,	EXEC_WARNING2, (CHAR *) GetPString(IDS_NOTDIRECTEXETEXT));
       }
       else if (apptype) {		/* acceptable */
 
 	CHAR s[257];
 
 	*s = 0;
-	WinSetDlgItemText(hwnd,
-			  EXEC_WARNING, GetPString(IDS_ACCEPTABLEAPPTEXT));
+	WinSetDlgItemText(hwnd,	EXEC_WARNING, (CHAR *) GetPString(IDS_ACCEPTABLEAPPTEXT));
 	if (apptype & FAPPTYP_DOS)
 	  strcat(s, GetPString(IDS_DOSTEXT));
 	if (apptype & FAPPTYP_WINDOWSREAL) {
@@ -525,8 +524,7 @@ MRESULT EXPENTRY CmdLineDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinCheckButton(hwnd, EXEC_FULLSCREEN, TRUE);
       }
       else
-	WinSetDlgItemText(hwnd,
-			  EXEC_WARNING2, GetPString(IDS_UNKNOWNDEFAULTTEXT));
+	WinSetDlgItemText(hwnd,	EXEC_WARNING2, (CHAR *) GetPString(IDS_UNKNOWNDEFAULTTEXT));
     }
     return 0;
 
@@ -665,8 +663,7 @@ MRESULT EXPENTRY CmdLineDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinQueryDlgItemText(hwnd,
 			      EXEC_WARNING2,
 			      sizeof(ex->tempprompt), ex->tempprompt);
-	  WinSetDlgItemText(hwnd,
-			    EXEC_WARNING2, GetPString(IDS_CMDSELCMDHELPTEXT));
+	  WinSetDlgItemText(hwnd, EXEC_WARNING2, (CHAR *) GetPString(IDS_CMDSELCMDHELPTEXT));
 	  ex->dropped = TRUE;
 	  if ((SHORT) WinSendDlgItemMsg(hwnd,
 					EXEC_LISTBOX,

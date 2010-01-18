@@ -6,7 +6,7 @@
   Desktop shadows
 
   Copyright (c) 1993-97 M. Kimes
-  Copyright (c) 2006, 2008 Steven H. Levine
+  Copyright (c) 2006, 2010 Steven H. Levine
 
   22 Jul 06 SHL Check more run time errors
   16 Jun 07 SHL Update for OpenWatcom
@@ -14,6 +14,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   08 Mar 09 GKY Additional strings move to PCSZs declare change
   12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -62,7 +63,7 @@ HOBJECT CreateProgramObject(CHAR * objtitle, CHAR * location, CHAR * path,
 
   if (!cnr)
     return obj;
-  obj = WinCreateObject(WPProgram,
+  obj = WinCreateObject((CHAR *) WPProgram,
 			objtitle,
 			"NODELETE=NO;TEMPLATE=NO;NOCOPY=NO;NOMOVE=NO",
 			(location) ? location : cnr, CO_FAILIFEXISTS);
@@ -306,7 +307,7 @@ BOOL RunSeamless(CHAR * exename, CHAR * args, HWND hwnd)
 	  exename, args);
   if (hwnd)
     WinSetFocus(HWND_DESKTOP, HWND_DESKTOP);
-  ret = WinCreateObject(WPProgram,
+  ret = WinCreateObject((CHAR *) WPProgram,
 			exename,
 			settings, "<WP_NOWHERE>", CO_REPLACEIFEXISTS);
   if (!ret && hwnd)

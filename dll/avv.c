@@ -6,7 +6,7 @@
   archiver.bb2 editor
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2009 Steven H.Levine
+  Copyright (c) 2004, 2010 Steven H.Levine
 
   31 Jul 04 SHL ArcReviewDlgProc: correct nameis... decodes
   01 Aug 04 SHL Localize functions
@@ -28,6 +28,7 @@
   24 Aug 08 GKY Warn full drive on save of .BB2 file; prevent loss of existing file
   23 Nov 08 JBS Support use of CMD files in archiver definitions
   11 Jan 08 GKY Replace "ARCHIVER.BB2" in string file with global set at compile in init.c
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -652,7 +653,7 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	break;
 
       case LN_SETFOCUS:
-	WinSetDlgItemText(hwnd, AD_HELP, GetPString(IDS_TEXTARCPRODUCEDTEXT));
+	WinSetDlgItemText(hwnd, AD_HELP, (CHAR *) GetPString(IDS_TEXTARCPRODUCEDTEXT));
 	break;
       }
       break;
@@ -661,147 +662,147 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, AD_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, AD_HELP, GetPString(IDS_ADIDTEXT));
+	WinSetDlgItemText(hwnd, AD_HELP, (CHAR *) GetPString(IDS_ADIDTEXT));
       break;
 
     case AD_ADD:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, AD_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, AD_HELP, GetPString(IDS_ADADDTEXT));
+	WinSetDlgItemText(hwnd, AD_HELP, (CHAR *) GetPString(IDS_ADADDTEXT));
       break;
 
     case AD_MOVE:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, AD_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, AD_HELP, GetPString(IDS_ADMOVETEXT));
+	WinSetDlgItemText(hwnd, AD_HELP, (CHAR *) GetPString(IDS_ADMOVETEXT));
       break;
 
     case AD_EXT:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, AD_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, AD_HELP, GetPString(IDS_ADEXTTEXT));
+	WinSetDlgItemText(hwnd, AD_HELP, (CHAR *) GetPString(IDS_ADEXTTEXT));
       break;
 
     case AD_EXTRACT:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, AD_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, AD_HELP, GetPString(IDS_ADEXTRACTTEXT));
+	WinSetDlgItemText(hwnd, AD_HELP, (CHAR *) GetPString(IDS_ADEXTRACTTEXT));
       break;
 
     case AD_WDIRS:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, AD_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, AD_HELP, GetPString(IDS_ADWDIRSTEXT));
+	WinSetDlgItemText(hwnd, AD_HELP, (CHAR *) GetPString(IDS_ADWDIRSTEXT));
       break;
 
     case AD_SIG:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, AD_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, AD_HELP, GetPString(IDS_ADSIGTEXT));
+	WinSetDlgItemText(hwnd, AD_HELP, (CHAR *) GetPString(IDS_ADSIGTEXT));
       break;
 
     case AD_LIST:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, AD_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, AD_HELP, GetPString(IDS_ADLISTTEXT));
+	WinSetDlgItemText(hwnd, AD_HELP, (CHAR *) GetPString(IDS_ADLISTTEXT));
       break;
 
     case AD_TEST:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, AD_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, AD_HELP, GetPString(IDS_ADTESTTEXT));
+	WinSetDlgItemText(hwnd, AD_HELP, (CHAR *) GetPString(IDS_ADTESTTEXT));
       break;
 
     case AD_ADDWPATHS:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, AD_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, AD_HELP, GetPString(IDS_ADADDWPATHSTEXT));
+	WinSetDlgItemText(hwnd, AD_HELP, (CHAR *) GetPString(IDS_ADADDWPATHSTEXT));
       break;
 
     case AD_MOVEWPATHS:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, AD_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, AD_HELP, GetPString(IDS_ADMOVEWPATHSTEXT));
+	WinSetDlgItemText(hwnd, AD_HELP, (CHAR *) GetPString(IDS_ADMOVEWPATHSTEXT));
       break;
 
     case AD_ADDRECURSE:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, AD_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, AD_HELP, GetPString(IDS_ADADDRECURSETEXT));
+	WinSetDlgItemText(hwnd, AD_HELP, (CHAR *) GetPString(IDS_ADADDRECURSETEXT));
       break;
 
     case AD_DELETE:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, AD_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, AD_HELP, GetPString(IDS_ADDELETETEXT));
+	WinSetDlgItemText(hwnd, AD_HELP, (CHAR *) GetPString(IDS_ADDELETETEXT));
       break;
 
     case AD_SIGPOS:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, AD_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, AD_HELP, GetPString(IDS_ADSIGPOSTEXT));
+	WinSetDlgItemText(hwnd, AD_HELP, (CHAR *) GetPString(IDS_ADSIGPOSTEXT));
       break;
 
     case AD_FNAMEPOS:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, AD_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, AD_HELP, GetPString(IDS_ADFNAMEPOSTEXT));
+	WinSetDlgItemText(hwnd, AD_HELP, (CHAR *) GetPString(IDS_ADFNAMEPOSTEXT));
       break;
 
     case AD_OLDSZ:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, AD_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, AD_HELP, GetPString(IDS_ADOLDSZTEXT));
+	WinSetDlgItemText(hwnd, AD_HELP, (CHAR *) GetPString(IDS_ADOLDSZTEXT));
       break;
 
     case AD_NUMDATEFLDS:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, AD_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, AD_HELP, GetPString(IDS_ADNUMDATEFLDSTEXT));
+	WinSetDlgItemText(hwnd, AD_HELP, (CHAR *) GetPString(IDS_ADNUMDATEFLDSTEXT));
       break;
 
     case AD_DATEPOS:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, AD_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, AD_HELP, GetPString(IDS_ADDATEPOSTEXT));
+	WinSetDlgItemText(hwnd, AD_HELP, (CHAR *) GetPString(IDS_ADDATEPOSTEXT));
       break;
 
     case AD_NEWSZ:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, AD_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, AD_HELP, GetPString(IDS_ADNEWSZTEXT));
+	WinSetDlgItemText(hwnd, AD_HELP, (CHAR *) GetPString(IDS_ADNEWSZTEXT));
       break;
 
     case AD_STARTLIST:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, AD_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, AD_HELP, GetPString(IDS_ADSTARTLISTTEXT));
+	WinSetDlgItemText(hwnd, AD_HELP, (CHAR *) GetPString(IDS_ADSTARTLISTTEXT));
       break;
 
     case AD_ENDLIST:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
 	WinSetDlgItemText(hwnd, AD_HELP, NullStr);
       if (SHORT2FROMMP(mp1) == EN_SETFOCUS)
-	WinSetDlgItemText(hwnd, AD_HELP, GetPString(IDS_ADENDLISTTEXT));
+	WinSetDlgItemText(hwnd, AD_HELP, (CHAR *) GetPString(IDS_ADENDLISTTEXT));
       break;
 
     }

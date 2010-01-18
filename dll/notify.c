@@ -5,7 +5,7 @@
   Thread notes window and popup notifications over status line
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2006, 2009 Steven H.Levine
+  Copyright (c) 2006, 2010 Steven H.Levine
 
   17 Jul 06 SHL Use Win_Error
   22 Jul 06 SHL Check more run time errors
@@ -19,6 +19,7 @@
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   13 Jul 09 SHL Sync with renames
   16 Jul 09 SHL Stop leaking hptrIcon
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -210,7 +211,7 @@ HWND DoNotify(PCSZ str)
       p = (PSZ)str;
 
     hwnd = WinCreateWindow(hwndP,
-			   WC_ERRORWND,
+			   (CHAR *) WC_ERRORWND,
 			   p,
 			   SS_TEXT | DT_LEFT | DT_VCENTER | WS_VISIBLE,
 			   x, y, cx, cy, hwndP, HWND_TOP, id++, NULL, NULL);
@@ -306,7 +307,7 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     // Remember showing for restart
     fThreadNotes = TRUE;
     PrfWriteProfileData(fmprof,
-			FM3Str,
+			(CHAR *) FM3Str,
 			"ThreadNotes",
 			&fThreadNotes,
 			sizeof(BOOL));
@@ -343,7 +344,7 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       SWP swp;
 
       if (PrfQueryProfileData(fmprof,
-			      FM3Str, "NoteWndSwp", (PVOID) & swp, &size)) {
+			      (CHAR *) FM3Str, "NoteWndSwp", (PVOID) & swp, &size)) {
 	if (swp.fl & (SWP_HIDE | SWP_MINIMIZE)) {
 	  fl |= SWP_MINIMIZE;
 	  fl &= (~SWP_SHOW);
@@ -388,7 +389,7 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  swp.cy = WinQueryWindowUShort(hwnd, QWS_CYRESTORE);
 	}
 	PrfWriteProfileData(fmprof,
-			    FM3Str, "NoteWndSwp", (PVOID) & swp, sizeof(SWP));
+			    (CHAR *) FM3Str, "NoteWndSwp", (PVOID) & swp, sizeof(SWP));
       }
     }
     return 0;
@@ -475,7 +476,7 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (hwndNotify == hwnd) {
       fThreadNotes = FALSE;		// Remember not open
       PrfWriteProfileData(fmprof,
-			  FM3Str, "ThreadNotes", &fThreadNotes, sizeof(BOOL));
+			  (CHAR *) FM3Str, "ThreadNotes", &fThreadNotes, sizeof(BOOL));
       hwndNotify = (HWND)0;
     }
     if (hptrIcon) {

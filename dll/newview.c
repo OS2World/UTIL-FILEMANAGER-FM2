@@ -6,7 +6,7 @@
   New internal viewer
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2009 Steven H. Levine
+  Copyright (c) 2001, 2010 Steven H. Levine
 
   01 Dec 03 SHL Comments
   02 Dec 03 SHL Correct WM_VSCROLL math
@@ -38,6 +38,7 @@
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   13 Jul 09 SHL Sync with renames
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -1005,7 +1006,7 @@ static VOID SearchThread(VOID * args)
 	    numlines = NumLines(&Rectl, ad);
 	    WinSetWindowText(WinWindowFromID(ad->hwndFrame,
 					     NEWVIEW_STATUS1),
-			     GetPString(IDS_SEARCHINGTEXT));
+			     (CHAR *) GetPString(IDS_SEARCHINGTEXT));
 	    if (numlines && width && ad->markedlines && ad->numlines &&
 		ad->text && ad->textsize) {
 	      for (x = 0; x < ad->numlines && !ad->stopflag; x++)
@@ -1103,7 +1104,7 @@ static VOID SearchThread(VOID * args)
 	        DosBeep(50, 50);
 	      WinSetWindowText(WinWindowFromID(ad->hwndFrame,
 					       NEWVIEW_STATUS1),
-			       GetPString(IDS_NOMATCHINGTEXT));
+			       (CHAR *) GetPString(IDS_NOMATCHINGTEXT));
 	      DosSleep(150);//05 Aug 07 GKY 1500
 	      PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
 	      PostMsg(hwnd, UM_SETUP4, MPVOID, MPVOID);
@@ -1160,7 +1161,7 @@ static VOID ClipboardThread(VOID * args)
 	      !ad->stopflag) {
 	    WinSetWindowText(WinWindowFromID(ad->hwndFrame,
 					     NEWVIEW_STATUS1),
-			     GetPString(IDS_BUILDINGLINELISTTEXT));
+			     (CHAR *) GetPString(IDS_BUILDINGLINELISTTEXT));
 	    if (cmd == IDM_SAVETOCLIP || cmd == IDM_APPENDTOCLIP ||
 		cmd == IDM_SAVETOLIST)
 	      list = BuildAList(hwnd);
@@ -1172,11 +1173,11 @@ static VOID ClipboardThread(VOID * args)
 						 NEWVIEW_STATUS1),
 				 (cmd == IDM_SAVETOCLIP ||
 				  cmd == IDM_SAVETOCLIP2) ?
-				 GetPString(IDS_SAVETOCLIPTEXT) :
+				 (CHAR *) GetPString(IDS_SAVETOCLIPTEXT) :
 				 (cmd == IDM_APPENDTOCLIP ||
 				  cmd == IDM_APPENDTOCLIP2) ?
-				 GetPString(IDS_APPENDTOCLIPTEXT) :
-				 GetPString(IDS_WRITETOFILETEXT));
+				 (CHAR *) GetPString(IDS_APPENDTOCLIPTEXT) :
+				 (CHAR *) GetPString(IDS_WRITETOFILETEXT));
 		DosReleaseMutexSem(ad->ScanSem);
 		released = TRUE;
 		if (cmd == IDM_SAVETOCLIP || cmd == IDM_APPENDTOCLIP ||
@@ -1214,7 +1215,7 @@ static VOID ClipboardThread(VOID * args)
 	        DosBeep(50, 100);
 	      WinSetWindowText(WinWindowFromID(ad->hwndFrame,
 					       NEWVIEW_STATUS1),
-			       GetPString(IDS_NVNOLINESSELTEXT));
+			       (CHAR *) GetPString(IDS_NVNOLINESSELTEXT));
 	      DosSleep(150);//05 Aug 07 GKY 1500
 	    }
 	  }
@@ -1277,7 +1278,7 @@ static VOID ReLineThread(VOID * args)
 	    ad->markedlines = NULL;
 	    WinSetWindowText(WinWindowFromID(ad->hwndFrame,
 					     NEWVIEW_STATUS1),
-			     GetPString(IDS_FORMATTINGTEXT));
+			     (CHAR *) GetPString(IDS_FORMATTINGTEXT));
 	    if (!ad->hex) {
 	      if (WinSendDlgItemMsg(ad->hwndFrame, NEWVIEW_LISTBOX,
 				    LM_QUERYITEMCOUNT, MPVOID, MPVOID)) {
@@ -1891,8 +1892,8 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSendMsg(ad->hhscroll, SBM_SETSCROLLBAR, MPFROMSHORT(1),
 		   MPFROM2SHORT(1, 1));
 	ad->hwndStatus1 = WinCreateWindow(hwndFrame,
-					  WC_VIEWSTATUS,
-					  GetPString(IDS_LOADINGTEXT),
+					  (CHAR *) WC_VIEWSTATUS,
+					  (CHAR *) GetPString(IDS_LOADINGTEXT),
 					  WS_VISIBLE | SS_TEXT |
 					  DT_LEFT | DT_VCENTER,
 					  0,
@@ -1907,7 +1908,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    PCSZ_WINCREATEWINDOW);
 
 	ad->hwndStatus2 = WinCreateWindow(hwndFrame,
-					  WC_VIEWSTATUS,
+					  (CHAR *) WC_VIEWSTATUS,
 					  NULL,
 					  WS_VISIBLE | SS_TEXT |
 					  DT_LEFT | DT_VCENTER,
@@ -1923,7 +1924,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    PCSZ_WINCREATEWINDOW);
 
 	ad->hwndStatus3 = WinCreateWindow(hwndFrame,
-					  WC_VIEWSTATUS,
+					  (CHAR *) WC_VIEWSTATUS,
 					  NULL,
 					  WS_VISIBLE | SS_TEXT |
 					  DT_LEFT | DT_VCENTER,
@@ -1939,7 +1940,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    PCSZ_WINCREATEWINDOW);
 
 	ad->hwndListbox = WinCreateWindow(hwndFrame,
-					  WC_LISTBOX,
+					  (CHAR *) WC_LISTBOX,
 					  NULL,
 					  LS_NOADJUSTPOS,
 					  0,
@@ -1954,7 +1955,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    PCSZ_WINCREATEWINDOW);
 
 	ad->hwndDrag = WinCreateWindow(hwndFrame,
-				       WC_VIEWSTATUS,
+				       (CHAR *) WC_VIEWSTATUS,
 				       "#100",
 				       WS_VISIBLE | SS_BITMAP,
 				       0,
@@ -1995,17 +1996,17 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (hwndStatus2)
 	  WinSetWindowText(hwndStatus2,
 			   (*ad->filename) ?
-			   ad->filename : GetPString(IDS_UNTITLEDTEXT));
+			   ad->filename : (CHAR *) GetPString(IDS_UNTITLEDTEXT));
 	if (fMoreButtons) {
 	  WinSetWindowText(hwndName,
 			   (*ad->filename) ?
-			   ad->filename : GetPString(IDS_UNTITLEDTEXT));
+			   ad->filename : (CHAR *) GetPString(IDS_UNTITLEDTEXT));
 	  WinSetWindowText(hwndDate, NullStr);
 	  WinSetWindowText(hwndAttr, NullStr);
 	}
 	if (hwndStatus)
 	  WinSetWindowText(hwndStatus,
-			   GetPString(IDS_INTERNALVIEWERTITLETEXT));
+			   (CHAR *) GetPString(IDS_INTERNALVIEWERTITLETEXT));
       }
     }
     return 0;
@@ -2032,11 +2033,11 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinSetWindowText(ad->hwndStatus1, s);
 	}
 	else
-	  WinSetWindowText(ad->hwndStatus1, GetPString(IDS_NVNOLINESTEXT));
+	  WinSetWindowText(ad->hwndStatus1, (CHAR *) GetPString(IDS_NVNOLINESTEXT));
 	DosReleaseMutexSem(ad->ScanSem);
       }
       else
-	WinSetWindowText(ad->hwndStatus1, GetPString(IDS_WORKINGTEXT));
+	WinSetWindowText(ad->hwndStatus1, (CHAR *) GetPString(IDS_WORKINGTEXT));
     }
     return 0;
 
@@ -2471,10 +2472,10 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    CHAR WPSDefaultHttpRun[CCHMAXPATH], WPSDefaultHttpRunDir[CCHMAXPATH];
 
 		    size = sizeof(WPSDefaultHttpRun);
-		    PrfQueryProfileData(HINI_USERPROFILE, PCSZ_WPURLDEFAULTSETTINGS,
+		    PrfQueryProfileData(HINI_USERPROFILE, (CHAR *) PCSZ_WPURLDEFAULTSETTINGS,
 					"DefaultBrowserExe", WPSDefaultHttpRun, &size);
 		    size = sizeof(WPSDefaultHttpRunDir);
-		    PrfQueryProfileData(HINI_USERPROFILE, PCSZ_WPURLDEFAULTSETTINGS,
+		    PrfQueryProfileData(HINI_USERPROFILE, (CHAR *) PCSZ_WPURLDEFAULTSETTINGS,
 					"DefaultWorkingDir", WPSDefaultHttpRunDir, &size);
 		    runemf2(SEPARATE | WINDOWED,
 			    hwnd, pszSrcFile, __LINE__,
@@ -2497,10 +2498,10 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    CHAR WPSDefaultFtpRun[CCHMAXPATH], WPSDefaultFtpRunDir[CCHMAXPATH];
 
 		    size = sizeof(WPSDefaultFtpRun);
-		    PrfQueryProfileData(HINI_USERPROFILE, PCSZ_WPURLDEFAULTSETTINGS,
+		    PrfQueryProfileData(HINI_USERPROFILE, (CHAR *) PCSZ_WPURLDEFAULTSETTINGS,
 					"DefaultBrowserExe", WPSDefaultFtpRun, &size);
 		    size = sizeof(WPSDefaultFtpRunDir);
-		    PrfQueryProfileData(HINI_USERPROFILE, PCSZ_WPURLDEFAULTSETTINGS,
+		    PrfQueryProfileData(HINI_USERPROFILE, (CHAR *) PCSZ_WPURLDEFAULTSETTINGS,
 					"DefaultWorkingDir", WPSDefaultFtpRunDir, &size);
 		    runemf2(SEPARATE | WINDOWED,
 			    hwnd, pszSrcFile, __LINE__,
@@ -4069,8 +4070,8 @@ HWND StartViewer(HWND hwndParent, USHORT flags, CHAR * filename,
   hwndFrame = WinCreateStdWindow(hwndParent,
 				 0,
 				 &FrameFlags,
-				 WC_NEWVIEW,
-				 GetPString(IDS_FM2VIEWERTITLETEXT),
+				 (CHAR *) WC_NEWVIEW,
+				 (CHAR *) GetPString(IDS_FM2VIEWERTITLETEXT),
 				 fwsAnimate,
 				 FM3ModHandle, NEWVIEW_FRAME, &hwndClient);
   if (hwndFrame) {

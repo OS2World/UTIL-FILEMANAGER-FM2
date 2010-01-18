@@ -6,7 +6,7 @@
   Minimized data bar
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2008 Steven H. Levine
+  Copyright (c) 2001, 2010 Steven H. Levine
 
   14 Sep 02 SHL Handle large partitions
   16 Oct 02 SHL Handle large partitions better
@@ -33,6 +33,7 @@
                 miniapp; FM3Str should be used for setting only relavent to FM/2 or that
                 aren't user settable; realappname should be used for setting applicable to
                 one or more miniapp but not to FM/2
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
 
 ***********************************************************************/
 
@@ -260,7 +261,7 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       for (c = 0; ids[c]; c++) {
 	if (!WinCreateWindow(hwnd,
-			     WC_MINITIME,
+			     (CHAR *) WC_MINITIME,
 			     NullStr,
 			     SS_TEXT | DT_CENTER | DT_VCENTER | WS_VISIBLE,
 			     x,
@@ -321,7 +322,7 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	for (c = 2; c < 26; c++) {
 	  if ((ulDriveMap & (1L << c)) && !(driveflags[c] & drivestyle)) {
 	    if (!WinCreateWindow(hwnd,
-				 WC_MINITIME,
+				 (CHAR *) WC_MINITIME,
 				 NullStr,
 				 SS_TEXT | DT_CENTER | DT_VCENTER |
 				 WS_VISIBLE, x, y, MINI_X, MINI_Y, hwnd,
@@ -1008,7 +1009,7 @@ HWND CreateDataBar(HWND hwndParent, ULONG fl)
   if (WinCreateStdWindow(hwndParent,
 			 WS_VISIBLE,
 			 &FrameFlags,
-			 WC_DATABAR,
+			 (CHAR *) WC_DATABAR,
 			 NULL, WS_VISIBLE, 0, MINI_FRAME, &hwndClient)) {
     WinSendMsg(hwndClient, UM_RESTORE, MPFROMLONG(fl), MPVOID);
   }
