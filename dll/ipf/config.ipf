@@ -148,11 +148,11 @@ This dialog box, which you can reach from the Config menu, allows you to manage 
 :p.
 On the left side is a list of the currently defined archivers for FM/2. On the right side are a series of buttons&colon.
 :dl compact.
-:dthd.:hp2.Up:ehp2.:ddhd.Moves the highlighted archiver up in the archive list. (See note below.)
-:dthd.:hp2.Down:ehp2.:ddhd.Moves the highlighted archiver down in the archive list. (See note below.)
-:dthd.:hp2.Add:ehp2.:ddhd.Add brings up a blank archiver details box so you can define a new archiver type.
-:dthd.:hp2.Delete:ehp2.:ddhd.Deletes the archiver description of the highlighted archiver.
-:dthd.:hp2.Revert:ehp2.:ddhd.Revert undoes all changes made during the current session. It will not undo changes once the new ARCHIVER.BB2 has been written.
+:dt.:hp2.Up:ehp2.:dd.Moves the highlighted archiver up in the archive list. (See note below.)
+:dt.:hp2.Down:ehp2.:dd.Moves the highlighted archiver down in the archive list. (See note below.)
+:dt.:hp2.Add:ehp2.:dd.Add brings up a blank archiver details box so you can define a new archiver type.
+:dt.:hp2.Delete:ehp2.:dd.Deletes the archiver description of the highlighted archiver.
+:dt.:hp2.Revert:ehp2.:dd.Revert undoes all changes made during the current session. It will not undo changes once the new ARCHIVER.BB2 has been written.
 :edl.
 :note.When FM/2 determines which archiver to use on a file, they are checked in order of this listing.
 :p.
@@ -486,12 +486,12 @@ It allows modifications to the file format to be transparent to older programs.
 :li.position (0-based, -1 = not available)
 :li.type code&colon.
 :dl compact.
-:dthd.0:ddhd.No date in the data
-:dthd.1:ddhd.mm-dd-yy hh&colon.mm&colon.ss    (e.g. 02-31-98  23&colon.55&colon.32)
-:dthd.2:ddhd.dd Mmm yy hh&colon.mm&colon.ss   (e.g. 31 Feb 98 23&colon.55&colon.32)
-:dthd.3:ddhd.dd Mmm yy hh&colon.mmA     (e.g. 31 Feb 98  11&colon.55p)
-:dthd.4:ddhd.yy-mm-dd hh&colon.mm&colon.ss    (e.g. 98-02-31 23&colon.55&colon.32)
-:dthd.5:ddhd.dd-mm-yy hh&colon.mm       (e.g. 31-02-98  23&colon.55)
+:dt.0:dd.No date in the data
+:dt.1:dd.mm-dd-yy hh&colon.mm&colon.ss    (e.g. 02-31-98  23&colon.55&colon.32)
+:dt.2:dd.dd Mmm yy hh&colon.mm&colon.ss   (e.g. 31 Feb 98 23&colon.55&colon.32)
+:dt.3:dd.dd Mmm yy hh&colon.mmA     (e.g. 31 Feb 98  11&colon.55p)
+:dt.4:dd.yy-mm-dd hh&colon.mm&colon.ss    (e.g. 98-02-31 23&colon.55&colon.32)
+:dt.5:dd.dd-mm-yy hh&colon.mm       (e.g. 31-02-98  23&colon.55)
 :edl.
 :eol.
 :li.number of elements/fields in dates (e.g. "03 June 92" would be 3)
