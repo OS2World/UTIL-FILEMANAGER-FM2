@@ -144,9 +144,7 @@ typedef struct DIRCNRDATA
   CHAR szCommonName[CCHMAXPATH];
   ULONG lasttime;
   BOOL arcfilled;
-#ifdef INCL_DOSSEMAPHORES
   HMTX filling;
-#endif
   BOOL firsttree;
   ULONG lastattr;
   ULONG ulItemsToUnHilite;

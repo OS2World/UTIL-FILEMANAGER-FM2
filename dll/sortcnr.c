@@ -18,6 +18,7 @@
 #include <string.h>
 
 #define INCL_WIN
+#define INCL_DOSSEMAPHORES
 
 #include "fm3dll.h"
 #include "dircnrs.h"			// Data declaration(s)
