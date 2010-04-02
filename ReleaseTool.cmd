@@ -37,6 +37,7 @@
  *       - Improved "usage" routine
  *    23 Nov 08 JBS Improved handling of invalid or missing <trace-option>
  *    04 Jan 09 JBS Fixed bug in option 9: Apply tag
+ *    02 Apr 10 JBS Removed reference to obsolete "internal\makefile" file
  *
 */
 
@@ -397,19 +398,19 @@ Init: procedure expose (globals)
          if upperwrd1 = 'EPM' | upperwrd1 = 'EPM.EXE' then
             editorcmds = "'3'"
       end
-   cmd      = value('COMSPEC',,'OS2ENVIRONMENT')
-   prompt   = value('PROMPT',,'OS2ENVIRONMENT')
-   tester       = value('SVN_TESTER',,'OS2ENVIRONMENT')
-   killpid      = value('SVN_KILL',,'OS2ENVIRONMENT')
+   cmd         = value('COMSPEC',,'OS2ENVIRONMENT')
+   prompt      = value('PROMPT',,'OS2ENVIRONMENT')
+   tester      = value('SVN_TESTER',,'OS2ENVIRONMENT')
+   killpid     = value('SVN_KILL',,'OS2ENVIRONMENT')
    if killpid == '' then
        killpid      = 'killpid'
    killtarget  = ' FM/2'
 
-   version_filelist = 'av2.def databar.def dirsize.def dll\fm3dll.def dll\fm3res.def'
+   version_filelist =                  'av2.def databar.def dirsize.def dll\fm3dll.def dll\fm3res.def'
    version_filelist = version_filelist 'dll\version.h eas.def fm3.def fm4.def global.def ini.def'
    version_filelist = version_filelist 'killproc.def sysinfo.def undel.def vcollect.def vdir.def'
    version_filelist = version_filelist 'viewinfs.def vtree.def file_id.diz'
-   version_filelist = version_filelist 'warpin\makefile dll\internal\makefile'
+   version_filelist = version_filelist 'warpin\makefile'
    version_filelist = version_filelist 'dll\copyright.h'
 
    if SysSearchPath( 'PATH', 'less.exe') \= '' then
