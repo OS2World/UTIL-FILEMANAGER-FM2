@@ -25,6 +25,10 @@
       Read filename, dirname info from a file
       Allow the above filename to be passed as a parameter
       Edit to make sure this program is located correctly
+      Add version checking
+
+   Change log:
+      16 Mar 09 JBS Added code to copy discontinued directory container state ini keys to new names
 
 */
 

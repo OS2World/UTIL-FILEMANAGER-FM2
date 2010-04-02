@@ -352,7 +352,7 @@ number with a comma and another number that indicates the type of the
 date from any of the formats in the following list&colon.
 .br
 :xmp.
- 0 = No date in data
+ 0 = Other (or no date/time if numdateflds is 0)
  1 = 02-08-96  23&colon.55&colon.32 mm-dd-yy hh&colon.mm&colon.ss
  2 = 8 Feb 96  23&colon.55&colon.32 dd Mmm yy hh&colon.mm&colon.ss
  3 = 8 Feb 96  11&colon.55p   dd Mmm yy hh&colon.mmA

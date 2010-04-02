@@ -11,7 +11,7 @@ Change log
    24 Feb 08 JBS Ticket 226: Add debugging support package
    26 Feb 08 JBS Ticket 226: Reset debugging package version to match FM2_VER
    06 Oct 08 JBS Ticket 287: Fix syntax of the required version attribute of Warpin tag
-   			     in Warpin script.
+                             in Warpin script.
    23 Oct 08 JBS Ticket 292: Fix parameters field of Helpfile Viewer icon.
    28 Oct 08 JBS Ticket 294: Add support for new object icons.
 
@@ -60,9 +60,9 @@ Change log
    fm2_utils_app = "Netlabs\FM2 Utilities\FM2Utils" || ver
    call SysIni database_file, fm2_utils_app, 'ALL:', 'keys.'
    if keys.0 = 0 then
-   	return 'SELECT'
+        return 'SELECT'
    else
-   	return ''
+        return ''
 </REXX>
 
 <PCK INDEX=1
