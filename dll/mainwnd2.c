@@ -38,6 +38,8 @@
                 aren't user settable; realappname should be used for setting applicable to
                 one or more miniapp but not to FM/2
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  11 Apr 10 GKY Fix drive tree rescan failure and program hang caused by event sem
+                never being posted
 
 ***********************************************************************/
 
@@ -604,7 +606,7 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1,
     WinSendMsg(hwnd, UM_SETUP2, MPFROMLONG(1), MPVOID);
     fTileBackwards = (fTileBackwards) ? FALSE : TRUE;
     PrfWriteProfileData(fmprof,
-			(CHAR *) FM3Str,
+			FM3Str,
 			"TileBackwards",
 			(PVOID) & fTileBackwards, sizeof(BOOL));
     PostMsg(hwnd, UM_SIZE, MPVOID, MPVOID);
@@ -886,9 +888,9 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
 	save_dir(s);
       pd->hwndDir2 = StartDirCnr(hwnd, s, (HWND) 0, 3);
       if (fInitialDriveScan) {
+        fInitialDriveScan = FALSE;
         DosPostEventSem(hevInitialCnrScanComplete);
         DosCloseEventSem(hevInitialCnrScanComplete);
-        fInitialDriveScan = FALSE;
       }
       WinSetFocus(HWND_DESKTOP, pd->hwndCurr);
 

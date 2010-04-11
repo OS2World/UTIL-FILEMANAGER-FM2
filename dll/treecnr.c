@@ -79,7 +79,10 @@
   15 Nov 09 GKY Add semaphore to fix double names in tree container caused by UM_SHOWME
                 before scan completes
   22 Nov 09 GKY Add LVM.EXE to partition submenu
-  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast
+                CHAR CONSTANT * as CHAR *.
+  11 Apr 10 GKY Fix drive tree rescan failure and program hang caused by event sem
+                never being posted
 
 ***********************************************************************/
 
@@ -648,8 +651,9 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (mp2) {
 	  temptop = fTopDir;
 	  fTopDir = TRUE;
-	}
-    DosWaitEventSem(hevInitialCnrScanComplete, SEM_INDEFINITE_WAIT);
+        }
+        if (fInitialDriveScan)
+          DosWaitEventSem(hevInitialCnrScanComplete, SEM_INDEFINITE_WAIT);
 	ShowTreeRec(dcd->hwndCnr, (CHAR *)mp1, fCollapseFirst, TRUE);
 	PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_UPDATE, 0), MPVOID);
 	dcd->suspendview = tempsusp;
@@ -3271,9 +3275,9 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 	if (ParentIsDesktop(hwndFrame, hwndParent)) {
 	  WinSetWindowText(WinWindowFromID(hwndFrame, FID_TITLEBAR), "VTree");
 	  FixSwitchList(hwndFrame, "VTree");
+	  fInitialDriveScan = FALSE;
 	  DosPostEventSem(hevInitialCnrScanComplete);
 	  DosCloseEventSem(hevInitialCnrScanComplete);
-	  fInitialDriveScan = FALSE;
 	}
 	else {
 	  WinSetWindowText(hwndFrame, (CHAR *) GetPString(IDS_TREETEXT));
