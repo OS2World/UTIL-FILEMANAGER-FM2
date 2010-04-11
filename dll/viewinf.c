@@ -192,10 +192,10 @@ static VOID FillListboxThread(VOID * args)
             if (dummy->help)
               key = "HLPPaths";
             repeating = TRUE;
-            if (PrfQueryProfileSize(fmprof, (CHAR *) FM3Str, key, &size) && size) {
+            if (PrfQueryProfileSize(fmprof, FM3Str, key, &size) && size) {
               holdenv = xmalloc(size + 2, pszSrcFile, __LINE__);
               if (holdenv) {
-                if (!PrfQueryProfileData(fmprof, (CHAR *) FM3Str, key, holdenv, &size)) {
+                if (!PrfQueryProfileData(fmprof, FM3Str, key, holdenv, &size)) {
                   Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
                             PCSZ_PRFQUERYPROFILEDATA);
                   free(holdenv);
@@ -520,7 +520,7 @@ MRESULT EXPENTRY ViewInfProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         WinQueryDlgItemText(hwnd, VINF_ENTRY, 1000, szBuffer);
         bstrip(szBuffer);
         PrfWriteProfileData(fmprof,
-                            (CHAR *) FM3Str,
+                            FM3Str,
                             key,
                             (*szBuffer) ? szBuffer : NULL, strlen(szBuffer));
         PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);

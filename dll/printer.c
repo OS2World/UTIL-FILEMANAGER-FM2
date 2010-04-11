@@ -477,20 +477,20 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
 	prnformat = WinQueryButtonCheckstate(hwnd, PRN_FORMAT);
-	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Prnformat",
+	PrfWriteProfileData(fmprof, FM3Str, "Prnformat",
 			    (PVOID) & prnformat, sizeof(prnformat));
 	prnalt = WinQueryButtonCheckstate(hwnd, PRN_ALT);
-	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Prnalt",
+	PrfWriteProfileData(fmprof, FM3Str, "Prnalt",
 			    (PVOID) & prnalt, sizeof(prnalt));
 	prnpagenums = WinQueryButtonCheckstate(hwnd, PRN_PAGENUMS);
-	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Prnpagenums",
+	PrfWriteProfileData(fmprof, FM3Str, "Prnpagenums",
 			    (PVOID) & prnpagenums, sizeof(prnpagenums));
 	prnformfeedbefore = WinQueryButtonCheckstate(hwnd, PRN_FORMBEFORE);
-	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Prnformfeedbefore",
+	PrfWriteProfileData(fmprof, FM3Str, "Prnformfeedbefore",
 			    (PVOID) & prnformfeedbefore,
 			    sizeof(prnformfeedbefore));
 	prnformfeedafter = WinQueryButtonCheckstate(hwnd, PRN_FORMAFTER);
-	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Prnformfeedafter",
+	PrfWriteProfileData(fmprof, FM3Str, "Prnformfeedafter",
 			    (PVOID) & prnformfeedafter,
 			    sizeof(prnformfeedafter));
 	{
@@ -505,7 +505,7 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    break;
 	  }
 	  prnwidth = atol(s);
-	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Prnwidth",
+	  PrfWriteProfileData(fmprof, FM3Str, "Prnwidth",
 			      (PVOID) & prnwidth, sizeof(prnwidth));
 	  *s = 0;
 	  WinQueryDlgItemText(hwnd, PRN_LENGTH, sizeof(s), s);
@@ -516,7 +516,7 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    break;
 	  }
 	  prnlength = atol(s);
-	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Prnlength",
+	  PrfWriteProfileData(fmprof, FM3Str, "Prnlength",
 			      (PVOID) & prnlength, sizeof(prnlength));
 	  *s = 0;
 	  WinQueryDlgItemText(hwnd, PRN_LMARGIN, sizeof(s), s);
@@ -527,7 +527,7 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    break;
 	  }
 	  prnlmargin = atol(s);
-	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Prnlmargin",
+	  PrfWriteProfileData(fmprof, FM3Str, "Prnlmargin",
 			      (PVOID) & prnlmargin, sizeof(prnlmargin));
 	  *s = 0;
 	  WinQueryDlgItemText(hwnd, PRN_RMARGIN, sizeof(s), s);
@@ -538,7 +538,7 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    break;
 	  }
 	  prnrmargin = atol(s);
-	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Prnrmargin",
+	  PrfWriteProfileData(fmprof, FM3Str, "Prnrmargin",
 			      (PVOID) & prnrmargin, sizeof(prnrmargin));
 	  *s = 0;
 	  WinQueryDlgItemText(hwnd, PRN_TABSPACES, sizeof(s), s);
@@ -550,7 +550,7 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    break;
 	  }
 	  prntabspaces = atol(s);
-	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Prntabspaces",
+	  PrfWriteProfileData(fmprof, FM3Str, "Prntabspaces",
 			      (PVOID) & prntabspaces, sizeof(prntabspaces));
 	  *s = 0;
 	  WinQueryDlgItemText(hwnd, PRN_TMARGIN, sizeof(s), s);
@@ -561,7 +561,7 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    break;
 	  }
 	  prntmargin = atol(s);
-	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Prntmargin",
+	  PrfWriteProfileData(fmprof, FM3Str, "Prntmargin",
 			      (PVOID) & prntmargin, sizeof(prntmargin));
 	  *s = 0;
 	  WinQueryDlgItemText(hwnd, PRN_BMARGIN, sizeof(s), s);
@@ -572,7 +572,7 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    break;
 	  }
 	  prnbmargin = atol(s);
-	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Prnbmargin",
+	  PrfWriteProfileData(fmprof, FM3Str, "Prnbmargin",
 			      (PVOID) & prnbmargin, sizeof(prnbmargin));
 	  *s = 0;
 	  WinQueryDlgItemText(hwnd, PRN_SPACING, sizeof(s), s);
@@ -584,7 +584,7 @@ MRESULT EXPENTRY PrintDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    break;
 	  }
 	  prnspacing = atol(s);
-	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Prnspacing",
+	  PrfWriteProfileData(fmprof, FM3Str, "Prnspacing",
 			      (PVOID) & prnspacing, sizeof(prnspacing));
 	  WinQueryDlgItemText(hwnd, PRN_PRINTER, sizeof(printer), printer);
 	  bstrip(printer);

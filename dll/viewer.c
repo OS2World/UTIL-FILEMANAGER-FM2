@@ -477,29 +477,29 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	size = sizeof(BOOL);
 	PrfQueryProfileData(fmprof,
-			    (CHAR *) (CHAR *) FM3Str, "MLEWrap", (PVOID) & vw->fWrap, &size);
+			    (CHAR *) FM3Str, "MLEWrap", (PVOID) & vw->fWrap, &size);
 	size = sizeof(BOOL);
 	PrfQueryProfileData(fmprof,
-			    (CHAR *) FM3Str,
+			    FM3Str,
 			    "MLEstriptrail",
 			    (PVOID) & vw->fStripTrail, &size);
 	size = sizeof(BOOL);
 	PrfQueryProfileData(fmprof,
-			    (CHAR *) FM3Str,
+			    FM3Str,
 			    "MLEstriptraillines",
 			    (PVOID) & vw->fStripTrailLines, &size);
 	size = sizeof(BOOL);
 	PrfQueryProfileData(fmprof,
-			    (CHAR *) FM3Str,
+			    FM3Str,
 			    "MLEInsensitve",
 			    (PVOID) & vw->srch.fInsensitive, &size);
 	size = sizeof(INT);
 	PrfQueryProfileData(fmprof,
-			    (CHAR *) FM3Str,
+			    FM3Str,
 			    "MLEExpandTabs", (PVOID) & vw->ExpandTabs, &size);
 	size = sizeof(INT);
 	PrfQueryProfileData(fmprof,
-			    (CHAR *) FM3Str,
+			    FM3Str,
 			    "MLETabStops", (PVOID) & vw->TabStops, &size);
       }
       vw->accel = WinQueryAccelTable(vw->hab,
@@ -540,7 +540,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  HMQ hmq;
 
 	  if (!PrfQueryProfileData(fmprof,
-				   (CHAR *) FM3Str,
+				   FM3Str,
 				   "MLEFont",
 				   &vw->fattrs,
 				   &size) || size != sizeof(FATTRS)) {
@@ -571,12 +571,12 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  Firsttime = FALSE;
 	  size = sizeof(ULONG);
 	  PrfQueryProfileData(fmprof,
-			      (CHAR *) FM3Str,
+			      FM3Str,
 			      "MLEBackgroundcolor",
 			      &Colors[COLORS_BACKGROUND], &size);
 	  size = sizeof(ULONG);
 	  PrfQueryProfileData(fmprof,
-			      (CHAR *) FM3Str,
+			      FM3Str,
 			      "MLEForegroundcolor",
 			      &Colors[COLORS_FOREGROUND], &size);
 	}
@@ -752,7 +752,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     MPFROMLONG(standardcolors[Colors[COLORS_FOREGROUND]]),
 		     MPVOID);
 	  PrfWriteProfileData(fmprof,
-			      (CHAR *) FM3Str,
+			      FM3Str,
 			      "MLEForegroundcolor",
 			      &Colors[COLORS_FOREGROUND], sizeof(LONG));
 	  WinSendMsg(hwndMLE,
@@ -760,7 +760,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     MPFROMLONG(standardcolors[Colors[COLORS_BACKGROUND]]),
 		     MPVOID);
 	  PrfWriteProfileData(fmprof,
-			      (CHAR *) FM3Str,
+			      FM3Str,
 			      "MLEBackgroundcolor",
 			      &Colors[COLORS_BACKGROUND], sizeof(LONG));
 	}
@@ -778,7 +778,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       vw->fattrs.usCodePage = (USHORT) vw->cp;
       WinSendMsg(hwndMLE, MLM_SETFONT, MPFROMP(&vw->fattrs), MPVOID);
       PrfWriteProfileData(fmprof,
-			  (CHAR *) FM3Str, "MLEFont", &vw->fattrs, sizeof(FATTRS));
+			  FM3Str, "MLEFont", &vw->fattrs, sizeof(FATTRS));
       break;
 
     case MLE_NEWFILE:
@@ -1006,7 +1006,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinSendMsg(hwndMLE,
 		     MLM_SETTABSTOP, MPFROMLONG(vw->TabStops), MPVOID);
 	  PrfWriteProfileData(fmprof,
-			      (CHAR *) FM3Str,
+			      FM3Str,
 			      "MLETabStops", &vw->TabStops, sizeof(INT));
 	}
       }
@@ -1031,7 +1031,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  tempbool = (vw->ExpandTabs != 0);
 	  SetMenuCheck(vw->hwndMenu, MLE_EXPANDTABS, &tempbool, FALSE, NULL);
 	  PrfWriteProfileData(fmprof,
-			      (CHAR *) FM3Str,
+			      FM3Str,
 			      "MLEExpandTabs", &vw->ExpandTabs, sizeof(INT));
 	}
       }
@@ -1143,7 +1143,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case MLE_SETFONT:			/* select a new font */
       SetMLEFont(hwndMLE, &vw->fattrs, 0);
       PrfWriteProfileData(fmprof,
-			  (CHAR *) FM3Str, "MLEFont", &vw->fattrs, sizeof(FATTRS));
+			  FM3Str, "MLEFont", &vw->fattrs, sizeof(FATTRS));
       break;
 
     case MLE_SELECTALL:

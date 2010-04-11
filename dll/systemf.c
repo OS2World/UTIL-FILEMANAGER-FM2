@@ -655,11 +655,12 @@ BreakOut:
     int ret;
 
     memset(&ex, 0, sizeof(EXECARGS));
+    //DbgMsg(pszSrcFile, __LINE__, "env %s", environment);
     if (!environment) {
       ULONG size;
 
       size = ENVIRONMENT_SIZE;
-      PrfQueryProfileData(fmprof, (CHAR *) FM3Str, command, ex.environment, &size);
+      PrfQueryProfileData(fmprof, FM3Str, command, ex.environment, &size);
     }
     else
       strcpy(ex.environment, environment);

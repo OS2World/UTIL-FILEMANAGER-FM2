@@ -2199,7 +2199,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	SWP swp;
 	ULONG size = sizeof(SWP);
 
-	PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "CompDir.Position", (PVOID) &swp, &size);
+	PrfQueryProfileData(fmprof, FM3Str, "CompDir.Position", (PVOID) &swp, &size);
 	swp.fl &= ~SWP_SIZE;		// 04 Feb 09 SHL ignore saved size
 	WinSetWindowPos(hwnd,
 			HWND_TOP,
@@ -3122,7 +3122,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	ULONG size = sizeof(SWP);
 
 	WinQueryWindowPos(hwnd, &swp);
-	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "CompDir.Position", (PVOID) &swp,
+	PrfWriteProfileData(fmprof, FM3Str, "CompDir.Position", (PVOID) &swp,
 			    size);
       }
       WinDismissDlg(hwnd, 0);
@@ -3140,7 +3140,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	SWP swp;
 	ULONG size = sizeof(SWP);
 	WinQueryWindowPos(hwnd, &swp);
-	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "CompDir.Position", (PVOID) &swp,
+	PrfWriteProfileData(fmprof, FM3Str, "CompDir.Position", (PVOID) &swp,
 			    size);
       }
       WinDismissDlg(hwnd, 1);

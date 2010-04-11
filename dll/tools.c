@@ -233,7 +233,7 @@ VOID save_tools(CHAR * filename)
     filename = "FM3TOOLS.TLS";
   if (toolhead && filename && *filename) {
     strcpy(lasttoolbar, filename);
-    PrfWriteProfileString(fmprof, (CHAR *) FM3Str, "LastToolbar", filename);
+    PrfWriteProfileString(fmprof, FM3Str, "LastToolbar", filename);
   }
   if (!toolhead) {
     unlinkf(filename);
@@ -1069,7 +1069,7 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    }
 	  }
 	}
-	PrfWriteProfileString(fmprof, (CHAR *) FM3Str, "LastToolbar", lasttoolbar);
+	PrfWriteProfileString(fmprof, FM3Str, "LastToolbar", lasttoolbar);
       }
       WinDismissDlg(hwnd, 1);
       break;

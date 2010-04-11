@@ -262,27 +262,27 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinSendDlgItemMsg(hwnd,
 		      GREP_MASK, EM_SETSEL, MPFROM2SHORT(0, 8192), MPVOID);
     size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "RememberFlagsGrep",
+    PrfQueryProfileData(fmprof, FM3Str, "RememberFlagsGrep",
 			(PVOID) & gRemember, &size);
     WinCheckButton(hwnd, GREP_REMEMBERFLAGS, gRemember);
     if (gRemember) {
       size = sizeof(BOOL);
-      PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Grep_Recurse",
+      PrfQueryProfileData(fmprof, FM3Str, "Grep_Recurse",
 			  (PVOID) & recurse, &size);
       size = sizeof(BOOL);
-      PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Grep_Absolute",
+      PrfQueryProfileData(fmprof, FM3Str, "Grep_Absolute",
 			  (PVOID) & absolute, &size);
       size = sizeof(BOOL);
-      PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Grep_Case",
+      PrfQueryProfileData(fmprof, FM3Str, "Grep_Case",
 			  (PVOID) & sensitive, &size);
       size = sizeof(BOOL);
-      PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Grep_Sayfiles",
+      PrfQueryProfileData(fmprof, FM3Str, "Grep_Sayfiles",
 			  (PVOID) & sayfiles, &size);
       size = sizeof(BOOL);
-      PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Grep_Searchfiles",
+      PrfQueryProfileData(fmprof, FM3Str, "Grep_Searchfiles",
 			  (PVOID) & searchFiles, &size);
       size = sizeof(BOOL);
-      PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Grep_SearchfEAs",
+      PrfQueryProfileData(fmprof, FM3Str, "Grep_SearchfEAs",
 			  (PVOID) & searchEAs, &size);
     }
     if (!gRemember) {
@@ -369,7 +369,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       {
 	BOOL gRemember = WinQueryButtonCheckstate(hwnd, GREP_REMEMBERFLAGS);
 
-	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "RememberFlagsGrep",
+	PrfWriteProfileData(fmprof, FM3Str, "RememberFlagsGrep",
 			    (PVOID) & gRemember, sizeof(BOOL));
       }
       break;
@@ -855,17 +855,17 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	findifany = WinQueryButtonCheckstate(hwnd, GREP_FINDIFANY) != 0;
 	gRemember = WinQueryButtonCheckstate(hwnd, GREP_REMEMBERFLAGS);
 	if (gRemember) {
-	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Grep_Recurse",
+	  PrfWriteProfileData(fmprof, FM3Str, "Grep_Recurse",
 			      (PVOID) & recurse, sizeof(BOOL));
-	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Grep_Absolute",
+	  PrfWriteProfileData(fmprof, FM3Str, "Grep_Absolute",
 			      (PVOID) & absolute, sizeof(BOOL));
-	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Grep_Case",
+	  PrfWriteProfileData(fmprof, FM3Str, "Grep_Case",
 			      (PVOID) & sensitive, sizeof(BOOL));
-	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Grep_Sayfiles",
+	  PrfWriteProfileData(fmprof, FM3Str, "Grep_Sayfiles",
 			      (PVOID) & sayfiles, sizeof(BOOL));
-	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Grep_Searchfiles",
+	  PrfWriteProfileData(fmprof, FM3Str, "Grep_Searchfiles",
 			      (PVOID) & searchFiles, sizeof(BOOL));
-	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "Grep_SearchfEAs",
+	  PrfWriteProfileData(fmprof, FM3Str, "Grep_SearchfEAs",
 			      (PVOID) & searchEAs, sizeof(BOOL));
 	}
 	PrfWriteProfileData(fmprof, appname,

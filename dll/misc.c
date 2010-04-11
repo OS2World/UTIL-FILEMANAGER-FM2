@@ -1549,27 +1549,27 @@ VOID RemoveCnrSwitches(PCSZ keyroot, PCSZ statename)
 #endif
 
   strcpy(eos, "Pos");;
-  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, s, NULL, 0);
+  PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
   strcpy(eos, "Sort");
-  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, s, NULL, 0);
+  PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
   strcpy(eos, "Filter");
-  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, s, NULL, 0);
+  PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
   strcpy(eos, "View");
-  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, s, NULL, 0);
+  PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
   strcpy(eos, "Dir");
-  PrfWriteProfileString(fmprof, (CHAR *) FM3Str, s, NULL);
+  PrfWriteProfileString(fmprof, FM3Str, s, NULL);
   if (statename && strstr(s, ".0.")) {
     strcpy(s, statename);
     strcat(s, ".");
     eos = &s[strlen(s)];
     strcpy(eos, "LastTreePos");
-    PrfWriteProfileData(fmprof, (CHAR *) FM3Str, s, NULL, 0);
+    PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
     strcpy(eos, "MySizeLastTime");
-    PrfWriteProfileData(fmprof, (CHAR *) FM3Str, s, NULL, 0);
+    PrfWriteProfileData(fmprof, FM3Str, s, NULL, 0);
     strcpy(eos, "Toolbar");
-    PrfWriteProfileString(fmprof, (CHAR *) FM3Str, s, NULL);
+    PrfWriteProfileString(fmprof, FM3Str, s, NULL);
     strcpy(eos, "TargetDir");
-    PrfWriteProfileString(fmprof, (CHAR *) FM3Str, s, NULL);
+    PrfWriteProfileString(fmprof, FM3Str, s, NULL);
   }
 
 }
@@ -1582,15 +1582,15 @@ VOID RemoveOldCnrSwitches(PCSZ szPrefix, ULONG ulTemp)
   CHAR szKey[STATE_NAME_MAX_BYTES + 80];
 
   sprintf(szKey, "%sDirCnrPos.%lu", szPrefix, ulTemp);
-  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, szKey, NULL, 0);
+  PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0);
   sprintf(szKey, "%sDirCnrSort.%lu", szPrefix, ulTemp);
-  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, szKey, NULL, 0);
+  PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0);
   sprintf(szKey, "%sDirCnrFilter.%lu", szPrefix, ulTemp);
-  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, szKey, NULL, 0);
+  PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0);
   sprintf(szKey, "%sDirCnrView.%lu", szPrefix, ulTemp);
-  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, szKey, NULL, 0);
+  PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0);
   sprintf(szKey, "%sDirCnrDir.%lu", szPrefix, ulTemp);
-  PrfWriteProfileString(fmprof, (CHAR *) FM3Str, szKey, NULL);
+  PrfWriteProfileString(fmprof, FM3Str, szKey, NULL);
   sprintf(szKey, "%sDirCnr.%lu.", szPrefix, ulTemp);
 }
 

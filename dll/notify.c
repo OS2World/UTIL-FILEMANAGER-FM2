@@ -307,7 +307,7 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     // Remember showing for restart
     fThreadNotes = TRUE;
     PrfWriteProfileData(fmprof,
-			(CHAR *) FM3Str,
+			FM3Str,
 			"ThreadNotes",
 			&fThreadNotes,
 			sizeof(BOOL));
@@ -344,7 +344,7 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       SWP swp;
 
       if (PrfQueryProfileData(fmprof,
-			      (CHAR *) FM3Str, "NoteWndSwp", (PVOID) & swp, &size)) {
+			      FM3Str, "NoteWndSwp", (PVOID) & swp, &size)) {
 	if (swp.fl & (SWP_HIDE | SWP_MINIMIZE)) {
 	  fl |= SWP_MINIMIZE;
 	  fl &= (~SWP_SHOW);
@@ -389,7 +389,7 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  swp.cy = WinQueryWindowUShort(hwnd, QWS_CYRESTORE);
 	}
 	PrfWriteProfileData(fmprof,
-			    (CHAR *) FM3Str, "NoteWndSwp", (PVOID) & swp, sizeof(SWP));
+			    FM3Str, "NoteWndSwp", (PVOID) & swp, sizeof(SWP));
       }
     }
     return 0;
@@ -476,7 +476,7 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (hwndNotify == hwnd) {
       fThreadNotes = FALSE;		// Remember not open
       PrfWriteProfileData(fmprof,
-			  (CHAR *) FM3Str, "ThreadNotes", &fThreadNotes, sizeof(BOOL));
+			  FM3Str, "ThreadNotes", &fThreadNotes, sizeof(BOOL));
       hwndNotify = (HWND)0;
     }
     if (hptrIcon) {

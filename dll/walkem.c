@@ -204,12 +204,12 @@ VOID load_setups(VOID)
   if (fSetupsLoaded)
     return;
 
-  if (!PrfQueryProfileSize(fmprof, (CHAR *) FM3Str, pszLastSetups, &ulDataBytes)) {
+  if (!PrfQueryProfileSize(fmprof, FM3Str, pszLastSetups, &ulDataBytes)) {
     // fixme to use generic hab
     ERRORID eid = WinGetLastError((HAB)0);
     if ((eid & 0xffff) != PMERR_NOT_IN_IDX) {
       // Get error info back
-      PrfQueryProfileSize(fmprof, (CHAR *) FM3Str, pszLastSetups, &ulDataBytes);
+      PrfQueryProfileSize(fmprof, FM3Str, pszLastSetups, &ulDataBytes);
       Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_PRFQUERYPROFILESIZE);
     }
     else
@@ -226,7 +226,7 @@ VOID load_setups(VOID)
   if (!pszBuf)
     return;
   l = ulDataBytes;
-  if (!PrfQueryProfileData(fmprof, (CHAR *) FM3Str, pszLastSetups, pszBuf, &l)) {
+  if (!PrfQueryProfileData(fmprof, FM3Str, pszLastSetups, pszBuf, &l)) {
     Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__, PCSZ_PRFQUERYPROFILEDATA);
     free(pszBuf);
     return;
@@ -321,7 +321,7 @@ VOID save_setups(VOID)
   }
 
   if (!PrfWriteProfileData(fmprof,
-			   (CHAR *) FM3Str,
+			   FM3Str,
 			    pszLastSetups, pszBuf, ulBufBytes)) {
     ERRORID eid = WinGetLastError((HAB)0);
     if ((eid & 0xffff) != PMERR_NOT_IN_IDX)
@@ -329,7 +329,7 @@ VOID save_setups(VOID)
   }
 
   // Delete obsolete INI entry
-  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "LastSetup", NULL, 0);
+  PrfWriteProfileData(fmprof, FM3Str, "LastSetup", NULL, 0);
 }
 
 /**
@@ -777,7 +777,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       SWP swp;
       ULONG size = sizeof(SWP);
 
-      PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "WalkDir.Position", (PVOID) &swp, &size);
+      PrfQueryProfileData(fmprof, FM3Str, "WalkDir.Position", (PVOID) &swp, &size);
       swp.fl &= ~SWP_SIZE;		// 04 Feb 09 SHL ignore saved size
       WinSetWindowPos(hwnd,
 		      HWND_TOP,
@@ -1268,7 +1268,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	SWP swp;
 	ULONG size = sizeof(SWP);
 	WinQueryWindowPos(hwnd, &swp);
-	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "WalkDir.Position", (PVOID) &swp,
+	PrfWriteProfileData(fmprof, FM3Str, "WalkDir.Position", (PVOID) &swp,
 			    size);
       }
       if (wa->changed)
@@ -1289,7 +1289,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	ULONG size = sizeof(SWP);
 
 	WinQueryWindowPos(hwnd, &swp);
-	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "WalkDir.Position", (PVOID) &swp,
+	PrfWriteProfileData(fmprof, FM3Str, "WalkDir.Position", (PVOID) &swp,
 			    size);
       }
       if (wa->changed)
@@ -1403,7 +1403,7 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       SWP swp;
       ULONG size = sizeof(SWP);
 
-      PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "WalkDir2.Position", (PVOID) &swp, &size);
+      PrfQueryProfileData(fmprof, FM3Str, "WalkDir2.Position", (PVOID) &swp, &size);
       swp.fl &= ~SWP_SIZE;		// 04 Feb 09 SHL ignore saved size
       WinSetWindowPos(hwnd,
 		      HWND_TOP,
@@ -1685,7 +1685,7 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       ULONG size = sizeof(SWP);
 
       WinQueryWindowPos(hwnd, &swp);
-      PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "WalkDir2.Position", (PVOID) &swp,
+      PrfWriteProfileData(fmprof, FM3Str, "WalkDir2.Position", (PVOID) &swp,
 			  size);
       }
       WinDismissDlg(hwnd, 1);
@@ -1704,7 +1704,7 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       ULONG size = sizeof(SWP);
 
       WinQueryWindowPos(hwnd, &swp);
-      PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "WalkDir2.Position", (PVOID) &swp,
+      PrfWriteProfileData(fmprof, FM3Str, "WalkDir2.Position", (PVOID) &swp,
 			  size);
       }
       WinDismissDlg(hwnd, 0);

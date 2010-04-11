@@ -388,7 +388,7 @@ MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     switch (SHORT1FROMMP(mp1)) {
     case KILL_CHECKBOX:
       fUseQProcStat = WinQueryButtonCheckstate(hwnd, KILL_CHECKBOX);
-      PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "UseQProcStat",
+      PrfWriteProfileData(fmprof, FM3Str, "UseQProcStat",
                           &fUseQProcStat, sizeof(BOOL));
       PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(KILL_RESCAN, 0), MPVOID);
       if (WinQueryButtonCheckstate(hwnd, KILL_CHECKBOX)) {
@@ -400,7 +400,7 @@ MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
     case KILL2_CHECKBOX:
       fUseQSysState = WinQueryButtonCheckstate(hwnd, KILL2_CHECKBOX);
-      PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "UseQSysState",
+      PrfWriteProfileData(fmprof, FM3Str, "UseQSysState",
                           &fUseQSysState, sizeof(BOOL));
       PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(KILL_RESCAN, 0), MPVOID);
       if (WinQueryButtonCheckstate(hwnd, KILL2_CHECKBOX)) {

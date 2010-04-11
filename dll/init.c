@@ -473,7 +473,7 @@ VOID FindSwapperDat(VOID)
 	      if (!rc) {
 		DosFindClose(hdir);
 		PrfWriteProfileString(fmprof,
-				      (CHAR *) FM3Str, "SwapperDat", SwapperDat);
+				      FM3Str, "SwapperDat", SwapperDat);
 	      }
 	      else
 		*SwapperDat = 0;
@@ -498,7 +498,7 @@ unsigned APIENTRY LibMain(unsigned hModule,
     memset(&RGBBLACK, 0, sizeof(RGB2));
     RGBGREY.bRed = RGBGREY.bGreen = RGBGREY.bBlue = (BYTE)204;
     RGBGREY.fcOptions = 0;
-    FM3UL = *(ULONG *)(CHAR *) FM3Str;
+    FM3UL = *(ULONG *) FM3Str;
     break;
   case 1:
     StopPrinting = 1;
@@ -687,10 +687,10 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   mypid = getpid();
   /* give default appname if none set by caller */
   if (!*appname)
-    strcpy(appname, (CHAR *) FM3Str);
+    strcpy(appname, FM3Str);
   /* save appname; may be reset below */
   strcpy(realappname, appname);
-  if (!strcmp(appname, (CHAR *) FM3Str))
+  if (!strcmp(appname, FM3Str))
     DosSetMaxFH(100);
   else if (!strcmp(appname, "VDir") ||
 	   !strcmp(appname, "VTree") ||
@@ -909,13 +909,13 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   FindSwapperDat();
 
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "SeparateParms",
+  PrfQueryProfileData(fmprof, FM3Str, "SeparateParms",
                       &fSeparateParms, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "SeparateParms",
 		      &fSeparateParmsApp, &size);
   if (!fSeparateParms && !fSeparateParmsApp)
-    strcpy(appname, (CHAR *) FM3Str);
+    strcpy(appname, FM3Str);
 
   /* start help */
   memset(&hini, 0, sizeof(HELPINIT));
@@ -1209,7 +1209,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   /**
     * Separate paramenters -- Please note that appname should be used in
     * profile calls for user settings that work and are setable in more than one
-    * miniapp; (CHAR *) FM3Str should be used for setting only relavent to FM/2 or that
+    * miniapp; FM3Str should be used for setting only relavent to FM/2 or that
     * aren't user settable; realappname should be used for setting applicable to
     * one or more miniapp but not to FM/2
     */
@@ -1290,31 +1290,31 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "ThreadNotes", &fThreadNotes, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Prnpagenums", &prnpagenums, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "Prnpagenums", &prnpagenums, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Prnalt", &prnalt, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "Prnalt", &prnalt, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Prnformat", &prnformat, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "Prnformat", &prnformat, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Prnformfeedbefore", &prnformfeedbefore, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "Prnformfeedbefore", &prnformfeedbefore, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Prnformfeedafter",&prnformfeedafter, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "Prnformfeedafter",&prnformfeedafter, &size);
   size = sizeof(ULONG);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Prntabspaces", &prntabspaces, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "Prntabspaces", &prntabspaces, &size);
   size = sizeof(ULONG);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Prnwidth", &prnwidth, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "Prnwidth", &prnwidth, &size);
   size = sizeof(ULONG);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Prnlength", &prnlength, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "Prnlength", &prnlength, &size);
   size = sizeof(ULONG);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Prntmargin", &prntmargin, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "Prntmargin", &prntmargin, &size);
   size = sizeof(ULONG);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Prnbmargin", &prnbmargin, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "Prnbmargin", &prnbmargin, &size);
   size = sizeof(ULONG);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Prnlmargin", &prnlmargin, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "Prnlmargin", &prnlmargin, &size);
   size = sizeof(ULONG);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Prnrmargin", &prnrmargin, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "Prnrmargin", &prnrmargin, &size);
   size = sizeof(ULONG);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Prnspacing", &prnspacing, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "Prnspacing", &prnspacing, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "NoDead", &fNoDead, &size);
   size = sizeof(BOOL);
@@ -1345,9 +1345,9 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, appname, "KeepCmdLine", &fKeepCmdLine, &size);
   if (strcmp(realappname, "FM/4")) {
     size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "MoreButtons", &fMoreButtons, &size);
+    PrfQueryProfileData(fmprof, FM3Str, "MoreButtons", &fMoreButtons, &size);
     size = sizeof(BOOL);
-    PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "Drivebar", &fDrivebar, &size);
+    PrfQueryProfileData(fmprof, FM3Str, "Drivebar", &fDrivebar, &size);
   }
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "NoSearch", &fNoSearch, &size);
@@ -1388,23 +1388,23 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "AutoAddAllDirs", &fAutoAddAllDirs, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "UserListSwitches", &fUserListSwitches, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "UserListSwitches", &fUserListSwitches, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "UseNewViewer", &fUseNewViewer, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "DefaultDeletePerm", &fDefaultDeletePerm, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "ExternalINIs", &fExternalINIs, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "ExternalINIs", &fExternalINIs, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "ExternalCollector", &fExternalCollector, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "ExternalCollector", &fExternalCollector, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "ExternalArcboxes", &fExternalArcboxes, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "ExternalArcboxes", &fExternalArcboxes, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "ExternalViewer", &fExternalViewer, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "ExternalViewer", &fExternalViewer, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "UseQProcStat", &fUseQProcStat, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "UseQProcStat", &fUseQProcStat, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "UseQSysState", &fUseQSysState, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "UseQSysState", &fUseQSysState, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "DataMin", &fDataMin, &size);
   size = sizeof(BOOL);
@@ -1414,7 +1414,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "DataInclRemote", &fDataInclRemote, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "SplitStatus", &fSplitStatus, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "SplitStatus", &fSplitStatus, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "FolderAfterExtract", &fFolderAfterExtract, &size);
   size = sizeof(BOOL);
@@ -1424,7 +1424,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "ConfirmDelete", &fConfirmDelete, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "SaveState", &fSaveState, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "SaveState", &fSaveState, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "SyncUpdates", &fSyncUpdates, &size);
   size = sizeof(BOOL);
@@ -1432,7 +1432,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "UnHilite", &fUnHilite, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "TileBackwards", &fTileBackwards, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "TileBackwards", &fTileBackwards, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "LoadLongname", &fLoadLongnames, &size);
   size = sizeof(BOOL);
@@ -1516,7 +1516,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "NoTreeGap", &fNoTreeGap, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "VTreeOpensWPS", &fVTreeOpensWPS, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "VTreeOpensWPS", &fVTreeOpensWPS, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "RemoteBug", &fRemoteBug, &size);
   size = sizeof(BOOL);
@@ -1538,15 +1538,15 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "Drag&DropDlg", &fDragndropDlg, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "UserComboBox", &fUserComboBox, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "UserComboBox", &fUserComboBox, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "MinDirOnOpen", &fMinOnOpen, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "MinDirOnOpen", &fMinOnOpen, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "QuickArcFind", &fQuickArcFind, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "NoRemovableScan", &fNoRemovableScan, &size);
   size = sizeof(ULONG);
-  PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "NoBrokenNotify", &NoBrokenNotify, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "NoBrokenNotify", &NoBrokenNotify, &size);
   size = sizeof(ULONG);
   PrfQueryProfileData(fmprof, appname, "ContainerType", &ulCnrType, &size);
   size = sizeof(ULONG);

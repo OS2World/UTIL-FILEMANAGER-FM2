@@ -528,7 +528,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       SWP swp;
       ULONG size = sizeof(SWP);
 
-      PrfQueryProfileData(fmprof, (CHAR *) FM3Str, "DirSizes.Position", (PVOID) &swp, &size);
+      PrfQueryProfileData(fmprof, FM3Str, "DirSizes.Position", (PVOID) &swp, &size);
       swp.fl &= ~SWP_SIZE;		// 04 Feb 09 SHL ignore saved size
       WinSetWindowPos(hwnd,
 		      HWND_TOP,
@@ -1018,7 +1018,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	ULONG size = sizeof(SWP);
 
 	WinQueryWindowPos(hwnd, &swp);
-	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "DirSizes.Position", (PVOID) &swp,	size);
+	PrfWriteProfileData(fmprof, FM3Str, "DirSizes.Position", (PVOID) &swp,	size);
       }
       pState = INSTDATA(hwnd);
       if (!pState)

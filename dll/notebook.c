@@ -1436,7 +1436,7 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PrfWriteProfileData(fmprof,	appname, "ShowDriveLabelInTree",
                           &fShowDriveLabelInTree, sizeof(BOOL));
       fVTreeOpensWPS = WinQueryButtonCheckstate(hwnd, CFGT_VTREEOPENSWPS);
-      PrfWriteProfileData(fmprof, (CHAR *) (CHAR *) FM3Str, "VTreeOpensWPS", &fVTreeOpensWPS,
+      PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "VTreeOpensWPS", &fVTreeOpensWPS,
                           sizeof(BOOL));
       fCollapseFirst = WinQueryButtonCheckstate(hwnd, CFGT_COLLAPSEFIRST);
       PrfWriteProfileData(fmprof, appname, "CollapseFirst", &fCollapseFirst,
@@ -1944,7 +1944,7 @@ MRESULT EXPENTRY CfgDDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       if (fOldSyncUpdates != fSyncUpdates) {
 	fSyncUpdates = fOldSyncUpdates;
-	if (hwndMain && !strcmp(realappname, (CHAR *) FM3Str)) {
+	if (hwndMain && !strcmp(realappname, FM3Str)) {
 	  // Save state and restore to refresh windows with new settings
 	  if (SaveDirCnrState(hwndMain, PCSZ_FM2TEMPTEXT) > 0) {
 	    PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPFROMLONG(2));
@@ -2099,7 +2099,7 @@ MRESULT EXPENTRY CfgMDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_CLOSE:
-    if (hwndMain && !strcmp(realappname, (CHAR *) FM3Str)) {
+    if (hwndMain && !strcmp(realappname, FM3Str)) {
       if (fFreeTree != WinQueryButtonCheckstate(hwnd, CFGM_FREETREE))
 	PostMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_FREETREE, 0), MPVOID);
       if (fAutoTile != WinQueryButtonCheckstate(hwnd, CFGM_AUTOTILE))
@@ -2107,25 +2107,25 @@ MRESULT EXPENTRY CfgMDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (fSplitStatus != WinQueryButtonCheckstate(hwnd, CFGM_SPLITSTATUS)) {
 	fSplitStatus = (fSplitStatus) ? FALSE : TRUE;
 	PostMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_BLINK, 0), MPVOID);
-	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "SplitStatus", &fSplitStatus,
+	PrfWriteProfileData(fmprof, FM3Str, "SplitStatus", &fSplitStatus,
 			    sizeof(BOOL));
       }
     }
     fUserListSwitches = WinQueryButtonCheckstate(hwnd, CFGM_USERLISTSWITCHES);
-    PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "UserListSwitches",
+    PrfWriteProfileData(fmprof, FM3Str, "UserListSwitches",
 			(PVOID) & fUserListSwitches, sizeof(BOOL));
     fExternalINIs = WinQueryButtonCheckstate(hwnd, CFGM_EXTERNALINIS);
-    PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "ExternalINIs",
+    PrfWriteProfileData(fmprof, FM3Str, "ExternalINIs",
 			(PVOID) & fExternalINIs, sizeof(BOOL));
     fExternalArcboxes = WinQueryButtonCheckstate(hwnd, CFGM_EXTERNALARCBOXES);
-    PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "ExternalArcboxes",
+    PrfWriteProfileData(fmprof, FM3Str, "ExternalArcboxes",
 			(PVOID) & fExternalArcboxes, sizeof(BOOL));
     fExternalCollector =
       WinQueryButtonCheckstate(hwnd, CFGM_EXTERNALCOLLECTOR);
-    PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "ExternalCollector",
+    PrfWriteProfileData(fmprof, FM3Str, "ExternalCollector",
 			(PVOID) & fExternalCollector, sizeof(BOOL));
     fExternalViewer = WinQueryButtonCheckstate(hwnd, CFGM_EXTERNALVIEWER);
-    PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "ExternalViewer",
+    PrfWriteProfileData(fmprof, FM3Str, "ExternalViewer",
 			(PVOID) & fExternalViewer, sizeof(BOOL));
     {
       long test;
@@ -2149,7 +2149,7 @@ MRESULT EXPENTRY CfgMDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			"WS_ANIMATE", (PVOID) & fwsAnimate, sizeof(ULONG));
     fSaveState = WinQueryButtonCheckstate(hwnd, CFGM_SAVESTATE);
     PrfWriteProfileData(fmprof,
-			(CHAR *) FM3Str,
+			FM3Str,
 			"SaveState", (PVOID) & fSaveState, sizeof(BOOL));
     fStartMinimized = WinQueryButtonCheckstate(hwnd, CFGM_STARTMIN);
     PrfWriteProfileData(fmprof,
@@ -2166,7 +2166,7 @@ MRESULT EXPENTRY CfgMDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			appname, "DataMin", (PVOID) & fDataMin, sizeof(BOOL));
     fTileBackwards = WinQueryButtonCheckstate(hwnd, CFGM_TILEBACKWARDS);
     PrfWriteProfileData(fmprof,
-			(CHAR *) FM3Str,
+			FM3Str,
 			"TileBackwards",
 			(PVOID) & fTileBackwards, sizeof(BOOL));
     fNoTreeGap = WinQueryButtonCheckstate(hwnd, CFGM_NOTREEGAP);
@@ -2694,7 +2694,7 @@ MRESULT EXPENTRY Cfg7DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_CLOSE:
     fExternalCollector = WinQueryButtonCheckstate(hwnd,
 						  CFG5_EXTERNALCOLLECTOR);
-    PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "ExternalCollector",
+    PrfWriteProfileData(fmprof, FM3Str, "ExternalCollector",
 			&fExternalCollector, sizeof(BOOL));
     {
       ULONG flWindowAttr = 0;
@@ -4099,7 +4099,7 @@ static VOID SaveLastPageIndex(HWND hwnd)
       if (!np[x].usMenuId)
 	Runtime_Error(pszSrcFile, __LINE__, "bad menu id %lu", ulPageId);
       else {
-	PrfWriteProfileData(fmprof, (CHAR *) FM3Str, pszIK_LastSettingsPage,
+	PrfWriteProfileData(fmprof, FM3Str, pszIK_LastSettingsPage,
 			    (PVOID)&x, sizeof(x));
 	hwndMenu = WinWindowFromID(hwndOwner, FID_MENU);
 	SetConditionalCascade(hwndMenu, IDM_NOTEBOOKSUBMENU, np[x].usMenuId);

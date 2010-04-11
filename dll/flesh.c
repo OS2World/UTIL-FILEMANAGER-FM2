@@ -370,13 +370,13 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 		   GetPString(IDS_LANERROR2TITLETEXT),
 		   GetPString(IDS_LANERROR2TEXT));
 	    NoBrokenNotify = 255;
-	    PrfWriteProfileData(fmprof,	(CHAR *) FM3Str, "NoBrokenNotify",
+	    PrfWriteProfileData(fmprof,	FM3Str, "NoBrokenNotify",
 				&NoBrokenNotify, sizeof(ULONG));
 	  }
 	}
 	else {
 	  NoBrokenNotify--;
-	  PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "NoBrokenNotify",
+	  PrfWriteProfileData(fmprof, FM3Str, "NoBrokenNotify",
 			      &NoBrokenNotify, sizeof(ULONG));
 	}
       }
@@ -439,13 +439,13 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 		       GetPString(IDS_FSDERROR2TITLETEXT),
 		       GetPString(IDS_FSDERROR2TEXT));
 		NoBrokenNotify = 255;
-		PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "NoBrokenNotify",
+		PrfWriteProfileData(fmprof, FM3Str, "NoBrokenNotify",
 				    &NoBrokenNotify, sizeof(ULONG));
 	      }
 	    }
 	    else {
 	      NoBrokenNotify--;
-	      PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "NoBrokenNotify",
+	      PrfWriteProfileData(fmprof, FM3Str, "NoBrokenNotify",
 				  &NoBrokenNotify, sizeof(ULONG));
 	    }
 	  }
