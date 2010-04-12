@@ -338,20 +338,20 @@ BEGIN
                         WS_GROUP
                         PRESPARAMS PP_FONTNAMESIZE, "18.Times New Roman"
         LISTBOX         ASEL_LISTBOX, 4, 27, 150, 83, WS_GROUP
-        DEFPUSHBUTTON   "Edit", DID_OK, 4, 10, 44, 13, BS_NOPOINTERFOCUS |
+        DEFPUSHBUTTON   "~Edit", DID_OK, 4, 10, 44, 13, BS_NOPOINTERFOCUS |
                         WS_GROUP
-        PUSHBUTTON      "Cancel", DID_CANCEL, 113, 10, 44, 13,
+        PUSHBUTTON      "~Close", DID_CANCEL, 113, 10, 44, 13,
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Up", ASEL_PB_UP, 174, 89, 40, 14, BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Down", ASEL_PB_DOWN, 174, 75, 40, 14,
+        PUSHBUTTON      "~Up", ASEL_PB_UP, 174, 89, 40, 14, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "Do~wn", ASEL_PB_DOWN, 174, 75, 40, 14,
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Add", ASEL_PB_ADD, 174, 61, 40, 14,
+        PUSHBUTTON      "~Add", ASEL_PB_ADD, 174, 61, 40, 14,
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Delete", ASEL_PB_DELETE, 174, 47, 40, 14,
+        PUSHBUTTON      "~Delete", ASEL_PB_DELETE, 174, 47, 40, 14,
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Revert", ASEL_PB_REVERT, 174, 33, 40, 14,
+        PUSHBUTTON      "~Revert", ASEL_PB_REVERT, 174, 33, 40, 14,
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Help", IDM_HELP, 174, 19, 40, 14, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "~Help", IDM_HELP, 174, 19, 40, 14, BS_NOPOINTERFOCUS
     END
 END
 
@@ -876,7 +876,7 @@ BEGIN
             FCF_TITLEBAR
     BEGIN
         CTEXT           "Environment:", -1, 0, 54, 49, 10,  NOT WS_GROUP
-        CTEXT           "Hotkey:", -1, 120, 62, 40, 10,  NOT WS_GROUP                
+        CTEXT           "Hotkey:", -1, 120, 62, 40, 10,  NOT WS_GROUP
         LTEXT           "Command line:", -1, 4, 116, 82, 8, NOT WS_GROUP
         LTEXT           "Title:", -1, 4, 96, 24, 8, NOT WS_GROUP
         CTEXT           "If the title is changed replace will fail -- use add!",
@@ -911,7 +911,7 @@ BEGIN
                         WS_VISIBLE
         CONTROL         "", CMD_HOTKEY,160,12, 70, 60, WC_COMBOBOX,
                         CBS_DROPDOWNLIST | WS_TABSTOP |
-                        WS_VISIBLE                
+                        WS_VISIBLE
         DEFPUSHBUTTON   "~Okay", DID_OK, 2, 2, 34, 14, BS_NOPOINTERFOCUS |
                         WS_GROUP
         PUSHBUTTON      "~Add", CMD_ADD, 38, 2, 34, 14, BS_NOPOINTERFOCUS
@@ -1947,10 +1947,10 @@ BEGIN
                         4, 44, 132, 10
         AUTOCHECKBOX    "Show ~env. vars in Tree", CFGT_SHOWENV, 4, 32, 110,
                         10
-        GROUPBOX        "Show in tree beside drive letter", -1, 140, 99, 126, 45, NOT WS_GROUP                
+        GROUPBOX        "Show in tree beside drive letter", -1, 140, 99, 126, 45, NOT WS_GROUP
         AUTORADIOBUTTON "Drive letter only", CFGT_DRIVEONLY, 152, 128, 106, 10, WS_GROUP
         AUTORADIOBUTTON "File system type", CFGT_SYSTYPE, 152, 116, 106, 10
-        AUTORADIOBUTTON "Drive label", CFGT_LABEL, 152, 104, 106, 10                
+        AUTORADIOBUTTON "Drive label", CFGT_LABEL, 152, 104, 106, 10
 	ENTRYFIELD      "", CFGT_ENVVARLIST, 120, 32, 196, 8, ES_MARGIN | ES_AUTOSCROLL
         PUSHBUTTON      "~Help", IDM_HELP, 8, 4, 40, 14, BS_NOPOINTERFOCUS |
                         WS_GROUP
@@ -2063,7 +2063,7 @@ BEGIN
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
         CHECKBOX       "No EA support", DVS_NOEASUPPORT, 106, 142, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
-                        PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L                
+                        PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
         CHECKBOX        "Not writeable", DVS_NOTWRITEABLE, 106, 130, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L

@@ -165,7 +165,7 @@ the archiver you wish to edit and select the
 :hp2.Edit:ehp2. button at the bottom.
 :p.
 When the
-&CancelButton. button
+:hp2.Close:ehp2. button
 is selected a dialog asking you if you wish to rewrite
 ARCHIVER.BB2 will appear if changes have been made.
 
