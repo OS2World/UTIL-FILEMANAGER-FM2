@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 	    for (;;) {
 	      if (!WinGetMsg(hab, &qmsg, (HWND) 0, 0, 0)) {
 		if (qmsg.hwnd)
-		  qmsg.msg = WM_CLOSE;
+		  qmsg.msg = WM_CLOSE;	// Map quit to close
 		else
 		  break;
 	      }
