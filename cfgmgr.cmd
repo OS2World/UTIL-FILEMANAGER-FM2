@@ -29,6 +29,8 @@
 
    Change log:
       16 Mar 09 JBS Added code to copy discontinued directory container state ini keys to new names
+      12 Apr 10 JBS Ticket 429: Speed up the deletion of obsolete state-related FM3.INI keys.
+      12 Apr 10 JBS Ticket 429: Add code to delete obsolete "LastToolBox" key(s).
 
 */
 
@@ -594,12 +596,17 @@ UpdateFM2Ini: procedure expose (globals)
             LastToolbar = LastToolbox
         call SysIni cfg.inifile, 'FM/3', 'LastToolbar', LastToolbar
       end
+   if LastToolbox \= 'ERROR:' then
+      call SysIni cfg.inifile, 'FM/3', 'LastToolBox', 'DELETE:'
    if SysIni(cfg.inifile, 'FM/3', 'FM2Shutdown.Toolbar') = 'ERROR:' then
-                call SysIni cfg.inifile, 'FM/3', 'FM2Shutdown.Toolbar', LastToolbar
+      call SysIni cfg.inifile, 'FM/3', 'FM2Shutdown.Toolbar', LastToolbar
    if SysIni(cfg.inifile, 'FM/4', 'LastToolbar') = 'ERROR:' then
-                call SysIni cfg.inifile, 'FM/4', 'LastToolbar', LastToolbar
+      call SysIni cfg.inifile, 'FM/4', 'LastToolbar', LastToolbar
+   if SysIni(cfg.inifile, 'FM/4', 'LastToolbox') \= 'ERROR:' then
+      call SysIni cfg.inifile, 'FM/4', 'LastToolBox', 'DELETE:'
    do /* Copy old details keys to new names */
-      /* Check for old/new version numbers first? */
+      /* Check to see if this has already been done */
+      DetailsKeysConverted = SysIni(cfg.inifile, 'FM/3', 'DetailsKeysConverted')
       StateNames = SysIni(cfg.inifile, 'FM/3', 'LastSetups')
       KeyFragments = 'Dir Filter Pos Sort View'
       NumKeyFragments = words(KeyFragments)
@@ -609,6 +616,7 @@ UpdateFM2Ini: procedure expose (globals)
       else
          if pos('FM2Shutdown' || null, StateNames) = 0 then
             StateNames = StateNames || 'FM2Shutdown' || null
+      call charout , 'One-time conversion of states to new format...'
       do while StateNames \= ''
          parse var StateNames StateName (null) StateNames
          NumDirCnrs = SysIni(cfg.inifile, 'FM/3', StateName || '.NumDirsLastTime')
@@ -616,16 +624,26 @@ UpdateFM2Ini: procedure expose (globals)
             do
                NumDirCnrs = c2d(reverse(NumDirCnrs)) - 1  /* for 0 to num-1 loop */
                do d = 0 to NumDirCnrs
+                  d2 = NumDirCnrs + 1 - d /* Work from the last to the first */
                   do f = 1 to NumKeyFragments
+                     call charout , '.'
                      frag = word(KeyFragments, f)
-                     OldKey = StateName || '.DirCnr' || frag || '.' || d
+                     OldKey = StateName || '.DirCnr' || frag || '.' || d2
                      OldKeyValue = SysIni(cfg.inifile, 'FM/3', OldKey)
-                     NewKey = StateName || '.DirCnr.' || d || '.' || frag
-                     NewKeyValue = SysIni(cfg.inifile, 'FM/3', NewKey)
-                     if (OldKeyValue \= 'ERROR:' & NewKeyValue = 'ERROR:') then
-                        rcx = SysIni(cfg.inifile, 'FM/3', NewKey, OldKeyValue)
+                     if OldKeyValue = 'ERROR:' then
+                        do
+                           f = NumKeyFragments  /* Force end of loop for this container */
+                           d = NumDirCnrs       /* Force end of loop for dir cnrs for this state */
+                        end
+                     else
+                        do
+                           call SysIni cfg.inifile, 'FM/3', OldKey, 'DELETE:'
+                           NewKey = StateName || '.DirCnr.' || d || '.' || frag
+                           call SysIni cfg.inifile, 'FM/3', NewKey, OldKeyValue
+                        end
                   end
                end
+               say
             end
       end
    end
