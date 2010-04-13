@@ -1,6 +1,9 @@
 # makefile_pre.mk - common makefile prefix settings for all makefiles
 # $Id$
 
+# Copyright (c) 1993-98 M. Kimes
+# Copyright (c) 2002, 2010 Steven H. Levine
+
 # 01 Sep 06 SHL Adjust .res case
 # 02 Jun 07 SHL Convert to OpenWatcom
 # 27 Jun 07 SHL Use same CFLAGS for all builds
@@ -16,6 +19,7 @@
 # 06 Oct 08 SHL Pass DEBUG in CFLAGS; clean up USE_RC usage
 # 18 Nov 08 JBS Ticket 297: Various build improvements/corrections
 # 12 Jul 09 GKY Allow FM/2 to load in high memory call exehdr /hi
+# 13 Apr 10 SHL Drop HIMEM support
 
 # Environment: see dll\makefile
 
@@ -23,7 +27,6 @@
 # WARNALL - add more warnings if defined
 # FORTIFY - build with FORTIFYed memory
 # USE_RC - build with rc.exe if defined, other build with wrc.exe
-# HIMEM - build with changes to allow loading in high memory
 
 CC = wcc386
 LINK = wlink
@@ -60,15 +63,6 @@ FORTIFY_OPT = FORTIFY=$(FORTIFY)	# set in case needed by sub-make
 !ifdef %FORTIFY                 	# if defined in environment
 FORTIFY = $(%FORTIFY)           	# use value from environment
 FORTIFY_OPT = FORTIFY=$(FORTIFY)	# set in case needed by sub-make
-!endif
-!endif
-
-!ifdef HIMEM			# if defined on wmake command line
-HIMEM_OPT =  HIMEM=$(HIMEM)
-!else
-!ifdef %HIMEM			# if defined in environment
-HIMEM = $(%HIMEM)		# use value from environment
-HIMEM_OPT =  HIMEM=$(HIMEM)
 !endif
 !endif
 

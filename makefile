@@ -2,7 +2,7 @@
 # $Id$
 
 # Copyright (c) 1993-98 M. Kimes
-# Copyright (c) 2002, 2008 Steven H. Levine
+# Copyright (c) 2002, 2010 Steven H. Levine
 
 # 24 May 05 SHL Add clean and cleanobj target
 # 16 Jun 05 SHL Workaround makeflags wierdness
@@ -25,6 +25,7 @@
 # 18 Nov 08 JBS Ticket 297: Various build improvements/corrections
 # 14 Dec 08 SHL Build fm3.sym
 # 12 Jul 09 GKY Allow FM/2 to load in high memory call exehdr /hi
+# 13 Apr 10 SHL Drop HIMEM support
 
 # Environment - see makefile_pre.mk and dll\makefile
 
@@ -54,7 +55,7 @@ syms: fm3.sym exesyms dllsyms .symbolic
 
 dist: all syms lxlite wpi .symbolic
 
-disth: $(BASE) allexe highmem syms lxlite wpi .symbolic
+disth: $(BASE) allexe syms lxlite wpi .symbolic
 
 # Only update resources
 res: .symbolic
@@ -78,15 +79,6 @@ $(BASE): $(BASE).exe $(BASE).res .symbolic
 $(BASE).res: $(BASE).rc  icons\$(BASE).ico bitmaps\*.bmp  .autodepend
 
 $(BASE).obj: $(BASE).c dll\version.h .autodepend
-
-highmem: .symbolic
-!ifdef HIMEM
-  cd dll  
-  $(MAKE) -h $(__MAKEOPTS__) $(DEBUG_OPT) $(FORTIFY_OPT) loadhigh
-  cd ..
-!else
-  @echo "HIMEM not set"
-!endif  
 
 # make EXE compenents
 

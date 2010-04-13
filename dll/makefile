@@ -35,6 +35,7 @@
 # 04 Feb 09 SHL Drop mkstr and fm3*.str now that we use STRINGTABLE
 # 12 Jul 09 GKY Allow FM/2 to load in high memory call exehdr /hi
 # 30 Jul 09 SHL Avoid attempting to attach resources to fm3res.map
+# 13 Apr 10 SHL Drop HIMEM support
 
 # Environment: see makefile_pre.mk
 
@@ -42,7 +43,6 @@
 # WARNALL - add more warnings if defined, standard warnings if not defined
 # FORTIFY - enable FORTIFY heap checking if defined, omit FORITY support if not defined
 # USE_RC - use rc.exe if defined, use wrc.exe if not defined
-# HIMEM - load code and data in in high memory if defined, use low memory only if not defined
 
 BASE = fm3dll
 BASERES = fm3res
@@ -81,10 +81,6 @@ WARNALL = $(%WARNALL)		# use value from environment
 
 !ifdef %FORTIFY			# if defined in environment
 FORTIFY = $(%FORTIFY)		# use value from environment
-!endif
-
-!ifdef %HIMEM			# if defined in environment
-HIMEM = $(%HIMEM)		# use value from environment
 !endif
 
 SYMS = $(BASE).sym $(BASERES).sym # targets for building SYM files
@@ -137,10 +133,6 @@ CFLAGS += -we
 
 !ifdef FORTIFY
 CFLAGS += -dFORTIFY
-!endif
-
-!ifdef HIMEM
-CFLAGS += -dHIMEM
 !endif
 
 # for fm3res only
