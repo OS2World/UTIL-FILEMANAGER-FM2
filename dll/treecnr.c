@@ -997,11 +997,11 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (dcd) {
       WinSendMsg(dcd->hwndCnr,
 		 UM_CLOSE, MPFROMLONG(dcd->dontclose != FALSE), MPVOID);
+      WinSetWindowPtr(dcd->hwndCnr, QWL_USER, NULL);	// 13 Apr 10 SHL Set NULL before freeing dcd
       free(dcd);
 #     ifdef FORTIFY
       Fortify_LeaveScope();
 #     endif
-      WinSetWindowPtr(dcd->hwndCnr, QWL_USER, NULL);
     }
     DosPostEventSem(CompactSem);
     if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))

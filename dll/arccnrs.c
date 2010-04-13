@@ -2222,11 +2222,11 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       FreeList(dcd->lastselection);
       WinSendMsg(dcd->hwndCnr, UM_CLOSE, MPVOID, MPVOID);
+      WinSetWindowPtr(dcd->hwndCnr, QWL_USER, NULL);	// 13 Apr 10 SHL Set NULL before freeing dcd
       free(dcd);
 #     ifdef FORTIFY
       Fortify_LeaveScope();
 #     endif
-      WinSetWindowPtr(dcd->hwndCnr, QWL_USER, NULL);
     }
     if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
       WinSendMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);

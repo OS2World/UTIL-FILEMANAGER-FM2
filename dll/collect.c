@@ -1071,11 +1071,11 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	Runtime_Error(pszSrcFile, __LINE__, "still busy");
       WinSendMsg(dcd->hwndCnr, UM_CLOSE, MPVOID, MPVOID);
       FreeList(dcd->lastselection);
+      WinSetWindowPtr(dcd->hwndCnr, QWL_USER, NULL);	// 13 Apr 10 SHL Set NULL before freeing dcd
       free(dcd);
 #     ifdef FORTIFY
       Fortify_LeaveScope();
 #     endif
-      WinSetWindowPtr(dcd->hwndCnr, QWL_USER, NULL);
     }
     DosPostEventSem(CompactSem);
     if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))

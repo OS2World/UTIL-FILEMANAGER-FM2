@@ -1194,8 +1194,8 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			0,
 			SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
       FreeList(dcd->lastselection);
+      WinSetWindowPtr(dcd->hwndCnr, QWL_USER, NULL);	// 13 Apr 10 SHL Set NULL before freeing dcd
       xfree(dcd, pszSrcFile, __LINE__);
-      WinSetWindowPtr(dcd->hwndCnr, QWL_USER, NULL);
       DosPostEventSem(CompactSem);
     }
 #   ifdef FORTIFY
