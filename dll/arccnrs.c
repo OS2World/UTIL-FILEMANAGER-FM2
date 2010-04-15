@@ -81,6 +81,7 @@
                 aren't user settable; realappname should be used for setting applicable to
                 one or more miniapp but not to FM/2
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  15 Apr 10 JBS Ticket 422: Stop hang when open archive gets deleted or moved
 
 ***********************************************************************/
 
@@ -2306,7 +2307,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
      * put name of our window (archive name) on status line
      */
     if (dcd && hwndStatus && mp2)
-      WinSendMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
+      PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
     break;
 
   case UM_SETUP2:
