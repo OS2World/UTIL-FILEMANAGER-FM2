@@ -96,13 +96,13 @@ PSZ MakeTempName(PSZ buffer, PSZ temproot, INT type)
   p = o = buffer + strlen(buffer);
   switch (type) {
   case 0:
-    sprintf(p, "%08lx.%03lx", mypid, rand() & 4095L);  		// 4095 = 0x0FFF
+    sprintf(p, "%08lx.%03lx", (UINT)mypid, (UINT)rand() & 4095L);  		// 4095 = 0x0FFF
     break;
   case 1:
-    sprintf(p, "%s%04lx.%03lx", "$FM2", mypid, rand() & 4095L);	// 4095 = 0x0FFF
+    sprintf(p, "%s%04lx.%03lx", "$FM2", (UINT)mypid, (UINT)rand() & 4095L);	// 4095 = 0x0FFF
     break;
   case 2:
-    sprintf(p, "%s.%03x", temproot, (rand() & 4095));		// 4095 = 0x0FFF
+    sprintf(p, "%s.%03x", temproot, (UINT)(rand() & 4095));		  	// 4095 = 0x0FFF
     break;
   default:
     break;
