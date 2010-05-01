@@ -403,7 +403,7 @@ need to widen the help windows for this to look right...)&colon.
   418795           125288  70%                            9 files
 :exmp.
 This listing "parsed" into FM/2 archiver details fields&colon.
-:table cols='15 10 50' rules=vert frame=rules.
+:table cols='30 10 75' rules=vert frame=rules.
 :row.
 :c.FM/2 Archiver detail field
 :c.Value

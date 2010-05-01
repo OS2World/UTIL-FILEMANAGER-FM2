@@ -1070,5 +1070,5 @@ reftype=hd res=93715.menu:elink.s.
 
 .im fm4.ipf
 
-:index.
+.*:index.
 :euserdoc.
