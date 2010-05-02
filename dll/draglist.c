@@ -373,7 +373,7 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
       pDItem->hstrTargetName = DrgAddStrHandle(szFile);
       ok = ok && pDItem->hstrTargetName;
       if (!ok) {
-	DbgMsg(pszSrcFile, __LINE__, "DrgAddStrHandle failed at %lu for %s", ulNumfiles, szFile);
+	//DbgMsg(pszSrcFile, __LINE__, "DrgAddStrHandle failed at %lu for %s", ulNumfiles, szFile);
 	// If we have string handle add overflow, release corrupt DragItem
 	// We release 3 more to work around 1st time drag failure reported by Gregg
 	// fixme to know why this happens - PM may need to create a handle?
@@ -488,7 +488,7 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
 	pDItem->hstrTargetName = DrgAddStrHandle(szFile);
 	ok = ok && pDItem->hstrTargetName;
 	if (!ok) {
-	  DbgMsg(pszSrcFile, __LINE__, "DrgAddStrHandle failed at %lu for %s", ulNumfiles, szFile);
+	  //DbgMsg(pszSrcFile, __LINE__, "DrgAddStrHandle failed at %lu for %s", ulNumfiles, szFile);
 	  // If we have string handle add overflow, release corrupt DragItem
 	  // We release 3 more to work around 1st time drag failure reported by Gregg
 	  // fixme to know why this happens - PM may need to create a handle?

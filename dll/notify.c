@@ -439,7 +439,7 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case WM_CLOSE:
     if (pszCachedNote)
-      DbgMsg(pszSrcFile, __LINE__, "pszCachedNote %p unexpected", pszCachedNote);	// 18 Jul 08 SHL fixme to be Runtime_Error
+      Runtime_Error(pszSrcFile, __LINE__, "pszCachedNote %p unexpected", pszCachedNote);
     else {
       // Cache last item for next open
       SHORT ndx = (SHORT)WinSendDlgItemMsg(hwnd, NOTE_LISTBOX,

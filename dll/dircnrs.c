@@ -3543,10 +3543,12 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   } // switch
 
   if (dcd && dcd->oldproc) {
-      // 11 May 08 SHL fixme debug fortify
-      if ((ULONG)dcd->oldproc == 0xa9a9a9a9)
-	DbgMsg(pszSrcFile, __LINE__, "calling oldproc after dcd free msg %x mp1 %x mp2 %x", msg, mp1, mp2);
-      return dcd->oldproc(hwnd, msg, mp1, mp2);
+#   ifdef FORTIFY    // 11 May 08 SHL fixme debug fortify
+    if ((ULONG)dcd->oldproc == 0xa9a9a9a9)
+      DbgMsg(pszSrcFile, __LINE__, "calling oldproc after dcd free msg %x mp1 %x mp2 %x",
+             msg, mp1, mp2);
+#   endif
+    return dcd->oldproc(hwnd, msg, mp1, mp2);
   }
   else
       return PFNWPCnr(hwnd, msg, mp1, mp2);

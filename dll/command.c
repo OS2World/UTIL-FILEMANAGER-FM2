@@ -381,7 +381,8 @@ VOID load_commands(VOID)
                       &size);
   size = sizeof(BOOL) * 40;
   PrfQueryProfileData(fmprof, FM3Str, "COMMANDS.UsedHotKeyIDs", &UsedHotKeyIDs,
-                        &size); size = sizeof(BOOL);
+                      &size);
+  size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "COMMANDS.LoadCommandsFromINI",
                       &fLoadCommandsFromINI, &size);
   if (!fLoadCommandsFromINI) {
@@ -566,8 +567,7 @@ VOID load_inicommands(VOID)
           info->HotKeyID = HotKeyID;
         }
         //This updates the old commands.dat file to the new format
-        //assigning the IDs based on file order or on next available ID if
-        //COMMAND.DAT is hand edited.
+        //assigning the IDs based on file order or on next available ID 
         else {
           for (x = 0; x < 300; x++) {
             if (!UsedCommandIDs[x]) {
@@ -838,7 +838,7 @@ BOOL QueryCommandSettings(HWND hwnd, COMMAND *temp)
      temp->HotKeyID = x + IDM_COMMANDNUM0;
    else
      temp->HotKeyID = 0;
-   DbgMsg(pszSrcFile, __LINE__, "info %i", temp->HotKeyID);
+   //DbgMsg(pszSrcFile, __LINE__, "info %i", temp->HotKeyID);
    return TRUE;
 }
 

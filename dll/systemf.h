@@ -10,10 +10,11 @@
 
   Change log
   21 Dec 09 GKY Added CheckExecutibleFlags to streamline code in command.c assoc.c & cmdline.c
-  17 JAN 10 GKY Changes to environment handling in ExecuteOnList to facilitate move of commands to INI and allow
-                the same commandline to have different environments (multiple different command titles).
-  17 JAN 10 GKY Add ENVIRONMENT_SIZE vaiable to replace multiple (often different hard coded sizes) set to 2048
-                (the largest value I found).
+  17 JAN 10 GKY Changes to environment handling in ExecuteOnList to facilitate move of commands
+                to INI and allow the same commandline to have different environments
+                (multiple different command titles).
+  17 JAN 10 GKY Add ENVIRONMENT_SIZE vaiable to replace multiple (often different hard coded
+                sizes) set to 2048 (the largest value I found).
 
 ***********************************************************************/
 

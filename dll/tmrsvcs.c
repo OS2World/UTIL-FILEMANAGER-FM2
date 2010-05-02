@@ -68,11 +68,6 @@ BOOL IsITimerExpired(ITIMER_DESC *pitd)
     pitd->misses++;
     err_msec = (cur_msec - pitd->start_msec) - pitd->interval_msec;
     // Estimate counts per msec
-#if 0 // 05 Jan 08 SHL fixme to be gone when no longer needed for testing
-    DbgMsg(pszSrcFile, __LINE__,
-	   "err_msec %d elapsed_msec %d estimated %u misses %u",
-	   err_msec, elapsed_msec, pitd->estimated, pitd->misses);
-#endif
     if (err_msec > 0) {
       // Late - need to reduce estimated count
       if (elapsed_msec)

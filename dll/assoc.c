@@ -528,7 +528,7 @@ INT ExecAssociation(HWND hwnd, CHAR * datafile)
 	if (flags & DIEAFTER)
 	  dieafter = TRUE;
         flags &= (~DIEAFTER);
-        DbgMsg(pszSrcFile, __LINE__, "env %s", info->env);
+        //DbgMsg(pszSrcFile, __LINE__, "env %s", info->env);
 	rc = ExecOnList(hwnd,
 			info->pszCmdLine,
 			flags, NULL,
