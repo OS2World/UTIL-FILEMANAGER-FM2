@@ -84,6 +84,7 @@
   15 Nov 09 GKY Avoid szBuf overflow in FillTreeCnr
   15 Nov 09 GKY Optimize some check code
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  09 MAY 10 JBS Ticket 434 bug fixes, message box text improvements and parameter update improvements.
 
 ***********************************************************************/
 
@@ -1676,12 +1677,12 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   DosPostEventSem(CompactSem);
   DosReleaseMutexSem(hmtFillingTreeCnr);
 
-  {
+  if (!fDontSuggestAgain) {
     BYTE info;
     BOOL includesyours = FALSE;
 
     // 10 Jan 08 SHL fixme to understand fFirstTime - looks obsolete to me - probably mean didonce?
-    if (!fDontSuggestAgain && (*szSuggest || ~driveflags[1] & DRIVE_IGNORE && fFirstTime)) {
+    if (*szSuggest || ~driveflags[1] & DRIVE_IGNORE && fFirstTime) {
       if (!DosDevConfig(&info, DEVINFO_FLOPPY) && info == 1) {
 	if (!*szSuggest) {
 	  *szSuggest = '/';
@@ -1693,6 +1694,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
       }
     }
     if (*szSuggest) {
+      APIRET rc;
       for (iDrvNum = 2; iDrvNum < 26; iDrvNum++) {
 	if (driveflags[iDrvNum] & DRIVE_IGNORE) {
 	  includesyours = TRUE;
@@ -1700,36 +1702,55 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	}
       }
       strcat(szSuggest, " %*");
-      saymsg(MB_YESNOCANCEL | MB_ICONEXCLAMATION,
+      rc = saymsg(MB_YESNOCANCEL | MB_ICONEXCLAMATION,
 	     hwndParent ? hwndParent : hwndCnr,
 	     GetPString(IDS_SUGGESTTITLETEXT),
 	     GetPString(IDS_SUGGEST1TEXT),
 	     (includesyours) ? GetPString(IDS_SUGGEST2TEXT) : NullStr,
 	     szSuggest);
-      if (MBID_YES) {
+      if (rc == MBID_YES) {
+        HOBJECT hFM2Object;
 	char s[64];
 	sprintf(s, "PARAMETERS=%s", szSuggest);
-	WinCreateObject((CHAR *) WPProgram, "FM/2", s, (CHAR *) FM3Folder, CO_UPDATEIFEXISTS);
-	WinCreateObject((CHAR *) WPProgram,
-			"FM/2 Lite", s, (CHAR *) FM3Folder, CO_UPDATEIFEXISTS);
-	WinCreateObject((CHAR *) WPProgram,
-			"Archive Viewer/2", s, (CHAR *) FM3Tools, CO_UPDATEIFEXISTS);
-	WinCreateObject((CHAR *) WPProgram,
-			"Dir Sizes", s, (CHAR *) FM3Tools, CO_UPDATEIFEXISTS);
-	WinCreateObject((CHAR *) WPProgram,
-			"Visual Tree", s, (CHAR *) FM3Tools, CO_UPDATEIFEXISTS);
-	WinCreateObject((CHAR *) WPProgram,
-			"Visual Directory", s, (CHAR *) FM3Tools, CO_UPDATEIFEXISTS);
-	WinCreateObject((CHAR *) WPProgram,
-			"Global File Viewer", s, (CHAR *) FM3Tools, CO_UPDATEIFEXISTS);
-	WinCreateObject((CHAR *) WPProgram, "Databar", s, (CHAR *) FM3Tools, CO_UPDATEIFEXISTS);
+        hFM2Object = WinQueryObject("<FM/2>");
+        if (hFM2Object) {
+          rc = WinSetObjectData(hFM2Object, (PSZ)s);
+        }
+        hFM2Object = WinQueryObject("<FM/2 LITE>");
+        if (hFM2Object) {
+          rc = WinSetObjectData(hFM2Object, (PSZ)s);
+        }
+        hFM2Object = WinQueryObject("<FM/2_AV/2>");
+        if (hFM2Object) {
+          rc = WinSetObjectData(hFM2Object, (PSZ)s);
+        }
+        hFM2Object = WinQueryObject("<FM/2_DIRSIZE>");
+        if (hFM2Object) {
+          rc = WinSetObjectData(hFM2Object, (PSZ)s);
+        }
+        hFM2Object = WinQueryObject("<FM/2_VTREE>");
+        if (hFM2Object) {
+          rc = WinSetObjectData(hFM2Object, (PSZ)s);
+        }
+        hFM2Object = WinQueryObject("<FM/2_VDIR>");
+        if (hFM2Object) {
+          rc = WinSetObjectData(hFM2Object, (PSZ)s);
+        }
+        hFM2Object = WinQueryObject("<FM/2_SEEALL>");
+        if (hFM2Object) {
+          rc = WinSetObjectData(hFM2Object, (PSZ)s);
+        }
+        hFM2Object = WinQueryObject("<FM/2_DATABAR>");
+        if (hFM2Object) {
+          rc = WinSetObjectData(hFM2Object, (PSZ)s);
+        }
       }
-      else if (MBID_CANCEL) {
+      else if (rc == MBID_CANCEL) {
 	fDontSuggestAgain = TRUE;
-	PrfWriteProfileData(fmprof, appname, "DontSuggestAgain", &fDontSuggestAgain, sizeof(BOOL));
+	PrfWriteProfileData(fmprof, FM3Str, "DontSuggestAgain", &fDontSuggestAgain, sizeof(BOOL));
       }
     } // if suggest
-  }
+  } // if !fDontSuggestAgain
   didonce = TRUE;
 } // FillTreeCnr
 

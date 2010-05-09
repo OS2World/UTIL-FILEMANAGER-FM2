@@ -95,6 +95,7 @@
                 aren't user settable; realappname should be used for setting applicable to
                 one or more miniapp but not to FM/2
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  09 MAY 10 JBS Ticket 434: Make fDontSuggestAgain a "global" flag, not a per app flag
 
 ***********************************************************************/
 
@@ -1270,7 +1271,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   if (!pszTreeEnvVarList)
     return 0; //already complained
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, appname, "DontSuggestAgain", &fDontSuggestAgain, &size);
+  PrfQueryProfileData(fmprof, FM3Str, "DontSuggestAgain", &fDontSuggestAgain, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "ShowTarget", &fShowTarget, &size);
   size = sizeof(BOOL);
