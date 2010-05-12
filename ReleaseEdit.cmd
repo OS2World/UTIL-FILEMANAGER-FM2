@@ -48,7 +48,8 @@
  *       b) to " "__DATE__ if FM2_VERREALMINOR environment variable is not set
  *       NOTE: FM2_VERREALMINOR, if set, must have an even number (including 0)
  *       of double quotes. SED seems to choke on an odd number, even if they are
- *       propoerly escaped.
+ *       properly escaped.
+ *    12 May 10 JBS Ticket 424: Deleted code related to obsolete "internal\makefile"
  *
 */
 
@@ -135,7 +136,6 @@ if wordpos(ext, 'H') = 0 then
 /* Set fixed strings */
 globals = 'repository copyright_year_marker copyright_year_marker_len'
 repository = 'option_descriptions.txt'
-mkstr_makefile  = 'DLL\INTERNAL\MAKEFILE'
 warpin_makefile = 'WARPIN\MAKEFILE'
 copyright_h     = 'DLL\COPYRIGHT.H'
 parse value date('s') with year 5 month 7 day
@@ -215,11 +215,6 @@ select
       do
          say 'Processing file:' file
          'sed -r "/FM\/2 v/s/(FM\/2 v)[0-9]+\.[0-9.]+/\1' || ver || '/" ' || tmpfile || ' >' file
-      end
-   when ext = mkstr_makefile then
-      do
-         say 'Processing file:' file
-         'sed -r -e "/desc/s/(SLAInc:).*(\$#@\$#\$#1\$#\$# )[0-9/]+ [0-9:]+/\1' || ver || '\2' || month || '\/' || day || '\/' || year right(major, 2, '0') || ':' || right(minor, 2, '0') || ':' || right(CSDlevel, 2, '0') || '/" ' || tmpfile || ' >' file
       end
    when ext = warpin_makefile then
       do
