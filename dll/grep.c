@@ -32,7 +32,9 @@
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   08 Mar 09 GKY Additional strings move to String Table
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
-  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10).
+                Mostly cast CHAR CONSTANT * as CHAR *.
+  29 May 10 GKY Suppress ERROR_FILENAME_EXCED_RANGE error because of problem with NTFS
 
 ***********************************************************************/
 
@@ -647,7 +649,6 @@ static INT DoMatchingFiles(GREP *grep,
       if (*grep->stopflag)
         break;
       SleepIfNeeded(pitdSleep, 1);
-      // DosSleep(0); //26 Aug 07 GKY 1 // 07 Feb 08 SHL
       ulFindCnt = FilesToGet;
       rc = xDosFindNext(findHandle, pffbArray, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZEL);
     } while (!rc);
@@ -657,8 +658,17 @@ static INT DoMatchingFiles(GREP *grep,
   } // if
 
   if (rc && rc != ERROR_NO_MORE_FILES) {
-    Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-              GetPString(IDS_CANTFINDDIRTEXT), szFindPath);
+    if (rc == ERROR_FILENAME_EXCED_RANGE) {
+      CHAR FileSystem[CCHMAXPATH];
+
+      CheckDrive(toupper(*szFindPath), FileSystem, NULL);
+      if (strcmp(FileSystem, NTFS))
+        Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+                  GetPString(IDS_CANTFINDDIRTEXT), szFindPath);
+    }
+    else
+      Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+                GetPString(IDS_CANTFINDDIRTEXT), szFindPath);
   }
 
   free(pffbArray);
