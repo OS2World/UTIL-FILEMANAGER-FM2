@@ -30,6 +30,7 @@
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
+  29 May 10 GKY Fix SaveListDlgProc to append to a file when Append checkbox is selected
 
 ***********************************************************************/
 
@@ -476,7 +477,7 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (!pci || (INT) pci == -1)
 	  Runtime_Error(pszSrcFile, __LINE__, NULL);
 	else {
-	  fp = _fsopen(savename, "w+", SH_DENYWR);
+	  fp = _fsopen(savename, "r+", SH_DENYWR);
 	  if (!fp)
 	    Runtime_Error(pszSrcFile, __LINE__, "_fsopen");
 	  else {
