@@ -73,7 +73,10 @@
                 miniapp; FM3Str should be used for setting only relavent to FM/2 or that
                 aren't user settable; realappname should be used for setting applicable to
                 one or more miniapp but not to FM/2
-  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  17 Jan 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10).
+                Mostly cast CHAR CONSTANT * as CHAR *.
+  28 May 10 GKY Yet another attempt to prevent duplicate directory names in the tree by
+                suppressing SHOW_ME during initial drive scan.
 
 ***********************************************************************/
 
@@ -1382,7 +1385,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       LastDir = hwnd;
       PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
 
-      if (fSwitchTreeOnFocus && hwndTree && dcd && *dcd->directory) {
+      if (!fInitialDriveScan && fSwitchTreeOnFocus && hwndTree && dcd && *dcd->directory) {
 	PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
 	if (pszTempDir) {
 	  if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
