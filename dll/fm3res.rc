@@ -1663,8 +1663,8 @@ MENU COLLECTORCNR_POPUP
 	 MENUITEM "From a ~list file",IDM_COLLECTSELECT
   }
   MENUITEM "",                  -1,                 MIS_SEPARATOR
-  MENUITEM "Clear container",   IDM_CLEARCNR
-  MENUITEM "~Remove objects", IDM_REMOVE
+  MENUITEM "Clear collector container",   IDM_CLEARCNR
+  MENUITEM "~Remove objects from collector", IDM_REMOVE
   MENUITEM "~Hide objects",   IDM_HIDEALL
   MENUITEM "~Unhide objects",   IDM_UNHIDEALL
   MENUITEM "",                  -1,                 MIS_SEPARATOR
