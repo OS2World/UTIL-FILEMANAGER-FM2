@@ -38,6 +38,8 @@
  *    23 Nov 08 JBS Improved handling of invalid or missing <trace-option>
  *    04 Jan 09 JBS Fixed bug in option 9: Apply tag
  *    02 Apr 10 JBS Removed reference to obsolete "internal\makefile" file
+ *    29 May 10 GKY Use TEE to generate log files for the build options
+ *       - Use DIFF to compare changes in WARNALL builds
  *
 */
 
@@ -180,7 +182,10 @@ do forever
       when action = 6 then
          do /* Ensure the edits build */
             'set WARNALL=1'
-            'wmake -a all |' pager
+            'wmake -a all | tee warnall.log |' pager
+            'diff -rub warnall.base warnall.log > warnall.diff'
+            editor 'warnall.diff' 
+            'set WARNALL=' 
             prev_action = action
          end
       when action = 7 then
@@ -219,7 +224,7 @@ do forever
             'set WARNALL='
             'set FORTIFY='
             'set DEBUG='
-            'wmake -a all'
+            'wmake -a all | tee build.log'
             prev_action = action
          end
       when action = 11 then
@@ -245,7 +250,7 @@ do forever
          end
       when action = 12 then
          do /* Lxlite */
-            'wmake lxlite'
+            'wmake lxlite | tee lxlite.log'
             prev_action = action
          end
       when action = 13 then
@@ -268,7 +273,7 @@ do forever
       when action = 14 then
          do /* Build distro */
             call SysCls
-            'wmake dist'
+            'wmake dist | tee dist.log'
             prev_action = action
          end
       when action = 15 then
