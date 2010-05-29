@@ -1,18 +1,51 @@
 New stuff at the top.  This list is not necessarily complete.
 
-3.18 (pre)
+3.18 
  o Rework compare directories for speed; allow AND'ed selections;
- allow fast cancel from long running operations; more content menu items
- o Remember last filter mask selection
+   allow fast cancel from long running operations; more content menu items Ticket 276 (Steven)
  o Use Ctrl-click to select state or commonly used directory quicklist entry without activating.
-   Handy for deleting entries without changing window state.
- o Use Ctrl-click to select walk dialog user list entry without activating.
-   Handy for deleting entries without changing entry field content.
- o Avoid drivebar MB2 exception
- o Remember last seek and scan mask selection across runs
- o Avoid traps when changing tree container display style
- o Restore missing drives to drive list dropdown
- o Correct docopyf regression which caused move to same volume to fail with access denied
+   Handy for deleting entries without changing window state. Ticket 433 (Steven)
+ o Use Ctrl-click to select walk dialog user list entry without activating.    
+   Handy for deleting entries without changing entry field content. Ticket 433 (Steven)
+ o Avoid drivebar MB2 exception (Steven)
+ o Avoid traps when changing tree container display style Ticket 408 (Steven, Gregg)
+ o Restore missing drives to drive list dropdown (Steven)
+ o Correct docopyf regression which caused move to same volume to fail with access denied (Steven)
+ o Eliminate intermittent hang on drive rescan (Gregg)
+ o Move clipboard buffer to low memory to correct paste failure in VIO windows. (Gregg)
+ o Corrected the file open logic to avoid attempting to open zero byte files as multimedia
+   among other oddities. (zero-byte now open a warning that gives the option of opening them
+   in the default text editor). Ticket 70, 409 (Gregg)
+ o Moved data from COMMADS.DAT to FM3.INI. This allows you to reorder your "commands" without
+   breaking any tool buttons you have created or changing the command's hotkey assignment.
+   Hotkeys are now user selectable. Tickets 65, 186 412 (Gregg) 
+ o MPGs are now recognized as media files. Ticket 405 (Gregg)
+ o Another attempt to fix the rare situation where directory names are double listed in the
+   Tree container. Ticket 363 (Gregg)
+ o Remove high memory version which was broken by changes in open watcom 1.9 which use DosOpenL
+   (can open files larger than 2 gigs). DosOpenL doesn't thunk the high addresses correctly.
+   (Gregg)
+ o "Separate Parameters" now works. Ticket 414 (Gregg)
+ o Updated the quick settings page to include my standard settings as a choice and make 
+   Default match the currently shipped defaults. Ticket 415 (Gregg)
+ o Changes to use wipfc as the default help file compiler. Tickets 420, 421 431 (Robert, Gregg)
+ o Fix a dialog box hang when an open archive is deleted or moved. Ticket 422 (John)
+ o Fix run failure of DOS and Win16 programs called from within an archive. Ticket 423 (John)
+ o Change "Cancel" button to "Close" in the Select Archiver dialog to better reflect its 
+   function. Ticket 427 (John)
+ o Warpin installer will delete FM3RES.STR from your install directory. The file is obsolete.
+   Ticket 430 (John)
+ o Add support for unzip 6.0 in ARCHIVER.TMP file. Ticket 428 (John) 
+ o Documented in the help files the error message returned by the trashcan when a disk 
+   is full and explained its meaning. Ticket 251 (Gregg)
+ o Improved error message when the executable for an archiver isn't found in the PATH.
+   Ticket 403 (Gregg)
+ o .wpi files are now passed to PM for opening if no association is provided. Ticket 432 (Gregg)  
+ o Append checkbox in save list dialog now works as expected. Ticket 436 (Gregg)
+ o Suppressed ERROR_FILENAME_EXCED_RANGE error on NTFS volumes; it appears to be an issue with
+   NTFS.IFS or the kernel. Ticket 435 (Gregg)
+ o Improve startup parameter suggestion wording and make behavior work as described. Ticket 434
+   (John)
 
 3.17
 

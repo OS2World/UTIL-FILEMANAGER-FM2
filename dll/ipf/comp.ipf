@@ -102,6 +102,7 @@ Hold down the &CtrlKey. while clicking the selection button to apply the selecti
 only to items that are already selected.  This is an AND selection.
 Selected items that do not match the selection criteria will be deselected.
 AND selections allow selections such as newer files that are the same size.
+:p.
 :hp2.The other buttons in the dialog are&colon.:ehp2.
 :p.
 :hp6.Actions:ehp6. Provides directional copy and move along with directory specific delete.
