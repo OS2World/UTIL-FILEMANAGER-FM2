@@ -24,6 +24,7 @@ description. The instructions follow:
      2) Click on the "Edit" button
      3) Modify all instances of UNZIP.EXE to include a full path for UNZIP.EXE v6.
      4) Click on "OK", then "Close" and then "Yes" to exit and save your changes.
+     5) Restart FM/2
 
 - FM/2 will not use this entry unless
   a) It is the only UNZIP definition; or
@@ -35,6 +36,7 @@ description. The instructions follow:
         UNZIP definitions.(If you have never modified ARCHIVER.BB2 it will
         need to be moved to the very top)
      3) Click on "Close" and then "Yes" to exit and save your changes
+     4) Restart FM/2   
 
 - Selecting the UNZIP v6 definition:
      1) Start FM/2
