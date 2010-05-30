@@ -6,69 +6,68 @@
 
 FM/2 3.18 This release removes high memory support at least for now.
 Changes made to the openwatcom compiler which adds large file support to the
-open file functions created a problem since DosOpenL doesn't work correctly 
+open file functions created a problem since DosOpenL doesn't work correctly
 with high memory. This change also fixes the paste failure in VIO windows
-when copying from FM/2. 
+when copying from FM/2.
 
 We have provided an archiver description for use with unzip ver 6. It is contained
 in ARCHIVER.TMP. The installer copies the description to ARCHIVER.BB2 (last entry).
-If you plan on using ver 6 as your default unzip you will need to activate this 
+If you plan on using ver 6 as your default unzip you will need to activate this
 description. The instructions follow:
 
 - This archiver definition assumes that UNZIP v6
   a) is named UNZIP.EXE
   b) is on the PATH
   c) precedes all other UNZIP.EXE versions on the PATH.
+  If any of these are not true, then either correct the problem listed above or:
+     1) Select the UNZIP v6 definition. (See below.)
+     2) Click on the "Edit" button
+     3) Modify all instances of UNZIP.EXE to include a full path for UNZIP.EXE v6.
+     4) Click on "OK", then "Close" and then "Yes" to exit and save your changes.
 
-- If any of these are not true, then either correct the problem listed above or:
-  a) Select the UNZIP v6 definition. (See below.)
-  b) Click on the "Edit" button
-  c) Modify all instances of UNZIP.EXE to include a full path for UNZIP.EXE v6.
-  d) Click on "OK", then "Close" and then "Yes" to exit and save your changes.
-  
 - FM/2 will not use this entry unless
   a) It is the only UNZIP definition; or
   b) You select it manually; or
-  c) You move UNZIP v6 ahead of all the UNZIP's in the list of archivers. 
-  In order to do this:
+  c) You move UNZIP v6 ahead of all the UNZIP's in the list of archivers.
+     In order to move UNZIP v6 ahead of the other UNZIP's:
      1) Select the UNZIP v6 definition. (See below.)
      2) Click on the "Up" button until the UNZIP v6 entry precedes all other
-        UNZIP definitions.(If you have never modified ARCHIVER.BB2 it will 
+        UNZIP definitions.(If you have never modified ARCHIVER.BB2 it will
         need to be moved to the very top)
      3) Click on "Close" and then "Yes" to exit and save your changes
 
-Selecting the UNZIP v6 definition: 
+- Selecting the UNZIP v6 definition:
      1) Start FM/2
      2) Select the "Config" menu
      3) Select the "Edit" submenu
      4) Select the "Edit an archiver..." menu item
      5) In the dialog that appears scroll the list, if necessary, and select
-        the UNZIP v6 definition  
-        
-We have made changes to the open files logic to correct some odd issues 
-caused by MMPM when ogg, flac and/or mpg IOProcs are installed. MPGs are now 
-recognized as media and zero byte files trigger a dialog offering to open 
-them in the text editor. We now pass .wpi files to the WPS if no association 
+        the UNZIP v6 definition
+
+We have made changes to the open files logic to correct some odd issues
+caused by MMPM when ogg, flac and/or mpg IOProcs are installed. MPGs are now
+recognized as media and zero byte files trigger a dialog offering to open
+them in the text editor. We now pass .wpi files to the WPS if no association
 is set for them. If you see FM/2 attempt to open non-media files as a media file
 or fails to open a media file recognized as such by OS/2 as media, let us know.
 
-We reworked the user commands. Doing so makes COMMANDS.DAT obsolete with the 
-commands moving to FM3INI.INI. We did this to eliminate toolbar entry failures 
-caused by reordering the commands. It also keeps the hotkey the same following 
-a reorder and allows the user to select the hotkey they wish to use. The first 
-time you run 3.18, it will copy the commands information from COMMANDS.DAT to 
-the INI. COMMANDS.DAT isn't deleted or changed so you can revert to an earlier 
-version without losing old commands. However, any commands you add or change 
+We reworked the user commands. Doing so makes COMMANDS.DAT obsolete with the
+commands moving to FM3INI.INI. We did this to eliminate toolbar entry failures
+caused by reordering the commands. It also keeps the hotkey the same following
+a reorder and allows the user to select the hotkey they wish to use. The first
+time you run 3.18, it will copy the commands information from COMMANDS.DAT to
+the INI. COMMANDS.DAT isn't deleted or changed so you can revert to an earlier
+version without losing old commands. However, any commands you add or change
 with this version will not be seen by older versions.
 
-You can use Ctrl-click to select state or commonly used directory quicklist entries 
-or walk dialog user list entries without activating them. This is handy for deleting 
-entries without changing the window's state.Compare directories has been rework to 
-enhance its speed, allow for quick cancel and provide the option of AND'ed 
-selection (CTRL click). AND'ed selection selects from currently selected entries 
-as opposed to all entries. See the help file for more information. We have fixed 
-some rare traps and hangs and a few annoying bugs like the failure of the append 
-checkbox in the list file dialog to append. Please see the history file for a more 
+You can use Ctrl-click to select state or commonly used directory quicklist entries
+or walk dialog user list entries without activating them. This is handy for deleting
+entries without changing the window's state.Compare directories has been rework to
+enhance its speed, allow for quick cancel and provide the option of AND'ed
+selection (CTRL click). AND'ed selection selects from currently selected entries
+as opposed to all entries. See the help file for more information. We have fixed
+some rare traps and hangs and a few annoying bugs like the failure of the append
+checkbox in the list file dialog to append. Please see the history file for a more
 complete list of changes.
 
 FM/2 3.17: This release provides for loading FM/2 partially in high memory
