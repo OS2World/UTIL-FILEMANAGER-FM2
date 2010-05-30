@@ -31,6 +31,10 @@
       16 Mar 09 JBS Added code to copy discontinued directory container state ini keys to new names
       12 Apr 10 JBS Ticket 429: Speed up the deletion of obsolete state-related FM3.INI keys.
       12 Apr 10 JBS Ticket 429: Add code to delete obsolete "LastToolBox" key(s).
+      30 May 10 JBS Ticket 428: Add support for UNZIP v6. This program was modified to:
+         if not already done then
+            backup existing .\ARCHIVER.BB2 file to .\USER_CONFIG_BACKUP\B4UNZIP6.BB2
+            insert the UNZIP v6 entry from .\TMPLATES\ARCHVER.TMP into ,\ARCHIVER.BB2 (at the end)
 
 */
 
@@ -115,6 +119,9 @@ do f = 1 to cfg.file.0
             leave
       end
 end
+
+if cfg.operation = 'INSTALL' then
+   call UpdateArchiverBB2
 
 if cfg.errorcode \= 0 then
    signal ErrorExit
@@ -701,6 +708,104 @@ Ticket267Fix: procedure expose (globals)
       end
    call SysFileDelete outfile
 return
+
+UpdateArchiverBB2: procedure expose (globals)
+   bb2_file = '.\ARCHIVER.BB2'
+   bb2_v6_startline = FindUnzip6(bb2_file)
+   if bb2_v6_startline = 0 then
+      do
+         tmp_file       = '.\Tmplates\archiver.tmp'
+         tmp_v6_startline = FindUnzip6(tmp_file)
+         if tmp_v6_startline \= 0 then
+            do
+               backup_file       = '.\User_Config_backup\B4Unzip6.bb2'
+               if stream(backup_file, 'c', 'query exists') \= '' then
+                  if cfg.unattended = 0 then
+                     do
+                        say 'This process has already been executed.'
+                        if GetResponse("If you want to repeat this proceed, type 'Y': ") \= 'Y' then
+                           return
+                     end
+                  else
+                     return
+               insert_line = FindEndOfDefinitions(bb2_file)
+               if insert_line > 0 then
+                  do
+                     'copy' bb2_file backup_file '>NUL 2>NUL'
+                     if rc \= 0 then
+                        return
+                     call SysFileDelete bb2_file
+                     do i = 1 to insert_line
+                        call lineout bb2_file, bb2_lines.i
+                     end
+                     do j = 1 to tmp_v6_startline
+                        line = linein(tmp_file)
+                     end
+                     do 25 /* 21 lines of def + 3 prefix comment lines + 1 postfix comment */
+                        line = linein(tmp_file)
+                        call lineout bb2_file, line
+                     end
+                     call stream tmp_file, 'c', 'close'
+                     do j = i to bb2_lines.0
+                        call lineout bb2_file, bb2_lines.j
+                     end
+                     call stream bb2_file, 'c', 'close'
+                  end
+               else
+                  if cfg.unattended = 0 then
+                     say 'Unable to find place to insert definition.'
+            end
+         else
+            if cfg.unattended = 0 then
+               say 'Unable to find Unzip v6 definition'
+      end
+   else
+      if cfg.unattended = 0 then
+         say 'Unzip v6 definition is already installed.'
+return
+
+FindUnzip6: procedure expose (globals)
+   parse arg filename
+   start_string   = '--------  ------  ------- ---- ---------- ----- --------  ----'
+   end_string     = '--------          -------  ---                            -------'
+   call SysFileSearch start_string, filename, 'start_lines.', 'N'
+   call SysFileSearch end_string, filename, 'end_lines.', 'N'
+   call stream filename, 'c', 'close'
+   start_line = 0
+   do i = 1 to start_lines.0
+      do j = 1 to end_lines.0
+         if word(end_lines.j, 1) = word(start_lines.i, 1) + 1 then
+            do
+               start_line = word(start_lines.i, 1) - 18
+               i = start_lines.0
+               j = end_lines.0
+            end
+      end
+   end
+   drop start_lines.
+   drop end_lines.
+return start_line
+
+FindEndOfDefinitions: procedure expose (globals) bb2_lines.
+   parse arg bb2_file
+   end_of_defs_line = 0
+   i = 0
+   do while lines(bb2_file) > 0
+      i = i + 1
+      bb2_lines.i = linein(bb2_file)
+      if strip(bb2_lines.i) \= '' then
+         if abbrev(bb2_lines.i, ';') then
+            if end_of_defs_line = 0 then
+               end_of_defs_line = i
+            else
+               nop
+         else
+            end_of_defs_line = 0
+   end
+   call stream bb2_file, 'c', 'close'
+   bb2_lines.0 = i
+return end_of_defs_line
+
 
 /*=== Error() Report ERROR, FAILURE etc. and exit ===*/
 
