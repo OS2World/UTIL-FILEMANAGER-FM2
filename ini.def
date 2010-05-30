@@ -4,6 +4,6 @@
 
 # 16 Jun 07 GKY Convert to OpenWatcom
 
-option description '@#The Netlabs FM/2 team:3.17.0#@##1## 09/20/2009 03:17:00      tresbopeep::EN:US:0:U:@@FM/2 INI Editor MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, 2009 Steven Levine and Associates, Inc. All rights reserved'
+option description '@#The Netlabs FM/2 team:3.18.0#@##1## 05/30/2010 03:18:00      tresbopeep::EN:US:0:U:@@FM/2 INI Editor MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, 2010 Steven Levine and Associates, Inc. All rights reserved'
 
 option stack = 0x60000
