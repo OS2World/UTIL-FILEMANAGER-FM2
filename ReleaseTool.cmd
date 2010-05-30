@@ -409,7 +409,7 @@ Init: procedure expose (globals)
    killpid     = value('SVN_KILL',,'OS2ENVIRONMENT')
    if killpid == '' then
        killpid      = 'killpid'
-   killtarget  = ' FM/2'
+   killtarget  = 'FM/2'
 
    version_filelist =                  'av2.def databar.def dirsize.def dll\fm3dll.def dll\fm3res.def'
    version_filelist = version_filelist 'dll\version.h eas.def fm3.def fm4.def global.def ini.def'
