@@ -720,7 +720,7 @@ UpdateArchiverBB2: procedure expose (globals)
             do
                backup_file       = '.\User_Config_backup\B4Unzip6.bb2'
                if stream(backup_file, 'c', 'query exists') \= '' then
-                  if cfg.unattended = 0 then
+                  if cfg.unattended = 1 then
                      do
                         say 'This process has already been executed.'
                         if GetResponse("If you want to repeat this proceed, type 'Y': ") \= 'Y' then
@@ -731,7 +731,7 @@ UpdateArchiverBB2: procedure expose (globals)
                insert_line = FindEndOfDefinitions(bb2_file)
                if insert_line > 0 then
                   do
-                     'copy' bb2_file backup_file '>NUL 2>NUL'
+                     '@copy' bb2_file backup_file '>NUL 2>NUL'
                      if rc \= 0 then
                         return
                      call SysFileDelete bb2_file
@@ -752,15 +752,15 @@ UpdateArchiverBB2: procedure expose (globals)
                      call stream bb2_file, 'c', 'close'
                   end
                else
-                  if cfg.unattended = 0 then
+                  if cfg.unattended = 1 then
                      say 'Unable to find place to insert definition.'
             end
          else
-            if cfg.unattended = 0 then
+            if cfg.unattended = 1 then
                say 'Unable to find Unzip v6 definition'
       end
    else
-      if cfg.unattended = 0 then
+      if cfg.unattended = 1 then
          say 'Unzip v6 definition is already installed.'
 return
 
@@ -770,7 +770,6 @@ FindUnzip6: procedure expose (globals)
    end_string     = '--------          -------  ---                            -------'
    call SysFileSearch start_string, filename, 'start_lines.', 'N'
    call SysFileSearch end_string, filename, 'end_lines.', 'N'
-   call stream filename, 'c', 'close'
    start_line = 0
    do i = 1 to start_lines.0
       do j = 1 to end_lines.0
