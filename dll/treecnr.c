@@ -656,7 +656,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           DosWaitEventSem(hevInitialCnrScanComplete, SEM_INDEFINITE_WAIT);
 	ShowTreeRec(dcd->hwndCnr, (CHAR *)mp1, fCollapseFirst, TRUE);
 	PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_UPDATE, 0), MPVOID);
-	dcd->suspendview = tempsusp;
+	dcd->suspendview = (USHORT) tempsusp;
 	fFollowTree = tempfollow;
 	if (mp2)
 	  fTopDir = temptop;
@@ -700,7 +700,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       dcd->suspendview = TRUE;
       ExpandAll(dcd->hwndCnr,
 		(SHORT1FROMMP(mp1) == IDM_EXPAND), (PCNRITEM) mp2);
-      dcd->suspendview = tempsusp;
+      dcd->suspendview = (USHORT) tempsusp;
       PostMsg(dcd->hwndCnr, UM_FILTER, MPVOID, MPVOID);
     }
     return 0;
@@ -2328,7 +2328,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       dcd->suspendview = TRUE;
       dcd->mask.attrFile |= FILE_DIRECTORY;
       WinSendMsg(hwnd, CM_FILTER, MPFROMP(Filter), MPFROMP(&dcd->mask));
-      dcd->suspendview = tempsusp;
+      dcd->suspendview = (USHORT) tempsusp;
       PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
       //DbgMsg(pszSrcFile, __LINE__, "UM_RESCAN %p pci %s", hwnd, (CHAR *) mp1);
     }

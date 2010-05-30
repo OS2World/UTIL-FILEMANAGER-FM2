@@ -1196,7 +1196,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
       }
       sdata.Environment = (PBYTE)pszEnvironment;
       sdata.InheritOpt = SSF_INHERTOPT_PARENT;
-      sdata.SessionType = ulAppType;
+      sdata.SessionType = (USHORT) ulAppType;
       sdata.ObjectBuffer = szObject;
       sdata.ObjectBuffLen = sizeof(szObject);
       if ((type & RUNTYPE_MASK) == SEPARATEKEEP)

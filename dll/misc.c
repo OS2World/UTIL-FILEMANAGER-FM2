@@ -1354,7 +1354,7 @@ VOID SetupCommandMenu(HWND hwndMenu, HWND hwndCnr)
 	  sprintf(&s[strlen(s)], "%d",
                   (((info->HotKeyID - IDM_COMMANDNUM0) % 10) + 1) == 10 ? 0 :
                    ((info->HotKeyID - IDM_COMMANDNUM0) % 10) + 1);
-	mi.id = info->ID; 
+	mi.id = (USHORT) info->ID; 
 	mi.afAttribute = (info->flags & ONCE ? MIA_CHECKED : 0) |
 			 (info->flags & PROMPT ? MIA_FRAMED : 0);
 	mi.afStyle = MIS_TEXT;

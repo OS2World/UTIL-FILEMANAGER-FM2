@@ -246,8 +246,8 @@ ULONG HandleException(PEXCEPTIONREPORTRECORD pReport,
     }
     else {
       is32Bit = FALSE;
-      u.stk16.usIP = pContext->ctx_RegEip;
-      u.stk16.usBP = pContext->ctx_RegEbp;
+      u.stk16.usIP = (SHORT) pContext->ctx_RegEip;
+      u.stk16.usBP = (SHORT) pContext->ctx_RegEbp;
     }
 
     // Walk stack frames

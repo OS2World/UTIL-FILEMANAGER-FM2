@@ -330,7 +330,7 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
 
   if (pci) {
 
-    float fltPct = 0.0;
+    float fltPct = (float) 0.0;
     CHAR szCurDir[80];
     CHAR szSubDir[80];
     CHAR szAllDir[80];
@@ -355,14 +355,14 @@ static VOID FillInRecSizes(HWND hwndCnr, PCNRITEM pciParent,
 	rc = DosQueryFSInfo(toupper(*pci->pszFileName) - '@', FSIL_ALLOC, &fsa,
 			    sizeof(FSALLOCATE));
 	if (!rc) {
-	  fltPct = (ullTotalBytes * 100.0) /
-	    ((float)fsa.cUnit * (fsa.cSectorUnit * fsa.cbSector));
+	  fltPct = (float) (ullTotalBytes * 100.0) /
+	    ((float)fsa.cUnit *  (fsa.cSectorUnit * fsa.cbSector));
 	}
 	// Need unique buffer 23 Jul 07 SHL
 	pci->pszLongName = NullStr;
       }
       else
-	fltPct = (((float)pci->cbFile + pci->easize) * 100.0) / ullTotalBytes;
+	fltPct = (float) (((float)pci->cbFile + pci->easize) * 100.0) / ullTotalBytes;
 
       //Second line for graph reworked 03 AUG 08 GKY
       memset(szBar, ' ', sizeof(szBar));

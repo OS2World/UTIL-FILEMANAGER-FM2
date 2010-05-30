@@ -251,7 +251,7 @@ MRESULT EXPENTRY DrvInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      WinSetDlgItemText(hwnd, INFO_ALLOCUNITS, s);
 
 	      percentfree = (fsa.cUnitAvail && fsa.cUnit) ?
-		(fsa.cUnitAvail * 100) / fsa.cUnit : 0;
+		((USHORT) fsa.cUnitAvail * 100) / (USHORT) fsa.cUnit : 0;
 	      if (!percentfree && fsa.cUnitAvail)
 		percentfree = 1;
 	      percentused = 100 - percentfree;

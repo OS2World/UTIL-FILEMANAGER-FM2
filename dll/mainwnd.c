@@ -1966,7 +1966,7 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
       *szDrv = 0;
       x = id - IDM_DRIVEA;
-      *szDrv = x + 'A';
+      *szDrv = (CHAR) x + 'A';
       strcpy(szDrv + 1, ":");
       if (x > 1) {
 	  if (driveflags[x] & DRIVE_CDROM)
@@ -3664,7 +3664,8 @@ VOID TileChildren(HWND hwndClient, BOOL absolute)
 			      swp.cx, swp.cy, SWP_MOVE | SWP_SIZE | SWP_SHOW);
 	      WinSetWindowUShort(hwndChild,
 				 QWS_XRESTORE,
-				 (USHORT) (ulWidth * ulCurCol) + Rectl.xLeft);
+                                 (USHORT) ((USHORT) ulWidth * (USHORT) ulCurCol)
+                                 + (USHORT) Rectl.xLeft);
 	      WinSetWindowUShort(hwndChild,
 				 QWS_YRESTORE,
 				 (USHORT) (Rectl.yTop -
@@ -3753,19 +3754,19 @@ static VOID ResizeChildren(HWND hwndClient, SHORT oldcx, SHORT oldcy,
 	  WinSetWindowUShort(hwndChild, QWS_YMINIMIZE, (USHORT) - 1);
 	  WinSetWindowPos(hwndChild, HWND_TOP, 0, 0, 0, 0,
 			  SWP_SIZE | SWP_MOVE | SWP_FOCUSDEACTIVATE);
-	  WinSetWindowUShort(hwndChild, QWS_XRESTORE, ux);
-	  WinSetWindowUShort(hwndChild, QWS_YRESTORE, uy);
-	  WinSetWindowUShort(hwndChild, QWS_CXRESTORE, ucx);
-	  WinSetWindowUShort(hwndChild, QWS_CYRESTORE, ucy);
+	  WinSetWindowUShort(hwndChild, QWS_XRESTORE, (USHORT) ux);
+	  WinSetWindowUShort(hwndChild, QWS_YRESTORE, (USHORT) uy);
+	  WinSetWindowUShort(hwndChild, QWS_CXRESTORE, (USHORT) ucx);
+	  WinSetWindowUShort(hwndChild, QWS_CYRESTORE, (USHORT) ucy);
 	}
 	else {
 	  WinGetMaxPosition(hwndChild, &swp);
 	  WinSetWindowPos(hwndChild, HWND_TOP, swp.x, swp.y, swp.cx, swp.cy,
 			  SWP_MOVE | SWP_SIZE | SWP_SHOW);
-	  WinSetWindowUShort(hwndChild, QWS_XRESTORE, ux);
-	  WinSetWindowUShort(hwndChild, QWS_YRESTORE, uy);
-	  WinSetWindowUShort(hwndChild, QWS_CXRESTORE, ucx);
-	  WinSetWindowUShort(hwndChild, QWS_CYRESTORE, ucy);
+	  WinSetWindowUShort(hwndChild, QWS_XRESTORE, (USHORT) ux);
+	  WinSetWindowUShort(hwndChild, QWS_YRESTORE, (USHORT) uy);
+	  WinSetWindowUShort(hwndChild, QWS_CXRESTORE, (USHORT) ucx);
+	  WinSetWindowUShort(hwndChild, QWS_CYRESTORE, (USHORT) ucy);
 	}
       }
     }

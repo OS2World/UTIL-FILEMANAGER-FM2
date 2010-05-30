@@ -329,8 +329,8 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
 	  pDImg->fl = DRG_ICON;
 	  pDImg->sizlStretch.cx = 32;
 	  pDImg->sizlStretch.cy = 32;
-	  pDImg->cxOffset = -16 + (ulNumfiles * 4);
-	  pDImg->cyOffset = 0 + (ulNumfiles * 7);
+	  pDImg->cxOffset = -16 + ((SHORT) ulNumfiles * 4);
+	  pDImg->cyOffset = 0 + ((SHORT) ulNumfiles * 7);
 	  ulNumIcon = ulNumfiles + 1;
 	}
 	ppDITest =
@@ -356,8 +356,8 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
 	pDImg->fl = DRG_ICON;
 	pDImg->sizlStretch.cx = 32;
 	pDImg->sizlStretch.cy = 32;
-	pDImg->cxOffset = -16 + (ulNumfiles * 3);
-	pDImg->cyOffset = 0 + (ulNumfiles * 6);
+	pDImg->cxOffset = -16 + ((SHORT) ulNumfiles * 3);
+	pDImg->cyOffset = 0 + ((SHORT) ulNumfiles * 6);
       }
       pDItem->hwndItem = (hwndObj) ? hwndObj : hwndCnr;
       pDItem->hwndItem = hwndCnr;
@@ -659,8 +659,8 @@ HWND DragList(HWND hwnd, HWND hwndObj, CHAR ** list, BOOL moveok)
 	  pDImg->fl = DRG_ICON;
 	  pDImg->sizlStretch.cx = 32;
 	  pDImg->sizlStretch.cy = 32;
-	  pDImg->cxOffset = -16 + (ulNumfiles * 4);
-	  pDImg->cyOffset = 0 + (ulNumfiles * 7);
+	  pDImg->cxOffset = -16 + ((SHORT) ulNumfiles * 4);
+	  pDImg->cyOffset = 0 + ((SHORT) ulNumfiles * 7);
 	  ulNumIcon = ulNumfiles + 1;
 	}
 	ppDITest =
@@ -684,8 +684,8 @@ HWND DragList(HWND hwnd, HWND hwndObj, CHAR ** list, BOOL moveok)
 	pDImg->fl = DRG_ICON;
 	pDImg->sizlStretch.cx = 32;
 	pDImg->sizlStretch.cy = 32;
-	pDImg->cxOffset = -16 + (ulNumfiles * 3);
-	pDImg->cyOffset = 0 + (ulNumfiles * 6);
+	pDImg->cxOffset = -16 + ((SHORT) ulNumfiles * 3);
+	pDImg->cyOffset = 0 + ((SHORT) ulNumfiles * 6);
       }
       pDItem->hwndItem = (hwndObj) ? hwndObj : hwnd;
       pDItem->ulItemID = (ULONG) ulSelect;

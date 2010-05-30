@@ -3179,7 +3179,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	else if (pts.y > Rectl.yTop - Rectl.yBottom) {
 	  WinSendMsg(hwnd, WM_VSCROLL, MPFROM2SHORT(FID_VERTSCROLL, 0),
 		     MPFROM2SHORT(0, SB_LINEUP));
-	  pts.y = (Rectl.yTop - Rectl.yBottom) - 1;
+	  pts.y = (SHORT) (Rectl.yTop - Rectl.yBottom) - 1;
 	  outofwindow = TRUE;
 	}
 	whichfile = ((Rectl.yTop - Rectl.yBottom) -
