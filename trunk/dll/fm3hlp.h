@@ -1,0 +1,164 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Help panel indexes
+
+  Copyright (c) 1993-02 M. Kimes
+  Copyright (c) 2007 Steven H.Levine
+
+  16 Oct 02 MK Baseline
+  31 May 06 SHL Add HELP_SELARC
+  05 Jan 07 GKY Remove HELP_SELARC since HELP_ARCHIVE pointed to appropriate section
+
+***********************************************************************/
+
+#define HELP_MAIN                   90000
+#define HELP_COLLECT                90100
+#define HELP_ARCLIST                90200
+#define HELP_ARCHIVE                90300
+#define HELP_ASSOC                  90400
+#define HELP_ATTRIBS                90500
+#define HELP_CMDLINE                90600
+#define HELP_COMMAND                90700
+#define HELP_CONFIRM                90800
+#define HELP_DRVINFO                90900
+#define HELP_EXTRACT                91000
+#define HELP_WINDOW                 91100
+#define HELP_MASKS                  91200
+#define HELP_TERMINOLOGY            91300
+#define HELP_RENAME                 91400
+#define HELP_WALKEM                 91500
+#define HELP_WALKEM2                91550
+#define HELP_GREP                   91600
+#define HELP_REALOBJECT             91700
+#define HELP_TOOLBAR                91800
+#define HELP_FOLDERBUTTON           91900
+#define HELP_CONFIG                 92000
+#define HELP_UTILITIES              92100
+#define HELP_CFGV                   92200
+#define HELP_CFGH                   92250
+#define HELP_SORTBY                 92300
+#define HELP_CFGT                   92400
+#define HELP_UNDELETE               92500
+#define HELP_KILLPROC               92600
+#define HELP_INSTANT                92700
+#define HELP_COMMANDLINE            92800
+#define HELP_COMMANDOVER            92900
+#define HELP_HINTS                  93000
+#define HELP_QUICKTREE              93100
+#define HELP_HOWTOUSEHELP           93200
+#define HELP_FILESMENU              93300
+#define HELP_FILTER                 93400
+#define HELP_PICKDIR                93500
+#define HELP_SHADOW                 93600
+#define HELP_CONTEXT                93700
+#define HELP_VIEWSMENU              93800
+#define HELP_EDITOR                 93900
+#define HELP_SAVETOOLS              94000
+#define HELP_OBJECTPATH             94100
+#define HELP_EDITARC                94200
+#define HELP_ARCFIELDS              94300
+#define HELP_CHANGEBUTTON           94400
+#define HELP_LOADTOOLS              94500
+#define HELP_NOTEBOOK               94600
+#define HELP_LINKDROP               94700
+#define HELP_VIEWINF                94800
+#define HELP_VIEWHELPS              94850
+#define HELP_COMPARE                94900
+#define HELP_EAS                    95000
+#define HELP_ADDEA                  95100
+#define HELP_DIRSIZE                95200
+#define HELP_INI                    95300
+#define HELP_INIADD                 95400
+#define HELP_SETICON                95500
+#define HELP_CHECKLIST              95600
+#define HELP_INFO                   95700
+#define HELP_REORDERCOMMANDS        95800
+#define HELP_ATTRIBSLIST            95900
+#define HELP_SAVETOLIST             96000
+#define HELP_PARENT                 96100
+#define HELP_REORDERBUTTONS         96300
+#define HELP_ADDBUTTON              96400
+#define HELP_CODEPAGE               96500
+#define HELP_ERRORCODES             96700
+#define HELP_CHANGEINI              96800
+#define HELP_SWAPINI                96900
+#define HELP_CFGM                   97000
+#define HELP_CFG5                   97100
+#define HELP_CFG6                   97200
+#define HELP_CFG7                   97300
+#define HELP_CFG8                   97400
+#define HELP_WINLIST                97500
+#define HELP_BITMAP1                97600
+#define HELP_ARCERR                 98300
+#define HELP_CFGC                   98400
+#define HELP_SEEALL                 98500
+#define HELP_DRVSWND                98600
+#define HELP_DNDDLG                 98700
+#define HELP_HEXDUMP                98800
+#define HELP_GENERALOPEN            98900
+#define HELP_DATABAR                99000
+#define HELP_SELECT                 99100
+#define HELP_CFG9                   99200
+#define HELP_NEWVIEW                99300
+#define HELP_USERLISTS              99400
+#define HELP_ENCODING               99500
+#define HELP_INTRAINI               99600
+#define HELP_FILTERINI              99700
+#define HELP_TUTORIAL               99800
+#define HELP_TRENAME                99810
+#define HELP_TRENAME_DIRECT         99811
+#define HELP_TRENAME_DRAG           99812
+#define HELP_TRENAME_KEY            99813
+#define HELP_TMOVE                  99820
+#define HELP_TMOVE_DIRECT           99821
+#define HELP_TMOVE_DRAG             99822
+#define HELP_TMOVE_KEY              99823
+#define HELP_TCOPY                  99830
+#define HELP_TCOPY_DRAG             99832
+#define HELP_TCOPY_KEY              99833
+#define HELP_TCLONE                 99834
+#define HELP_TCOMPARE               99840
+#define HELP_TVIEW                  99850
+#define HELP_TOPEN                  99860
+#define HELP_TDELETE                99870
+#define HELP_TMKDIR                 99880
+#define HELP_TARCHIVE               99890
+#define HELP_TEXTRACT               99900
+#define HELP_TCONTEXT               99910
+#define HELP_EXPERT                 99920
+#define HELP_CFGD                   99930
+#define HELP_CFGA                   99940
+#define HELP_CFGG                   99950
+#define HELP_CFGS                   99960
+#define HELP_FIND                   99970
+#define HELP_FLAGS                  99980
+#define HELP_PRINT                  99985
+#define HELP_TREEVIEW               99990
+#define HELP_MERGE                  99995
+#define HELP_DUMMY                 100000
+#define HELP_KEYS                  100005
+#define HELP_HINTSCMD              100010
+#define HELP_ARCHIVERS             100015
+#define HELP_FILEDLG               100030
+#define HELP_DUPES                 100035
+#define HELP_MOUSE                 100040
+#define HELP_REMAP                 100045
+#define HELP_ENV                   100050
+#define HELP_FREESOFTWARE          100055
+#define HELP_DBLCLK                100060
+#define HELP_TARGETDIR             100065
+#define HELP_CFGB                  100070
+#define HELP_METASTRINGS           100075
+#define HELP_REXAMPLE            100080
+#define HELP_CRESOURCE           100085
+#define HELP_FM2UTIL                100090
+#define HELP_BPROGRAM             100095
+#define HELP_TROUBLE                100100
+#define HELP_KPROBLEMS            100105
+#define HELP_INSTALL                 100110
+#define HELP_MOVING                   100115
+#define HELP_UNINSTALL              100120
+#define HELP_FIRSTTIME               100125

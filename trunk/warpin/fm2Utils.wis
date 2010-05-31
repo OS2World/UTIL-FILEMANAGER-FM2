@@ -1,0 +1,90 @@
+<!--
+ $Id$
+
+ WARPIN VERSION 0.9.20 is required for PACKAGEID's with revision levels.
+ WARPIN VERSION 0.9.9  is required for EXTRACTFROMPCK.
+-->
+<WARPIN VERSION 0.9.9>
+
+<HEAD>
+<REXX NAME=FindFM2>
+   call RxFuncAdd 'SysLoadFuncs', 'REXXUTIL', 'SysLoadFuncs'
+   call SysLoadFuncs
+   warpin_path = strip(SysIni(, 'WarpIN', 'Path'), 'T', '00'x)
+   database_file = warpin_path || '\DATBAS_' || left(SysBootDrive(), 1) || '.INI'
+   call SysIni database_file, 'ALL:', 'apps.'
+   fm2_app_prefix = 'Netlabs\FM2\Base\'
+   fm2_app_prefix_len = length(fm2_app_prefix)
+   do a = 1 to apps.0
+      if left(apps.a, fm2_app_prefix_len) = fm2_app_prefix then
+         leave
+   end
+   if a > apps.0 then
+      target_path = WirexxGetEnv('WARPIN_DEFAULTTOOLSPATH')
+   else
+      target_path = strip(SysIni(database_file, apps.a, 'TargetPath'), 'T', '00'x) || '\Utils'
+   return target_path
+</REXX>
+
+<PCK INDEX=7
+  PACKAGEID="Netlabs\FM2 Utilities\FM2Utils\1\0\0"
+  TITLE="FM/2 Utilities"
+  TARGET="=("FindFM2")"
+  SELECT
+  CREATEOBJECT="WPFolder|FM/2 Utilities|<WP_DESKTOP>|OBJECTID=<FM2_Utilities>;"
+  CREATEOBJECT="WPProgram|Make Object|<FM2_Utilities>|EXENAME=$(7)\makeobj.cmd;PARAMETERS=%*;OBJECTID=<FM2MakeObj>;"
+  CREATEOBJECT="WPProgram|Image Viewer|<FM2_Utilities>|EXENAME=$(7)\image.exe;PARAMETERS=%*;OBJECTID=<FM2Imageexe>;"
+  CREATEOBJECT="WPProgram|Reboot w/ Pause|<FM2_Utilities>|EXENAME=$(7)\rebootp.exe;PARAMETERS=%*;OBJECTID=<FM2rebootp>;"
+  CREATEOBJECT="WPProgram|Iconify|<FM2_Utilities>|EXENAME=$(7)\iconify.exe;PARAMETERS=%*;OBJECTID=<FM2Iconify>;"
+  CREATEOBJECT="WPProgram|Delete Tree|<FM2_Utilities>|EXENAME=*;PROGTYPE=WINDOWABLEVIO;PARAMETERS=/c ($(7)\deltree.exe [Enter directory to delete:] || pause);OBJECTID=<FM2Deltree>;"
+  CONFIGSYS="SET PATH=$(7); | ADDRIGHT"
+  EXECUTE="$(7)\shdwmgr FM2UTILS"
+>This package contains the FM/2 Utilities, a
+collection of more than 60  utilities which may
+be used with or without FM/2. Included are
+DELTREE, HPFSOPT, RENCASE, MOV, KILL/2,
+PTREE and many more.
+</PCK>
+
+</HEAD>
+
+<BODY>
+
+<PAGE INDEX=1 TYPE=README>
+<NEXTBUTTON TARGET=2>~Next</NEXTBUTTON>
+<TEXT>FM/2 Utilities: A short description of each utility is included at the end of the readme below. A special note of thanks to Mark Kimes for making these utilities freely available.</TEXT>
+<README EXTRACTFROMPCK="7">fm2utils.doc</README>
+</PAGE>
+
+<PAGE INDEX=2 TYPE=README>
+<NEXTBUTTON TARGET=3>~I agree</NEXTBUTTON>
+<TEXT>FM/2 Utilities: By pressing the "I agree" button, you agree to all terms and conditions of the license agreement below.</TEXT>
+<README EXTRACTFROMPCK="7">license.txt</README>
+</PAGE>
+
+<!-- The TYPE=CONTAINER will list the packages which can be installed. -->
+<PAGE INDEX=3 TYPE=CONTAINER>
+<NEXTBUTTON TARGET=4>~Next</NEXTBUTTON>
+<TEXT>Many of the programs included within FM/2 Utilities are intended to be run from the command line. If the installation directory is not already on the PATH, then this installation will ensure that your installation directory will be on the PATH after the next reboot (unless you specifiy otherwise on the next page).</TEXT>
+</PAGE>
+
+<PAGE INDEX=4 TYPE=CONFIGURE>
+<NEXTBUTTON TARGET=0>I~nstall</NEXTBUTTON>
+<TEXT>Please select/deselect the desired configuration option(s).
+
+The CONFIG.SYS modification is the addition of the FM/2 Utilities installation directory to end of the PATH (if it is not already on the PATH), simplifying access to the utiities from the command line.
+
+Uncheck "Modify CONFIG.SYS" if you do not want your PATH changed.</TEXT>
+</PAGE>
+
+</BODY>
+</WARPIN>
+
+
+<!--
+ or if you do not plan to use the utilities from the command line
+If "Modify CONFIG.SYS" remains checked and the FM/2 Utilities directory is already on the PATH it will NOT be added a second time.
+  TARGET="$(Netlabs\FM2\Base)\Utils"
+  CREATEOBJECT="WPProgram|FM/2 Utils Doc|<FM2_Utilities>|EXENAME=E.EXE;PROGTYPE=PM;PARAMETERS=$(7)\fm2utils.doc;OBJECTID=<FM2UtilsDoc>;"
+-->
+

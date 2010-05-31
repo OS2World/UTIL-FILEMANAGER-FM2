@@ -1,0 +1,20 @@
+
+If you can download the latest files from the FM/2 SVN repository, then the recommended
+process is:
+   1. One-time setup:
+      a. Create a FM2UTils subdirectory of the Warpin subdirectory of the FM/2
+         build subtree.
+      b. Download <ftp://ftp.netlabs.org/incoming/fm2/fm2utils_workspace_without_wpi.zip>
+         and store it in the Warpin subdirectory
+      c. From the Warpin subdirectory run:
+            unzip -j fm2utils_workspace_without_wpi.zip -x fm2utils_workspace\fm2utils.cmd  fm2utils_workspace\fm2utils.wis -d fm2utils
+   2. To build FM2UTILS.WPI:
+      a. Run: SVN UPDATE to get the latest files.
+      b. Do one of the following:
+         1. Run: BLD_FM2UTILS_WPI.CMD (found in the Warpin directory)
+         2. If you can run build FM/2, you can run: NMAKE DIST BUILD_FM2UTILS=1 on the main
+            makefile or NMAKE WPI BUILD_FM2UTILS=1 on the Warpin makefile.
+
+If you cannot download files from the SVN repository, then ask on the Yahoo fm2user list
+for help.
+

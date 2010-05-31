@@ -1,0 +1,41 @@
+; FM/2 associations file -- 5 lines: mask, cmd line, sig, offset, flags
+;  For OS/2 associations only, uncomment following 5 lines:
+;*
+;<>
+;
+;0
+;0
+;
+*.ico;*.ptr
+iconedit.exe %a
+
+0
+0
+;
+*.inf;*.hlp
+view.exe %a
+HSP
+0
+0
+;
+*.dsk;*.?dk
+loaddskf.exe %a A:
+
+0
+0
+;
+;To use seamokey for html Rename Run!.exe (found on Hobbes) to 
+;seamonky!L.exe and place in your Seamonkey Directory include the full 
+;path on the seamonkey!L.exe line and uncomment the next 5 lines 
+;*.htm;*.html
+;seamonkey!L.exe %a 
+;
+;0
+;0
+;
+*.wpi
+<>
+
+0
+0
+

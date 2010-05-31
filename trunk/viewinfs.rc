@@ -1,0 +1,17 @@
+
+/***********************************************************************
+
+  $Id$
+
+  viewinfs resources
+
+  Copyright (c) 1993-02 M. Kimes
+  Copyright (c) 2003, 2008 Steven H.Levine
+
+  15 Oct 02 MK Baseline
+  04 Nov 03 SHL Drop extra default icon
+  04 Jan 08 SHL Sync with fm3dll.h mods
+
+***********************************************************************/
+
+DEFAULTICON       icons\VIEWINFS.ICO

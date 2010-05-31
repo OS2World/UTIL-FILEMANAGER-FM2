@@ -1,0 +1,95 @@
+; Fixed: Ticket 267
+;
+;This file contains some sorting definitions for the FM/2 toolbar.
+;
+;
+Filter Container
+Filter
+8
+5001
+;
+Sort by filename
+Name
+0
+3005
+;
+Sort by size
+Size
+0
+3006
+;
+Sort by EA size
+EAsz
+0
+3007
+;
+Sort by first extension
+1st
+0
+3008
+;
+Sort by last extension
+Last
+0
+3009
+;
+Sort by lastwrite date
+Lw Date
+0
+3010
+;
+Sort by create date
+Cr Date
+8
+3012
+;
+Reverse sort
+Rev
+8
+3015
+;
+Make Directory (Ctrl + M)
+MakeDir
+0
+1026
+;
+Rescan (Ctrl + R)
+Rescan
+0
+5021
+;
+Print Files (Ctrl + p)
+Print
+9
+1007
+;
+Exit FM2 (Ctrl + F3)
+Exit
+8
+1111
+;
+Commands toolbar
+Cmds
+0
+4900
+;
+Utility toolbar
+Utils
+0
+4901
+;
+Select toolbar
+Select
+0
+4903
+Configuration toolbar
+Config
+0
+4904
+;
+Files toolbar
+Files
+8
+4905
+;
+; $Id$

@@ -1,0 +1,191 @@
+
+Coding Style Guidelines
+========================
+
+Line lengths
+
+  Try to keep lines less than 80 characters.
+
+  Break lines after logical separators.
+
+  Vertically align like constructs.
+
+    func(arg1,
+         arg2);
+
+Indents
+
+  Place function definition { in column 1
+
+  Place function definition } in column 1
+
+  Indent nested constructs by 2 characters
+
+  void func()
+  {
+    statement;
+    if (expr)
+      statement2;
+  }
+
+Tabs
+
+  Use only 8 column tabs.
+
+Layouts
+
+  if (expr)
+    statement;
+
+  // If expr and statement are brief single line is OK.
+  if (expr) statement;
+
+  // If statment is long, split logically and use braces.
+  if (expr) {
+    statement_part1...
+      restoflongstatement;
+  }
+
+  if (expr)
+    statement;
+  else
+    statement2;
+
+  if (expr1) {
+    statement1;
+    statement2;
+  }
+  else if (expr2) {
+  }
+  else {
+  }
+
+  // If expression wrapped, align like constructs vertically.
+  if (expr1 &&
+      expr2))
+  {
+  }
+
+  // Prefer expression sense that places shorter statement list first.
+  if (!expr)
+    ReportError();
+  else {
+    statement1;
+    ...;
+    statementn;
+  }
+
+  while (expr) {
+  }
+
+  for (expr; expr; expr) {
+  }
+
+  typedef struct {
+
+  } TYPENAME;
+
+Variable definitions
+
+  Define one variable per line.  They are easier to find and understand.
+
+    INT a;
+    INT *pb;
+
+  not
+
+    INT a,*b;
+
+Variable naming
+
+  Prefer Hungarian notation and CamelCaps for global variables.
+
+    BOOL fAGlobalFlag;
+
+  Prefer lower case and underscores for local variables.
+
+    BOOL is_ok;
+  
+  Local varibles can be short as long as meaning is clear.
+
+    BOOL ok;
+
+  Underscores can be omitted if name remains readable.
+
+    USHORT maxcnt;
+  
+Spaces
+
+  Separate keywords from leading paren with 1 space.
+
+    if (expr) statement;
+
+  No spaces between function name and leading paren.
+  No spaces between last arg and trailing paren.
+
+    func()
+
+  Follow separating commas and semicolons with a space.
+
+    x = func(a, c)
+
+  Surround binary operators with a leading and trailing spaces.
+
+    x = a + b
+
+  Try to avoid spurious internal and trailing whitespace.
+
+Expressions
+
+  Do not use superfluous parens.
+
+  Prefer
+
+    return 0;
+
+  to
+
+    return (0);
+
+  Do not use superfluous parens when operator precedence with do the
+  right thing.
+
+  Prefer
+
+    if (a & mask && c)
+
+  to
+
+    if ((a & mask) && c)
+
+  Avoid nested ternary conditionals (i.e. ? :).  They are hard to read and
+  rarely generate better code than switch or if statement.
+
+Memory
+
+ - Check all malloc/realloc/strdup/DosAllocMem calls
+   Use xmalloc in non-time critical code
+   Use xrealloc in non-time critical code
+   Use xstrdup in non-time critical code
+
+ - Use xfree rather than free
+
+ - If buffer overflow possible, check for it.
+
+Windows
+
+ - Check all WinCreateWindow calls
+ - Check QWL_USER pointer data
+
+Error notifications
+
+  DosBeep(50,100)       Alert user to operator error
+                        Use only when failure reason is obvious
+
+  saymsg                Alert user to operator error with popup
+
+  Runtime_Error         Report "should not occur" errors
+  Dos_Error
+  Win_Error
+
+$Id$

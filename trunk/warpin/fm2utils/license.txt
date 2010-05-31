@@ -1,0 +1,14 @@
+Simple license statement:
+========================
+These utilities may be freely used by end users.  I retain copyright and
+reserve all rights.  There is NO warranty expressed or implied.
+
+Distribution rights are granted for online (dial-up, Internet, CIS,
+etc.) services ONLY without prior written permission from author.
+If you want to distribute for money, you MUST contact me first and
+make arrangements.
+
+
+Author contact info:
+===================
+  Mark Kimes (mkimes@ibm.net)

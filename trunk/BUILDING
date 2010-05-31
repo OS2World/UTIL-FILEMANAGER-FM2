@@ -1,0 +1,151 @@
+
+Building FM/2
+=============
+
+This document explains how to build FM/2 from source.
+
+Tools
+=====
+
+The following tools are currently used to build the FM/2 binaries
+
+  OpenWatcom v1.6 or newer
+  IBM Developers Toolkit v4.5
+  lxlite LX compressor
+
+Older versions of the Toolkit may work.  The OpenWatcom implementation of 
+the Toolkit should work, but this has not been fully verified.  There are no 
+known special setup requirements. 
+
+Not all versions of RC.EXE are created equal.  Currently, the best version to
+use is
+
+ 12-18-97   6:01         868,000           0  RC.EXE
+
+which reports itself as
+
+ IBM RC (Resource Compiler) Version 5.00.002 Dec 18 1997
+
+and it is available from
+
+  <ftp://ftp.software.ibm.com/ps/products/warpzilla/os2tk40rc.zip>
+
+You can get LXLITE.EXE from
+
+ <http://hobbes.nmsu.edu/cgi-bin/h-search?key=lxlite&pushbutton=Search>
+
+You can get OpenWatcom from
+
+ <http://www.openwatcom.org>
+
+
+Building
+========
+
+Use subversion to pull a copy of the source code distribution into your 
+client workspace.  See
+
+ <http://svn.netlabs.org/fm2>
+
+for instructions on how to do this.
+
+Build the release version with
+
+  wmake
+
+Build the debug version with
+
+  wmake DEBUG=1
+
+or
+
+  set DEBUG=1
+  wmake
+
+The build outputs are:
+
+  av2.exe
+  databar.exe
+  dirsize.exe
+  eas.exe
+  fm3.exe
+  fm4.exe
+  global.exe
+  ini.exe
+  killproc.exe
+  sysinfo.exe
+  undel.exe
+  vcollect.exe
+  vdir.exe
+  viewinfs.exe
+  vtree.exe
+
+  dll\fm3dll.dll
+  dll\fm3res.dll
+
+
+  dll\fm3res.str
+
+  dll\ipf\fm3.hlp
+
+  internal\mkstr.exe
+
+Release Packaging
+=================
+
+FM/2 is released as a WarpIN package.
+
+The basic process is
+
+  wmake wpi
+
+See
+
+ <http://svn.netlabs.org/fm2/wiki/WPIBuild>
+
+for more details.
+
+
+About FM/2
+==========
+
+FM2 was originally written by
+
+  Mark Kimes
+  <hectorplasmic@worldnet.att.net>
+
+He has kindly allowed us to take over maintenance and support of FM/2 and to
+release the program under the GNU GPL license.  I'm sure he would appreciate
+a Thank You note for his generosity.
+
+
+Support
+=======
+
+FM/2 is a Netlabs project.  The project URL is
+
+ <http://svn.netlabs.org/fm2>
+
+The user support mailing list is
+
+  <mailto:fm2-user@netlabs.org>
+
+Like all Netlabs mailing list, this is mirrored to gmane.
+
+In addition the maintainers, monitor the comp.os.os2.programmer.misc 
+newsgroup and others in the comp.os.os2.* hierarchy.
+
+There is also an archived Yahoo group at
+
+ http://tech.groups.yahoo.com/group/fm2/
+
+The list is closed to new posts, but contains some useful info.
+
+If all else fails, you can always e-mail me directly at
+
+  Steven H. Levine
+  steve53@earthlink.net
+
+Thanks and enjoy.
+
+$Id$
