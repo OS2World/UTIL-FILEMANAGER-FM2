@@ -41,6 +41,7 @@
  *    29 May 10 GKY Use TEE to generate log files for the build options
  *       - Use DIFF to compare changes in WARNALL builds
  *    31 May 10 JBS Add support of use of PAGER env. variable to the the pager used.
+ *    31 May 10 JBS Build zip file and Hobbes txt file in Warpin directory
  *
 */
 
@@ -283,7 +284,7 @@ do forever
             if strip(ver) = '' then
                ver = GetVer('the pending release')
             zip_ver = translate(ver, '-', '.')
-            'zip -j9 fm2-' || zip_ver || ' warpin\fm2-' || zip_ver || '.wpi'
+            'zip -jX9 .\warpin\fm2-' || zip_ver || ' warpin\fm2-' || zip_ver || '.wpi'
             prev_action = action
          end
       when action = 16 then
@@ -517,7 +518,7 @@ return translate(Tag_ver(ver), '-', '_')
 BuildHobbesTxt: procedure expose (globals)
    parse arg ver
    wpi_version = WPI_ver(ver)
-   HobbesTxtFilename = 'FM2-' || wpi_version || '.txt'
+   HobbesTxtFilename = '.\warpin\FM2-' || wpi_version || '.txt'
    if stream(HobbesTxtFilename, 'c', 'query exists') \= '' then
       do
          say;say;say
