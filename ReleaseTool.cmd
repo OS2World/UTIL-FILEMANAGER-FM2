@@ -40,6 +40,7 @@
  *    02 Apr 10 JBS Removed reference to obsolete "internal\makefile" file
  *    29 May 10 GKY Use TEE to generate log files for the build options
  *       - Use DIFF to compare changes in WARNALL builds
+ *    31 May 10 JBS Add support of use of PAGER env. variable to the the pager used.
  *
 */
 
@@ -184,8 +185,8 @@ do forever
             'set WARNALL=1'
             'wmake -a all | tee warnall.log |' pager
             'diff -rub warnall.base warnall.log > warnall.diff'
-            editor 'warnall.diff' 
-            'set WARNALL=' 
+            editor 'warnall.diff'
+            'set WARNALL='
             prev_action = action
          end
       when action = 7 then
@@ -418,10 +419,12 @@ Init: procedure expose (globals)
    version_filelist = version_filelist 'warpin\makefile'
    version_filelist = version_filelist 'dll\copyright.h'
 
-   if SysSearchPath( 'PATH', 'less.exe') \= '' then
-      pager = 'less'
-   else
-      pager = 'more'
+   pager = value('PAGER',,'OS2ENVIRONMENT')
+   if pager = '' then
+      if SysSearchPath( 'PATH', 'less.exe') \= '' then
+         pager = 'less'
+      else
+         pager = 'more'
    prev_action = 'N/A'
 return
 
