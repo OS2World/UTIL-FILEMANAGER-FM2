@@ -52,6 +52,10 @@
  *    31 May 10 JBS Add support of use of PAGER env. variable to the the pager used.
  *    31 May 10 JBS Build zip file and Hobbes txt file in Warpin directory
  *
+ * To Do
+ *    -  Improve support for external CMD files which perform some or all of a task
+ *    -  Support sending email via PMMSend?
+ *    -  Support sending email via REXXMail?
 */
 
 n = setlocal()
@@ -66,7 +70,7 @@ signal on SYNTAX name Error
 signal on Novalue
 */
 
-globals = 'cfg. ver. mainmenu. cmd. Hobbes. loaded. prev_user_choice'
+globals = 'cfg. ver. mainmenu. cmd. Hobbes. available. prev_user_choice'
 
 parse arg args
 if wordpos('/?', args) > 0 | ,
@@ -163,12 +167,66 @@ select
                   call Commandline
                   prev_user_choice = user_choice
                end
+            when user_choice = 'S' then
+               do /* Open a command line */
+                  dirsave = directory()
+                  svndrive = filespec('D', cmd.smartsvn)
+                  svndrive_dirsave = directory(svndrive)
+                  call directory strip(svndrive || filespec('P', cmd.smartsvn), 'T', '\')
+                  call ExecCmd 'call smartsvn.cmd'
+                  call directory svndrive_dirsave
+                  call directory dirsave
+                  say;say
+                  say 'If SmartSVN did not run correctly, make sure the default Java'
+                  say 'is Java 1.4.1 or later before running ReleaseTool.'
+                  prev_user_choice = user_choice
+               end
             when user_choice = mainmenu.Ensure_work_done_num then
                do /* Ensure all work (by others) is comitted */
-                  call NotYet user_choice
-                  say 'Notify programmers to commit their work for this release.'
-                  say
-                  say 'Use the Netlabs FM/2 Developer''s mailing list and wait 24 hours.'
+                  if cfg.SMTP.1.Command = '' then
+                     do
+                        say
+                        say 'A "send-email" command was not found in' cfg.filename || '.'
+                        say 'So this will have to be done manually.'
+                        say
+                        say 'Notify programmers to commit their work for this release.'
+                        say
+                        say 'Use the Netlabs FM/2 Developer''s mailing list and wait 24 hours.'
+                     end
+                  else
+                     do
+                        say
+                        say 'Sending a noptification email to FM/2 developers...'
+                        say
+                        say 'Proposed subject:'
+                        subj = 'Commit work for FM/2' ver.full
+                        say '   ' || subj
+                        say
+                        say 'If this subject is acceptable, just press Enter. Otherwise'
+                        say 'type in the desired subject for the notification email:'
+                        response = strip(linein())
+                        if response \= '' then
+                           subj = response
+                        SMTPBody_file = SysTempFilename('SMTPBody.???')
+                        call lineout SMTPBody_file, 'The release of FM/2' ver.full 'is imminent.'
+                        call lineout SMTPBody_file, ''
+                        call lineout SMTPBody_file, 'Please commit all work for this release within 24 hours.'
+                        call lineout SMTPBody_file, ''
+                        call lineout SMTPBody_file, 'Reply to this email if there are reasons to delay the release.'
+                        call stream  SMTPBody_file, 'c', 'close'
+                        say
+                        say 'The proposed body of the notification email will now be loaded into an editor.'
+                        say 'Make desired changes, if any, and save the file.'
+                        say
+                        call charout, 'Press any key when ready to load the message body into an editor: '
+                        call SysGetKey
+                        say
+                        call ExecCmd cmd.editor SMTPBody_file
+                        call SendSMTP 'TO=fm2-dev@netlabs.org <fm2-dev@netlabs.org>', ,
+                                      'SUBJ=' || subj, ,
+                                      'BODYFILE=' || SMTPBody_file
+                        call SysFileDelete SMTPBody_file
+                     end
                   prev_user_choice = user_choice
                end
             when user_choice = mainmenu.Verify_tickets_closed_num then
@@ -187,7 +245,7 @@ select
                end
             when user_choice = mainmenu.Check_SVN_status_num then
                do /* Ensure all local source is up to date */
-                  if right(translate(cmd.processor), 8) = '4OS2.EXE' then
+                  if cmd.processor_is_4os2 = 1 then
                      svn_cmd = 'svn status -v |&' cmd.pager
                   else
                      svn_cmd = 'svn status -v |' cmd.pager
@@ -221,11 +279,17 @@ select
                end
             when user_choice = mainmenu.WARNALL_build_num then
                do /* Ensure the edits build */
+                  say
                   'set WARNALL=1'
                   call ExecCmd 'wmake -a all | tee warnall.log |' cmd.pager
                   'set WARNALL='
                   call ExecCmd 'diff.exe -rub warnall.base warnall.log > warnall.diff'
                   call ExecCmd cmd.editor 'warnall.diff'
+                  say
+                  call charout , 'Make WARNALL.LOG the new WARNALL.BASE? (y/N): '
+                  if translate(SysGetKey()) = 'Y' then
+                     'copy WARNALL.LOG WARNALL.BASE'
+                  say
                   prev_user_choice = user_choice
                end
             when user_choice = mainmenu.Test_WARNALL_build_num then
@@ -333,7 +397,7 @@ select
               end
             when user_choice = mainmenu.Announce_num then
                do /* Announce the release. */
-                  if loaded.RXSOCK = 1 then
+                  if available.RXSOCK = 1 then
                      call AnnounceToNewsgroups
                   else
                      do
@@ -360,6 +424,8 @@ select
             user_choice \= mainmenu.Test_WPI_file_num then
             '@pause'
       end
+      if available.tee = 0 then
+         call SysFileDelete 'tee.cmd'
 end
 
 n = endlocal()
@@ -373,7 +439,7 @@ Init: procedure expose (globals)
 
    call RxFuncAdd "SockLoadFuncs", "RXSOCK", "SockLoadFuncs"
    call SockLoadFuncs 0
-   loaded.RXSOCK = 1
+   available.RXSOCK = 1
 
 /*
    rcx = 0
@@ -385,10 +451,10 @@ rxsockerr:
    signal on syntax name Error
    rcx = 1
    if rcx = 1 then
-      loaded.RXSOCK = 1
+      available.RXSOCK = 1
    else
       do
-         loaded.RXSOCK = 0
+         available.RXSOCK = 0
          call RxFuncDrop "SockLoadFuncs", "RXSOCK", "SockLoadFuncs"
          say
          say 'RXSOCK.DLL load failed.'
@@ -407,10 +473,10 @@ rxsockerr:
 rxftperr:
    signal on syntax name Error
    if rcx = 1 then
-      loaded.RXFTP = 1
+      available.RXFTP = 1
    else
       do
-         loaded.RXFTP = 0
+         available.RXFTP = 0
          say
          say 'RXFTP.DLL load failed.'
          say 'Uploads will not be possible.'
@@ -444,6 +510,29 @@ rxftperr:
 
    cmd.           = ''
    cmd.processor  = value('COMSPEC',,'OS2ENVIRONMENT')
+   cmd.processor_is_4os2 = Is4OS2()
+   if cmd.processor_is_4os2 = 1 then
+      available.tee = 1
+   else
+      do
+         if SysSearchPath('PATH', 'tee.exe') \= '' then
+            available.tee = 1
+         else
+            do
+               available.tee = 0
+               call SysFileDelete 'tee.cmd'
+               call lineout 'tee.cmd', '/* */'
+               call lineout 'tee.cmd', 'parse arg filename'
+               call lineout 'tee.cmd', 'call SysFileDelete filename'
+               call lineout 'tee.cmd', 'do while lines() > 0'
+               call lineout 'tee.cmd', '   parse pull line'
+               call lineout 'tee.cmd', '   call lineout filename, line'
+               call lineout 'tee.cmd', '   say line'
+               call lineout 'tee.cmd', 'end'
+               call lineout 'tee.cmd', "call stream filename, 'c', 'close'"
+               call stream  'tee.cmd', 'c', 'close'
+            end
+      end
    userprompt = value('PROMPT',,'OS2ENVIRONMENT')
    parse var userprompt . '$e[' colorset 'm' .
    if colorset = '' then
@@ -473,11 +562,12 @@ rxftperr:
             cmd.editorparms = "'3'"
       end
 
+   cmd.smartsvn   = SysSearchPath('PATH', 'smartsvn.cmd')
    cmd.tester     = value('SVN_TESTER',,'OS2ENVIRONMENT')
-   cmd.killpid        = value('SVN_KILL',,'OS2ENVIRONMENT')
-   if cmd.killpid == '' then
-      cmd.killpid      = 'killpid'
-   cmd.killtarget  = 'FM/2'
+   cmd.killpid    = value('SVN_KILL',,'OS2ENVIRONMENT')
+   if cmd.killpid = '' then
+      cmd.killpid = 'killpid'
+   cmd.killtarget = 'FM/2'
 
    m = 0
 
@@ -587,7 +677,7 @@ CfgInit: procedure expose (globals)
    cfg.SMTP.0     = 0
    cfg.FTP.keys   = 'DESCRIPTIVE_HOSTNAME HOST USERID PASSWORD DIRECTORY FILE'
    cfg.NNTP.keys  = 'NEWSGROUPS HOST USERID PASSWORD'
-   cfg.SMTP.keys  = ''
+   cfg.SMTP.keys  = 'COMMAND'
 
    cfg.NNTP.closing               = cfg.crlf || cfg.crlf || '.' || cfg.crlf
    cfg.NNTP.signature_preface     = cfg.crlf || '-- ' || cfg.crlf
@@ -674,9 +764,15 @@ DisplayMenu: procedure expose (globals)
          say right(m, 2) || '.' mainmenu.m.text
       end
       say
-      call charout , 'N)ext C)ommandline Q)uit or mennu item number: '
+      call charout , 'N)ext C)ommandline '
+      if cmd.smartsvn \= '' then
+         call charout , 'S)martSVN '
+      call charout , 'Q)uit or mennu item number: '
       user_choice = translate(translate(SysGetKey()), 'N', '0d'x)
-      if user_choice = 'N' | user_choice = 'C' | user_choice = 'Q' then
+      if user_choice = 'N' | ,
+         user_choice = 'C' | ,
+         user_choice = 'Q' | ,
+         (cmd.smartsvn \= '' & user_choice = 'S') then
          leave
       if datatype(user_choice) = 'NUM' then
          do
@@ -688,6 +784,7 @@ DisplayMenu: procedure expose (globals)
                      leave
          end
    end
+   say
    if user_choice = 'N' then
       if prev_user_choice = 'N/A' then
          user_choice = 1
@@ -803,7 +900,7 @@ return
 
 Commandline: procedure expose (globals)
    signal off Error
-   if right(translate(cmd.processor), 8) = '4OS2.EXE' then
+   if cmd.processor_is_4os2 = 1 then
       '@' || cmd.processor "prompt"  cmd.prompt
    else
       '@' || cmd.processor "/k prompt=" || cmd.prompt
@@ -816,6 +913,14 @@ ExecCmd: procedure
    command
    signal on Error
 return
+
+/*=== Is4OS2() Return true if 4OS2 running ===*/
+Is4OS2: procedure
+  call setlocal
+  '@set X=%@eval[0]'
+  yes = value('X',, 'OS2ENVIRONMENT') = 0
+  call endlocal
+return yes				/* if running under 4OS2 */
 
 RunTester: procedure expose (globals)
 /* kills FM/2 using killpid from FM/2 utils (must be in path) ... */
@@ -1077,7 +1182,9 @@ TestWPI: procedure expose (globals)
                            say 'and attach the file:'
                            say '   ' tmpzipfile
                            say 'as an attachment. In the text of the message, please describe'
-                           say 'the errors you detected in detail. Thank you.'
+                           say 'the errors you detected in detail. After the email has been sent'
+                           say 'you may delete:'
+                           say '   ' tmpzipfile
                            say
                            'pause'
                         end
@@ -1090,7 +1197,7 @@ TestWPI: procedure expose (globals)
 return
 
 UploadRelease: procedure expose (globals)
-   if loaded.RXFTP = 0 then
+   if available.RXFTP = 0 then
       do
          say 'Until RXFTP.DLL is placed in a directory on the LIBPATH,'
          say 'manual uploading will be required.'
@@ -1576,6 +1683,54 @@ CommitIfOK: procedure
    if translate(SysGetKey()) \= 'N' then call ExecCmd svn_cmd filelist
 return
 
+SendSMTP: procedure expose (globals)
+   email_command = cfg.SMTP.1.Command
+   do i = 1 to arg()
+      parse value arg(i) with key '=' key_value
+      key = translate(key)
+      select
+         when (key = 'TO' & pos('%%TO%%', email_command) > 0) then
+            do
+               parse var email_command part1 '%%TO%%' part2
+               email_command = part1 || key_value || part2
+            end
+         when (key = 'SUBJ' & pos('%%SUBJECT%%', email_command) > 0) then
+            do
+               parse var email_command part1 '%%SUBJECT%%' part2
+               /* JBS: Test code */
+               email_command = part1 || '[TEST message. Ignore] ' || key_value || part2
+/*
+               email_command = part1 || key_value || part2
+*/
+            end
+         when (key = 'BODYFILE' & pos('%%MESSAGE_BODY_FILE%%', email_command) > 0) then
+            do
+               parse var email_command part1 '%%MESSAGE_BODY_FILE%%' part2
+               email_command = part1 || stream(key_value, 'c', 'query exists') || part2
+            end
+         otherwise
+            say 'Program error: Unknown param: "' || arg(i) || '" for SendSMTP function.'
+      end
+   end
+   /* JBS: Test code */
+   say
+   say 'While the new email code is being tested and debugged:'
+   say '1) All subjects will be prefaced by: "[TEST message. Ignore]"'
+   say '2) A "preview" of the pending email command will be displayed.'
+   say
+   say 'If the email command is unsuccessful, please copy and paste it and'
+   say 'post it, along with a description of the error(s) and, if possible,'
+   say 'a proposed correction to the fm2-dev mailiing list.'
+   say
+   say 'The pending email command:'
+   say '   ' email_command
+   say
+   call charout , 'Press any key when ready to execute this command...'
+   call SysGetKey
+   say;say
+   call ExecCmd email_command
+return
+
 /*** Usage/Error routines ***/
 
 Usage: procedure
@@ -1641,8 +1796,5 @@ Error:
     exit 'CONDITION'('C')
   end
 
-return
-
-Log_Error: procedure expose cfg.
 return
 
