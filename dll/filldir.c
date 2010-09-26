@@ -235,10 +235,10 @@ VOID StubbyScanThread(VOID * arg)
 	  if (WinIsWindow((HAB)0, StubbyScan->hwndCnr)) {
 	    ULONG flags = driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'];
 
-	    if (((fRScanLocal && ~flags & DRIVE_REMOTE && ~flags & DRIVE_VIRTUAL) ||
+	    if ((fRScanLocal && ~flags & DRIVE_REMOTE && ~flags & DRIVE_VIRTUAL) ||
 		 (fRScanRemote && flags & DRIVE_REMOTE) ||
-		 (fRScanVirtual && flags & DRIVE_VIRTUAL)) && fInitialDriveScan) {
-	      if (!(flags & ((fRScanNoWrite ? 0 : DRIVE_NOTWRITEABLE) |
+                 (fRScanVirtual && flags & DRIVE_VIRTUAL)) {
+	      if (!(flags & ((fRScanNoWrite ? 0 : DRIVE_NOTWRITEABLE) ||
 			     (fRScanSlow ? 0 : DRIVE_SLOW)))) {
 		UnFlesh(StubbyScan->hwndCnr, StubbyScan->pci);
 		Flesh(StubbyScan->hwndCnr, StubbyScan->pci);

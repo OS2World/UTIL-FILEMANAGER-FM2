@@ -207,7 +207,7 @@ MRESULT EXPENTRY DrvInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      CHAR volumelabel[CCHMAXPATH];
 	    }
 	    volser;
-	    USHORT percentfree, percentused;
+	    ULONG percentfree, percentused;
 
 	    memset(&volser, 0, sizeof(volser));
 	    DosError(FERR_DISABLEHARDERR);
@@ -251,7 +251,7 @@ MRESULT EXPENTRY DrvInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      WinSetDlgItemText(hwnd, INFO_ALLOCUNITS, s);
 
 	      percentfree = (fsa.cUnitAvail && fsa.cUnit) ?
-		((USHORT) fsa.cUnitAvail * 100) / (USHORT) fsa.cUnit : 0;
+		((ULONG) fsa.cUnitAvail * 100) / (ULONG) fsa.cUnit : 0;
 	      if (!percentfree && fsa.cUnitAvail)
 		percentfree = 1;
 	      percentused = 100 - percentfree;
