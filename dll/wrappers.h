@@ -55,10 +55,10 @@ PSZ xfgets(PSZ pszBuf, size_t cMaxBytes, FILE * fp, PCSZ pszSrcFile,
 PSZ xfgets_bstripcr(PSZ pszBuf, size_t cMaxBytes, FILE * fp, PCSZ pszSrcFile,
 		    UINT uiLineNumber);
 FILE *xfopen(PCSZ pszFileName, PCSZ pszMode, PCSZ pszSrcFile,
-	     UINT uiLineNumber);
+	     UINT uiLineNumber, BOOL fSilent);
 VOID xfree(PVOID pv, PCSZ pszSrcFile, UINT uiLineNumber);
 FILE *xfsopen(PCSZ pszFileName, PCSZ pszMode, INT fSharemode, PCSZ pszSrcFile,
-	      UINT uiLineNumber);
+	      UINT uiLineNumber, BOOL fSilent);
 PVOID xmalloc(size_t cBytes, PCSZ pszSrcFile, UINT uiLineNumber);
 PVOID xmallocz(size_t cBytes, PCSZ pszSrcFile, UINT uiLineNumber);
 PVOID xrealloc(PVOID pvIn, size_t cBytes, PCSZ pszSrcFile, UINT uiLineNumber);

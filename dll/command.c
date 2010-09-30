@@ -372,7 +372,7 @@ VOID load_commands(VOID)
   PSZ pszCmdLine;
   CHAR title[100];
   CHAR flags[34];
-  //CHAR *p;
+  CHAR *moder = "r";
   ULONG size;
 
 
@@ -393,7 +393,7 @@ VOID load_commands(VOID)
     pszCommandsList = xmallocz(ulSizeCommandsList, pszSrcFile, __LINE__);
     if (pszCmdLine) {
       BldFullPathName(pszCmdLine, pFM2SaveDirectory, PCSZ_COMMANDSDAT);
-      fp = _fsopen(pszCmdLine, "r", SH_DENYWR);
+      fp = xfsopen(pszCmdLine, moder, SH_DENYWR, pszSrcFile, __LINE__, TRUE);
       if (fp) {
         while (!feof(fp)) {
           if (!xfgets_bstripcr(title, sizeof(title), fp, pszSrcFile, __LINE__))

@@ -953,7 +953,8 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       else {
 
 	CHAR szFileName[CCHMAXPATH];
-	FILE *fp;
+        FILE *fp;
+        CHAR *modea = "a+";
 
 	if (pTmpDir)
 	  strcpy(szFileName, pTmpDir);
@@ -966,7 +967,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      strnicmp(szFileName, "\\DEV\\LPT", 8) &&
 	      !strchr(szFileName, '.'))
 	    strcat(szFileName, ".RPT");
-	  fp = fopen(szFileName, "a+");
+	  fp = xfopen(szFileName, modea, pszSrcFile, __LINE__, TRUE);
 	  if (!fp) {
 	    saymsg(MB_CANCEL,
 		   hwnd,

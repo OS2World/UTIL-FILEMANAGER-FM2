@@ -59,10 +59,11 @@ int UUD(char *filename, CHAR * dest)
   int mode, ret = 0;
   char buf[80];
   char fakedest[CCHMAXPATH];
+  CHAR *moder = "r";
 
   if (!dest)
     dest = fakedest;
-  in = _fsopen(filename, "r", SH_DENYWR);
+  in = xfsopen(filename, moder, SH_DENYWR, pszSrcFile, __LINE__, TRUE);
   if (!in) {
     saymsg(MB_CANCEL,
            HWND_DESKTOP,
@@ -109,7 +110,8 @@ int UUD(char *filename, CHAR * dest)
   }
 
   /* create output file */
-  out = _fsopen(dest, "ab+", SH_DENYWR);
+  moder = "ab+";
+  out = xfsopen(dest, moder, SH_DENYWR, pszSrcFile, __LINE__, TRUE);
   if (!out) {
     fclose(in);
     saymsg(MB_CANCEL,

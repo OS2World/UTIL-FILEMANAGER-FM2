@@ -317,10 +317,13 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
   case WRITE:
     {
       FILE *fp;
+      CHAR *mode = "a+";
 
-      fp = fopen(filename, "a+");
-      if (!fp)
-	fp = xfopen(filename, "w", pszSrcFile, __LINE__);
+      fp = xfopen(filename, mode, pszSrcFile, __LINE__, TRUE);
+      if (!fp) {
+        mode = "w";
+        fp = xfopen(filename, mode, pszSrcFile, __LINE__, FALSE);
+      }
       if (fp) {
 	fseek(fp, 0L, SEEK_END);
 	fwrite(sel, 1, strlen(sel), fp);
@@ -647,6 +650,7 @@ BOOL MLEinsertfile(HWND h, CHAR * filename)
   HWND grandpa;
   XMLEWNDPTR *vw;
   APIRET rc;
+  CHAR *moder = "r";
 
   *titletext = 0;
   hab = WinQueryAnchorBlock(h);
@@ -656,7 +660,7 @@ BOOL MLEinsertfile(HWND h, CHAR * filename)
   grandpa = GrandparentOf(h);
   *titletext = 0;
   WinQueryWindowText(grandpa, 512, titletext);
-  fp = _fsopen(filename, "r", SH_DENYNO);
+  fp = xfsopen(filename, moder, SH_DENYNO, pszSrcFile, __LINE__, TRUE);
   if (!fp)
     ret = FALSE;
   else {
@@ -892,6 +896,7 @@ BOOL MLEexportfile(HWND h, CHAR * filename, INT tabspaces,
   INT blanklines = 0;
   BOOL fWrap = MLEgetwrap(h);
   APIRET rc;
+  CHAR *mode;
 
   if (!MLEgetlen(h))			/* nothing to save; forget it */
     return TRUE;
@@ -925,9 +930,12 @@ BOOL MLEexportfile(HWND h, CHAR * filename, INT tabspaces,
     ok = FALSE;
   }
   else {
-    fp = fopen(filename, "a+");
-    if (!fp)
-      fp = xfopen(filename, "w", pszSrcFile, __LINE__);
+    mode = "a+";
+    fp = xfopen(filename, mode, pszSrcFile, __LINE__, TRUE);
+    if (!fp) {
+      mode = "w";
+      fp = xfopen(filename, mode, pszSrcFile, __LINE__, FALSE);
+    }
     if (!fp)
       ok = FALSE;
     else {

@@ -307,7 +307,9 @@ static MRESULT EXPENTRY MainObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      (fsa.cUnitAvail * 100) / fsa.cUnit : 0;
 	    CommaFmtULL(szQty, sizeof(szQty), ullFreeQty, ' ');
 	    sprintf(s, "%s %s (%lu%%) %s", dv, szQty, ulPctFree, GetPString(IDS_FREETEXT));
-	  }
+          }
+          else
+            sprintf(s, "%s ", dv);
 	}
       }
       if ((!hwndBubble ||
@@ -1944,7 +1946,7 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	PostMsg(MainObjectHwnd, UM_SETUP6, MPFROMLONG((ULONG) hwnd), MPVOID);
       }
       else
-	helpid = 0;
+        helpid = 0;
     }
     break;
 
@@ -2030,16 +2032,17 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if ((char *)mp1 &&
 	  (!hwndBubble ||
 	   WinQueryWindowULong(hwndBubble, QWL_USER) != hwnd) &&
-	  !WinQueryCapture(HWND_DESKTOP)) {
+          !WinQueryCapture(HWND_DESKTOP)) {
 
-	RECTL rcl;
+        RECTL rcl;
 	POINTL ptl;
 
 	WinQueryPointerPos(HWND_DESKTOP, &ptl);
 	WinMapWindowPoints(HWND_DESKTOP, hwnd, &ptl, 1);
 	WinQueryWindowRect(hwnd, &rcl);
-	if (WinPtInRect(WinQueryAnchorBlock(hwnd), &rcl, &ptl))
-	  BubbleHelp(hwnd, FALSE, TRUE, FALSE, (char *)mp1);
+        if (WinPtInRect(WinQueryAnchorBlock(hwnd), &rcl, &ptl)) {
+          BubbleHelp(hwnd, FALSE, TRUE, FALSE, (char *)mp1);
+        }
       }
     }
     return 0;

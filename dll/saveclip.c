@@ -283,10 +283,11 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       {
 	FILE *fp;
-	CHAR s[CCHMAXPATH + 14];
+        CHAR s[CCHMAXPATH + 14];
+        CHAR *moder = "r";
 
         BldFullPathName(s, pFM2SaveDirectory, PCSZ_PATTERNSDAT);
-	fp = _fsopen(s, "r", SH_DENYWR);
+	fp = xfsopen(s, moder, SH_DENYWR, pszSrcFile, __LINE__, TRUE);
 	if (fp) {
 	  while (xfgets(s, 81, fp, pszSrcFile, __LINE__)) {
 	    stripcr(s);
@@ -308,6 +309,7 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       SHORT sSelect, sMax;
       CHAR szBuffer[CCHMAXPATH + 14];
       FILE *fp;
+      CHAR *modew = "w";
 
       sMax = (SHORT) WinSendDlgItemMsg(hwnd, SAV_LISTBOX,
 				       LM_QUERYITEMCOUNT, MPVOID, MPVOID);
@@ -315,7 +317,7 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         BldFullPathName(szBuffer, pFM2SaveDirectory, PCSZ_PATTERNSDAT);
         if (CheckDriveSpaceAvail(szBuffer, ullDATFileSpaceNeeded, 1) == 2)
           break; //already gave error msg
-	fp = xfopen(szBuffer, "w", pszSrcFile, __LINE__);
+	fp = xfopen(szBuffer, modew, pszSrcFile, __LINE__, FALSE);
 	if (fp) {
 	  fputs(GetPString(IDS_LISTPATTERNTEXT), fp);
 	  for (sSelect = 0; sSelect < sMax; sSelect++) {
@@ -476,11 +478,11 @@ MRESULT EXPENTRY SaveListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	if (!pci || (INT) pci == -1)
 	  Runtime_Error(pszSrcFile, __LINE__, NULL);
-	else {
-	  fp = _fsopen(savename, "r+", SH_DENYWR);
-	  if (!fp)
-	    Runtime_Error(pszSrcFile, __LINE__, "_fsopen");
-	  else {
+        else {
+          CHAR *moder = "r+";
+
+	  fp = xfsopen(savename, moder, SH_DENYWR, pszSrcFile, __LINE__, FALSE);
+	  if (fp) {
 	    fseek(fp, 0, SEEK_SET);
 	    if (WinQueryButtonCheckstate(hwnd, SAV_APPEND) == 0)
 	      DosSetFileSize((HFILE) fileno(fp), 0);
@@ -644,10 +646,11 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
       }
       {
 	FILE *fp;
-	CHAR s[CCHMAXPATH + 14];
+        CHAR s[CCHMAXPATH + 14];
+        CHAR *moder = "r";
 
         BldFullPathName(s, pFM2SaveDirectory, PCSZ_PATTERNSDAT);
-	fp = _fsopen(s, "r", SH_DENYWR);
+	fp = xfsopen(s, moder, SH_DENYWR, pszSrcFile, __LINE__, TRUE);
 	if (fp) {
 	  while (xfgets(s, 81, fp, pszSrcFile, __LINE__)) {
 	    stripcr(s);
@@ -669,6 +672,7 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
       SHORT sSelect, sMax;
       CHAR szBuffer[CCHMAXPATH + 14];
       FILE *fp;
+      CHAR *modew = "w";
 
       sMax = (SHORT) WinSendDlgItemMsg(hwnd,
 				       SAV_LISTBOX,
@@ -677,7 +681,7 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
         BldFullPathName(szBuffer, pFM2SaveDirectory, PCSZ_PATTERNSDAT);
         if (CheckDriveSpaceAvail(szBuffer, ullDATFileSpaceNeeded, 1) == 2)
           break; //already gave error msg
-	fp = xfopen(szBuffer, "w", pszSrcFile, __LINE__);
+	fp = xfopen(szBuffer, modew, pszSrcFile, __LINE__, FALSE);
 	if (fp) {
 	  fputs(GetPString(IDS_LISTPATTERNTEXT), fp);
 	  for (sSelect = 0; sSelect < sMax; sSelect++) {
@@ -829,11 +833,10 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	PrfWriteProfileString(fmprof, appname, "SaveToListName", savename);
 	if (!list || !list[0])
 	  Runtime_Error(pszSrcFile, __LINE__, NULL);
-	else {
-	  fp = _fsopen(savename, "r+", SH_DENYWR);
-	  if (!fp)
-	    Runtime_Error(pszSrcFile, __LINE__, "_fsopen");
-	  else {
+        else {
+          CHAR *moder = "r+";
+	  fp = xfsopen(savename, moder, SH_DENYWR, pszSrcFile, __LINE__, FALSE);
+	  if (fp) {
 	    fseek(fp, 0, SEEK_SET);
 	    if (WinQueryButtonCheckstate(hwnd, SAV_APPEND) == 0)
 	      DosSetFileSize((HFILE) fileno(fp), 0);

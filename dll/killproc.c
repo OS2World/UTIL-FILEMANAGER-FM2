@@ -253,6 +253,7 @@ static VOID FillKillListThread(VOID * arg)
   CHAR *endstring = "System Semaphore Information";
   PID pid;
   HFILE oldstdout, newstdout;
+  CHAR *mode;
 
   DosError(FERR_DISABLEHARDERR);
 
@@ -267,7 +268,8 @@ static VOID FillKillListThread(VOID * arg)
   WinSendDlgItemMsg(hwnd, KILL_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
   BldFullPathName(s, pTmpDir, "$PSTAT#$.#$#");
   unlinkf(s);
-  fp = fopen(s, "w");
+  mode = "w";
+  fp = xfopen(s, mode, pszSrcFile, __LINE__, TRUE);
   if (!fp) {
     Win_Error(NULLHANDLE, HWND_DESKTOP, __FILE__, __LINE__,
 	      GetPString(IDS_REDIRECTERRORTEXT));
@@ -295,7 +297,8 @@ static VOID FillKillListThread(VOID * arg)
       goto Abort;
     }
   }
-  fp = fopen(s, "r");
+  mode = "r";
+  fp = xfopen(s, mode, pszSrcFile, __LINE__, TRUE);
   if (fp) {
     while (!feof(fp)) {
       strset(s, 0);

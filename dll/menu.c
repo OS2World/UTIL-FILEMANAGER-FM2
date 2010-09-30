@@ -83,6 +83,7 @@ BOOL AddToMenu(CHAR * filename, HWND hwndMenu)
   INT lines = 0;
   MENU *info, *last = NULL;
   BOOL ret = FALSE;
+  CHAR *moder = "r";
 
   // fixme to complain?
   if (!hwndMenu) {
@@ -91,7 +92,7 @@ BOOL AddToMenu(CHAR * filename, HWND hwndMenu)
   }
   if (!filename)
     filename = "FM3MENU.DAT";
-  fp = _fsopen(filename, "r", SH_DENYWR);
+  fp = xfsopen(filename, moder, SH_DENYWR, pszSrcFile, __LINE__, TRUE);
   if (fp)  {
     while (!feof(fp)) {
       if (!xfgets_bstripcr(s, sizeof(s), fp, pszSrcFile, __LINE__))

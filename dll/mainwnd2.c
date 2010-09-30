@@ -1458,8 +1458,11 @@ HWND StartFM32(HAB hab, INT argc, CHAR ** argv)
 		      rcl.yBottom,
 		      rcl.xRight - rcl.xLeft, rcl.yTop - rcl.yBottom, fl);
     }
-    if (fLogFile)
-      LogFileHandle = _fsopen("FM2.LOG", "a+", SH_DENYWR);
+    if (fLogFile) {
+      CHAR *modea = "a+";
+
+      LogFileHandle = xfsopen("FM2.LOG", modea, SH_DENYWR, pszSrcFile, __LINE__, TRUE);
+    }
     if (hwndHelp)
       WinAssociateHelpInstance(hwndHelp, hwndFrame);
     PostMsg(hwndClient, UM_SETUP, MPFROMLONG(argc), MPFROMP(argv));

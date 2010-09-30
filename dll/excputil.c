@@ -222,11 +222,12 @@ ULONG HandleException(PEXCEPTIONREPORTRECORD pReport,
     ULONG ulOldEBP = 0;
     INT c;
     FILE* fp;
+    CHAR *modea = "a";
 
     handled = TRUE;
 
     // Write stack trace to log file - let kernel do popuplog.os2
-    fp = fopen("fm2_trap.log", "a");
+    fp = xfopen("fm2_trap.log", modea, pszSrcFile, __LINE__, TRUE);
     if (!fp)
       fp = stderr;			// Oh well
 

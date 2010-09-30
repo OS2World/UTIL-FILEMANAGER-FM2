@@ -153,10 +153,11 @@ static VOID load_masks(VOID)
   FILE *fp;
   LINKMASKS *info, *last = NULL;
   CHAR s[CCHMAXPATH + 24];
+  CHAR *moder = "r";
 
   loadedmasks = TRUE;
   BldFullPathName(s, pFM2SaveDirectory, PCSZ_FILTERSDAT);
-  fp = _fsopen(s, "r", SH_DENYWR);
+  fp = xfsopen(s, moder, SH_DENYWR, pszSrcFile, __LINE__, TRUE);
   if (fp) {
     while (!feof(fp)) {
       if (!xfgets_bstripcr(s, sizeof(s), fp, pszSrcFile, __LINE__))
@@ -191,6 +192,7 @@ static VOID save_masks(VOID)
   LINKMASKS *info;
   FILE *fp;
   CHAR s[CCHMAXPATH + 14];
+  CHAR *modew = {"w"};
 
   if (!loadedmasks)
     return;
@@ -198,7 +200,7 @@ static VOID save_masks(VOID)
     BldFullPathName(s, pFM2SaveDirectory, PCSZ_FILTERSDAT);
     if (CheckDriveSpaceAvail(s, ullDATFileSpaceNeeded, 1) == 2)
     return; //already gave error msg
-    fp = xfopen(s, "w", pszSrcFile, __LINE__);
+    fp = xfopen(s, modew, pszSrcFile, __LINE__, FALSE);
     if (fp) {
       fputs(GetPString(IDS_FILTERFILETEXT), fp);
       info = maskhead;

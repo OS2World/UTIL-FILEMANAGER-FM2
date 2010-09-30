@@ -96,6 +96,7 @@ VOID load_cmdlines(BOOL DoItYourself)
   PSZ pszCmdLine;
   //CHAR s[1024];
   INT x = 0;
+  CHAR *moder = "r";
 
   pszCmdLine = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
   if (pszCmdLine) {
@@ -106,7 +107,7 @@ VOID load_cmdlines(BOOL DoItYourself)
       MiniLoaded = TRUE;
     BldFullPathName(pszCmdLine, pFM2SaveDirectory,
                     (DoItYourself) ? PCSZ_CMDLINESDAT : PCSZ_CMDMINIDAT);
-    fp = _fsopen(pszCmdLine, "r", SH_DENYWR);
+    fp = xfsopen(pszCmdLine, moder, SH_DENYWR, pszSrcFile, __LINE__, TRUE);
     if (fp) {
       while (x < MAXNUMCMDLINES && !feof(fp)) {
         if (!xfgets_bstripcr(pszCmdLine, MaxComLineStrg, fp, pszSrcFile, __LINE__))
@@ -151,6 +152,7 @@ VOID save_cmdlines(BOOL DoItYourself)
   FILE *fp;
   PSZ pszCmdLine;
   //CHAR s[CCHMAXPATH + 14];
+  CHAR *modew = "w";
 
   CmdLineHead = (DoItYourself) ? DoItYourselfCmdLine : MiniCmdLine;
   if ((DoItYourself && !DoItYourselfLoaded) || (!DoItYourself && !MiniLoaded))
@@ -163,7 +165,7 @@ VOID save_cmdlines(BOOL DoItYourself)
   if (CheckDriveSpaceAvail(pszCmdLine, ullDATFileSpaceNeeded, 1) == 2)
     return; //already gave error msg
   if (CmdLineHead) {
-    fp = xfopen(pszCmdLine, "w", pszSrcFile, __LINE__);
+    fp = xfopen(pszCmdLine, modew, pszSrcFile, __LINE__, FALSE);
     if (fp) {
       fputs(GetPString(IDS_COMMANDFILE2TEXT), fp);
       info = CmdLineHead;

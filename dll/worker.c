@@ -377,7 +377,7 @@ VOID Action(VOID * args)
 		    modew = "w";
 		    break;
 		  }
-		  in = _fsopen(wk->li->list[x], moder, SH_DENYWR);
+		  in = xfsopen(wk->li->list[x], moder, SH_DENYWR, pszSrcFile, __LINE__, TRUE);
 		  if (!in) {
 		    if (saymsg(MB_ENTERCANCEL,
 			       HWND_DESKTOP,
@@ -387,7 +387,8 @@ VOID Action(VOID * args)
 		      goto Abort;
 		  }
 		  else {
-		    out = _fsopen(wk->li->targetpath, modew, SH_DENYWR);
+                    out = xfsopen(wk->li->targetpath, modew, SH_DENYWR,
+                                  pszSrcFile, __LINE__, TRUE);
 		    if (out) {
 		      fseek(out, 0L, SEEK_END);
 		      switch (wk->li->type) {
@@ -1166,10 +1167,11 @@ VOID MassAction(VOID * args)
 	      if (total > 1000) {
 
 		FILE *fp;
-		CHAR szTempFile[CCHMAXPATH];
+                CHAR szTempFile[CCHMAXPATH];
+                CHAR *modew = "w";
 
 		BldFullPathName(szTempFile, pTmpDir, PCSZ_FM2PLAYTEMP);
-		fp = xfopen(szTempFile, "w", pszSrcFile, __LINE__);
+		fp = xfopen(szTempFile, modew, pszSrcFile, __LINE__, FALSE);
 		if (fp) {
 		  fprintf(fp, "%s", ";AV/2-built FM2Play listfile\n");
 		  for (x = 0; wk->li->list[x]; x++)

@@ -384,6 +384,7 @@ VOID FindSwapperDat(VOID)
   ULONG size = sizeof(SwapperDat);
   HDIR hdir = HDIR_CREATE;
   APIRET rc = 1;
+  CHAR *moder = "r";
 
   *SwapperDat = 0;
   // Check already known
@@ -406,7 +407,7 @@ VOID FindSwapperDat(VOID)
     }
     if (!rc) {
       DosFindClose(hdir);
-      fp = fopen(SwapperDat, "r");
+      fp = xfopen(SwapperDat, moder, pszSrcFile, __LINE__, TRUE);
       if (fp) {
 	fclose(fp);
 	*SwapperDat = 0;
@@ -425,7 +426,7 @@ VOID FindSwapperDat(VOID)
       nm = 3;                           // Assume drive C:
     }
     *filename = (CHAR) nm + '@';
-    fp = xfsopen(filename, "r", SH_DENYNO, pszSrcFile, __LINE__);
+    fp = xfsopen(filename, moder, SH_DENYNO, pszSrcFile, __LINE__, TRUE);
     if (fp) {
       while (!feof(fp)) {
 	if (!xfgets(input, sizeof(input), fp, pszSrcFile, __LINE__))
@@ -1666,8 +1667,11 @@ HWND StartFM3(HAB hab, INT argc, CHAR ** argv)
 		      rcl.yBottom,
 		      rcl.xRight - rcl.xLeft, rcl.yTop - rcl.yBottom, fl);
     }
-    if (fLogFile)
-      LogFileHandle = _fsopen("FM2.LOG", "a+", SH_DENYWR);
+    if (fLogFile) {
+      CHAR *modea = "a+";
+
+      LogFileHandle = xfsopen("FM2.LOG", modea, SH_DENYWR, pszSrcFile, __LINE__, TRUE);
+    }
     if (hwndHelp)
       WinAssociateHelpInstance(hwndHelp, hwndFrame);
     PostMsg(hwndClient, UM_SETUP, MPFROMLONG(argc), MPFROMP(argv));

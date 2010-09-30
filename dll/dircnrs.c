@@ -1845,8 +1845,11 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      //  strcat(newfile, "\\");
 	      strcat(newfile, sip.ret);
 	      test = IsFile(newfile);
-	      if (test != 1)
-		fp = fopen(newfile, "w");
+              if (test != 1) {
+                CHAR *modew = "w";
+
+                fp = xfopen(newfile, modew, pszSrcFile, __LINE__, TRUE);
+              }
 	      if (test != 1 && !fp) {
 		saymsg(MB_ENTER,
 		       hwnd,

@@ -1022,8 +1022,9 @@ static BOOL DoOneFile(GREP *grep,
     input = xmalloc(65537, pszSrcFile, __LINE__);
     if (input) {
       LONG len;
+      CHAR *moderb = "rb";
 
-      inputFile = _fsopen(pszFileName, "rb", SH_DENYNO);
+      inputFile = xfsopen(pszFileName, moderb, SH_DENYNO, pszSrcFile, __LINE__, TRUE);
       if (inputFile) {
         pos = ftell(inputFile);
         while (!feof(inputFile)) {
@@ -1143,13 +1144,14 @@ LONG CRCFile(CHAR *pszFileName, INT *error)
   LONG CRC = -1L, len;
   FILE *fp;
   CHAR *buffer;
+  CHAR *moderb = "rb";
 
   *error = 0;
   buffer = xmalloc(65535, pszSrcFile, __LINE__);
   if (!buffer)
     *error = -1;
   else {
-    fp = _fsopen(pszFileName, "rb", SH_DENYNO);
+    fp = xfsopen(pszFileName, moderb, SH_DENYNO, pszSrcFile, __LINE__, TRUE);
     if (!fp)
       *error = -2;
     else {

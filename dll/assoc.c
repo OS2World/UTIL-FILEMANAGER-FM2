@@ -169,12 +169,13 @@ VOID load_associations(VOID)
   CHAR flags[72];
   CHAR env[ENVIRONMENT_SIZE];
   CHAR key[CCHMAXPATH];
+  CHAR *moder = "r";
 
   if (asshead)
     free_associations();
   assloaded = TRUE;
   BldFullPathName(mask, pFM2SaveDirectory, PCSZ_ASSOCDAT);
-  fp = _fsopen(mask, "r", SH_DENYWR);
+  fp = xfsopen(mask, moder, SH_DENYWR, pszSrcFile, __LINE__, TRUE);
   pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
   if (!pszCmdLine) {
     if (fp)
@@ -277,6 +278,7 @@ VOID save_associations(VOID)
   LINKASSOC *info;
   FILE *fp;
   CHAR s[CCHMAXPATH + 14];
+  CHAR *modew = "w";
 
   if (!assloaded || !asshead)
     return;
@@ -303,7 +305,7 @@ VOID save_associations(VOID)
   BldFullPathName(s, pFM2SaveDirectory, PCSZ_ASSOCDAT);
   if (CheckDriveSpaceAvail(s, ullDATFileSpaceNeeded, 1) == 2)
     return; //already gave error msg
-  fp = xfopen(s, "w", pszSrcFile, __LINE__);
+  fp = xfopen(s, modew, pszSrcFile, __LINE__, FALSE);
   if (fp) {
     fputs(GetPString(IDS_ASSOCFILETEXT), fp);
     info = asshead;
@@ -432,6 +434,7 @@ INT ExecAssociation(HWND hwnd, CHAR * datafile)
   BOOL checked = FALSE;
   ULONG offset;
   LINKASSOC *info;
+  CHAR *moderb = "rb";
 
   if (!assloaded)
     load_associations();
@@ -461,7 +464,7 @@ INT ExecAssociation(HWND hwnd, CHAR * datafile)
 			     strchr(p, ':')) ? datafile : file, p, FALSE);
       if (exclude && didmatch)
         didmatch = FALSE;
-      fp = _fsopen(datafile, "rb", SH_DENYNO);
+      fp = xfsopen(datafile, moderb, SH_DENYNO, pszSrcFile, __LINE__, TRUE);
       if (fp) {
         if (!checked) {
           APIRET temp;

@@ -86,10 +86,11 @@ VOID load_resources(VOID)
   LINKRES *info, *last = NULL;
   CHAR s[CCHMAXPATH + 14];
   INT x = 0;
+  CHAR *moder = "r";
 
   loadedres = TRUE;
   BldFullPathName(s, pFM2SaveDirectory, PCSZ_RESOURCEDAT);
-  fp = _fsopen(s, "r", SH_DENYWR);
+  fp = xfsopen(s, moder, SH_DENYWR, pszSrcFile, __LINE__, TRUE);
   if (fp) {
     while (x < MAXNUMRES && !feof(fp)) {
       if (!xfgets_bstripcr(s, sizeof(s), fp, pszSrcFile, __LINE__))
@@ -123,6 +124,7 @@ VOID save_resources(VOID)
   LINKRES *info;
   FILE *fp;
   CHAR s[CCHMAXPATH + 14];
+  CHAR *modew = "w";
 
   if (!loadedres)
     return;
@@ -130,7 +132,7 @@ VOID save_resources(VOID)
   if (CheckDriveSpaceAvail(s, ullDATFileSpaceNeeded, 1) == 2)
     return; //already gave error msg
   if (reshead) {
-    fp = xfopen(s, "w", pszSrcFile, __LINE__);
+    fp = xfopen(s, modew, pszSrcFile, __LINE__, FALSE);
     if (fp) {
       fputs(GetPString(IDS_REMOTEFILETEXT), fp);
       info = reshead;

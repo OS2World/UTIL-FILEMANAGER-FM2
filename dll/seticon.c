@@ -54,7 +54,8 @@ MRESULT EXPENTRY SetIconDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	ULONG icid = SPTR_ARROW;
 	INT x;
 	HWND hwndDeskTop;
-	FILE *fp;
+        FILE *fp;
+        CHAR *moderb = "rb";
 
 	hwndDeskTop = WinQueryDesktopWindow(WinQueryAnchorBlock(hwnd),
 					    NULLHANDLE);
@@ -62,7 +63,7 @@ MRESULT EXPENTRY SetIconDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	icf.cb = sizeof(ICONINFO);
 	icf.fFormat = ICON_DATA;
 	if (filename && *filename) {
-	  fp = xfsopen(filename, "rb", SH_DENYNO, pszSrcFile, __LINE__);
+	  fp = xfsopen(filename, moderb, SH_DENYNO, pszSrcFile, __LINE__, FALSE);
 	  if (!fp)
 	    break;
 	  else {

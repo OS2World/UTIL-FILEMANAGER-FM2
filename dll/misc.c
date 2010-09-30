@@ -1082,8 +1082,9 @@ BOOL ViewHelp(PCSZ filename)
   CHAR szQuotedFileName[CCHMAXPATH];
   FILE *fp;
   INT ret = -1;
+  CHAR *moderb = "rb";
 
-  fp = _fsopen(filename, "rb", SH_DENYNO);
+  fp = xfsopen(filename, moderb, SH_DENYNO, pszSrcFile, __LINE__, FALSE);
   if (fp) {
     *s = 0;
     fread(s, 1, 3, fp);
@@ -2140,6 +2141,7 @@ VOID LoadLibPath(PSZ str, LONG len)
   FILE *fp;
   PFN DQELIBPATH = NULL;
   HMODULE hmod;
+  CHAR *moder = "r";
 
   if (str && len) {
     *str = 0;
@@ -2164,7 +2166,7 @@ VOID LoadLibPath(PSZ str, LONG len)
       }
       *var = 0;
     }
-    fp = xfopen(configsys, "r", pszSrcFile, __LINE__);
+    fp = xfopen(configsys, moder, pszSrcFile, __LINE__, FALSE);
     if (fp) {
       while (!feof(fp)) {
 	if (!xfgets_bstripcr(var, sizeof(var), fp, pszSrcFile, __LINE__))

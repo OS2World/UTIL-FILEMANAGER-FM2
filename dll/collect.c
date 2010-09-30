@@ -770,12 +770,13 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
       ULONG errs = 0;
       BOOL first = FALSE;
       size_t c;
+      CHAR *moder = "r";
 
 #     ifdef FORTIFY
       Fortify_BecomeOwner(mp1);
 #     endif
 
-      fp = _fsopen((CHAR *)mp1, "r", SH_DENYNO);
+      fp = xfsopen((CHAR *)mp1, moder, SH_DENYNO, pszSrcFile, __LINE__, TRUE);
       if (fp) {
 	while (!feof(fp)) {
 	  // Avoid too much noise if collecting from binary file - oops

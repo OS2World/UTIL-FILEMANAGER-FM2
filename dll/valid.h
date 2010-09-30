@@ -46,6 +46,7 @@ BOOL needs_quoting(PCSZ f);
 // Data declarations
 extern PCSZ CDFS;
 extern PCSZ FAT32;
+extern PCSZ FAT;
 extern PCSZ HPFS;
 extern PCSZ HPFS386;
 extern PCSZ ISOFS;

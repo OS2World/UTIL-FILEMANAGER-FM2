@@ -197,6 +197,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   CHAR simple[8192];
   CHAR path[CCHMAXPATH];
   CHAR s[8192 + 14];
+  CHAR *moder = "r";
 
   // 07 Oct 09 SHL fixme to not be static and save to profile?
   static CHAR lastmask[8192];
@@ -323,7 +324,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
     // Fill mask listbox
     BldFullPathName(s, pFM2SaveDirectory, PCSZ_GREPMASKDAT);
-    fp = _fsopen(s, "r", SH_DENYWR);
+    fp = xfsopen(s, moder, SH_DENYWR, pszSrcFile, __LINE__, TRUE);
     if (fp) {
       while (!feof(fp)) {
 	if (!xfgets_bstripcr(s, 8192 + 4, fp, pszSrcFile, __LINE__))
@@ -1013,11 +1014,13 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					    LM_QUERYITEMCOUNT,
 					    MPVOID, MPVOID);
 	// 07 Oct 09 SHL Rewrite if list empty
-	if (sSelect >= 0) {
+        if (sSelect >= 0) {
+          CHAR *modew = "w";
+
 	  BldFullPathName(s, pFM2SaveDirectory, PCSZ_GREPMASKDAT);
 	  if (CheckDriveSpaceAvail(s, ullDATFileSpaceNeeded, 1) == 2)
 	    break; //already gave error msg
-	  fp = xfopen(s, "w", pszSrcFile, __LINE__);
+	  fp = xfopen(s, modew, pszSrcFile, __LINE__, FALSE);
 	  if (fp) {
 	    fputs(GetPString(IDS_GREPFILETEXT), fp);
 	    for (x = 0; x < sSelect; x++) {

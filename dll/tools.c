@@ -81,6 +81,7 @@ VOID load_quicktools(VOID)
   FILE *fp;
   CHAR s[CCHMAXPATH + 14];
   INT x;
+  CHAR *moder = "r";
 
   qtloaded = TRUE;
   for (x = 0; x < 50 && quicktool[x]; x++) {
@@ -92,7 +93,7 @@ VOID load_quicktools(VOID)
     return;
   }
   BldFullPathName(s, pFM2SaveDirectory, PCSZ_QUICKTLSDAT);
-  fp = _fsopen(s, "r", SH_DENYWR);
+  fp = xfsopen(s, moder, SH_DENYWR, pszSrcFile, __LINE__, TRUE);
   if (fp) {
     x = 0;
     while (!feof(fp)) {
@@ -118,13 +119,14 @@ VOID save_quicktools(VOID)
   FILE *fp;
   INT x = 0;
   CHAR s[CCHMAXPATH + 14];
+  CHAR *modew = "w";
 
   if (!quicktool[0])
     return;
   BldFullPathName(s, pFM2SaveDirectory, PCSZ_QUICKTLSDAT);
   if (CheckDriveSpaceAvail(s, ullDATFileSpaceNeeded, 1) == 2)
     return; //already gave error msg
-  fp = xfopen(s, "w", pszSrcFile, __LINE__);
+  fp = xfopen(s, modew, pszSrcFile, __LINE__, FALSE);
   if (fp) {
     for (x = 0; quicktool[x] && x < 50; x++)
       fprintf(fp, "%s\n", quicktool[x]);
@@ -139,6 +141,7 @@ TOOL *load_tools(CHAR * filename)
   FILE *fp;
   CHAR help[80], text[80], flagstr[80], idstr[80], *fname;
   TOOL *info;
+  CHAR *moder = "r";
 
   if (!fToolbar) {
     toolhead = free_tools();
@@ -153,7 +156,7 @@ TOOL *load_tools(CHAR * filename)
   if (fname && *fname) {
     filename = fname;
     strcpy(lasttoolbar, filename);
-    fp = _fsopen(filename, "r", SH_DENYWR);
+    fp = xfsopen(filename, moder, SH_DENYWR, pszSrcFile, __LINE__, TRUE);
     if (fp) {
       toolhead = free_tools();
       while (!feof(fp)) {
@@ -212,6 +215,7 @@ VOID save_tools(CHAR * filename)
   FILE *fp;
   CHAR *fname;
   TOOL *info;
+  CHAR *modew = "w";
 
   if (!filename)
     filename = lasttoolbar;
@@ -241,7 +245,7 @@ VOID save_tools(CHAR * filename)
   }
   if (CheckDriveSpaceAvail(filename, ullDATFileSpaceNeeded, 1) == 2)
     return; //already gave error msg
-  fp = xfopen(filename, "w", pszSrcFile, __LINE__);
+  fp = xfopen(filename, modew, pszSrcFile, __LINE__, FALSE);
   if (fp) {
     fprintf(fp, GetPString(IDS_TOOLFILETEXT), filename);
     info = toolhead;

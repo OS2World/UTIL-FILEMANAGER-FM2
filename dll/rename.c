@@ -43,6 +43,9 @@
 #include "i18nutil.h"			// CommaFmtULL
 #include "strips.h"			// bstrip
 #include "info.h"                       // driveflags
+#include "wrappers.h"                   // xfopen
+
+static PSZ pszSrcFile = __FILE__;
 
 MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
@@ -160,9 +163,10 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  sourceexists & 2 ? GetPString(IDS_DIRECTORYTEXT) :
 				     GetPString(IDS_FILETEXT));
 	{
-	  FILE *fp = NULL;
+          FILE *fp = NULL;
+          CHAR *modeab = "ab";
 	  if (~sourceexists & 2)
-	    fp = fopen(mv->source, "ab");
+	    fp = xfopen(mv->source, modeab, pszSrcFile, __LINE__, TRUE);
 	  if ((!fp && ~sourceexists & 2) || !sourceexists)
 	    strcpy(s, GetPString(IDS_CANTACCESSSOURCETEXT));
 	  if (fp)

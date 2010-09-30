@@ -99,7 +99,8 @@ MRESULT EXPENTRY InstantDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	FILE *fp;
 	IPT iptOffset = 0L;
 	LONG len, tlen, mem;
-	CHAR *rexx = "";
+        CHAR *rexx = "";
+        CHAR *modew = "w";
 
 	mem = MLEgetlen(hwndMLE);
 	if (mem) {
@@ -136,10 +137,10 @@ MRESULT EXPENTRY InstantDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      sprintf(s, "%s%sFMTMP%d.CMD", path,
 		      (path[strlen(path) - 1] == '\\') ? NullStr : PCSZ_BACKSLASH,
 		      batches++);
-	      fp = fopen(s, "w");
-	      if (!fp)
-		Runtime_Error(pszSrcFile, __LINE__, "fopen");
-	      else {
+	      fp = xfopen(s, modew, pszSrcFile, __LINE__, FALSE);
+	      //if (!fp)
+	      //  Runtime_Error(pszSrcFile, __LINE__, "fopen");
+	      if (fp) {
 		if (!strncmp(bat, "/*", 2)) {
 		  rexx = "'";
 		  fprintf(fp, "%s\n", GetPString(IDS_REXXCOMMENT));

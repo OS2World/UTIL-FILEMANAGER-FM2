@@ -51,6 +51,7 @@ VOID RunRmview(VOID * arg)
   HMQ thmq;
   FILE *fp;
   HFILE oldstdout, newstdout;
+  CHAR *mode = "w";
 
   DosError(FERR_DISABLEHARDERR);
 
@@ -62,7 +63,7 @@ VOID RunRmview(VOID * arg)
       goto Abort;
     BldFullPathName(szTempFile, pTmpDir, "$RMVIEW.#$#");
     unlinkf(szTempFile);
-    fp = xfopen(szTempFile, "w", pszSrcFile, __LINE__);
+    fp = xfopen(szTempFile, mode, pszSrcFile, __LINE__, FALSE);
     if (!fp)
       goto Abort;
     else {
@@ -83,7 +84,8 @@ VOID RunRmview(VOID * arg)
     }
     if (!WinIsWindow(thab, hwnd))
       goto Abort;
-    fp = xfopen(szTempFile, "r", pszSrcFile, __LINE__);
+    mode = "r";
+    fp = xfopen(szTempFile, mode, pszSrcFile, __LINE__, FALSE);
     if (fp) {
       xfgets(s, sizeof(s), fp, pszSrcFile, __LINE__);
       xfgets(s, sizeof(s), fp, pszSrcFile, __LINE__);

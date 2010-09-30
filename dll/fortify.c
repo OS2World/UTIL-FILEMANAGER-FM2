@@ -2439,9 +2439,10 @@ public:
 	static void Output(const char *s)
 	{
 	if(written_something == 0)
-	{
+        {
+                CHAR modew = "w";
 		FORTIFY_FIRST_ERROR_FUNCTION;
-		fp = fopen(FORTIFY_LOG_FILENAME, "w");
+		fp = xfopen(FORTIFY_LOG_FILENAME, modew, pszSrcFile, __LINE__, TRUE);
 		if(fp)
 		{
 			time_t t;

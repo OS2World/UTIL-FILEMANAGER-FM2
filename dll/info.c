@@ -669,6 +669,7 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       FILE *fp;
       HPOINTER hptr;
       ARC_TYPE *info;
+      CHAR *mode;
 
       DosError(FERR_DISABLEHARDERR);
       if (xDosFindFirst(pfs->szFileName,
@@ -826,8 +827,9 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinEnableWindow(WinWindowFromID(hwnd, FLE_WRITEABLE), TRUE);
 	  WinEnableWindow(WinWindowFromID(hwnd, FLE_OPEN), TRUE);
 	  WinEnableWindow(WinWindowFromID(hwnd, FLE_ISARCHIVE), TRUE);
-	  WinEnableWindow(WinWindowFromID(hwnd, FLE_BINARY), TRUE);
-	  fp = _fsopen(pfs->szFileName, "rb", SH_DENYNO);
+          WinEnableWindow(WinWindowFromID(hwnd, FLE_BINARY), TRUE);
+          mode = "rb";
+	  fp = xfsopen(pfs->szFileName, mode, SH_DENYNO, pszSrcFile, __LINE__, TRUE);
 	  if (fp) {
 	    char buff[4096];		// 06 Oct 07 SHL protect against NTFS defect
 	    ULONG len;
@@ -850,13 +852,15 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  else {
 	    WinCheckButton(hwnd, FLE_ISARCHIVE, 2);
 	    WinCheckButton(hwnd, FLE_BINARY, 2);
-	  }
-	  fp = _fsopen(pfs->szFileName, "ab", SH_DENYNO);
+          }
+          mode = "ab";
+	  fp = xfsopen(pfs->szFileName, mode, SH_DENYNO, pszSrcFile, __LINE__, TRUE);
 	  if (fp) {
 	    WinCheckButton(hwnd, FLE_WRITEABLE, TRUE);
 	    fclose(fp);
-	  }
-	  fp = _fsopen(pfs->szFileName, "rb", SH_DENYRW);
+          }
+          mode = "rb";
+	  fp = xfsopen(pfs->szFileName, mode, SH_DENYRW, pszSrcFile, __LINE__, TRUE);
 	  if (!fp)
 	    WinCheckButton(hwnd, FLE_OPEN, TRUE);
 	  else

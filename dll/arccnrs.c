@@ -585,6 +585,7 @@ static INT FillArcCnr(HWND hwndCnr, CHAR * arcname, ARC_TYPE ** arcinfo,
   ARC_TYPE *tinfo;
   ULONG apptype;
   APIRET rc;
+  CHAR *mode;
 
   if (!arcname || !arcinfo)
     return 0;
@@ -652,7 +653,8 @@ ReTry:
 	      arctemp);
     }
     else {
-      fp = xfopen(arctemp, "w", pszSrcFile, __LINE__);
+      mode = "w";
+      fp = xfopen(arctemp, mode, pszSrcFile, __LINE__, FALSE);
       if (!fp) {
 	xfree(arctemp, pszSrcFile, __LINE__);
 	return 0;
@@ -694,7 +696,8 @@ ReTry:
     }
 
     DosError(FERR_DISABLEHARDERR);
-    fp = _fsopen(arctemp, "r", SH_DENYWR);
+    mode = "r";
+    fp = xfsopen(arctemp, mode, SH_DENYWR, pszSrcFile, __LINE__, TRUE);
 
     if (fp) {
       gotstart = !info->startlist ||		// If list has no start marker
@@ -2023,10 +2026,11 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      if (li->type == IDM_MCIPLAY) {
 
 		FILE *fp;
-		CHAR szTempFile[CCHMAXPATH];
+                CHAR szTempFile[CCHMAXPATH];
+                CHAR *modew = "w";
 
 		BldFullPathName(szTempFile, pTmpDir, PCSZ_FM2PLAYTEMP);
-		fp = xfopen(szTempFile, "w", pszSrcFile, __LINE__);
+		fp = xfopen(szTempFile, modew, pszSrcFile, __LINE__, FALSE);
 		if (fp) {
 		  fprintf(fp, "%s", ";AV/2-built FM2Play listfile\n");
 		  for (x = 0; li->list[x]; x++)

@@ -220,6 +220,7 @@ static VOID StartSnapThread(VOID *pargs)
   SNAPSTUFF *sf = (SNAPSTUFF *)pargs;
   FILE *fp;
   CHAR *p;
+  CHAR *modew = "w";
 
   if (sf) {
     if (*sf->dirname && *sf->filename) {
@@ -234,7 +235,7 @@ static VOID StartSnapThread(VOID *pargs)
 	*p = '\\';
 	p++;
       }
-      fp = xfopen(sf->filename, "w", pszSrcFile, __LINE__);
+      fp = xfopen(sf->filename, modew, pszSrcFile, __LINE__, FALSE);
       if (fp) {
 	fprintf(fp, "\"%s\"\n", sf->dirname);
 	SnapShot(sf->dirname, fp, sf->recurse);
@@ -260,6 +261,7 @@ static VOID CompareFilesThread(VOID *args)
   ULONG offset = 0;
   LONG numread1, numread2;
   CHAR s[1024], ss[1024], *p1, *p2;
+  CHAR *moderb = "rb";
 
   if (args) {
     fc = *(FCOMPARE *)args;
@@ -292,14 +294,14 @@ static VOID CompareFilesThread(VOID *args)
 	AddToListboxBottom(fc.hwndList, s);
 	sprintf(s, GetPString(IDS_COMPTOTEXT), fc.file2);
 	AddToListboxBottom(fc.hwndList, s);
-	fp1 = _fsopen(fc.file1, "rb", SH_DENYNO);
+	fp1 = xfsopen(fc.file1, moderb, SH_DENYNO, pszSrcFile, __LINE__, TRUE);
 	if (!fp1) {
 	  sprintf(s, GetPString(IDS_COMPCANTOPENTEXT), fc.file1);
 	  AddToListboxBottom(fc.hwndList, s);
 	  WinSetWindowText(fc.hwndHelp, (CHAR *) GetPString(IDS_ERRORTEXT));
 	}
 	else {
-	  fp2 = _fsopen(fc.file2, "rb", SH_DENYNO);
+	  fp2 = xfsopen(fc.file2, moderb, SH_DENYNO, pszSrcFile, __LINE__, TRUE);
 	  if (!fp2) {
 	    sprintf(s, GetPString(IDS_COMPCANTOPENTEXT), fc.file2);
 	    AddToListboxBottom(fc.hwndList, s);
@@ -1072,7 +1074,8 @@ Restart:
 	  UINT compErrno = 0;
 	  CHAR buf1[1024];
 	  CHAR buf2[1024];
-	  HAB hab = WinQueryAnchorBlock(hwndCnrS);
+          HAB hab = WinQueryAnchorBlock(hwndCnrS);
+          CHAR *moderb = "rb";
 
 	  if (!*pciS->pszFileName ||
 	      !*pciD->pszFileName) {
@@ -1081,13 +1084,13 @@ Restart:
 	    break;
 	  }
 
-	  fp1 = _fsopen(pciS->pszFileName, "rb", SH_DENYNO);
+	  fp1 = xfsopen(pciS->pszFileName, moderb, SH_DENYNO, pszSrcFile, __LINE__, TRUE);
 	  if (!fp1) {
 	    errLineNo = __LINE__;
 	    compErrno = errno;
 	  }
 	  else {
-	    fp2 = _fsopen(pciD->pszFileName, "rb", SH_DENYNO);
+	    fp2 = xfsopen(pciD->pszFileName, moderb, SH_DENYNO, pszSrcFile, __LINE__, TRUE);
 	    if (!fp2) {
 	      errLineNo = __LINE__;
 	      compErrno = errno;
@@ -1565,14 +1568,15 @@ static VOID FillCnrsThread(VOID *args)
 	// Use snapshot file
 	FILE *fp;
 	FILEFINDBUF4L fb4;
-	CHAR str[CCHMAXPATH * 2], *p;
+        CHAR str[CCHMAXPATH * 2], *p;
+        CHAR *moder = "r";
 
 	memset(&fb4, 0, sizeof(fb4));
-	fp = fopen(cmp->rightlist, "r");
-	if (!fp)
+	fp = xfopen(cmp->rightlist, moder, pszSrcFile, __LINE__, FALSE);
+	/*if (!fp)
 	  Runtime_Error(pszSrcFile, __LINE__, "can not open %s (%d)",
-			cmp->rightlist, errno);
-	else {
+			cmp->rightlist, errno);*/
+	if (fp) {
 	  while (!feof(fp)) {
 	    // First get name of directory
 	    if (!xfgets_bstripcr(str, sizeof(str), fp, pszSrcFile, __LINE__))

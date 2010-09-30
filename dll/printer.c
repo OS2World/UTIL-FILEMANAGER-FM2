@@ -80,11 +80,12 @@ BOOL PrinterReady(CHAR * printdevname)
   FILE *printhandle;
   CHAR param = 0, data = 0;
   ULONG datalen = 1, parmlen = 1, htype, flagword;
+  CHAR *modea = "a+";
 
   if (!fWorkPlace)			/* assume spooler is active */
     return TRUE;
   DosError(FERR_DISABLEHARDERR);
-  printhandle = xfopen(printdevname, "a+", pszSrcFile, __LINE__);
+  printhandle = xfopen(printdevname, modea, pszSrcFile, __LINE__, FALSE);
   if (printhandle) {
     if (!strnicmp(printdevname, "COM", 3) && isdigit(printdevname[3])) {
       fclose(printhandle);
@@ -137,6 +138,7 @@ VOID PrintListThread(VOID * arg)
   BOOL endline, endpage, startpage, skipping, firstpass;
   int c;
   APIRET rc = MBID_YES;
+  CHAR *mode;
 
   if (StopPrinting)
     goto Abort;
@@ -175,13 +177,15 @@ VOID PrintListThread(VOID * arg)
 	  if (!PrinterReady(li->targetpath))
 	    Runtime_Error(pszSrcFile, __LINE__, "printer %s error",
 			  li->targetpath);
-	  else {
-	    fpi = _fsopen(li->list[x], "r", SH_DENYWR);
+          else {
+            mode = "r";
+	    fpi = xfsopen(li->list[x], mode, SH_DENYWR, pszSrcFile, __LINE__, TRUE);
 	    if (!fpi)
 	      Runtime_Error(pszSrcFile, __LINE__, "cannot open %s",
 			    li->list[x]);
-	    else {
-	      fpo = _fsopen(li->targetpath, "a+", SH_DENYRW);
+            else {
+              mode = "a+";
+	      fpo = xfsopen(li->targetpath, mode, SH_DENYRW, pszSrcFile, __LINE__, TRUE);
 	      if (!fpo)
 		Runtime_Error(pszSrcFile, __LINE__, "cannot open %s",
 			      li->targetpath);
@@ -309,8 +313,9 @@ VOID PrintListThread(VOID * arg)
 		    fputc(c, fpo);
 		}
 		if (prnalt && prnformat && firstpass && pages > 1) {
-		  fclose(fpo);
-		  fpo = _fsopen(li->targetpath, "a+", SH_DENYRW);
+                  fclose(fpo);
+                  mode = "a+";
+		  fpo = xfsopen(li->targetpath, mode, SH_DENYRW, pszSrcFile, __LINE__, TRUE);
 		  if (fpo) {
 		    rewind(fpi);
 		    firstpass = FALSE;

@@ -75,6 +75,7 @@ static VOID FillUndelListThread(VOID * arg)
   struct tempstruct *undelinfo;
   BOOL killme = FALSE;
   FILESTATUS3 fsa;
+  CHAR *mode = "w";
 
   undelinfo = (struct tempstruct *)arg;
   hwnd = undelinfo->hwnd;
@@ -92,7 +93,7 @@ static VOID FillUndelListThread(VOID * arg)
     WinSendDlgItemMsg(hwnd, UNDEL_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
     BldFullPathName(szTempFile, pTmpDir, "$UDELETE.#$#");
     unlinkf(szTempFile);
-    fp = xfopen(szTempFile, "w", pszSrcFile, __LINE__);
+    fp = xfopen(szTempFile, mode, pszSrcFile, __LINE__, FALSE);
     if (!fp) {
       Win_Error(NULLHANDLE, hwnd, pszSrcFile, __LINE__,
 		GetPString(IDS_REDIRECTERRORTEXT));
@@ -122,7 +123,8 @@ static VOID FillUndelListThread(VOID * arg)
       DosClose(newstdout);
       fclose(fp);
     }
-    fp = xfopen(szTempFile, "r", pszSrcFile, __LINE__);
+    mode = "r";
+    fp = xfopen(szTempFile, mode, pszSrcFile, __LINE__, FALSE);
     if (fp) {
       xfgets(s, sizeof(s), fp, pszSrcFile, __LINE__);	// Skip 1st line
       while (!feof(fp)) {
@@ -421,10 +423,11 @@ MRESULT EXPENTRY UndeleteDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (sSelect >= 0) {
 
 	  FILE *fp;
-	  CHAR s[CCHMAXPATH + 1];
+          CHAR s[CCHMAXPATH + 1];
+          CHAR *modew = "w";
 
 	  DosForceDelete("\\FMUNDEL.CMD");
-	  fp = xfopen("\\FMUNDEL.CMD", "w", pszSrcFile, __LINE__);
+	  fp = xfopen("\\FMUNDEL.CMD", modew, pszSrcFile, __LINE__, FALSE);
 	  if (fp) {
 	    while (sSelect >= 0) {
 	      *s = 0;

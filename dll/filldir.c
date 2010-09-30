@@ -391,7 +391,10 @@ static BOOL IsDefaultIcon(HPOINTER hptr)
 
     sprintf(psz, "%08x.%03x", rand() & 0xffffffff, rand() & 0xfff);
     if (IsFile(szFileName) != 1) {
-      FILE *fp = fopen(szFileName, "w");
+      FILE *fp;
+      CHAR *modew = "w";
+
+      fp = xfopen(szFileName, modew, pszSrcFile, __LINE__, TRUE);
 
       if (fp) {
 	fclose(fp);

@@ -78,6 +78,7 @@ PCSZ JFS = "JFS";
 PCSZ CDFS = "CDFS";
 PCSZ ISOFS = "ISOFS";
 PCSZ FAT32 = "FAT32";
+PCSZ FAT = "FAT";
 PCSZ HPFS386 = "HPFS386";
 PCSZ CBSIFS = "CBSIFS";
 PCSZ NDFS32 = "NDFS32";
@@ -802,6 +803,7 @@ VOID DriveFlagsOne(INT x, CHAR *FileSystem, VOID *volser)
     driveflags[x] |= DRIVE_NOLONGNAMES;
   }
   if ((!strcmp(FileSystem, HPFS) ||
+       !strcmp(FileSystem, FAT) ||
        !strcmp(FileSystem, JFS) ||
        !strcmp(FileSystem, FAT32) ||
        !strcmp(FileSystem, NTFS) ||

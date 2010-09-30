@@ -229,6 +229,7 @@ VOID rewrite_archiverbb2(PSZ archiverbb2)
   time_t t;
   struct tm *tm;
   CHAR ch;
+  CHAR *mode;
 
   arcsigsmodified = FALSE;
 
@@ -257,10 +258,11 @@ VOID rewrite_archiverbb2(PSZ archiverbb2)
     strcpy(sz, archiverbb2);
     strcpy(psz, PCSZ_DOTBB2);
     DosMove(archiverbb2, sz);
-    fpOld = fopen(sz, "r");		// OK for file not to exist
+    mode = "r";
+    fpOld = xfopen(sz, mode, pszSrcFile, __LINE__, TRUE);		// OK for file not to exist
   }
-
-  fpNew = fopen(archiverbb2, "w");
+  mode = "w";
+  fpNew = xfopen(archiverbb2, mode, pszSrcFile, __LINE__, TRUE);
 
   if (fpNew) {
 
@@ -565,8 +567,10 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
   case UM_SETUP:
     if (admp->listname && *admp->listname) {
+      FILE *fp;
+      CHAR *moder = "r";
 
-      FILE *fp = fopen(admp->listname, "r");
+      fp = xfopen(admp->listname, moder, pszSrcFile, __LINE__, TRUE);
 
       if (!fp) {
 	WinSendDlgItemMsg(hwnd,

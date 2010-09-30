@@ -352,6 +352,7 @@ INT load_archivers(VOID)
   UINT lines_per_arcsig = LINES_PER_ARCSIG;
   UINT per_sig_comment_line_num = 0;
   INT i;
+  CHAR *moder = "r";
 
   // Free current signatures
   if (arcsighead) {
@@ -375,7 +376,7 @@ INT load_archivers(VOID)
     //DosExitCritSec();
     return -1;
   }
-  fp = _fsopen(psz, "r", SH_DENYWR);
+  fp = xfsopen(psz, moder, SH_DENYWR, pszSrcFile, __LINE__, TRUE);
   DosReleaseMutexSem(hmtxFM2Globals);
   //DosExitCritSec();
   if (!fp)

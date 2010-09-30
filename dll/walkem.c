@@ -376,13 +376,14 @@ VOID load_udirs(VOID)
   LINKDIRS *info;
   LINKDIRS *last = NULL;
   CHAR s[CCHMAXPATH + 24];
+  CHAR *moder = "r";
 
   if (udirhead)
     free_udirs();
   loadedudirs = TRUE;
   fUdirsChanged = FALSE;
   BldFullPathName(s, pFM2SaveDirectory, PCSZ_USERDIRSDAT);
-  fp = _fsopen(s, "r", SH_DENYWR);
+  fp = xfsopen(s, moder, SH_DENYWR, pszSrcFile, __LINE__, TRUE);
   if (fp) {
     while (!feof(fp)) {
       if (!xfgets(s, CCHMAXPATH + 24, fp, pszSrcFile, __LINE__))
@@ -423,6 +424,7 @@ VOID save_udirs(VOID)
   FILE *fp;
   LINKDIRS *info;
   CHAR s[CCHMAXPATH + 14];
+  CHAR *modew = "w";
 
   if (loadedudirs) {
     fUdirsChanged = FALSE;
@@ -430,7 +432,7 @@ VOID save_udirs(VOID)
       BldFullPathName(s, pFM2SaveDirectory, PCSZ_USERDIRSDAT);
       if (CheckDriveSpaceAvail(s, ullDATFileSpaceNeeded, 1) == 2)
 	return; //already gave error msg
-      fp = xfopen(s, "w", pszSrcFile, __LINE__);
+      fp = xfopen(s, modew, pszSrcFile, __LINE__, FALSE);
       if (fp) {
 	fputs(GetPString(IDS_USERDEFDIRSTEXT), fp);
 	info = udirhead;

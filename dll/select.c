@@ -130,8 +130,9 @@ VOID SelectList(HWND hwndCnr, BOOL partial, BOOL deselect, BOOL clearfirst,
 
     FILE *fp;
     CHAR input[1024], *p;
+    CHAR *moder = "r";
 
-    fp = _fsopen(filename, "r", SH_DENYNO);
+    fp = xfsopen(filename, moder, SH_DENYNO, pszSrcFile, __LINE__, TRUE);
     if (fp) {
       while (!feof(fp)) {
 	if (!xfgets_bstripcr(input, sizeof(input), fp, pszSrcFile, __LINE__))
@@ -251,9 +252,11 @@ VOID SelectAll(HWND hwndCnr, BOOL files, BOOL dirs, PSZ maskstr,
 	if (input) {
 	  ULONG pos;
 	  LONG len;
-	  FILE *inputFile;
+          FILE *inputFile;
+          CHAR *moderb = "rb";
 
-	  if ((inputFile = _fsopen(pci->pszFileName, "rb", SH_DENYNO)) != NULL) {
+          if ((inputFile = xfsopen(pci->pszFileName, moderb, SH_DENYNO,
+                                   pszSrcFile, __LINE__, TRUE)) != NULL) {
 	    pos = ftell(inputFile);
 	    while (!feof(inputFile)) {
 	      if (pos)
@@ -355,8 +358,10 @@ VOID DeselectAll(HWND hwndCnr, BOOL files, BOOL dirs, PSZ maskstr,
 	  ULONG pos;
 	  LONG len;
 	  FILE *inputFile;
+          CHAR *moderb = "rb";
 
-	  if ((inputFile = _fsopen(pci->pszFileName, "rb", SH_DENYNO)) != NULL) {
+          if ((inputFile = xfsopen(pci->pszFileName, moderb, SH_DENYNO,
+                                   pszSrcFile, __LINE__, TRUE)) != NULL) {
 	    pos = ftell(inputFile);
 	    while (!feof(inputFile)) {
 	      if (pos)

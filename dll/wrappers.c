@@ -369,22 +369,48 @@ PSZ xfgets_bstripcr(PSZ pszBuf, size_t cMaxBytes, FILE * fp, PCSZ pszSrcFile,
   return psz;
 }
 
-FILE *xfopen(PCSZ pszFileName, PCSZ pszMode, PCSZ pszSrcFile,
-	     UINT uiLineNumber)
-{
-  FILE *fp = fopen(pszFileName, pszMode);
+/**
+ * Wrapper for fopen it works around DosOpenL's failure to
+ * thunk properly so that fm2 can be loaded in high memory
+ * It also gives the option of reporting file open errors
+ * If fSilent is TRUE it fails silently; if FALSE it produces a
+ * runtime error dialog. Note pszMode must be passed on the stack
+ * to xfopen to avoid the thunking problem.
+ */
 
-  if (!fp)
+FILE *xfopen(PCSZ pszFileName, PCSZ pszMode, PCSZ pszSrcFile,
+	     UINT uiLineNumber, BOOL fSilent)
+{
+  CHAR FileName[CCHMAXPATH];
+  FILE *fp;
+
+  strcpy(FileName, pszFileName);
+  fp = fopen(FileName, pszMode);
+
+  if (!fp && !fSilent)
     Runtime_Error(pszSrcFile, uiLineNumber, "fopen");
   return fp;
 }
 
-FILE *xfsopen(PCSZ pszFileName, PCSZ pszMode, INT fSharemode, PCSZ pszSrcFile,
-	      UINT uiLineNumber)
-{
-  FILE *fp = _fsopen(pszFileName, pszMode, fSharemode);
+/**
+ * Wrapper for _fsopen it works around DosOpenL's failure to
+ * thunk properly so that fm2 can be loaded in high memory
+ * It also gives the option of reporting file open errors
+ * If fSilent is TRUE it fails silently; if FALSE it produces a
+ * runtime error dialog. Note pszMode must be passed on the stack
+ * to xfopen to avoid the thunking problem
+ */
 
-  if (!fp)
+FILE *xfsopen(PCSZ pszFileName, PCSZ pszMode, INT fSharemode, PCSZ pszSrcFile,
+              UINT uiLineNumber, BOOL fSilent)
+{
+  CHAR FileName[CCHMAXPATH];
+  FILE *fp;
+
+  strcpy(FileName, pszFileName);
+  fp = _fsopen(FileName, pszMode, fSharemode);
+
+  if (!fp && !fSilent)
     Runtime_Error(pszSrcFile, uiLineNumber, "_fsopen");
   return fp;
 }

@@ -251,11 +251,11 @@ int ExecOnList(HWND hwnd, PSZ command, int flags, PSZ tpath,  PSZ environment,
 	if (list) {
 	  if (!*listfile) {
 	    FILE *fp;
-
+            CHAR *modew = "w";
 
 	    strcpy(listfile, pTmpDir ? pTmpDir : pFM2SaveDirectory);
 	    MakeTempName(listfile, "$FM2LI$T", 2);
-	    fp = xfopen(listfile, "w",pszSrcFile,__LINE__);
+	    fp = xfopen(listfile, modew,pszSrcFile,__LINE__, FALSE);
 	    if (fp) {
 	      for (x = 0; list[x]; x++)
 	      {

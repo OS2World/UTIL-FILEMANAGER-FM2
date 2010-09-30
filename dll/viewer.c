@@ -909,9 +909,10 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	{
 	  /* zero file length instead of unlink (protects EAs from loss) */
-	  FILE *fp;
+          FILE *fp;
+          CHAR *moder = "r+";
 
-	  fp = fopen(vw->exportfilename, "r+"); //, pszSrcFile, __LINE__);
+	  fp = xfopen(vw->exportfilename, moder, pszSrcFile, __LINE__, TRUE);
 	  if (fp) {
 	    oldsize = filelength(fileno(fp));
 	    DosSetFileSize(fileno(fp), 0);
@@ -922,10 +923,11 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			   vw->exportfilename,
 			   vw->ExpandTabs,
 			   vw->fStripTrailLines, vw->fStripTrail)) {
-	  FILE *fp;
+          FILE *fp;
+          CHAR *moder = "r+";
 
 	  Runtime_Error(pszSrcFile, __LINE__, "MLEexportfile");
-	  fp = xfopen(vw->exportfilename, "r+", pszSrcFile, __LINE__);
+	  fp = xfopen(vw->exportfilename, moder, pszSrcFile, __LINE__, FALSE);
 	  if (fp) {
 	    DosSetFileSize(fileno(fp), oldsize);
 	    fclose(fp);

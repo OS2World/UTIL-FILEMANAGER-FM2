@@ -72,6 +72,7 @@ HBITMAP LoadBitmapFromFile(CHAR * pszFileName)
   ULONG ulDataSize;
   SIZEL sizel;
   HPS hPS = WinGetPS(HWND_DESKTOP);
+  CHAR *moderb = "rb";
 
   if (!hPS) {
     Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__, "WinGetPS");
@@ -79,7 +80,7 @@ HBITMAP LoadBitmapFromFile(CHAR * pszFileName)
     goto ExitLoadBMP;
   }
 
-  pf = _fsopen(pszFileName, "rb", SH_DENYWR);
+  pf = xfsopen(pszFileName, moderb, SH_DENYWR, pszSrcFile, __LINE__, TRUE);
   if (!pf) {
     // OK for file to not exist - enable following for debug as needed
     // Runtime_Error(pszSrcFile, __LINE__, "_fsopen %s", pszFileName);

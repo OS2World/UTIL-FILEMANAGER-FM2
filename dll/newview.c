@@ -1186,11 +1186,12 @@ static VOID ClipboardThread(VOID * args)
 		else {
 
 		  FILE *fp;
-		  CHAR filename[CCHMAXPATH];
+                  CHAR filename[CCHMAXPATH];
+                  CHAR *modea = "a+";
 
 		  *filename = 0;
 		  if (export_filename(hwnd, filename, FALSE)) {
-		    fp = _fsopen(filename, "a+", SH_DENYWR);
+		    fp = xfsopen(filename, modea, SH_DENYWR, pszSrcFile, __LINE__, TRUE);
 		    if (!fp) {
 		      saymsg(MB_CANCEL,
 			     hwnd,

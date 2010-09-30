@@ -778,7 +778,8 @@ MRESULT EXPENTRY FilterIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	CHAR s[8193];
 	FILE *fp;
 	INT len;
-	SHORT sSelect;
+        SHORT sSelect;
+        CHAR *moder = "r";
 
 	sSelect = (SHORT) WinSendDlgItemMsg(hwnd, IAF_LISTBOX,
 					    LM_QUERYSELECTION,
@@ -792,7 +793,7 @@ MRESULT EXPENTRY FilterIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    MPFROM2SHORT(sSelect, CCHMAXPATH), MPFROMP(s));
 	  bstrip(s);
 	  if (*s) {
-	    fp = _fsopen(s, "r", SH_DENYWR);
+	    fp = xfsopen(s, moder, SH_DENYWR, pszSrcFile, __LINE__, FALSE);
 	    if (fp) {
 	      len = fread(s, 1, 8192, fp);
 	      s[len] = 0;
@@ -807,7 +808,8 @@ MRESULT EXPENTRY FilterIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case IAF_SAVE:
       {
 	CHAR s[8193], filename[CCHMAXPATH], *p;
-	FILE *fp;
+        FILE *fp;
+        CHAR *modew = "w";
 
 	*filename = 0;
 	WinQueryDlgItemText(hwnd, IAF_SAVENAME, CCHMAXPATH, filename);
@@ -823,7 +825,7 @@ MRESULT EXPENTRY FilterIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (!*s)
 	    Runtime_Error(pszSrcFile, __LINE__, NULL);
 	  else {
-	    fp = xfopen(filename, "w", pszSrcFile, __LINE__);
+	    fp = xfopen(filename, modew, pszSrcFile, __LINE__, FALSE);
 	    if (fp) {
 	      fwrite(s, 1, strlen(s), fp);
 	      fclose(fp);

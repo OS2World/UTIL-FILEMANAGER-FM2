@@ -141,9 +141,10 @@ static VOID FillListboxThread(VOID * args)
                   {
                     FILE *fp;
                     CHAR title[CCHMAXPATH];
+                    CHAR *moderb = "rb";
 
                     *title = 0;
-                    fp = _fsopen(mask, "rb", SH_DENYNO);
+                    fp = xfsopen(mask, moderb, SH_DENYNO, pszSrcFile, __LINE__, TRUE);
                     if (fp) {
                       fread(title, 1, 3, fp);
                       if (*title != 'H' || title[1] != 'S' || title[2] != 'P') {
@@ -538,6 +539,7 @@ MRESULT EXPENTRY ViewInfProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         CHAR text[CCHMAXPATH * 2], filename[CCHMAXPATH], *p;
         FILE *fp;
         BOOL notfirst = FALSE;
+        CHAR *modew = "w";
 
         sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
                                             VINF_LISTBOX,
@@ -572,7 +574,7 @@ MRESULT EXPENTRY ViewInfProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             break;
           }
           BldFullPathName(filename, pFM2SaveDirectory, "FM2VINF.CMD");
-          fp = xfopen(filename, "w", pszSrcFile, __LINE__);
+          fp = xfopen(filename, modew, pszSrcFile, __LINE__, FALSE);
           if (fp) {
             fprintf(fp, "@ECHO OFF\nSET FM2REF=");
             while (sSelect >= 0) {
