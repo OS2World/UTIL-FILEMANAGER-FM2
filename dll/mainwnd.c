@@ -107,6 +107,7 @@
                 CHAR CONSTANT * as CHAR *.
   11 Apr 10 GKY Fix drive tree rescan failure and program hang caused by event sem
                 never being posted
+  23 Oct 10 GKY Changes to populate and utilize a HELPTABLE for context specific help
 
 ***********************************************************************/
 
@@ -6391,7 +6392,8 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_HELP:
-    WinSendMsg(hwndHelp, HM_HELP_CONTENTS, MPVOID, MPVOID);
+    if (hwndHelp)
+      PostMsg(hwndHelp, HM_DISPLAY_HELP, MPFROMSHORT(1), MPFROMSHORT(HM_RESOURCEID));
     break;
 
   case UM_COMMAND:

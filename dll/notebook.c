@@ -288,7 +288,7 @@ MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 SBoxDlgProc, FM3ModHandle, ASEL_FRAME,
 			 (PVOID) & pat) || !pat || !pat->id || !*pat->id) {
             if (!fAlertBeepOff)
-	    DosBeep(250, 100);          // Complain
+	      DosBeep(250, 100);          // Complain
 	    WinCheckButton(hwnd, CFGA_DEFARC, FALSE);
 	  }
 	  else

@@ -36,6 +36,7 @@
   13 Dec 09 GKY Updated Quick page "Default" to match current defaults; added Gregg's way
                 option to Quick page.
   27 Dec 09 GKY Made command hotkeys user selectable.
+  23 Oct 10 GKY Added button to allow opening of a new file's eas from the EA dialog.
 
 ***********************************************************************/
 
@@ -257,23 +258,24 @@
 #define COMP_SELLEFTHDR									21022
 #define COMP_TOTALRIGHTHDR								21023
 #define COMP_SELRIGHTHDR								21024
-#define COMP_FILTER										21025
-#define COMP_HIDENOTSELECTED							21026
+#define COMP_FILTER									21025
+#define COMP_HIDENOTSELECTED       						        21026
 
-#define EA_FRAME											21100
-#define EA_LISTBOX										21101
-#define EA_TEXT											21102
-#define EA_ENTRY											21103
-#define EA_MLE												21104
-#define EA_CHANGE											21105
-#define EA_DELETE											21106
-#define EA_HEXDUMP										21107
-#define EA_ADD												21108
-#define EA_NAMES											21109
-#define EA_HELP											21110
+#define EA_FRAME									21100
+#define EA_LISTBOX									21101
+#define EA_TEXT										21102
+#define EA_ENTRY									21103
+#define EA_MLE										21104
+#define EA_CHANGE									21105
+#define EA_DELETE									21106
+#define EA_HEXDUMP									21107
+#define EA_ADD										21108
+#define EA_NAMES									21109
+#define EA_HELP										21110
+#define EA_OPENFILE									21111
 
 #define EAC_FRAME											21200
-#define EAC_TEXT											21201
+#define EAC_TEXT									21201
 #define EAC_NAME											21202
 #define EAC_ASCII											21203
 #define EAC_MVST											21204

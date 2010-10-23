@@ -24,6 +24,7 @@
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  23 Oct 10 GKY Added button to allow opening of a new file's eas from the EA dialog.
 
 ***********************************************************************/
 
@@ -57,6 +58,8 @@
 #include "valid.h"			// IsFile
 #include "misc.h"			// PaintRecessedWindow
 #include "fortify.h"
+#include "getnames.h"                   // insert_filename
+#include "pathutil.h"                   // ForwardslashToBackslash
 
 #pragma data_seg(DATA1)
 
@@ -493,7 +496,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             WinSetDlgItemText(hwnd, EA_ENTRY, NullStr);
             MLEclearall(WinWindowFromID(hwnd, EA_MLE));
             WinShowWindow(WinWindowFromID(hwnd, EA_MLE), FALSE);
-            WinShowWindow(WinWindowFromID(hwnd, EA_CHANGE), FALSE);
+            WinShowWindow(WinWindowFromID(hwnd,EA_CHANGE), FALSE);
             WinShowWindow(WinWindowFromID(hwnd, EA_DELETE), FALSE);
             WinShowWindow(WinWindowFromID(hwnd, EA_HEXDUMP), FALSE);
             WinSendDlgItemMsg(hwnd, EA_HEXDUMP, LM_DELETEALL, MPVOID, MPVOID);
@@ -828,6 +831,43 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case WM_COMMAND:
     switch (SHORT1FROMMP(mp1)) {
+    case EA_OPENFILE:
+      {
+        CHAR filename[CCHMAXPATH];
+        CHAR *p;
+        CHAR **list = NULL;
+
+        if (*eap->filename)
+          strcpy(filename, eap->filename);
+        WinDismissDlg(hwnd, 1);
+        ForwardslashToBackslash(filename);
+	p = strrchr(filename, '\\');
+	if (p) {
+	  p++;
+	  *p = 0;
+	}
+	else
+	  *filename = 0;
+	strcat(filename, "*");
+	list = xmalloc(sizeof(CHAR *) * 2, pszSrcFile, __LINE__);
+	
+        if (list) {
+          if (insert_filename(HWND_DESKTOP,filename,TRUE,FALSE) &&
+              *filename && *filename != '*') {
+            list[0] = filename;
+            list[1] = NULL;
+            WinDlgBox(HWND_DESKTOP,
+                      HWND_DESKTOP,
+                      DisplayEAsProc,
+                      FM3ModHandle,
+                      EA_FRAME,
+                      (PVOID)list);
+          }
+          else
+            free(list);
+        }
+        break;
+      }
     case EA_ADD:
       {
         ADDEA add;

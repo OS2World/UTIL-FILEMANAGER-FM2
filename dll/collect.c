@@ -70,6 +70,8 @@
   13 Jul 09 GKY Fixed double free of memory buffer in UM_COLLECTFROMFILE
   15 Sep 09 SHL Use UM_GREP when passing pathname
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  23 Oct 10 GKY Add menu items for opening directory cnrs based on path of selected item
+                including the option to use walk directories to select path
 
 ***********************************************************************/
 
@@ -144,6 +146,7 @@
 #include "wrappers.h"			// xDosFindFirst
 #include "fortify.h"
 #include "excputil.h"			// xbeginthread
+#include "walkem.h"                     // WalkAllDlgProc
 
 // Data definitions
 #pragma data_seg(GLOBAL1)
@@ -1748,6 +1751,28 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
       case IDM_RESELECT:
 	SelectList(hwnd, FALSE, FALSE, FALSE, NULL, NULL, dcd->lastselection);
+        break;
+
+      case IDM_WALKDIR:
+      case IDM_OPENWINDOW:
+	{
+	  CHAR newpath[CCHMAXPATH];
+	  PCNRITEM pci;
+
+	  pci = (PCNRITEM) CurrentRecord(hwnd);
+	  if (pci && (INT) pci != -1) {
+	    strcpy(newpath, pci->pszFileName);
+	    MakeValidDir(newpath);
+	  }
+	  else
+            strcpy(newpath, pFM2SaveDirectory);
+          if (SHORT1FROMMP(mp1) == IDM_WALKDIR)
+            WinDlgBox(HWND_DESKTOP, dcd->hwndParent, WalkAllDlgProc,
+                      FM3ModHandle, WALK_FRAME, MPFROMP(newpath));
+          if (!*newpath)
+            break;
+	  WinSendMsg(hwnd, UM_OPENWINDOWFORME, MPFROMP(newpath), MPVOID);
+	}
 	break;
 
       case IDM_HELP:
@@ -2185,7 +2210,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_DOITYOURSELF:
       case IDM_UPDATE:
       case IDM_COLLECTFROMFILE:
-      case IDM_OPENWINDOW:
+      //case IDM_OPENWINDOW:
       case IDM_OPENSETTINGS:
       case IDM_OPENDEFAULT:
       case IDM_OPENICON:

@@ -96,6 +96,7 @@
                 one or more miniapp but not to FM/2
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   09 MAY 10 JBS Ticket 434: Make fDontSuggestAgain a "global" flag, not a per app flag
+  23 Oct 10 GKY Changes to populate and utilize a HELPTABLE for context specific help
 
 ***********************************************************************/
 
@@ -929,6 +930,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   hini.idAccelTable = 0;
   hini.idActionBar = 0;
   hini.pszHelpWindowTitle = (PSZ)GetPString(IDS_FM2HELPTITLETEXT);
+  hini.hmodHelpTableModule = FM3ModHandle;
   hini.fShowPanelId = CMIC_HIDE_PANEL_ID;
   hini.pszHelpLibraryName = "FM3.HLP";
   hwndHelp = WinCreateHelpInstance(hab, &hini);

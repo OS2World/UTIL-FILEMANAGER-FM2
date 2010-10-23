@@ -9,6 +9,7 @@
 .*
 .* 31 Jul 04 SHL Rework file name position description
 .* 28 Sep 09 SHL Minor updates
+.* 23 Oct 10 GKY Changes to populate and utilize a HELPTABLE for context specific help
 .*
 .***********************************************************************
 .*
@@ -141,11 +142,20 @@ See also&colon.
 :hp2.Archivers:ehp2. are programs that create files composed of
 (usually) compressed data that represents, and allows recreation of,
 normal (uncompressed) files. These archiver programs are widely used to
-create archive files for downloading from
-the Internet, and to extract from those archive files once downloaded.
-They're also used to create archives locally for backup purposes, as the
-files thus created are smaller than the original files and contain many
-other files within them.
+create archive files for downloading from the Internet, and to extract 
+from those archive files once downloaded. They're also used to create 
+archives locally for backup purposes, as the files thus created are 
+smaller than the original files and contain many other files within them.
+:p.
+FM/2 comes with a collection of archiver discriptions contained in the file
+:link reftype=hd res=100130.ARCHIVER.BB2:elink.. However FM/2 doesn't
+include the archivers. You will need to obtain the archiver and place it
+in your "PATH" in order for it to work. Versions of zip and unzip are included
+with eCS. Because of this some of the archivers on the list won't actually be
+available for use. You can set a default archiver for archiving on the 
+:link reftype=hd res=99940.Archiver page:elink. of the settings notebook. 
+See :link reftype=hd res=90300.Build an archive:elink. for details on 
+creating an archive.
 :p.
 Following is a partial list of OS/2 archivers available at the time of
 this writing&colon.

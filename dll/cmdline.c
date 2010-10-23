@@ -27,6 +27,7 @@
                 one or more miniapp but not to FM/2
   21 Dec 09 GKY Added CheckExecutibleFlags to streamline code in command.c assoc.c & cmdline.c
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  23 Oct 10 GKY Changes to populate and utilize a HELPTABLE for context specific help
 
 ***********************************************************************/
 
@@ -617,6 +618,13 @@ MRESULT EXPENTRY CmdLineDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
     }
     return 0;
+
+  case WM_HELP:
+    if (hwndHelp)
+      WinSendMsg(hwndHelp,
+		 HM_DISPLAY_HELP,
+		 MPFROM2SHORT(HELP_CMDLINE, 0), MPFROMSHORT(HM_RESOURCEID));
+    break;
 
   case WM_COMMAND:
     switch (SHORT1FROMMP(mp1)) {

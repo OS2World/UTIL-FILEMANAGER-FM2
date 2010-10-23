@@ -31,6 +31,7 @@
   15 Sep 09 SHL Add rescan progress timer
   22 Nov 09 GKY Add LVM.EXE to partition submenu
   21 Dec 09 GKY Added 20 new hot keys for commands.
+  23 Oct 10 GKY Changes to populate and utilize a HELPTABLE for context specific help
 
   Align with spaces only - no tabs please
 
@@ -89,6 +90,8 @@
 
 #define ID_HELPTABLE        50
 #define ID_HELPSUBTABLE     51
+#define ID_HELPSUBTABLEA    52
+#define ID_HELPSUBTABLEB    53
 #define ID_BUTTONMENU       99
 
 #define DIR_FRAME           100
@@ -392,6 +395,7 @@
 #define IDM_APPENDTOCLIPFILENAME 1162
 #define IDM_DATABAR         1163
 #define IDM_PARTITIONLVM    1164
+#define IDM_OPENSUBCNRMENU  1165
 
 #define IDM_UTILITIESMENU   2000
 #define IDM_INIVIEWER       2001

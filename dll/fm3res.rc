@@ -54,7 +54,10 @@
                 submenu.
   27 Dec 09 GKY Strings for command.c changes
   09 MAY 10 JBS Ticket 434: Message box text improvements.
-
+  23 Oct 10 GKY Add menu items for opening directory cnrs based on path of selected item
+                including the option to use walk directories to select path
+  23 Oct 10 GKY Changes to populate and utilize a HELPTABLE for context specific help.              
+  
 ***********************************************************************/
 
 #include <os2.h>
@@ -652,7 +655,7 @@ ACCELTABLE  MAIN_FRAME
   VK_F9,      SC_MINIMIZE,            SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
   VK_F10,     SC_MAXIMIZE,            SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
   VK_F11,     SC_HIDE,                SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
-  VK_F1,      IDM_HELP,               VIRTUALKEY
+//  VK_F1,      IDM_HELP,               VIRTUALKEY
   VK_F2,      IDM_COLLECTOR,          VIRTUALKEY
   VK_F3,      IDM_KILLME,             CONTROL,VIRTUALKEY
   VK_F3,      SC_CLOSE,               SYSCOMMAND,VIRTUALKEY
@@ -1530,7 +1533,12 @@ MENU COLLECTORFILE_POPUP
 	 MENUITEM "Default\tF6",     IDM_OPENDEFAULT
 	 MENUITEM "~Settings\tF7",   IDM_OPENSETTINGS
   }
-  SUBMENU "Create objects",     IDM_OBJECTSUBMENU
+  SUBMENU  "Open directory container",     IDM_OPENSUBCNRMENU
+  {
+         MENUITEM "Open container", IDM_OPENWINDOW
+         MENUITEM "Walk to open",   IDM_WALKDIR
+  }
+  SUBMENU "Create objects",     IDM_OBJECTSUBMENU       
   {
 	 MENUITEM "~Shadows...",     IDM_SHADOW
 	 MENUITEM "~Real objects...",IDM_OBJECT
@@ -3380,9 +3388,24 @@ STRINGTABLE
 
 HELPTABLE ID_HELPTABLE
 {
+   HELPITEM MAIN_FRAME,      ID_HELPSUBTABLE,  HELP_MAIN
+   HELPITEM ASS_FRAME,       ID_HELPSUBTABLEA, HELP_ASSOC
+   HELPITEM EXEC_FRAME,      ID_HELPSUBTABLEB, HELP_CMDLINE
+   HELPITEM ASEL_FRAME,      ID_HELPSUBTABLEA, HELP_ARCHIVERS
+   HELPITEM ASEL_EDIT_FRAME, ID_HELPSUBTABLEA, HELP_EDITARC
 }
 
 HELPSUBTABLE ID_HELPSUBTABLE
+{
+   HELPSUBITEM COMMAND_LINE, HELP_HINTSCMD
+   
+}
+
+HELPSUBTABLE ID_HELPSUBTABLEA
+{
+}
+
+HELPSUBTABLE ID_HELPSUBTABLEB
 {
 }
 

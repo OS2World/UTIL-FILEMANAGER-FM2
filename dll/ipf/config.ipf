@@ -445,9 +445,11 @@ This listing "parsed" into FM/2 archiver details fields&colon.
 :h4 res=100130 name=PANEL_ARCBB2.ARCHIVER.BB2 Structure
 :i1 id=aboutArcBB2.ArchiverBB2 Structure
 :p.
-ARCHIVER.BB2 is a text file and can be viewd or edited with any text editor. It contains are three types of lines&colon.
+ARCHIVER.BB2 is a text file and can be viewd or edited with any text editor. 
+It contains are three types of lines&colon.
 :ol compact.
-:li.The first line in the file is the number of lines per archiver definition in the ARCHIVER.BB2 file.
+:li.The first line in the file is the number of lines per archiver definition 
+in the ARCHIVER.BB2 file.
 It is very important; do not change it.
 It allows modifications to the file format to be transparent to older programs.
 :li.Comment lines.

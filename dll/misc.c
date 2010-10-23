@@ -65,6 +65,8 @@
   21 Dec 09 GKY Allow command menu reorder without changing the "ID" or hot key for a command.
                 Added load_inicommand to load the IDs from the ini file.
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  23 Oct 10 GKY Add menu items for opening directory cnrs based on path of selected item
+                including the option to use walk directories to select path
 
 ***********************************************************************/
 
@@ -2010,7 +2012,9 @@ HWND CheckMenu(HWND hwnd, HWND * hwndMenu, USHORT id)
       SetConditionalCascade(CollectorFileMenu, IDM_DELETESUBMENU,
 			    fDefaultDeletePerm ? IDM_PERMDELETE : IDM_DELETE);
       SetConditionalCascade(CollectorFileMenu, IDM_OPENSUBMENU,
-			    IDM_OPENDEFAULT);
+                            IDM_OPENDEFAULT);
+      SetConditionalCascade(CollectorFileMenu, IDM_OPENSUBCNRMENU,
+			    IDM_OPENWINDOW);
       SetConditionalCascade(CollectorFileMenu, IDM_OBJECTSUBMENU, IDM_SHADOW);
       if (fWorkPlace) {
 	WinSendMsg(CollectorFileMenu, MM_DELETEITEM,

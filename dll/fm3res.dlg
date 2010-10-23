@@ -49,7 +49,8 @@
   13 Dec 09 GKY Updated Quick page "Default" to match current defaults; added Gregg's way
                 option to Quick page.
   27 Dec 09 GKY Made command hotkeys user selectable.
-
+  23 Oct 10 GKY Added button to allow opening of a new file's eas from the EA dialog.
+  
 ***********************************************************************/
 
 DLGINCLUDE 1 fm3dlg.h
@@ -312,7 +313,7 @@ END
 
 DLGTEMPLATE ASEL_FRAME LOADONCALL MOVEABLE DISCARDABLE
 BEGIN
-    DIALOG  "FM/2: Select Archiver", ASEL_FRAME, 16, -16, 159, 120,
+    DIALOG  "FM/2: Select Archiver", ASEL_FRAME, 36, -16, 159, 120,
             FS_MOUSEALIGN, FCF_TITLEBAR
     BEGIN
         GROUPBOX        "", -1, 4, 103, 150, 17, NOT WS_GROUP
@@ -1526,12 +1527,14 @@ END
 
 DLGTEMPLATE EA_FRAME LOADONCALL MOVEABLE DISCARDABLE
 BEGIN
-    DIALOG  "FM/2: EAs", EA_FRAME, 12, 6, 352, 218, WS_VISIBLE | NOT
+    DIALOG  "FM/2: EAs", EA_FRAME, 52, 56, 352, 218, WS_VISIBLE | NOT
             WS_SAVEBITS, FCF_SYSMENU | FCF_TITLEBAR | FCF_MINBUTTON |
             FCF_TASKLIST
     BEGIN
+        PUSHBUTTON      "~Open file", EA_OPENFILE, 8, 204, 40, 12,
+                        BS_NOPOINTERFOCUS
         CTEXT           "These are the EA types this object contains -- pick"
-                        " one.", EA_HELP, 8, 206, 336, 8, DT_VCENTER
+                        " one.", EA_HELP, 58, 206, 236, 8, DT_VCENTER
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00FFFFFFL
                         PRESPARAMS PP_BACKGROUNDCOLOR, 0x00000080L
                         // PRESPARAMS PP_FONTNAMESIZE, "8.Helvetica"

@@ -37,6 +37,7 @@
   29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
   11 Jan 08 GKY Replace "ARCHIVER.BB2" in string file with global set at compile in init.c
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
+  23 Oct 10 GKY Changes to populate and utilize a HELPTABLE for context specific help
 
 ***********************************************************************/
 
@@ -809,6 +810,13 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 #endif // TEST_DRAG fixme
 
     break;
+
+  case WM_HELP:
+      if (hwndHelp)
+	WinSendMsg(hwndHelp,
+		   HM_DISPLAY_HELP,
+		   MPFROMSHORT(1), MPFROMSHORT(HM_RESOURCEID));
+      break;
 
   case WM_COMMAND:
     ppatReturn = (ARC_TYPE **) WinQueryWindowPtr(hwnd, QWL_USER);
