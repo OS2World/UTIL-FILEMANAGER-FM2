@@ -16,6 +16,7 @@
                 close DosFind.
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code
   12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
+  23 Oct 10 GKY Add ForwardslashToBackslash function to streamline code
 
 ***********************************************************************/
 
@@ -41,6 +42,19 @@
 #include "stristr.h"                    //stristr
 
 static PSZ pszSrcFile = __FILE__;
+
+PSZ ForwardslashToBackslash(PSZ pszPathName)
+{
+  CHAR *p;
+
+  p = pszPathName;
+  while (*p) {
+    if (*p == '/')
+      *p = '\\';
+    p++;
+  }
+  return pszPathName;
+}
 
 PSZ AddBackslashToPath(PSZ pszPathName)
 {

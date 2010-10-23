@@ -13,6 +13,7 @@
   19 Jul 08 GKY Replace save_dir2(dir) with pFM2SaveDirectory
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
+  23 Oct 10 GKY Add ForwardslashToBackslash function to streamline code
 
 ***********************************************************************/
 
@@ -56,12 +57,7 @@ APIRET MassMkdir(HWND hwndClient, CHAR * dir)
 
   if (DosQueryPathInfo(dir, FIL_QUERYFULLNAME, s, sizeof(s)))
     strcpy(s, dir);
-  p = s;
-  while (*p) {
-    if (*p == '/')
-      *p = '\\';
-    p++;
-  }
+  ForwardslashToBackslash(s);
   p = s;
   do {
     p = strchr(p, '\\');

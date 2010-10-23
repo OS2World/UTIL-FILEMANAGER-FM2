@@ -13,6 +13,7 @@
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  23 Oct 10 GKY Add ForwardslashToBackslash function to streamline code
 
 ***********************************************************************/
 
@@ -315,12 +316,7 @@ BOOL insert_filename(HWND hwnd, CHAR * filename, INT loadit, BOOL newok)
     if (rc != MBID_YES)
       return FALSE;
   }
-  p = filename;
-  while (*p) {
-    if (*p == '/')
-      *p = '\\';
-    p++;
-  }
+  ForwardslashToBackslash(filename);
   if (*filename)
     strcpy(lastfilename, filename);
   return TRUE;
@@ -396,12 +392,7 @@ BOOL export_filename(HWND hwnd, CHAR * filename, INT overwrite)
 	unlinkf(filename);
     }
   }
-  p = filename;
-  while (*p) {
-    if (*p == '/')
-      *p = '\\';
-    p++;
-  }
+  ForwardslashToBackslash(filename);
   if (*filename)
     strcpy(lastfilename, filename);
   return TRUE;

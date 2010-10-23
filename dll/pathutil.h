@@ -11,6 +11,7 @@
   05 Jan 08 SHL Move from fm3dll.h to here
   29 Feb 08 GKY Changes to enable user settable command line length
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
+  23 Oct 10 GKY Add ForwardslashToBackslash function to streamline code
 
 ***********************************************************************/
 
@@ -22,6 +23,7 @@
 #include <os2.h>
 #endif
 
+PSZ ForwardslashToBackslash(PSZ pszPathName);
 PSZ AddBackslashToPath(PSZ pszPathName);
 PSZ BldFullPathName(PSZ pszFullPathName, PCSZ pszPathName, PCSZ pszFileName);
 PSZ BldQuotedFullPathName(PSZ pszFullPathName, PCSZ pszPathName, PCSZ pszFileName);

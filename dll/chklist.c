@@ -14,6 +14,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   29 Nov 08 GKY Add flag to tell CheckListProc file is in an archive so it won't try to open it.
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  23 Oct 10 GKY Add ForwardslashToBackslash function to streamline code
 
 ***********************************************************************/
 
@@ -41,6 +42,7 @@
 #include "valid.h"			// IsExecutable
 #include "walkem.h"			// WalkAllDlgProc
 #include "misc.h"			// PaintRecessedWindow
+#include "pathutil.h"                   // ForwardslashToBackslash
 
 #pragma data_seg(DATA1)
 
@@ -473,13 +475,8 @@ MRESULT EXPENTRY DropListProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				      FIL_QUERYFULLNAME,
 				      filename, sizeof(filename))) {
 		  if (!DosQueryPathInfo(filename,
-					FIL_STANDARD, &fs3, sizeof(fs3))) {
-		    p = filename;
-		    while (*p) {
-		      if (*p == '/')
-			*p = '\\';
-		      p++;
-		    }
+                                        FIL_STANDARD, &fs3, sizeof(fs3))) {
+                    ForwardslashToBackslash(filename);
 		    strcpy(cl->prompt, filename);
 		    PostMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
 		  }

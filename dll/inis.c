@@ -36,6 +36,7 @@
   14 Mar 09 GKY Additional strings move to PCSZs
   12 Sep 09 GKY Add FM3.INI User ini and system ini to submenu for view ini
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  23 Oct 10 GKY Add ForwardslashToBackslash function to streamline code
 
 ***********************************************************************/
 
@@ -1001,13 +1002,8 @@ MRESULT EXPENTRY ChangeIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  id = INIR_USERPROFILE;
 	ininame = INSTDATA(hwnd);
 	if (ininame && *ininame) {
-	  strcpy(filename, ininame);
-	  p = filename;
-	  while (*p) {
-	    if (*p == '/')
-	      *p = '\\';
-	    p++;
-	  }
+          strcpy(filename, ininame);
+          ForwardslashToBackslash(filename);
 	  p = strrchr(filename, '\\');
 	  if (p) {
 	    p++;
@@ -1110,13 +1106,8 @@ MRESULT EXPENTRY SwapIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  id = INIR_USERPROFILE;
 	ininame = INSTDATA(hwnd);
 	if (ininame && *ininame) {
-	  strcpy(filename, ininame);
-	  p = filename;
-	  while (*p) {
-	    if (*p == '/')
-	      *p = '\\';
-	    p++;
-	  }
+          strcpy(filename, ininame);
+          ForwardslashToBackslash(filename);
 	  p = strrchr(filename, '\\');
 	  if (p) {
 	    p++;
@@ -2511,14 +2502,8 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       else if (*inidata->ininame) {
 	// 09 Jan 08 SHL fixme to complain
 	CHAR filename[CCHMAXPATH], *p;
-
-	strcpy(filename, inidata->ininame);
-	p = filename;
-	while (*p) {
-	  if (*p == '/')
-	    *p = '\\';
-	  p++;
-	}
+        strcpy(filename, inidata->ininame);
+        ForwardslashToBackslash(filename);
 	p = strrchr(filename, '\\');
 	if (p) {
 	  p++;
@@ -2653,13 +2638,8 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	FILESTATUS3 fsa;
 	HINI hINI;
 
-	strcpy(filename, inidata->ininame);
-	p = filename;
-	while (*p) {
-	  if (*p == '/')
-	    *p = '\\';
-	  p++;
-	}
+        strcpy(filename, inidata->ininame);
+        ForwardslashToBackslash(filename);
 	p = strrchr(filename, '\\');
 	if (p) {
 	  p++;

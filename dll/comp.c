@@ -73,6 +73,7 @@
   27 Sep 09 SHL Allow fast cancel
   27 Sep 09 SHL Drop unused reset logic
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  23 Oct 10 GKY Add ForwardslashToBackslash function to streamline code
 
 ***********************************************************************/
 
@@ -219,22 +220,13 @@ static VOID StartSnapThread(VOID *pargs)
 {
   SNAPSTUFF *sf = (SNAPSTUFF *)pargs;
   FILE *fp;
-  CHAR *p;
   CHAR *modew = "w";
 
   if (sf) {
     if (*sf->dirname && *sf->filename) {
       priority_normal();
-      p = sf->dirname;
-      while (*p) {
-	if (*p == '/')
-	  *p = '\\';
-	p++;
-      }
-      if (*(p - 1) != '\\') {
-	*p = '\\';
-	p++;
-      }
+      ForwardslashToBackslash(sf->dirname);
+      AddBackslashToPath(sf->dirname);
       fp = xfopen(sf->filename, modew, pszSrcFile, __LINE__, FALSE);
       if (fp) {
 	fprintf(fp, "\"%s\"\n", sf->dirname);

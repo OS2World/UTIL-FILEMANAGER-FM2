@@ -25,6 +25,7 @@
   12 Sep 09 GKY Fix (probably spurrious) error message generated on drag of
                 items from a pmmail mail message (PMERR_INVALID_PARAMETER)
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  23 Oct 10 GKY Add ForwardslashToBackslash function to streamline code
 
 ***********************************************************************/
 
@@ -48,6 +49,7 @@
 #include "select.h"			// MarkAll
 #include "wrappers.h"			// xrealloc
 #include "fortify.h"
+#include "pathutil.h"                   // ForwardslashToBackslash
 
 // Data definitions
 static PSZ pszSrcFile = __FILE__;
@@ -157,12 +159,7 @@ HWND DragOne(HWND hwndCnr, HWND hwndObj, CHAR * filename, BOOL moveok)
     if ((IsRoot(filename) && IsValidDrive(*filename)) ||
 	!DosQueryPathInfo(filename, FIL_STANDARD, &fs3, sizeof(fs3))) {
       strcpy(szDir, filename);
-      p = szDir;
-      while (*p) {
-	if (*p == '/')
-	  *p = '\\';
-	p++;
-      }
+      ForwardslashToBackslash(szDir);
       p = strrchr(szDir, '\\');
       if (p) {
 	*p = 0;
@@ -813,13 +810,8 @@ BOOL PickUp(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd)
       else
 	pdinfoCurrent = pdinfoOld = DrgAllocDraginfo(1);
       if (pdinfoCurrent) {
-	strcpy(szDir, pci->pszFileName);
-	p = szDir;
-	while (*p) {
-	  if (*p == '/')
-	    *p = '\\';
-	  p++;
-	}
+        strcpy(szDir, pci->pszFileName);
+        ForwardslashToBackslash(szDir);
 	p = strrchr(szDir, '\\');
 	if (p) {
 	  *p = 0;

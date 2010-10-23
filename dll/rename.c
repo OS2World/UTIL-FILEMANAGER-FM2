@@ -18,6 +18,7 @@
   08 Mar 09 GKY Renamed commafmt.h i18nutil.h
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  23 Oct 10 GKY Add ForwardslashToBackslash function to streamline code
 
 ***********************************************************************/
 
@@ -44,6 +45,7 @@
 #include "strips.h"			// bstrip
 #include "info.h"                       // driveflags
 #include "wrappers.h"                   // xfopen
+#include "pathutil.h"                   // ForwardslashToBackslash
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -96,13 +98,7 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	CHAR s[CCHMAXPATH * 2], *p, chkname[CCHMAXPATH], szCmmaFmtFileSize[81], szDate[DATE_BUF_BYTES];
 	INT sourceexists = 0, targetexists = 0,
 	    sourcenewer = 0, sourcesmaller = 0;
-
-	p = mv->target;
-	while (*p) {
-	  if (*p == '/')
-	    *p = '\\';
-	  p++;
-	}
+        ForwardslashToBackslash(mv->target);
 	if (!MakeFullName(mv->target))
 	  WinSetDlgItemText(hwnd, REN_TARGET, mv->target);
 	if (!MakeFullName(mv->source))

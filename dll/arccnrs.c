@@ -82,6 +82,7 @@
                 one or more miniapp but not to FM/2
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   15 Apr 10 JBS Ticket 422: Stop hang when open archive gets deleted or moved
+  23 Oct 10 GKY Add ForwardslashToBackslash function to streamline code
 
 ***********************************************************************/
 
@@ -1623,13 +1624,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (p)
 	    memmove(s, p + 1, strlen(p + 1));
 	}
-	sprintf(WaitChild->filename, "%s\\%s", dcd->workdir, s);
-	p = WaitChild->filename;
-	while (*p) {
-	  if (*p == '/')
-	    *p = '\\';
-	  p++;
-	}
+        sprintf(WaitChild->filename, "%s\\%s", dcd->workdir, s);
+        ForwardslashToBackslash(WaitChild->filename);
 	free(s);
 	WaitChild->RunFlags = SEPARATE | ASYNCHRONOUS | WAIT |
 			      (fArcStuffVisible ? 0 : BACKGROUND);
@@ -1922,13 +1918,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 		CHAR *temp, *p;
 
-		temp = li->list[x];
-		p = temp;
-		while (*p) {
-		  if (*p == '/')
-		    *p = '\\';
-		  p++;
-		}
+                temp = li->list[x];
+                ForwardslashToBackslash(temp);
 		p = xmalloc(strlen(temp) + strlen(li->targetpath) + 2,
 			    pszSrcFile, __LINE__);
 		if (p) {
@@ -2160,13 +2151,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    UINT numfiles = 0, numalloced = 0;
 	    CHAR **list2 = NULL, fullname[CCHMAXPATH * 2], *p;
 
-	    for (x = 0; li->list[x]; x++) {
-	      p = li->list[x];
-	      while (*p) {
-		if (*p == '/')
-		  *p = '\\';
-		p++;
-	      }
+            for (x = 0; li->list[x]; x++) {
+              ForwardslashToBackslash(li->list[x]);
 	      BldFullPathName(fullname, dcd->directory, li->list[x]);
 	      if (IsFile(fullname) != -1)
 		if (AddToList(fullname, &list2, &numfiles, &numalloced))
@@ -3621,12 +3607,7 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
     if (DosQueryPathInfo(arcname,
 			 FIL_QUERYFULLNAME, fullname, sizeof(fullname)))
       strcpy(fullname, arcname);
-    p = fullname;
-    while (*p) {
-      if (*p == '/')
-	*p = '\\';
-      p++;
-    }
+    ForwardslashToBackslash(fullname);
     if (!info)
       info = find_type(fullname, arcsighead);
     if (!info)
