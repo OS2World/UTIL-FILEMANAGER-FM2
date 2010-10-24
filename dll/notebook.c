@@ -57,7 +57,10 @@
                 one or more miniapp but not to FM/2
   13 Dec 09 GKY Updated Quick page "Default" to match current defaults; added Gregg's way
                 option to Quick page.
-  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR
+                CONSTANT * as CHAR *.
+  24 OCT 10 GKY Fixed spurious error message when labels in tree are changed with a
+                "not ready" drive selected
 
 ***********************************************************************/
 
@@ -1483,14 +1486,14 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                                     TREE_CNR), CM_QUERYRECORDEMPHASIS,
                                     MPFROMLONG(CMA_FIRST),
                                     MPFROMSHORT(CRA_SELECTED));
-          WinSendMsg(WinWindowFromID(WinWindowFromID(hwndTree, FID_CLIENT),
-                                     TREE_CNR), WM_COMMAND,
-                     MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
-          pszTemp = xstrdup(pci->pszFileName, pszSrcFile, __LINE__);
-          if (pszTemp) {
-            if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTemp), MPVOID))
-              free(pszTemp);
-            // pszTemp is freed in the UM_SHOWME code
+          WinSendMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
+          if (strlen(pci->pszFileName) > 3 &&  fSwitchTreeExpand) {
+            pszTemp = xstrdup(pci->pszFileName, pszSrcFile, __LINE__);
+            if (pszTemp) {
+              if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTemp), MPVOID))
+                free(pszTemp);
+              //pszTemp is freed in the UM_SHOWME code
+            }
           }
         }
       }
