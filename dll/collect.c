@@ -1754,7 +1754,10 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
         break;
 
       case IDM_WALKDIR:
-      case IDM_OPENWINDOW:
+      case IDM_OPENDIRWINDOW:
+      case IDM_OPENDIRICON:
+      case IDM_OPENDIRDETAILS:
+      case IDM_OPENDIRTREE:
 	{
 	  CHAR newpath[CCHMAXPATH];
 	  PCNRITEM pci;
@@ -1766,12 +1769,28 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  }
 	  else
             strcpy(newpath, pFM2SaveDirectory);
-          if (SHORT1FROMMP(mp1) == IDM_WALKDIR)
-            WinDlgBox(HWND_DESKTOP, dcd->hwndParent, WalkAllDlgProc,
-                      FM3ModHandle, WALK_FRAME, MPFROMP(newpath));
-          if (!*newpath)
-            break;
-	  WinSendMsg(hwnd, UM_OPENWINDOWFORME, MPFROMP(newpath), MPVOID);
+          if (*newpath) {
+            switch (SHORT1FROMMP(mp1)) {
+            case IDM_WALKDIR:
+              WinDlgBox(HWND_DESKTOP, dcd->hwndParent, WalkAllDlgProc,
+                        FM3ModHandle, WALK_FRAME, MPFROMP(newpath));
+              break;
+            case IDM_OPENDIRWINDOW:
+              WinSendMsg(hwnd, UM_OPENWINDOWFORME, MPFROMP(newpath), MPVOID);
+              break;
+            case IDM_OPENDIRICON:
+              OpenObject(newpath, PCSZ_ICON, hwnd);
+              break;
+            case IDM_OPENDIRDETAILS:
+              OpenObject(newpath, Details, hwnd);
+              break;
+            case IDM_OPENDIRTREE:
+              OpenObject(newpath, PCSZ_TREE, hwnd);
+              break;
+            default:
+              break;
+            }
+          }
 	}
 	break;
 
@@ -2210,7 +2229,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_DOITYOURSELF:
       case IDM_UPDATE:
       case IDM_COLLECTFROMFILE:
-      //case IDM_OPENWINDOW:
+      case IDM_OPENWINDOW:
       case IDM_OPENSETTINGS:
       case IDM_OPENDEFAULT:
       case IDM_OPENICON:

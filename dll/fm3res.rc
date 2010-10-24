@@ -1530,13 +1530,13 @@ MENU COLLECTORFILE_POPUP
   MENUITEM "",                  -1,             MIS_SEPARATOR
   SUBMENU  "~Open",             IDM_OPENSUBMENU
   {
-	 MENUITEM "Default\tF6",     IDM_OPENDEFAULT
-	 MENUITEM "~Settings\tF7",   IDM_OPENSETTINGS
-  }
-  SUBMENU  "Open directory container",     IDM_OPENSUBCNRMENU
-  {
-         MENUITEM "Open container", IDM_OPENWINDOW
-         MENUITEM "Walk to open",   IDM_WALKDIR
+	 MENUITEM "~Default\tF6",              IDM_OPENDEFAULT
+	 MENUITEM "~Settings\tF7",            IDM_OPENSETTINGS
+         MENUITEM "~Open directory container", IDM_OPENDIRWINDOW
+         MENUITEM "~Walk to open",             IDM_WALKDIR
+	 MENUITEM "WPS directory ~Icon",       IDM_OPENDIRICON
+	 MENUITEM "WPS directory D~etails",    IDM_OPENDIRDETAILS
+	 MENUITEM "WPS directory ~Tree",       IDM_OPENDIRTREE
   }
   SUBMENU "Create objects",     IDM_OBJECTSUBMENU       
   {

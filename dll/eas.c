@@ -1049,6 +1049,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (eap) {
       if (eap->head)
         Free_FEAList(eap->head);
+      xfree(mp2, pszSrcFile, __LINE__);
       free(eap);
       if (hptrIcon)
         WinDestroyPointer(hptrIcon);
