@@ -874,19 +874,20 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (hwndMain)
 	  WinSendMsg(hwndMain, UM_LOADFILE, MPVOID, MPVOID);
       }
-      if (fSwitchTree && hwndTree) {
+      if (!fInitialDriveScan && fSwitchTree && hwndTree) {
 	// Keep drive tree in sync with directory container
-	PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
-	if (hwndMain) {
-	  if (TopWindow(hwndMain, (HWND) 0) == dcd->hwndFrame && pszTempDir)
-	    if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
-	      free(pszTempDir);
-	}
-	else {
-	  if (pszTempDir)
-	    if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
-	      free(pszTempDir);
-	}
+        PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
+        if (pszTempDir) {
+          if (hwndMain) {
+            if (TopWindow(hwndMain, (HWND) 0) == dcd->hwndFrame)
+              if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
+                free(pszTempDir);
+          }
+          else {
+            if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
+              free(pszTempDir);
+          }
+        }
       }
       dcd->firsttree = FALSE;
       WinStartTimer(WinQueryAnchorBlock(hwnd), dcd->hwndCnr, ID_DIRCNR_TIMER, 500);
@@ -1384,7 +1385,6 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       LastDir = hwnd;
       PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
-
       if (!fInitialDriveScan && fSwitchTreeOnFocus && hwndTree && dcd && *dcd->directory) {
 	PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
 	if (pszTempDir) {

@@ -357,11 +357,12 @@ VOID ShowTreeRec(HWND hwndCnr,
   MakeTop:
     pciToSelect = pci;
     if (pciToSelect && (INT) pciToSelect != -1) {
+      //DbgMsg(pszSrcFile, __LINE__, "TOP %i %i", fTopDir, maketop);
       if (fTopDir || maketop) {
-	ShowCnrRecord(hwndCnr, (PMINIRECORDCORE) pciToSelect);
+        ShowCnrRecord(hwndCnr, (PMINIRECORDCORE) pciToSelect);
       }
       if (fSwitchTreeExpand && ~pciToSelect->rc.flRecordAttr & CRA_EXPANDED)
-	WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciToSelect), MPVOID);
+        WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciToSelect), MPVOID);
       if (!quickbail) {
 	WinSendMsg(hwndCnr,
 		   CM_SETRECORDEMPHASIS,
@@ -3275,9 +3276,6 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 	if (ParentIsDesktop(hwndFrame, hwndParent)) {
 	  WinSetWindowText(WinWindowFromID(hwndFrame, FID_TITLEBAR), "VTree");
 	  FixSwitchList(hwndFrame, "VTree");
-	  fInitialDriveScan = FALSE;
-	  DosPostEventSem(hevInitialCnrScanComplete);
-	  DosCloseEventSem(hevInitialCnrScanComplete);
 	}
 	else {
 	  WinSetWindowText(hwndFrame, (CHAR *) GetPString(IDS_TREETEXT));

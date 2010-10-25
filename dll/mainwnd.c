@@ -357,11 +357,6 @@ static MRESULT EXPENTRY MainObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
     default:
       Runtime_Error(pszSrcFile, __LINE__, "%u unexpected", mp2);
     }
-    if (fInitialDriveScan) {
-      fInitialDriveScan = FALSE;
-      DosPostEventSem(hevInitialCnrScanComplete);
-      DosCloseEventSem(hevInitialCnrScanComplete);
-    }
     return 0;
 
   case UM_NOTIFY:
@@ -5804,11 +5799,6 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
     else {
       load_tools(NULL);
       PostMsg(hwndToolback, UM_SETUP2, MPVOID, MPVOID);
-      if (fInitialDriveScan) {
-        fInitialDriveScan = FALSE;
-	DosPostEventSem(hevInitialCnrScanComplete);
-	DosCloseEventSem(hevInitialCnrScanComplete);
-      }
     }
     PostMsg(MainObjectHwnd, UM_SETUP4, mp1, mp2);
     return 0;

@@ -296,6 +296,11 @@ VOID ProcessDirectoryThread(VOID * arg)
     }
     free(ProcessDir);
   } // if ProcessDir
+  if (fInitialDriveScan) {
+    fInitialDriveScan = FALSE;
+    DosPostEventSem(hevInitialCnrScanComplete);
+    DosCloseEventSem(hevInitialCnrScanComplete);
+  }
 # ifdef FORTIFY
   Fortify_LeaveScope();
 #  endif

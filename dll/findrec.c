@@ -15,11 +15,15 @@
 ***********************************************************************/
 
 #include <string.h>
+#include <stdlib.h>
 
 #define INCL_LONGLONG			// dircnrs.h
 
 #include "fm3dll.h"
 #include "findrec.h"
+#include "errutil.h"			// Dos_Error...
+
+//static PSZ pszSrcFile = __FILE__;
 
 PCNRITEM FindCnrRecord(HWND hwndCnr, CHAR *filename, PCNRITEM pciParent,
 		       BOOL partial, BOOL partmatch, BOOL noenv)
@@ -125,11 +129,12 @@ VOID ShowCnrRecord(HWND hwndCnr, PMINIRECORDCORE pmi)
   }
   WinSendMsg(hwndCnr,
 	     CM_QUERYVIEWPORTRECT,
-	     MPFROMP(&rclViewport), MPFROM2SHORT(CMA_WINDOW, FALSE));
+             MPFROMP(&rclViewport), MPFROM2SHORT(CMA_WINDOW, TRUE));
+  //DbgMsg(pszSrcFile, __LINE__, "TOPPORT %i TOPRCL %i", rclViewport.yTop , rcl.yTop);
   WinSendMsg(hwndCnr,
 	     CM_SCROLLWINDOW,
 	     MPFROMSHORT(CMA_VERTICAL),
-	     MPFROMLONG((rclViewport.yTop - rcl.yTop) - 4));
+	     MPFROMLONG((rclViewport.yTop - (rcl.yTop) - 4)));
   WinSendMsg(hwndCnr,
 	     CM_SCROLLWINDOW,
 	     MPFROMSHORT(CMA_HORIZONTAL), MPFROMLONG(rcl.xRight - rclViewport.xRight));

@@ -887,11 +887,6 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
       else
 	save_dir(s);
       pd->hwndDir2 = StartDirCnr(hwnd, s, (HWND) 0, 3);
-      if (fInitialDriveScan) {
-        fInitialDriveScan = FALSE;
-        DosPostEventSem(hevInitialCnrScanComplete);
-        DosCloseEventSem(hevInitialCnrScanComplete);
-      }
       WinSetFocus(HWND_DESKTOP, pd->hwndCurr);
 
       hwndC = WinWindowFromID(pd->hwndDir1, FID_CLIENT);
