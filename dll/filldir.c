@@ -134,6 +134,7 @@ VOID StubbyScanThread(VOID * arg);
 // Data definitions
 static PSZ pszSrcFile = __FILE__;
 static BOOL fFirstTime;
+INT FixedVolume = 0;
 
 #pragma data_seg(GLOBAL1)
 HPOINTER hptrEnv;
@@ -214,7 +215,8 @@ VOID StubbyScanThread(VOID * arg)
   STUBBYSCAN *StubbyScan;
   HAB thab;
   HMQ hmq = (HMQ) 0;
-  BOOL ok;
+  //BOOL ok;
+  static INT ProcessDirCount = 0;
 
   DosError(FERR_DISABLEHARDERR);
 
@@ -230,22 +232,24 @@ VOID StubbyScanThread(VOID * arg)
       if (hmq) {
 	IncrThreadUsage();
 	priority_normal();
-	ok = Stubby(StubbyScan->hwndCnr, StubbyScan->pci);
-	if (ok) {
-	  if (WinIsWindow((HAB)0, StubbyScan->hwndCnr)) {
-	    ULONG flags = driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'];
+        if (WinIsWindow((HAB)0, StubbyScan->hwndCnr)) {
+          ULONG flags = driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'];
 
-	    if ((fRScanLocal && ~flags & DRIVE_REMOTE && ~flags & DRIVE_VIRTUAL) ||
-		 (fRScanRemote && flags & DRIVE_REMOTE) ||
-                 (fRScanVirtual && flags & DRIVE_VIRTUAL)) {
-	      if (!(flags & ((fRScanNoWrite ? 0 : DRIVE_NOTWRITEABLE) ||
-			     (fRScanSlow ? 0 : DRIVE_SLOW)))) {
-		UnFlesh(StubbyScan->hwndCnr, StubbyScan->pci);
-		Flesh(StubbyScan->hwndCnr, StubbyScan->pci);
-	      }
-	    }
-	  }
-	}
+          if ((fRScanLocal && ~flags & DRIVE_REMOTE && ~flags & DRIVE_VIRTUAL) ||
+               (fRScanRemote && flags & DRIVE_REMOTE) ||
+               (fRScanVirtual && flags & DRIVE_VIRTUAL)) {
+            if (!(flags & ((fRScanNoWrite ? 0 : DRIVE_NOTWRITEABLE) ||
+                           (fRScanSlow ? 0 : DRIVE_SLOW)))) {
+              UnFlesh(StubbyScan->hwndCnr, StubbyScan->pci);
+              Flesh(StubbyScan->hwndCnr, StubbyScan->pci);
+            }
+          }
+          else {
+            Stubby(StubbyScan->hwndCnr, StubbyScan->pci);
+            //if (!ok)
+             // FixedVolume--;
+          }       
+        }
 	WinDestroyMsgQueue(hmq);
       }
       DecrThreadUsage();
@@ -253,17 +257,39 @@ VOID StubbyScanThread(VOID * arg)
     }
     free(StubbyScan);
   } // if StubbyScan
+  ProcessDirCount++;
+  DbgMsg(pszSrcFile, __LINE__, "ProcessDirCount %i FixedVolume %i",
+         ProcessDirCount, FixedVolume);
+  if (fInitialDriveScan && ProcessDirCount >= FixedVolume) {
+    fInitialDriveScan = FALSE;
+    DosPostEventSem(hevInitialCnrScanComplete);
+    DosCloseEventSem(hevInitialCnrScanComplete);
+    if (fSwitchTree && hwndTree && fSaveState && pszFocusDir) {
+       // Keep drive tree in sync with directory container
+      if (hwndMain) {
+        //if (TopWindow(hwndMain, (HWND) 0) == dcd->hwndFrame)
+          if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszFocusDir), MPVOID))
+            free(pszFocusDir);
+      }
+      else {
+        if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszFocusDir), MPVOID))
+          free(pszFocusDir);
+      }
+    }
+  }
 # ifdef FORTIFY
   Fortify_LeaveScope();
 #  endif
 
 }
 
+#if 0
 VOID ProcessDirectoryThread(VOID * arg)
 {
   PROCESSDIR *ProcessDir;
   HAB thab;
   HMQ hmq = (HMQ) 0;
+  
 
   DosError(FERR_DISABLEHARDERR);
 
@@ -272,7 +298,8 @@ VOID ProcessDirectoryThread(VOID * arg)
 #  endif
 
   ProcessDir = (PROCESSDIR *)arg;
-  if (ProcessDir && ProcessDir->pciParent && ProcessDir->pciParent->pszFileName && ProcessDir->hwndCnr) {
+  if (ProcessDir && ProcessDir->pciParent && ProcessDir->pciParent->pszFileName &&
+      ProcessDir->hwndCnr) {
     thab = WinInitialize(0);
     if (thab) {
       hmq = WinCreateMsgQueue(thab, 0);
@@ -296,16 +323,12 @@ VOID ProcessDirectoryThread(VOID * arg)
     }
     free(ProcessDir);
   } // if ProcessDir
-  if (fInitialDriveScan) {
-    fInitialDriveScan = FALSE;
-    DosPostEventSem(hevInitialCnrScanComplete);
-    DosCloseEventSem(hevInitialCnrScanComplete);
-  }
 # ifdef FORTIFY
   Fortify_LeaveScope();
 #  endif
 
 }
+# endif
 
 static HPOINTER IDFile(PSZ p)
 {
@@ -1368,7 +1391,9 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	    pci->rc.flRecordAttr |= (CRA_CURSORED | CRA_SELECTED);
 
 	  if (~driveflags[iDrvNum] & DRIVE_REMOVABLE) {
-	    // Fixed volume
+            // Fixed volume
+            if (~flags & DRIVE_INVALID && ~flags & DRIVE_NOPRESCAN)
+              FixedVolume++;
 	    pci->attrFile |= FILE_DIRECTORY;
 	    DosError(FERR_DISABLEHARDERR);
 	    rc = DosQueryPathInfo(szDrive,

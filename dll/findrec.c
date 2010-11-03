@@ -123,7 +123,7 @@ VOID ShowCnrRecord(HWND hwndCnr, PMINIRECORDCORE pmi)
   qrecrct.pRecord = (PRECORDCORE) pmi;
   qrecrct.fsExtent = (CMA_ICON | CMA_TEXT | CMA_TREEICON);
   if (!WinSendMsg(hwndCnr,
-		  CM_QUERYRECORDRECT, MPFROMP(&rcl), MPFROMP(&qrecrct))) {
+                  CM_QUERYRECORDRECT, MPFROMP(&rcl), MPFROMP(&qrecrct))) {
     qrecrct.fsExtent = CMA_TEXT | CMA_TREEICON;
     WinSendMsg(hwndCnr, CM_QUERYRECORDRECT, MPFROMP(&rcl), MPFROMP(&qrecrct));
   }
@@ -133,11 +133,11 @@ VOID ShowCnrRecord(HWND hwndCnr, PMINIRECORDCORE pmi)
   //DbgMsg(pszSrcFile, __LINE__, "TOPPORT %i TOPRCL %i", rclViewport.yTop , rcl.yTop);
   WinSendMsg(hwndCnr,
 	     CM_SCROLLWINDOW,
-	     MPFROMSHORT(CMA_VERTICAL),
-	     MPFROMLONG((rclViewport.yTop - (rcl.yTop) - 4)));
+             MPFROMSHORT(CMA_HORIZONTAL), MPFROMLONG(rcl.xRight - rclViewport.xRight));
   WinSendMsg(hwndCnr,
 	     CM_SCROLLWINDOW,
-	     MPFROMSHORT(CMA_HORIZONTAL), MPFROMLONG(rcl.xRight - rclViewport.xRight));
+	     MPFROMSHORT(CMA_VERTICAL),
+             MPFROMLONG((rclViewport.yTop - (rcl.yTop) - 4)));
 }
 
 #pragma alloc_text(FINDREC,FindCnrRecord,FindParentRecord,ShowCnrRecord)

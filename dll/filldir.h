@@ -61,6 +61,7 @@ extern HPOINTER hptrEnv;
 extern HPOINTER hptrHidden;
 extern HPOINTER hptrReadonly;
 extern HPOINTER hptrSystem;
+extern INT FixedVolume;
 
 typedef struct {
 

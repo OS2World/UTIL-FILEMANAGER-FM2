@@ -358,11 +358,11 @@ VOID ShowTreeRec(HWND hwndCnr,
     pciToSelect = pci;
     if (pciToSelect && (INT) pciToSelect != -1) {
       //DbgMsg(pszSrcFile, __LINE__, "TOP %i %i", fTopDir, maketop);
+      if (fSwitchTreeExpand && ~pciToSelect->rc.flRecordAttr & CRA_EXPANDED)
+        WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciToSelect), MPVOID);
       if (fTopDir || maketop) {
         ShowCnrRecord(hwndCnr, (PMINIRECORDCORE) pciToSelect);
       }
-      if (fSwitchTreeExpand && ~pciToSelect->rc.flRecordAttr & CRA_EXPANDED)
-        WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciToSelect), MPVOID);
       if (!quickbail) {
 	WinSendMsg(hwndCnr,
 		   CM_SETRECORDEMPHASIS,
@@ -653,9 +653,8 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  temptop = fTopDir;
 	  fTopDir = TRUE;
         }
-        if (fInitialDriveScan)
-          DosWaitEventSem(hevInitialCnrScanComplete, SEM_INDEFINITE_WAIT);
 	ShowTreeRec(dcd->hwndCnr, (CHAR *)mp1, fCollapseFirst, TRUE);
+	// fixme Is this PostMsg needed if recursive scan has already been done?
 	PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_UPDATE, 0), MPVOID);
 	dcd->suspendview = (USHORT) tempsusp;
 	fFollowTree = tempfollow;

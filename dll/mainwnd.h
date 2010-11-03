@@ -88,6 +88,7 @@ extern HWND hwndStatelist;
 extern HWND hwndToolback;
 extern HWND hwndTree;
 extern USHORT shiftstate;
+extern PSZ pszFocusDir;
 
 #define STATE_NAME_MAX_BYTES 256
 

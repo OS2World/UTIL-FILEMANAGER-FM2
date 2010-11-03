@@ -234,6 +234,7 @@ USHORT shiftstate;
 HMODULE FM3ModHandle;
 PCSZ FM3Str  = "FM/3";
 RGB2 RGBGREY;
+PSZ pszFocusDir;
 
 #pragma data_seg(DATA1)
 
@@ -3323,7 +3324,9 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 	    RemoveCnrSwitches(szKeyBase, NULL);
 	    RemoveOldCnrSwitches(szPrefix, x);
 	    continue;
-	  }
+          }
+          if (x == 0 && fSwitchTree)
+            pszFocusDir = xstrdup(szDir, pszSrcFile, __LINE__);
 	  LoadDetailsSwitches(szKeyBase, &localdcd.ds, TRUE);
 	  hwndDir = (HWND) WinSendMsg(hwndClient,
 				      UM_SETDIR,

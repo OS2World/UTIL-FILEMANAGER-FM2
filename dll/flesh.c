@@ -200,6 +200,7 @@ BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent)
     if (driveflags[toupper(*pciParent->pszFileName) - 'A'] &
 	DRIVE_INCLUDEFILES)
       includefiles = TRUE;
+#if 0
     if (fInitialDriveScan) {
       PROCESSDIR *ProcessDir;
 
@@ -227,6 +228,7 @@ BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent)
       }
     }
     else {
+# endif
       ProcessDirectory(hwndCnr,
 		       pciParent,
 		       pciParent->pszFileName,
@@ -237,7 +239,7 @@ BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent)
 		       dcd,
 		       NULL,		// total files
 		       NULL);		// total bytes
-    }
+    //}
   }
   driveflags[*pciParent->pszFileName - 'A'] |= DRIVE_RSCANNED;
   return TRUE;
