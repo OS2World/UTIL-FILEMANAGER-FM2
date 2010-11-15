@@ -260,11 +260,9 @@ VOID StubbyScanThread(VOID * arg)
   ProcessDirCount++;
   DbgMsg(pszSrcFile, __LINE__, "ProcessDirCount %i FixedVolume %i",
          ProcessDirCount, FixedVolume);
-  if (fInitialDriveScan && ProcessDirCount >= FixedVolume) {
-    fInitialDriveScan = FALSE;
-    DosPostEventSem(hevInitialCnrScanComplete);
-    DosCloseEventSem(hevInitialCnrScanComplete);
-    if (fSwitchTree && hwndTree && fSaveState && pszFocusDir) {
+  if (ProcessDirCount >= FixedVolume) {
+    DosPostEventSem(hevTreeCnrScanComplete);
+    if (fInitialDriveScan && fSwitchTree && hwndTree && fSaveState && pszFocusDir) {
        // Keep drive tree in sync with directory container
       if (hwndMain) {
         //if (TopWindow(hwndMain, (HWND) 0) == dcd->hwndFrame)
@@ -276,6 +274,7 @@ VOID StubbyScanThread(VOID * arg)
           free(pszFocusDir);
       }
     }
+    fInitialDriveScan = FALSE;
   }
 # ifdef FORTIFY
   Fortify_LeaveScope();
@@ -1708,7 +1707,6 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   DosSleep(16);				// 05 Aug 07 GKY 33
   fDummy = FALSE;
   DosPostEventSem(CompactSem);
-  DosReleaseMutexSem(hmtFillingTreeCnr);
 
   if (!fDontSuggestAgain) {
     BYTE info;

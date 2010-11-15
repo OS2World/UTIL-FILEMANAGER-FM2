@@ -195,8 +195,7 @@ unsigned __MaxThreads = {48};
 #pragma data_seg(GLOBAL1)
 HMTX hmtxFM2Delete;
 HMTX hmtxFM2Globals;
-HMTX hmtFillingTreeCnr;
-HEV  hevInitialCnrScanComplete;
+HEV  hevTreeCnrScanComplete;
 ULONG OS2ver[2];
 PFNWP PFNWPCnr;
 PFNWP PFNWPMLE;
@@ -205,6 +204,7 @@ CHAR DateSeparator[2];
 CHAR TimeSeparator[2];
 ULONG ulTimeFmt;
 ULONG ulDateFmt;
+ULONG ulScanPostCnt;
 BOOL fDontSuggestAgain;
 BOOL fInitialDriveScan;
 BOOL fAmAV2;
@@ -1111,10 +1111,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   if (DosCreateMutexSem(NULL, &hmtxFM2Delete, 0L, FALSE))
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      PCSZ_DOSCREATEMUTEXSEM);
-  if (DosCreateMutexSem(NULL, &hmtFillingTreeCnr, 0L, FALSE))
-    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-              PCSZ_DOSCREATEMUTEXSEM);
-  if (DosCreateEventSem(NULL, &hevInitialCnrScanComplete, 0L, FALSE))
+  if (DosCreateEventSem(NULL, &hevTreeCnrScanComplete, 0L, TRUE))
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      PCSZ_DOSCREATEEVENTSEM);
 

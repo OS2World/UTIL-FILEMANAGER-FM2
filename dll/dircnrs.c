@@ -1385,9 +1385,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       LastDir = hwnd;
       PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
-      if (!fInitialDriveScan && fSwitchTreeOnFocus && hwndTree && dcd && *dcd->directory) {
-	PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
-	if (pszTempDir) {
+      if (fSwitchTreeOnFocus && hwndTree && dcd && *dcd->directory) {
+        PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
+        if (pszTempDir) {
 	  if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
 	    free(pszTempDir);		// Failed
 	}

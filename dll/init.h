@@ -85,6 +85,7 @@ extern CHAR DateSeparator[2];
 extern CHAR TimeSeparator[2];
 extern ULONG ulTimeFmt;
 extern ULONG ulDateFmt;
+extern ULONG ulScanPostCnt;
 extern PCSZ FNT_HELVETICA;
 extern PCSZ FNT_6HELVETICA;
 extern PCSZ FNT_8HELVETICA;
@@ -205,8 +206,7 @@ extern ULONGLONG ullTmpSpaceNeeded;
 #ifdef INCL_DOSSEMAPHORES
 extern HMTX hmtxFM2Globals;
 extern HMTX hmtxFM2Delete;
-extern HMTX hmtFillingTreeCnr;
-extern HEV  hevInitialCnrScanComplete;
+extern HEV  hevTreeCnrScanComplete;
 #endif
 
 #endif // INIT_H

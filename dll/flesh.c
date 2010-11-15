@@ -278,6 +278,8 @@ BOOL UnFlesh(HWND hwndCnr, PCNRITEM pciParent)
 /**
  * Fill in drive tree subtree
  * @return TRUE if OK, else FALSE
+ * This only scans the root directory and adds the first level directories
+ * Flesh does a recursive scan and should be used on fast hardware.
  */
 
 BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)

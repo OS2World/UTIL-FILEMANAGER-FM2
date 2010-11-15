@@ -1861,8 +1861,7 @@ MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case WM_COMMAND:
-    if (fInitialDriveScan)
-      DosWaitEventSem(hevInitialCnrScanComplete, SEM_INDEFINITE_WAIT);
+    DosWaitEventSem(hevTreeCnrScanComplete, SEM_INDEFINITE_WAIT);
     switch(SHORT1FROMMP(mp1)) {
     case IDM_RESCAN:
       {

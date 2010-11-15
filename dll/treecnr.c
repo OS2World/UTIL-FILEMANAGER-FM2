@@ -645,6 +645,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (dcd) {
 	BOOL tempsusp, tempfollow, temptop;
 
+        DosWaitEventSem(hevTreeCnrScanComplete, SEM_INDEFINITE_WAIT);
 	tempsusp = dcd->suspendview;
 	dcd->suspendview = TRUE;
 	tempfollow = fFollowTree;
@@ -856,6 +857,8 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     /*
      * populate container
      */
+    DosWaitEventSem(hevTreeCnrScanComplete, SEM_INDEFINITE_WAIT);
+    DosResetEventSem(hevTreeCnrScanComplete, &ulScanPostCnt);
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
     if (!dcd)
       Runtime_Error(pszSrcFile, __LINE__, NULL);
@@ -866,7 +869,6 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSendMsg(dcd->hwndCnr,
 		 CM_SCROLLWINDOW,
 		 MPFROMSHORT(CMA_HORIZONTAL), MPFROMLONG(-1));
-      DosRequestMutexSem(hmtFillingTreeCnr, SEM_INDEFINITE_WAIT);
       FillTreeCnr(dcd->hwndCnr, dcd->hwndParent);
       if (fOkayMinimize) {
 	PostMsg(dcd->hwndCnr, UM_MINIMIZE, MPVOID, MPVOID);
@@ -1215,7 +1217,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	else
 	  WinSetWindowText(WinWindowFromID(dcd->hwndFrame,
-					   MAIN_STATUS), pci->pszFileName);
+                                           MAIN_STATUS), pci->pszFileName);
 	if (fMoreButtons && hwndName) {
 	  CHAR szDate[DATE_BUF_BYTES];
 
@@ -1901,7 +1903,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       ULONG fl = SWP_ACTIVATE;
       INT x;
 
-      DosRequestMutexSem(hmtFillingTreeCnr, SEM_INDEFINITE_WAIT);
+      DosWaitEventSem(hevTreeCnrScanComplete, SEM_INDEFINITE_WAIT);
+      DosResetEventSem(hevTreeCnrScanComplete, &ulScanPostCnt);
       if (fFollowTree)
 	fl = 0;
       SetShiftState();
@@ -1916,7 +1919,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    DosBeep(50, 100);
 	  if (hwndStatus)
 	    WinSetWindowText(hwndStatus, (CHAR *) GetPString(IDS_RESCANSUGTEXT));
-	  DosReleaseMutexSem(hmtFillingTreeCnr);
+          DosPostEventSem(hevTreeCnrScanComplete);
 	  return 0;
 	}
 	DosError(FERR_DISABLEHARDERR);
@@ -1936,7 +1939,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	    } // for
 	    RemoveCnrItems(hwnd, pciP, 1, CMA_FREE | CMA_INVALIDATE);
-	    DosReleaseMutexSem(hmtFillingTreeCnr);
+            DosPostEventSem(hevTreeCnrScanComplete);
 	    return 0;
 	  }
 	}
@@ -2008,7 +2011,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    UnFlesh(hwnd, pci);
 	    PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
 	    PostMsg(hwnd, UM_SETUP2, MPFROMP(pci), MPFROMLONG(status));
-	    DosReleaseMutexSem(hmtFillingTreeCnr);
+            DosPostEventSem(hevTreeCnrScanComplete);
 	    return 0;
 	  }
 	}
@@ -2031,18 +2034,18 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    if ((shiftstate & (KC_CTRL | KC_ALT)) == (KC_CTRL | KC_ALT)) {
 	      PostMsg(hwnd,
 		      WM_COMMAND, MPFROM2SHORT(IDM_SHOWALLFILES, 0), MPVOID);
-	      DosReleaseMutexSem(hmtFillingTreeCnr);
+              DosPostEventSem(hevTreeCnrScanComplete);
 	      return 0;
 	    }
 	    if ((shiftstate & (KC_CTRL | KC_SHIFT)) == (KC_CTRL | KC_SHIFT)) {
 	      OpenObject(pci->pszFileName, Settings, dcd->hwndFrame);
-	      DosReleaseMutexSem(hmtFillingTreeCnr);
+              DosPostEventSem(hevTreeCnrScanComplete);
 	      return 0;
 	    }
 	    if (!(shiftstate & (KC_CTRL | KC_SHIFT))) {
 	      if (!ParentIsDesktop(hwnd, dcd->hwndParent)) {
 		if (FindDirCnrByName(pci->pszFileName, TRUE)) {
-		  DosReleaseMutexSem(hmtFillingTreeCnr);
+                  DosPostEventSem(hevTreeCnrScanComplete);
 		  return 0;
 		}
 	      }
@@ -2066,7 +2069,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  strcpy(s, Details);
 	      }
 	      OpenObject(pci->pszFileName, s, dcd->hwndFrame);
-	      DosReleaseMutexSem(hmtFillingTreeCnr);
+              DosPostEventSem(hevTreeCnrScanComplete);
 	      return 0;
 	    }
 	    if (!ParentIsDesktop(hwnd, dcd->hwndParent) &&
@@ -2110,7 +2113,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_MKDIR, 0), MPVOID);
       if (fFollowTree)
 	WinSetFocus(HWND_DESKTOP, hwnd);
-      DosReleaseMutexSem(hmtFillingTreeCnr);
+      DosPostEventSem(hevTreeCnrScanComplete);
     }
     return 0;
 
@@ -2784,8 +2787,9 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    UINT driveflag = driveflags[x];
 	    if (pci->attrFile & FILE_DIRECTORY) {
 	      if (pci->flags & RECFLAGS_UNDERENV)
-		break;
-	      DosRequestMutexSem(hmtFillingTreeCnr, SEM_INDEFINITE_WAIT);
+                break;
+              DosWaitEventSem(hevTreeCnrScanComplete, SEM_INDEFINITE_WAIT);
+              DosResetEventSem(hevTreeCnrScanComplete, &ulScanPostCnt);
 	      UnFlesh(hwnd, pci);
 	      // Check if drive type might need update
 	      if ((driveflag & (DRIVE_INVALID | DRIVE_NOPRESCAN)) ||
@@ -2815,7 +2819,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	      if (~driveflag & DRIVE_INVALID)
 		Flesh(hwnd, pci);
-	      DosReleaseMutexSem(hmtFillingTreeCnr);
+              DosPostEventSem(hevTreeCnrScanComplete);
 	    }
 	  }
 	}

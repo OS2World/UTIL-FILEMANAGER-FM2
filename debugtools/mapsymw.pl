@@ -1,11 +1,8 @@
 #!perl -w
-# mapsymw - mapsym Watcom map files
-
-# Copyright (c) 2007, 2008 Steven Levine and Associates, Inc.
+# mapsymw - mapsym wrapper Watcom map files
+# $Id: $
+# Copyright (c) 2007, 2010 Steven Levine and Associates, Inc.
 # All rights reserved.
-
-# $TLIB$: $ &(#) %n - Ver %v, %f $
-# TLIB: $ $
 
 # This program is free software licensed under the terms of the GNU
 # General Public License.  The GPL Software License can be found in
@@ -18,6 +15,8 @@
 # 09 Aug 07 SHL Generate dummy symbol for interior segments with no symbols
 # 08 Nov 07 SHL Drop leading keywords from function definitions
 # 14 Dec 08 SHL Ensure symbols sorted by value - some apps care
+# 03 May 10 SHL Comments
+# 14 Jun 10 SHL Avoid missing C++ symbols
 
 # mapsym requires each segment to have at least 1 symbol
 # mapsym requires 32 bit segments to have at least 1 symbol with offset > 65K
@@ -164,13 +163,14 @@ sub mapsym {
       # In
       #	Address        Symbol
       # 0002:0004ae46+ ArcTextProc
+      # 0002:0d11+     void near IoctlAudioCapability( __2bd9g9REQPACKET far *, short unsigned )
       # Out
       # 0        1         2         3         4         5         6
       # 123456789012345678901234567890123456789012345678901234567890
       #   Address         Publics by Value
       #  0000:00000000  Imp  WinEmptyClipbrd      (PMWIN.733)
       #  0002:0001ED40       __towlower_dummy
-      if (/^([[:xdigit:]]+):([[:xdigit:]]+)[+*]?\s+(\w+)$/) {
+      if (/^([[:xdigit:]]+):([[:xdigit:]]+)[+*]?\s+(.+)$/) {
 	$segnum = $1;
 	$offset = $2;
 	my $sym = $3;
@@ -194,25 +194,29 @@ sub mapsym {
 	$segaddr = "$segnum:$offset";
 
 	# Convert C++ symbols to something mapsym will accept
+	# warn "$sym\n";
 
 	$_ = $sym;
 
-	# s/\bIdle\b/    /;	# Drop Idle keyword
-	s/\(.*\).*$//;		# Drop (... tails
+	# s/\bIdle\b/    /;	# Drop Idle keyword - obsolete done later
+	s/\(.*\).*$//;		# Drop (...) tails
 
-	s/::~/_x/;		# Replace ::~ with _x
-	s/::/_/;		# Replace :: with _
+	s/::~/__x/;		# Replace ::~ with __x
+	s/::/__/;		# Replace :: with __
 
 	s/[<,]/_/g;		# Replace < and , with _
 	s/[>]//g;		# Replace > with nothing
 	s/[\[\]]//g;		# Replace [] with nothing
-	s/_*$//;		# Drop trailing _
-	s/\W+\w//;		# Drop leading keywords (including Idle)
+	# s/_*$//;		# Drop trailing _
+	# s/\W+\w//;		# Drop leading keywords (including Idle)
+	s/\b.*\b\s+//g;		# Drop leading keywords (including Idle)
 
 	# Drop leading and trailing _ to match source code
 
 	s/^_//;			# Drop leading _ (cdecl)
 	s/_$//;			# Drop trailing _ (watcall)
+
+	# warn "$_\n";
 
 	# Prune some libc symbols to avoid mapsym overflows
 	if ($mapid =~ /libc06/) {
@@ -241,13 +245,15 @@ sub mapsym {
 
   close MAPFILE;
 
-  # Generate dummy symbols as needed
+  # Sort segments
 
   my @keys = sort keys %segsinfo;
   if (@keys) {
     my $maxseg = pop @keys;
     @keys = '0000'..$maxseg;
   }
+
+  # Generate dummy symbols for 32-bit segments smaller than 64KB
 
   foreach $segnum (@keys) {
     if ($segnum != 0) {
@@ -279,10 +285,21 @@ sub mapsym {
     }
   } # foreach
 
+  # Generate symbols by value listing
+
+  my $lastsym = '';
+  my $seq = 0;
   @keys = sort keys %syms;
   foreach $segaddr (@keys) {
     my $sym = $syms{$segaddr};
     my $imp = substr($segaddr, 0, 4) eq '0000' ? 'Imp' : '';
+    if ($sym ne $lastsym) {
+      $lastsym = $sym;
+      $seq = 0;
+    } else {
+      $seq++;
+      $sym = "${sym}_$seq";
+    }
     printf WRKFILE $symfmt, $segaddr, $imp, $sym;
   }
 
