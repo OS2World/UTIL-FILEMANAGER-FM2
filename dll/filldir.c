@@ -83,8 +83,13 @@
   13 Oct 09 SHL Restore missing drives in drive drop-down listbox; optimize updates
   15 Nov 09 GKY Avoid szBuf overflow in FillTreeCnr
   15 Nov 09 GKY Optimize some check code
-  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
-  09 MAY 10 JBS Ticket 434 bug fixes, message box text improvements and parameter update improvements.
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10).
+                Mostly cast CHAR CONSTANT * as CHAR *.
+  09 MAY 10 JBS Ticket 434 bug fixes, message box text improvements and parameter update
+                improvements.
+  20 Nov 10 GKY Rework scanning code to remove redundant scans, prevent double directory
+                entries in the tree container, fix related semaphore performance using
+                combination of event and mutex semaphores
 
 ***********************************************************************/
 
@@ -261,6 +266,7 @@ VOID StubbyScanThread(VOID * arg)
   DbgMsg(pszSrcFile, __LINE__, "ProcessDirCount %i FixedVolume %i",
          ProcessDirCount, FixedVolume);
   if (ProcessDirCount >= FixedVolume) {
+    DosReleaseMutexSem(hmtxScanning);
     DosPostEventSem(hevTreeCnrScanComplete);
     if (fInitialDriveScan && fSwitchTree && hwndTree && fSaveState && pszFocusDir) {
        // Keep drive tree in sync with directory container

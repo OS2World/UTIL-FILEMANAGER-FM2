@@ -83,6 +83,9 @@
                 CHAR CONSTANT * as CHAR *.
   11 Apr 10 GKY Fix drive tree rescan failure and program hang caused by event sem
                 never being posted
+  20 Nov 10 GKY Rework scanning code to remove redundant scans, prevent double directory
+                entries in the tree container, fix related semaphore performance using
+                combination of event and mutex semaphores
 
 ***********************************************************************/
 
@@ -643,7 +646,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 #     endif
       dcd = INSTDATA(hwnd);
       if (dcd) {
-	BOOL tempsusp, tempfollow, temptop;
+        BOOL tempsusp, tempfollow, temptop;
 
         DosWaitEventSem(hevTreeCnrScanComplete, SEM_INDEFINITE_WAIT);
 	tempsusp = dcd->suspendview;
@@ -655,7 +658,6 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  fTopDir = TRUE;
         }
 	ShowTreeRec(dcd->hwndCnr, (CHAR *)mp1, fCollapseFirst, TRUE);
-	// fixme Is this PostMsg needed if recursive scan has already been done?
 	PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_UPDATE, 0), MPVOID);
 	dcd->suspendview = (USHORT) tempsusp;
 	fFollowTree = tempfollow;
@@ -770,7 +772,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		 MPFROMP(&cnri), MPFROMLONG(sizeof(CNRINFO)));
       if (cnri.cRecords) {
 	sprintf(s, GetPString(IDS_NUMDRIVESTEXT), cnri.cRecords);
-        if (pci && pci->pszFileName && *pci->pszFileName) {
+        if (pci && (INT) pci != -1 && pci->pszFileName && *pci->pszFileName) {
 	  if (!(driveflags[toupper(*pci->pszFileName) - 'A'] &
 		DRIVE_REMOVABLE) ||
 	      driveserial[toupper(*pci->pszFileName) - 'A'] != -1) {
@@ -1826,9 +1828,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    (!volser.serial ||
 		     driveserial[toupper(*pci->pszFileName) - 'A'] !=
 		     volser.serial)) {
-		  if (Flesh(hwnd, pci) &&
-		      SHORT2FROMMP(mp1) == CN_EXPANDTREE &&
-		      !dcd->suspendview && fTopDir) {
+                  if (SHORT2FROMMP(mp1) == CN_EXPANDTREE && Flesh(hwnd, pci)
+                      &&!dcd->suspendview  && fTopDir) {
 		    PostMsg(hwnd, UM_TOPDIR, MPFROMP(pci), MPVOID);
 		    //DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
 		  }
@@ -1904,7 +1905,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       ULONG fl = SWP_ACTIVATE;
       INT x;
 
-      DosWaitEventSem(hevTreeCnrScanComplete, SEM_INDEFINITE_WAIT);
+      DosRequestMutexSem(hmtxScanning, SEM_INDEFINITE_WAIT);
       DosResetEventSem(hevTreeCnrScanComplete, &ulScanPostCnt);
       if (fFollowTree)
 	fl = 0;
@@ -1983,7 +1984,6 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				  (ULONG) sizeof(volser));
 	  if (!status) {
 	    if (!volser.serial || driveserial[x] != volser.serial) {
-	      UnFlesh(hwnd, pciP);
 	      Flesh(hwnd, pciP);
 	      driveserial[x] = volser.serial;
 	    }
@@ -1991,8 +1991,9 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      CM_QUERYRECORD,
 			      MPFROMP(pciP),
 			      MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
-	    if (!pciL)
-	      Flesh(hwnd, pciP);
+            if (!pciL) {
+              Flesh(hwnd, pciP);
+            }
 	    if ((fShowFSTypeInTree || fShowDriveLabelInTree) &&
 		strlen(pciP->pszFileName) < 4) {
 	      strcpy(szBuf, pciP->pszFileName);
@@ -2789,7 +2790,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    if (pci->attrFile & FILE_DIRECTORY) {
 	      if (pci->flags & RECFLAGS_UNDERENV)
                 break;
-              DosWaitEventSem(hevTreeCnrScanComplete, SEM_INDEFINITE_WAIT);
+              DosRequestMutexSem(hmtxScanning, SEM_INDEFINITE_WAIT);
               DosResetEventSem(hevTreeCnrScanComplete, &ulScanPostCnt);
 	      UnFlesh(hwnd, pci);
 	      // Check if drive type might need update
@@ -2801,16 +2802,15 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  pci->rc.hptrIcon = hptrDunno;
 		else  if (strlen(pci->pszFileName) < 4) {
 		  SelectDriveIcon(pci);
-		}
-		if ((fShowFSTypeInTree || fShowDriveLabelInTree) &&
-		    strlen(pci->pszFileName) < 4) {
-		  strcpy(szBuf, pci->pszFileName);
-		  strcat(szBuf, " [");
-		  strcat(szBuf, fShowFSTypeInTree ? FileSystem : volser.volumelabel);
-		  strcat(szBuf, "]");
-		  pci->pszDisplayName = xstrdup(szBuf, pszSrcFile, __LINE__);
-		  pci->rc.pszIcon = pci->pszDisplayName;
-		}
+                  if (fShowFSTypeInTree || fShowDriveLabelInTree) {
+                    strcpy(szBuf, pci->pszFileName);
+                    strcat(szBuf, " [");
+                    strcat(szBuf, fShowFSTypeInTree ? FileSystem : volser.volumelabel);
+                    strcat(szBuf, "]");
+                    pci->pszDisplayName = xstrdup(szBuf, pszSrcFile, __LINE__);
+                    pci->rc.pszIcon = pci->pszDisplayName;
+                  }
+                }
 		WinSendMsg(hwnd,
 			   CM_INVALIDATERECORD,
 			   MPFROMP(&pci),

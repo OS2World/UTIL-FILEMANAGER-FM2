@@ -22,7 +22,11 @@
                 and rescans drive in tree container depending on container focus, greyed out
                 inappropriate menu context choices
   15 Nov 09 GKY Add more PCSZs
-  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10).
+                Mostly cast CHAR CONSTANT * as CHAR *.
+  20 Nov 10 GKY Rework scanning code to remove redundant scans, prevent double directory
+                entries in the tree container, fix related semaphore performance using
+                combination of event and mutex semaphores
 
 ***********************************************************************/
 
@@ -206,6 +210,7 @@ extern ULONGLONG ullTmpSpaceNeeded;
 #ifdef INCL_DOSSEMAPHORES
 extern HMTX hmtxFM2Globals;
 extern HMTX hmtxFM2Delete;
+extern HMTX hmtxScanning;
 extern HEV  hevTreeCnrScanComplete;
 #endif
 

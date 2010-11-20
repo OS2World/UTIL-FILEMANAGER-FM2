@@ -97,6 +97,9 @@
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   09 MAY 10 JBS Ticket 434: Make fDontSuggestAgain a "global" flag, not a per app flag
   23 Oct 10 GKY Changes to populate and utilize a HELPTABLE for context specific help
+  20 Nov 10 GKY Rework scanning code to remove redundant scans, prevent double directory
+                entries in the tree container, fix related semaphore performance using
+                combination of event and mutex semaphores
 
 ***********************************************************************/
 
@@ -195,6 +198,7 @@ unsigned __MaxThreads = {48};
 #pragma data_seg(GLOBAL1)
 HMTX hmtxFM2Delete;
 HMTX hmtxFM2Globals;
+HMTX hmtxScanning;
 HEV  hevTreeCnrScanComplete;
 ULONG OS2ver[2];
 PFNWP PFNWPCnr;
@@ -1106,6 +1110,9 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 		   sizeof(PVOID));
 
   if (DosCreateMutexSem(NULL, &hmtxFM2Globals, 0L, FALSE))
+    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+              PCSZ_DOSCREATEMUTEXSEM);
+  if (DosCreateMutexSem(NULL, &hmtxScanning, 0L, FALSE))
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      PCSZ_DOSCREATEMUTEXSEM);
   if (DosCreateMutexSem(NULL, &hmtxFM2Delete, 0L, FALSE))

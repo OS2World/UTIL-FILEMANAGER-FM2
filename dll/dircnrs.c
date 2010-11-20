@@ -77,6 +77,9 @@
                 Mostly cast CHAR CONSTANT * as CHAR *.
   28 May 10 GKY Yet another attempt to prevent duplicate directory names in the tree by
                 suppressing SHOW_ME during initial drive scan.
+  20 Nov 10 GKY Rework scanning code to remove redundant scans, prevent double directory
+                entries in the tree container, fix related semaphore performance using
+                combination of event and mutex semaphores
 
 ***********************************************************************/
 
@@ -2820,9 +2823,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    (!volser.serial ||
 		     driveserial[toupper(*pci->pszFileName) - 'A'] !=
 		     volser.serial)) {
-		  if (Flesh(hwnd, pci) &&
-		      SHORT2FROMMP(mp1) == CN_EXPANDTREE &&
-		      !dcd->suspendview && fTopDir) {
+		  if (SHORT2FROMMP(mp1) == CN_EXPANDTREE && Flesh(hwnd, pci) &&
+		      !dcd->suspendview && fTopDir ) {
 		    PostMsg(hwnd, UM_TOPDIR, MPFROMP(pci), MPVOID);
 		    //DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
 		  }
