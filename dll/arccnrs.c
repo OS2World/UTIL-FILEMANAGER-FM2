@@ -83,6 +83,8 @@
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   15 Apr 10 JBS Ticket 422: Stop hang when open archive gets deleted or moved
   23 Oct 10 GKY Add ForwardslashToBackslash function to streamline code
+  20 Nov 10 GKY Check that pTmpDir IsValid and recreate if not found; Fixes hangs caused
+                by temp file creation failures.
 
 ***********************************************************************/
 
@@ -2020,6 +2022,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                 CHAR szTempFile[CCHMAXPATH];
                 CHAR *modew = "w";
 
+                if (pTmpDir && !IsValidDir(pTmpDir))
+                  DosCreateDir(pTmpDir, 0);
 		BldFullPathName(szTempFile, pTmpDir, PCSZ_FM2PLAYTEMP);
 		fp = xfopen(szTempFile, modew, pszSrcFile, __LINE__, FALSE);
 		if (fp) {
@@ -3649,8 +3653,8 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	dcd->size = sizeof(DIRCNRDATA);
 	dcd->id = id;
 	dcd->type = ARC_FRAME;
-	if (!pTmpDir)
-	  strcpy(dcd->workdir, pFM2SaveDirectory);
+        if (pTmpDir && !IsValidDir(pTmpDir))
+          DosCreateDir(pTmpDir, 0);
 	MakeTempName(dcd->workdir, ArcTempRoot, 2);
 	strcpy(dcd->arcname, fullname);
 	if (*extractpath) {

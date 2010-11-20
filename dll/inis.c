@@ -37,6 +37,8 @@
   12 Sep 09 GKY Add FM3.INI User ini and system ini to submenu for view ini
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   23 Oct 10 GKY Add ForwardslashToBackslash function to streamline code
+  20 Nov 10 GKY Check that pTmpDir IsValid and recreate if not found; Fixes hangs caused
+                by temp file creation failures.
 
 ***********************************************************************/
 
@@ -1177,7 +1179,9 @@ MRESULT EXPENTRY SwapIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	CloseProfile(testini, FALSE);
 	/* make copies of new inis */
 	*tempuserini = 0;
-	*tempsysini = 0;
+        *tempsysini = 0;
+        if (pTmpDir && !IsValidDir(pTmpDir))
+          DosCreateDir(pTmpDir, 0);
 	BldFullPathName(tempuserini, pTmpDir ? pTmpDir : pFM2SaveDirectory, "TEMPUSER.INI");
 	rc = DosCopy(userini, tempuserini, DCPY_EXISTING);
 	if (rc) {
@@ -1188,7 +1192,9 @@ MRESULT EXPENTRY SwapIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    __LINE__,
 		    GetPString(IDS_COMPCOPYFAILEDTEXT), userini, tempuserini);
 	  break;
-	}
+        }
+        if (pTmpDir && !IsValidDir(pTmpDir))
+          DosCreateDir(pTmpDir, 0);
 	BldFullPathName(tempsysini, pTmpDir ? pTmpDir : pFM2SaveDirectory, "TEMPSYS.INI");
 	rc = DosCopy(sysini, tempsysini, DCPY_EXISTING);
 	if (rc) {

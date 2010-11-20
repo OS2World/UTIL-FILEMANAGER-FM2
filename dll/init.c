@@ -100,6 +100,8 @@
   20 Nov 10 GKY Rework scanning code to remove redundant scans, prevent double directory
                 entries in the tree container, fix related semaphore performance using
                 combination of event and mutex semaphores
+  20 Nov 10 GKY Check that pTmpDir IsValid and recreate if not found; Fixes hangs caused
+                by temp file creation failures.
 
 ***********************************************************************/
 
@@ -581,8 +583,6 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
   else
     strcpy(s, pFM2SaveDirectory);
   AddBackslashToPath(s);
-  //if (s[strlen(s) - 1] != '\\')
-  //  strcat(s, "\\");
   enddir = &s[strlen(s)];
   strcat(s, "$FM2LI$T.");
   strcat(s, "???");
@@ -728,6 +728,9 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
       HDIR search_handle;
       ULONG num_matches, ul;
 
+      //Save the FM2 save directory name. This is the location of the ini, dat files etc.
+      save_dir2(temp);
+      pFM2SaveDirectory = xstrdup(temp, pszSrcFile, __LINE__);
       strcpy(szTempName, env);
       AddBackslashToPath(szTempName);
       //if (szTempName[strlen(szTempName) - 1] != '\\')
@@ -766,17 +769,12 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 	MakeTempName(szTempName, NULL, 1);
 	rc = DosCreateDir(szTempName, 0);
 	if (!rc)
-	  pTmpDir = xstrdup(szTempName, pszSrcFile, __LINE__);	// if writable
+          pTmpDir = xstrdup(szTempName, pszSrcFile, __LINE__);	// if writable
+        else
+          pTmpDir = xstrdup(pFM2SaveDirectory, pszSrcFile, __LINE__); 
 	}
       }
     }
-
-  //Save the FM2 save directory name. This is the location of the ini, dat files etc.
-  {
-    CHAR temp[CCHMAXPATH];
-    save_dir2(temp);
-    pFM2SaveDirectory = xstrdup(temp, pszSrcFile, __LINE__);
-  }
   // Check free space on TMP and FM2 Save drives
   {
     //ullTmpSpaceNeeded = 5120000;

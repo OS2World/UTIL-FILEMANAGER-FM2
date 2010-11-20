@@ -34,6 +34,8 @@
                 the same commandline to have different environments (multiple different command titles).
   17 JAN 10 GKY Add ENVIRONMENT_SIZE vaiable to replace multiple (often different hard coded sizes) set to 2048
                 (the largest value I found).
+  20 Nov 10 GKY Check that pTmpDir IsValid and recreate if not found; Fixes hangs caused
+                by temp file creation failures.
 
 ***********************************************************************/
 
@@ -253,6 +255,8 @@ int ExecOnList(HWND hwnd, PSZ command, int flags, PSZ tpath,  PSZ environment,
 	    FILE *fp;
             CHAR *modew = "w";
 
+            if (pTmpDir && !IsValidDir(pTmpDir))
+              DosCreateDir(pTmpDir, 0);
 	    strcpy(listfile, pTmpDir ? pTmpDir : pFM2SaveDirectory);
 	    MakeTempName(listfile, "$FM2LI$T", 2);
 	    fp = xfopen(listfile, modew,pszSrcFile,__LINE__, FALSE);

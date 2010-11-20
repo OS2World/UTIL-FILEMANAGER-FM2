@@ -50,7 +50,10 @@
                 miniapp; FM3Str should be used for setting only relavent to FM/2 or that
                 aren't user settable; realappname should be used for setting applicable to
                 one or more miniapp but not to FM/2
-  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10).
+                Mostly cast CHAR CONSTANT * as CHAR *.
+  20 Nov 10 GKY Check that pTmpDir IsValid and recreate if not found; Fixes hangs caused
+                by temp file creation failures.
 
 ***********************************************************************/
 
@@ -956,9 +959,11 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         FILE *fp;
         CHAR *modea = "a+";
 
-	if (pTmpDir)
-	  strcpy(szFileName, pTmpDir);
-	else
+        if (pTmpDir && !IsValidDir(pTmpDir))
+          DosCreateDir(pTmpDir, 0);
+        //if (pTmpDir)
+	//  strcpy(szFileName, pTmpDir);
+	else if (!pTmpDir)
 	  strcpy(szFileName, pFM2SaveDirectory);
 	sprintf(&szFileName[strlen(szFileName)], "%s%csizes.Rpt", PCSZ_BACKSLASH,
 		(pState) ? toupper(*pState->szDirName) : '+');

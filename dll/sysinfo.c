@@ -16,6 +16,8 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   16 JUL 08 GKY Use TMP directory for temp files
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
+  20 Nov 10 GKY Check that pTmpDir IsValid and recreate if not found; Fixes hangs caused
+                by temp file creation failures.
 
 ***********************************************************************/
 
@@ -38,6 +40,7 @@
 #include "systemf.h"			// runemf2
 #include "misc.h"			// PostMsg
 #include "strips.h"			// bstrip
+#include "valid.h"                      // IsValidDir
 
 #pragma data_seg(DATA1)
 
@@ -61,6 +64,8 @@ VOID RunRmview(VOID * arg)
   if (thab && thmq) {
     if (!WinIsWindow(thab, hwnd))
       goto Abort;
+    if (pTmpDir && !IsValidDir(pTmpDir))
+      DosCreateDir(pTmpDir, 0);
     BldFullPathName(szTempFile, pTmpDir, "$RMVIEW.#$#");
     unlinkf(szTempFile);
     fp = xfopen(szTempFile, mode, pszSrcFile, __LINE__, FALSE);
