@@ -38,6 +38,7 @@
   11 Jan 08 GKY Replace "ARCHIVER.BB2" in string file with global set at compile in init.c
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   23 Oct 10 GKY Changes to populate and utilize a HELPTABLE for context specific help
+  21 Nov 10 GKY Check if archiver.bb2 has been changed on disk before editing
 
 ***********************************************************************/
 

@@ -40,6 +40,7 @@
   21 Dec 09 GKY Allow command menu reorder without changing the "ID" or hot key for a command.
                 Added load_inicommand to load the IDs from the ini file.(new error strings)
   27 Dec 09 GKY Added IDS_DUPLICATEHOTKEYTEXT for command.c changes
+  21 Nov 10 GKY Check if archiver.bb2 has been changed on disk before editing
 
 ***********************************************************************/
 

@@ -56,7 +56,8 @@
   09 MAY 10 JBS Ticket 434: Message box text improvements.
   23 Oct 10 GKY Add menu items for opening directory cnrs based on path of selected item
                 including the option to use walk directories to select path
-  23 Oct 10 GKY Changes to populate and utilize a HELPTABLE for context specific help.              
+  23 Oct 10 GKY Changes to populate and utilize a HELPTABLE for context specific help.
+  21 Nov 10 GKY Check if archiver.bb2 has been changed on disk before editing
   
 ***********************************************************************/
 
