@@ -45,6 +45,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <share.h>
+#include <sys/stat.h>
 
 #define INCL_DOS
 #define INCL_WIN
@@ -85,6 +86,7 @@ UINT arcsigs_header_lines;		// Header comments line count in archiver.bb2
 UINT arcsigs_trailer_line_num;		// Trailer comments start line number (1..n)
 BOOL arcsigsloaded;
 BOOL arcsigsmodified;
+static struct stat Archiverbb2Stats;
 
 #define ARCHIVER_LINE_BYTES	256
 
@@ -377,6 +379,7 @@ INT load_archivers(VOID)
     //DosExitCritSec();
     return -1;
   }
+  stat(psz, &Archiverbb2Stats);
   fp = xfsopen(psz, moder, SH_DENYWR, pszSrcFile, __LINE__, TRUE);
   DosReleaseMutexSem(hmtxFM2Globals);
   //DosExitCritSec();
@@ -782,6 +785,18 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_INITDLG:
     if (!arcsigsloaded)
       load_archivers();
+    else {
+      struct stat Buffer;
+
+      stat(searchpath(PCSZ_ARCHIVERBB2), &Buffer);
+      if (Archiverbb2Stats.st_size != Buffer.st_size ||
+          Archiverbb2Stats.st_mtime != Buffer.st_mtime)        
+        if (saymsg(MB_YESNO,                                   
+		   hwnd,
+		   GetPString(IDS_ADCHANGESONDISKTEXT),
+                   GetPString(IDS_ADRELOADMEMTEXT)) == MBID_YES)
+          load_archivers();
+    }
     if (!(ARC_TYPE **) mp2) {
       Runtime_Error(pszSrcFile, __LINE__, NULL);
       WinDismissDlg(hwnd, 0);

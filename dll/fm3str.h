@@ -610,6 +610,8 @@
 #define IDS_DOSEXECPGMFAILEDTEXT                              590
 #define IDS_BLURB1TEXT                                        591 // Other font test strings removed 11 Jan 09 GKY move to StrinTable
 #define IDS_COPYRIGHT                                         592
+#define IDS_ADCHANGESONDISKTEXT                               593
+#define IDS_ADRELOADMEMTEXT                                   594
 #define IDS_ITALICTEXT                                        605
 #define IDS_OUTLINETEXT                                       606
 #define IDS_BOLDTEXT                                          607

@@ -2856,6 +2856,8 @@ STRINGTABLE
     IDS_ADNEWSZTEXT                       "The field of compressed sizes in an archiver listing."
     IDS_ADSTARTLISTTEXT                   "The string that comes before files in a listing."
     IDS_ADENDLISTTEXT                     "The string that comes after files in a listing."
+    IDS_ADCHANGESONDISKTEXT               "Archiverbb2 has changed on disk" 
+    IDS_ADRELOADMEMTEXT                   "Do you wish to reload it"
     IDS_ADCHANGESINMEMTEXT                "Changes recorded in memory."
     IDS_ADREWRITETEXT                     "Rewrite ARCHIVER.BB2 file?%s"
     IDS_NOTRECOMMENDTEXT                  "\r\r(Not recommended; errors present)"
