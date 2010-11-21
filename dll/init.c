@@ -1110,7 +1110,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   if (DosCreateMutexSem(NULL, &hmtxFM2Globals, 0L, FALSE))
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
               PCSZ_DOSCREATEMUTEXSEM);
-  if (DosCreateMutexSem(NULL, &hmtxScanning, 0L, FALSE))
+  if (DosCreateMutexSem(NULL, &hmtxScanning, 0L, TRUE))
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      PCSZ_DOSCREATEMUTEXSEM);
   if (DosCreateMutexSem(NULL, &hmtxFM2Delete, 0L, FALSE))

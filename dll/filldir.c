@@ -263,8 +263,8 @@ VOID StubbyScanThread(VOID * arg)
     free(StubbyScan);
   } // if StubbyScan
   ProcessDirCount++;
-  DbgMsg(pszSrcFile, __LINE__, "ProcessDirCount %i FixedVolume %i",
-         ProcessDirCount, FixedVolume);
+  //DbgMsg(pszSrcFile, __LINE__, "ProcessDirCount %i FixedVolume %i",
+  //       ProcessDirCount, FixedVolume);
   if (ProcessDirCount >= FixedVolume) {
     DosReleaseMutexSem(hmtxScanning);
     DosPostEventSem(hevTreeCnrScanComplete);
@@ -280,6 +280,8 @@ VOID StubbyScanThread(VOID * arg)
           free(pszFocusDir);
       }
     }
+    ProcessDirCount = 0;
+    FixedVolume = 0;
     fInitialDriveScan = FALSE;
   }
 # ifdef FORTIFY

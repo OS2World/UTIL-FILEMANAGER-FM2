@@ -792,10 +792,11 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		sprintf(szFree, "  %s %s", tb, GetPString(IDS_FREETEXT));
 	      }
 	      else
-		*szFree = 0;
+                *szFree = 0;
+              //Show information on status line not shown in the tree container
 	      driveserial[toupper(*pci->pszFileName) - 'A'] = volser.serial;
-	      if (CheckDrive(toupper(*pci->pszFileName), FileSystem, &type) == -1 ||
-		  fShowFSTypeInTree)
+              if (CheckDrive(toupper(*pci->pszFileName), FileSystem, &type) == -1 ||
+                  fShowFSTypeInTree)
 		strcpy(FileSystem, NullStr);
 	      if (fShowDriveLabelInTree)
 		strcpy(szTmpLabel, NullStr);
@@ -808,20 +809,18 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		strcat(temp, "]");
 		sprintf(s,
 			GetPString(fShowFSTypeInTree ? IDS_TREESTATUSSTART1TEXT :
-				   fShowDriveLabelInTree
-				   ? IDS_TREESTATUSSTART2TEXT : IDS_TREESTATUSSTARTTEXT),
-			toupper(*pci->pszFileName), FileSystem,
-			szTmpLabel, volser.serial, szFree);
+                                   fShowDriveLabelInTree ? IDS_TREESTATUSSTART2TEXT :
+                                   IDS_TREESTATUSSTARTTEXT), toupper(*pci->pszFileName),
+                        FileSystem, szTmpLabel, volser.serial, szFree);
 		strcat(s, temp);
 	      }
 	      else {
 		strcat(s, " [");
 		sprintf(&s[strlen(s)],
 			GetPString(fShowFSTypeInTree ? IDS_TREESTATUSSTART1TEXT :
-				   fShowDriveLabelInTree
-				   ? IDS_TREESTATUSSTART2TEXT : IDS_TREESTATUSSTARTTEXT),
-			toupper(*pci->pszFileName), FileSystem,
-			szTmpLabel, volser.serial, szFree);
+                                   fShowDriveLabelInTree ? IDS_TREESTATUSSTART2TEXT :
+                                   IDS_TREESTATUSSTARTTEXT), toupper(*pci->pszFileName),
+                        FileSystem, szTmpLabel, volser.serial, szFree);
 		strcat(s, "]");
 	      }
 	      if (!fMoreButtons) {
@@ -1906,6 +1905,9 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       INT x;
 
       DosRequestMutexSem(hmtxScanning, SEM_INDEFINITE_WAIT);
+      DosQueryEventSem(hevTreeCnrScanComplete, &ulScanPostCnt);
+      if (ulScanPostCnt < 1)
+        return 0;
       DosResetEventSem(hevTreeCnrScanComplete, &ulScanPostCnt);
       if (fFollowTree)
 	fl = 0;
