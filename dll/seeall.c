@@ -48,7 +48,8 @@
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
-  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  17 Jan 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  01 Dec 10 SHL Ensure FindAllThread thread quits fast when requested
 
 ***********************************************************************/
 
@@ -648,8 +649,8 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	       SHORT1FROMMP(mp1) == IDM_WPSMOVE) ?
 	      GetPString(IDS_MOVEDTEXT) : GetPString(IDS_COPIEDTEXT);
 	    if (*path) {
-              strcpy(newname, path);
-              AddBackslashToPath(newname);
+	      strcpy(newname, path);
+	      AddBackslashToPath(newname);
 	      //if (newname[strlen(newname) - 1] != '\\')
 	      //  strcat(newname, "\\");
 	      if (plen)
@@ -2013,7 +2014,10 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
     do {
       priority_normal();
       pffbFile = pffbArray;
+
       for (x = 0; x < ulFindCnt; x++) {
+	if (ad->stopflag)
+	  break;
 	if (pffbFile->attrFile & FILE_DIRECTORY) {
 	  // Skip . and ..
 	  if (pffbFile->achName[0] != '.' ||
@@ -2080,8 +2084,10 @@ static VOID DoADir(HWND hwnd, CHAR * pathname)
 	}
 	pffbFile = (PFILEFINDBUF3L)((PBYTE)pffbFile + pffbFile->oNextEntryOffset);
       } // for
+
       if (ad->stopflag)
 	break;
+
       ulFindCnt = ulFindMax;
       rc = xDosFindNext(hdir,
 			pffbArray,
@@ -2109,13 +2115,20 @@ static VOID FindAllThread(VOID * args)
   HAB hab2 = (HAB) 0;
   HMQ hmq2 = (HMQ) 0;
   ALLDATA *ad = WinQueryWindowPtr(hwnd, QWL_USER);
+  APIRET apiret;
 
 # ifdef FORTIFY
   Fortify_EnterScope();
 #  endif
-  if (!DosRequestMutexSem(ad->hmtxScan, SEM_INDEFINITE_WAIT)) {
+
+  // DbgMsg(pszSrcFile, __LINE__, "FindAllThread requesting hmtxScan");
+  apiret = DosRequestMutexSem(ad->hmtxScan, SEM_INDEFINITE_WAIT);
+  if (apiret != NO_ERROR)
+    Dos_Error(MB_CANCEL, apiret, hwnd, pszSrcFile, __LINE__, "DosRequestMutexSem");
+  else {
     priority_normal();
     hab2 = WinInitialize(0);
+
     if (hab2) {
       hmq2 = WinCreateMsgQueue(hab2, 0);
       if (hmq2) {
@@ -2128,50 +2141,58 @@ static VOID FindAllThread(VOID * args)
 	      if ((ulDriveMap & (1 << x)) && ad->abDrvFlags[x]) {
 		*startname = (CHAR) (x + 'A');
 		DoADir(hwnd, startname);
+		if (ad->stopflag)
+		  break;
 		PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
 		DosSleep(0); //26 Aug 07 GKY 1
 	      }
-	    }
+	    } // for
 	  }
 	}
 	else
 	  DoADir(hwnd, ad->szFindPath);
+
 	DosPostEventSem(CompactSem);
       }
     }
-    if (ad->afalloc != ad->afheadcnt) {
-
-      ALLFILES *tempa, **templ;
-
-      tempa =
-	xrealloc(ad->afhead, sizeof(ALLFILES) * ad->afheadcnt, pszSrcFile,
-		 __LINE__);
-      if (tempa) {
-	ad->afhead = tempa;
-	ad->afalloc = ad->afheadcnt;
-      }
-      templ =
-	xrealloc(ad->afindex, sizeof(ALLFILES *) * ad->afheadcnt, pszSrcFile,
-		 __LINE__);
-      if (templ)
-	ad->afindex = templ;
-      DosPostEventSem(CompactSem);
-    }
 
     if (!ad->stopflag) {
+      if (ad->afalloc != ad->afheadcnt) {
+
+	ALLFILES *tempa, **templ;
+
+	tempa =
+	  xrealloc(ad->afhead, sizeof(ALLFILES) * ad->afheadcnt, pszSrcFile,
+		   __LINE__);
+	if (tempa) {
+	  ad->afhead = tempa;
+	  ad->afalloc = ad->afheadcnt;
+	}
+	templ =
+	  xrealloc(ad->afindex, sizeof(ALLFILES *) * ad->afheadcnt, pszSrcFile,
+		   __LINE__);
+	if (templ)
+	  ad->afindex = templ;
+	DosPostEventSem(CompactSem);
+      }
       PostMsg(hwnd, UM_RESCAN, MPFROMLONG(1), MPVOID);
       ReSort(hwnd);
     }
+
+    // DbgMsg(pszSrcFile, __LINE__, "FindAllThread releasing hmtxScan");
     DosReleaseMutexSem(ad->hmtxScan);
   }
+
   if (hmq2) {
     PostMsg(hwnd, UM_CONTAINER_FILLED, MPVOID, MPVOID);
     WinDestroyMsgQueue(hmq2);
   }
+
   if (hab2) {
     DecrThreadUsage();
     WinTerminate(hab2);
   }
+
 # ifdef FORTIFY
   Fortify_LeaveScope();
 #  endif
@@ -2366,7 +2387,7 @@ static VOID PaintLine(HWND hwnd, HPS hps, ULONG whichfile, ULONG topfile,
 		    standardcolors[Colors[COLORS_NORMALBACK]]);
   }
   CommaFmtULL(szCmmaFmtFileSize,
-              sizeof(szCmmaFmtFileSize), ad->afindex[y]->cbFile, ' ');
+	      sizeof(szCmmaFmtFileSize), ad->afindex[y]->cbFile, ' ');
   FDateFormat(szDate, ad->afindex[y]->date);
   len = sprintf(szBuff,
 		"%c%-*.*s  %-12s  %c%c%c%c%c  %s %02u%s%02u%s%02u ",
@@ -2381,7 +2402,7 @@ static VOID PaintLine(HWND hwnd, HPS hps, ULONG whichfile, ULONG topfile,
 		"-H"[((ad->afindex[y]->attrFile & FILE_HIDDEN) != 0)],
 		"-S"[((ad->afindex[y]->attrFile & FILE_SYSTEM) != 0)],
 		"-D"[((ad->afindex[y]->attrFile & FILE_DIRECTORY) != 0)],
-                szDate,
+		szDate,
 		ad->afindex[y]->time.hours, TimeSeparator,
 		ad->afindex[y]->time.minutes, TimeSeparator,
 		ad->afindex[y]->time.twosecs * 2);
@@ -2524,10 +2545,11 @@ MRESULT EXPENTRY SeeFrameWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   ALLDATA *pAD = WinQueryWindowPtr(hwnd, QWL_USER);
+  APIRET apiret;
 
   switch (msg) {
   case WM_CREATE:
-    // fprintf(stderr,"Seeall: WM_CREATE\n");
+    // DbgMsg(pszSrcFile, __LINE__, "SeeAllWndProc WM_CREATE");
     WinSetWindowPtr(hwnd, QWL_USER, NULL);
 #   ifdef FORTIFY
     Fortify_EnterScope();
@@ -2663,7 +2685,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case UM_SETUP5:
-    // fprintf(stderr,"Seeall: UM_SETUP5\n");
+    // DbgMsg(pszSrcFile, __LINE__, "SeeAllWndProc UM_SETUP5");
     if (pAD) {
       if (mp1 && *((CHAR *)mp1))
 	strcpy(pAD->szFindPath, (CHAR *)mp1);
@@ -2713,7 +2735,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_SETUP2:
-// fprintf(stderr,"Seeall: UM_SETUP2\n");
+    // DbgMsg(pszSrcFile, __LINE__, "SeeAllWndProc UM_SETUP2");
     if (pAD) {
 
       CHAR s[256];
@@ -2744,7 +2766,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_SETUP3:
-// fprintf(stderr,"Seeall: UM_SETUP3\n");
+    // DbgMsg(pszSrcFile, __LINE__, "SeeAllWndProc UM_SETUP3");
     if (pAD) {
       pAD->multiplier = pAD->afindexcnt / 32767;
       if (pAD->multiplier * 32767 != pAD->afindexcnt)
@@ -2783,7 +2805,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_SETUP4:
-    // fprintf(stderr,"Seeall: UM_SETUP4\n");
+    // DbgMsg(pszSrcFile, __LINE__, "SeeAllWndProc UM_SETUP4");
     if (pAD)
       pAD->killme = TRUE;
     else
@@ -2791,9 +2813,10 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_RESCAN:
-    // fprintf(stderr,"Seeall: UM_RESCAN\n");
+    // DbgMsg(pszSrcFile, __LINE__, "SeeAllWndProc UM_RESCAN");
     if (pAD && !pAD->stopflag) {
       if (DosRequestMutexSem(pAD->hmtxScan, SEM_IMMEDIATE_RETURN)) {
+	// Assume still working - show progress
 	CHAR s[CCHMAXPATH + 80], tm[34];
 
 	if (mp1) {
@@ -2817,6 +2840,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSetWindowText(pAD->hwndStatus, s);
       }
       else {
+	// Assume scan done
 	CHAR s[(CCHMAXPATH * 2) + 80], tm[34], ts[34], tb[34];
 	ULONG y;
 
@@ -2867,7 +2891,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_SETUP:
-    // fprintf(stderr,"Seeall: UM_SETUP\n");
+    // DbgMsg(pszSrcFile, __LINE__, "SeeAllWndProc UM_SETUP");
     if (pAD) {
       WinSendMsg(pAD->hvscroll, SBM_SETTHUMBSIZE, MPFROM2SHORT(1, 1), MPVOID);
       WinSendMsg(pAD->hhscroll, SBM_SETTHUMBSIZE, MPFROM2SHORT(1, 1), MPVOID);
@@ -3434,12 +3458,12 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       pAD->cursored = 1;
       pAD->multiplier = 1;
       if (!pAD->afindexcnt) {
-        if (!fAlertBeepOff)
+	if (!fAlertBeepOff)
 	  DosBeep(250, 50);
 	PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
       }
       else {
-        if (!fAlertBeepOff)
+	if (!fAlertBeepOff)
 	  DosBeep(1000, 25);
 	WinInvalidateRect(hwnd, NULL, FALSE);
 	PostMsg(hwnd, UM_SETUP3, MPVOID, MPVOID);
@@ -3455,7 +3479,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_PAINT:
-    // fprintf(stderr,"Seeall: WM_PAINT\n");
+    // DbgMsg(pszSrcFile, __LINE__, "SeeAllWndProc WM_PAINT");
     if (pAD) {
 
       HPS hpsp;
@@ -3551,8 +3575,8 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      standardcolors[Colors
 					     [COLORS_CURSOREDNORMALBACK]]);
 	    CommaFmtULL(szCmmaFmtFileSize,
-                        sizeof(szCmmaFmtFileSize), pAD->afindex[y]->cbFile, ' ');
-            FDateFormat(szDate, pAD->afindex[y]->date);
+			sizeof(szCmmaFmtFileSize), pAD->afindex[y]->cbFile, ' ');
+	    FDateFormat(szDate, pAD->afindex[y]->date);
 	    len =
 	      sprintf(szBuff,
 		      "%c%-*.*s  %-12s  %c%c%c%c%c  %s %02u%s%02u%s%02u ",
@@ -3567,8 +3591,8 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    0)],
 		      "-H"[((pAD->afindex[y]->attrFile & FILE_HIDDEN) != 0)],
 		      "-S"[((pAD->afindex[y]->attrFile & FILE_SYSTEM) != 0)],
-                      "-D"[((pAD->afindex[y]->attrFile & FILE_DIRECTORY) != 0)],
-                      szDate,
+		      "-D"[((pAD->afindex[y]->attrFile & FILE_DIRECTORY) != 0)],
+		      szDate,
 		      pAD->afindex[y]->time.hours, TimeSeparator,
 		      pAD->afindex[y]->time.minutes, TimeSeparator,
 		      pAD->afindex[y]->time.twosecs * 2);
@@ -3653,7 +3677,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case WM_VSCROLL:
-// fprintf(stderr,"Seeall: WM_VSCROLL\n");
+    // DbgMsg(pszSrcFile, __LINE__, "SeeAllWndProc WM_VSCROLL");
     if (pAD && !pAD->stopflag &&
 	!DosRequestMutexSem(pAD->hmtxScan, SEM_IMMEDIATE_RETURN)) {
 
@@ -4337,24 +4361,26 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_SIZE:
-// fprintf(stderr,"Seeall: WM_SIZE\n");
+    // DbgMsg(pszSrcFile, __LINE__, "SeeAllWndProc WM_SIZE");
     PostMsg(hwnd, UM_SETUP3, MPVOID, MPVOID);
     break;
 
   case WM_CLOSE:
-// fprintf(stderr,"Seeall: WM_CLOSE\n");
+    // DbgMsg(pszSrcFile, __LINE__, "SeeAllWndProc WM_CLOSE");
     if (pAD)
       pAD->stopflag = 1;
     WinDestroyWindow(WinQueryWindow(hwnd, QW_PARENT));
     return 0;
 
   case WM_DESTROY:
-// fprintf(stderr,"Seeall: WM_DESTROY\n");
+    // DbgMsg(pszSrcFile, __LINE__, "SeeAllWndProc WM_DESTROY");
     if (pAD) {
       pAD->stopflag = 1;
       if (pAD->hmtxScan) {
-	DosRequestMutexSem(pAD->hmtxScan, 15000);
-	DosCloseMutexSem(pAD->hmtxScan);
+	apiret = DosRequestMutexSem(pAD->hmtxScan, 2000);
+	if (apiret != NO_ERROR)
+	  Dos_Error(MB_CANCEL, apiret, hwnd, pszSrcFile, __LINE__, "DosRequestMutexSem");
+	DosCloseMutexSem(pAD->hmtxScan);	// Are probably going to die anyway
       }
       if (pAD->hwndPopup)
 	WinDestroyWindow(pAD->hwndPopup);
