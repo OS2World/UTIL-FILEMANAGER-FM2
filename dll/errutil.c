@@ -6,7 +6,7 @@
   Error reporting
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2008 Steven H. Levine
+  Copyright (c) 2004, 2010 Steven H. Levine
 
   12 Aug 04 SHL Comments
   23 May 05 SHL Move saymsg here
@@ -33,7 +33,8 @@
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   08 Mar 09 GKY Remove Dos_Error2 (unused) and Runtime_Error2 (no advantage over using Runtime_Error)
   23 Jul 09 GKY Add low mem buffers for the msg file name so DosGetMessage
-                works in HIMEM builds
+		works in HIMEM builds
+  01 Dec 10 SHL Dos_Error - remap API errors code that with odd oso001*.msg messages
 
 ***********************************************************************/
 
@@ -50,8 +51,8 @@
 #include "errutil.h"
 #include "strutil.h"			// GetPString
 #include "fm3str.h"
-#include "notebook.h"                   // fErrorBeepOff
-#include "init.h"                       // Data declares
+#include "notebook.h"			// fErrorBeepOff
+#include "init.h"			// Data declares
 
 #pragma data_seg(DATA1)
 
@@ -83,7 +84,7 @@ VOID DbgMsg(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
 
   if (!ul1stMSec) {
     ul1stMSec = msec;
-    // ulLastMSec = msec;			// Avoid big delta 1st time
+    // ulLastMSec = msec;		// Avoid big delta 1st time
   }
 
   delta = msec - ul1stMSec;
@@ -114,20 +115,23 @@ VOID DbgMsg(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
 
 //== Dos_Error: report Dos...() error using passed message string ===
 
-INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner,
+// 2010-12-01 SHL fixme for ULONG to be APIRET
+
+INT Dos_Error(ULONG mb_type, ULONG apiret, HWND hwndOwner,
 	      PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
 {
   CHAR szMsg[4096];
   CHAR szMsgFile[20], szMsgFileH[20];
   ULONG Class;				// Error class
   ULONG action;				// Error action
-  ULONG Locus;                          // Error location
+  ULONG Locus;				// Error location
   ULONG ulMsgLen;
+  APIRET mapped_apiret;
   CHAR *pszMsgStart;
   CHAR *psz;
   va_list va;
 
-  if (!ulRC)
+  if (!apiret)
     return MBID_ENTER;			// Should not have been called
 
   // Format caller's message
@@ -143,26 +147,34 @@ INT Dos_Error(ULONG mb_type, ULONG ulRC, HWND hwndOwner,
 
   if (strchr(szMsg, ' ') == NULL) {
     strcat(szMsg, " ");
-    strcat(szMsg, GetPString(IDS_FAILEDTEXT));		// Assume simple function name
+    strcat(szMsg, GetPString(IDS_FAILEDTEXT));	// Assume simple function name
   }
 
-  DosErrClass(ulRC, &Class, &action, &Locus);
+  DosErrClass(apiret, &Class, &action, &Locus);
 
   sprintf(szMsg + strlen(szMsg),
 	  GetPString(IDS_DOSERR1TEXT),
 	  pszSrcFile,
 	  uSrcLineNo,
-	  ulRC,
+	  apiret,
 	  GetPString(IDS_ERRCLASS1TEXT + (Class - 1)),
 	  GetPString(IDS_ERRACTION1TEXT + (action - 1)),
-          GetPString(IDS_ERRLOCUS1TEXT + (Locus - 1)));
+	  GetPString(IDS_ERRLOCUS1TEXT + (Locus - 1)));
   pszMsgStart = szMsg + strlen(szMsg) + 1;
   strcpy(szMsgFile, "OSO001.MSG");
   strcpy(szMsgFileH, "OSO001H.MSG");
   // Get message leaving space for NL separator
-  if (!DosGetMessage(NULL, 0L, (PCHAR) pszMsgStart + 1, 1024, ulRC, szMsgFile, &ulMsgLen)
-      || !DosGetMessage(NULL, 0L, (PCHAR) pszMsgStart + 1, 1024, ulRC,
-                        szMsgFileH, &ulMsgLen)) {
+  // 2010-12-01 SHL Handle cases where message file message does not make sense relative to API error
+  switch (apiret) {
+  case ERROR_TIMEOUT:
+    mapped_apiret = ERROR_SEM_TIMEOUT;	// Assume semaphore timeout
+    break;
+  default:
+    mapped_apiret = apiret;
+  }
+  if (!DosGetMessage(NULL, 0L, (PCHAR) pszMsgStart + 1, 1024, mapped_apiret, szMsgFile, &ulMsgLen)
+      || !DosGetMessage(NULL, 0L, (PCHAR) pszMsgStart + 1, 1024, mapped_apiret,
+			szMsgFileH, &ulMsgLen)) {
     // Got message
     pszMsgStart[ulMsgLen + 1] = 0;	// Terminate
     *(pszMsgStart - 1) = '\n';		// Stuff NL before message text
@@ -226,7 +238,7 @@ static VOID formatWinError(PSZ pszBuf, UINT cBufBytes,
 
   if (strchr(pszBuf, ' ') == NULL) {
     strcat(pszBuf, " ");
-    strcat(pszBuf, GetPString(IDS_FAILEDTEXT));		// Assume simple function name
+    strcat(pszBuf, GetPString(IDS_FAILEDTEXT));	// Assume simple function name
   }
 
   // Append file name and line number and trailing space
@@ -310,7 +322,7 @@ VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
 
   if (strchr(szMsg, ' ') == NULL) {
     strcat(szMsg, " ");
-    strcat(szMsg, GetPString(IDS_FAILEDTEXT));		// Assume simple function name
+    strcat(szMsg, GetPString(IDS_FAILEDTEXT));	// Assume simple function name
   }
 
   sprintf(szMsg + strlen(szMsg),
