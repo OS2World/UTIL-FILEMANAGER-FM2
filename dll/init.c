@@ -102,6 +102,7 @@
                 combination of event and mutex semaphores
   20 Nov 10 GKY Check that pTmpDir IsValid and recreate if not found; Fixes hangs caused
                 by temp file creation failures.
+  03 Mar 11 SHL Try using FM3INI to create help instance if fm3.hlp not in current directory
 
 ***********************************************************************/
 
@@ -925,20 +926,19 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   /* start help */
   memset(&hini, 0, sizeof(HELPINIT));
   hini.cb = sizeof(HELPINIT);
-  hini.ulReturnCode = 0;
-  hini.pszTutorialName = NULL;
+  // hini.ulReturnCode = 0;
+  // hini.pszTutorialName = NULL;
   hini.phtHelpTable = (PHELPTABLE) MAKELONG(ID_HELPTABLE, 0xffff);
   hini.hmodAccelActionBarModule = (HMODULE) 0;
-  hini.idAccelTable = 0;
-  hini.idActionBar = 0;
+  // hini.idAccelTable = 0;
+  // hini.idActionBar = 0;
   hini.pszHelpWindowTitle = (PSZ)GetPString(IDS_FM2HELPTITLETEXT);
   hini.hmodHelpTableModule = FM3ModHandle;
   hini.fShowPanelId = CMIC_HIDE_PANEL_ID;
   hini.pszHelpLibraryName = "FM3.HLP";
   hwndHelp = WinCreateHelpInstance(hab, &hini);
   if (!hwndHelp) {
-    static CHAR helppath[CCHMAXPATH];   // fixme to be local?
-
+    CHAR helppath[CCHMAXPATH];
     env = getenv("FM3INI");
     if (env) {
       strcpy(helppath, env);
@@ -949,6 +949,8 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 	  BldFullPathName(helppath, helppath, "FM3.HLP");
 	  hini.pszHelpLibraryName = helppath;
 	  hwndHelp = WinCreateHelpInstance(hab, &hini);
+	  if (!hwndHelp)
+	    Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__, "WinCreateHelpInstance failed for %s with error 0x%x", hini.pszHelpLibraryName, hini.ulReturnCode);
 	}
       }
     }
