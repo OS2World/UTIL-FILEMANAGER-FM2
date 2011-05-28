@@ -72,6 +72,8 @@
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   23 Oct 10 GKY Add menu items for opening directory cnrs based on path of selected item
                 including the option to use walk directories to select path
+  28 May 11 GKY Fixed trap caused by passing a nonexistant pci to FillInRecordFromFFB in
+                UM_COLLECT because pci is limited to 65535 files. (nRecord is a USHORT)
 
 ***********************************************************************/
 
@@ -644,7 +646,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
     if (dcd) {
       LISTINFO *li = (LISTINFO *) mp1;
-      INT x;
+      INT x, y = 0;
       FILEFINDBUF4L fb4;
       HDIR hdir;
       ULONG nm;
@@ -653,6 +655,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
       ULONG ulMaxFiles;
       ULONGLONG ullTotalBytes;
       CHAR fullname[CCHMAXPATH];
+      INT makeShort = 0;
 
       if (!hwndStatus) {
 	WinSetWindowText(WinWindowFromID(dcd->hwndClient, DIR_SELECTED),
@@ -662,100 +665,109 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	if (WinQueryFocus(HWND_DESKTOP) == dcd->hwndCnr)
 	  WinSetWindowText(hwndStatus, (CHAR *) GetPString(IDS_COLLECTINGTEXT));
       }
+      while (li->list[y]) {
+        for (ulMaxFiles = 0; li->list[ulMaxFiles + y] && ulMaxFiles < 65000; ulMaxFiles++) ;	// Count
 
-      for (ulMaxFiles = 0; li->list[ulMaxFiles]; ulMaxFiles++) ;	// Count
-
-      if (ulMaxFiles) {
-	pci = WinSendMsg(dcd->hwndCnr, CM_ALLOCRECORD,
-			 MPFROMLONG(EXTRA_RECORD_BYTES),
-			 MPFROMLONG(ulMaxFiles));
-	if (!pci) {
-	  Runtime_Error(pszSrcFile, __LINE__, PCSZ_CM_ALLOCRECORD);
-	  break;
-	}
-	else {
-	  ITIMER_DESC itdSleep = { 0 };		// 06 Feb 08 SHL
-	  InitITimer(&itdSleep, 500);		// Sleep every 500 mSec
-	  pciFirst = pci;
-	  // 04 Jan 08 SHL fixme like comp.c if CM_ALLOCRECORD returns unexpected record count
-	  for (x = 0; li->list[x]; x++) {
-	    nm = 1;
-	    hdir = HDIR_CREATE;
-	    DosError(FERR_DISABLEHARDERR);
-	    if (FindCnrRecord(dcd->hwndCnr,
-			      li->list[x],
-			      NULL,
-			      FALSE,
-			      FALSE,
-			      TRUE)) {
-	      pci = UpdateCnrRecord(dcd->hwndCnr, li->list[x], FALSE, dcd);
-	      if (Filter((PMINIRECORDCORE) pci, (PVOID) & dcd->mask)) {
-		pci->rc.flRecordAttr &= ~CRA_FILTERED;
-		WinSendMsg(dcd->hwndCnr, CM_INVALIDATERECORD, MPVOID,
-			   MPFROM2SHORT(0, CMA_REPOSITION | CMA_ERASE));
-	      }
-	      pci = (PCNRITEM) pci->rc.preccNextRecord;
-	      if (pciP)
-		pciP->rc.preccNextRecord = (PMINIRECORDCORE) pci;
-	      else
-		pciFirst = pci;
-	    }
-	    else if (*li->list[x] &&
-		!DosQueryPathInfo(li->list[x], FIL_QUERYFULLNAME,
-				  fullname, sizeof(fullname)) &&
-		!IsRoot(fullname) &&
-		!xDosFindFirst(fullname,
-			       &hdir,
-			       FILE_NORMAL | FILE_DIRECTORY |
-			       FILE_ARCHIVED | FILE_SYSTEM |
-			       FILE_HIDDEN | FILE_READONLY,
-			       &fb4, sizeof(fb4), &nm, FIL_QUERYEASIZEL)) {
-	      DosFindClose(hdir);
-	      priority_normal();
-		*fb4.achName = 0;
-		ullTotalBytes = FillInRecordFromFFB(dcd->hwndCnr,
-						    pci,
-						    fullname, &fb4, FALSE, dcd);
-		dcd->ullTotalBytes += ullTotalBytes;
-		pciP = pci;
-		pci = (PCNRITEM) pci->rc.preccNextRecord;
-	    }
-	    else {
-	      // Oops - fixme to complain?
-	      pciT = pci;
-	      pci = (PCNRITEM) pci->rc.preccNextRecord;
-	      if (pciP)
-		pciP->rc.preccNextRecord = (PMINIRECORDCORE) pci;
-	      else
-		pciFirst = pci;
-	      if (pciT)
-		FreeCnrItemData(pciT); // FreeCnrItem(hwnd, pciT);
-	      ulMaxFiles--;		// Remember gone
-	    }
-	    SleepIfNeeded(&itdSleep, 1);	// 09 Feb 08 SHL
-	    // DosSleep(0); //26 Aug 07 GKY 1	// 09 Feb 08 SHL
-	  } // for
-	  if (ulMaxFiles) {
-	    // Some files OK
-	    memset(&ri, 0, sizeof(RECORDINSERT));
-	    ri.cb = sizeof(RECORDINSERT);
-	    ri.pRecordOrder = (PRECORDCORE) CMA_END;
-	    ri.pRecordParent = (PRECORDCORE) 0;
-	    ri.zOrder = (ULONG) CMA_TOP;
-	    ri.cRecordsInsert = ulMaxFiles;
-	    ri.fInvalidateRecord = TRUE;
-	    WinSendMsg(dcd->hwndCnr,
-		       CM_INSERTRECORD, MPFROMP(pciFirst), MPFROMP(&ri));
-	    PostMsg(dcd->hwndCnr, UM_RESCAN, MPVOID, MPVOID);
-	  }
-	}
-      }
+        if (ulMaxFiles) {
+          
+          pci = WinSendMsg(dcd->hwndCnr, CM_ALLOCRECORD,
+                           MPFROMLONG(EXTRA_RECORD_BYTES),
+                           MPFROMLONG(ulMaxFiles));
+          if (!pci) {
+            Runtime_Error(pszSrcFile, __LINE__, PCSZ_CM_ALLOCRECORD);
+            break;
+          }
+          else {
+            ITIMER_DESC itdSleep = { 0 };		// 06 Feb 08 SHL
+            InitITimer(&itdSleep, 500);		// Sleep every 500 mSec
+            pciFirst = pci;
+            // 04 Jan 08 SHL fixme like comp.c if CM_ALLOCRECORD returns unexpected record count
+            for (x = y ; li->list[x]; x++) {
+              nm = 1;
+              hdir = HDIR_CREATE;
+              DosError(FERR_DISABLEHARDERR);
+              if (!makeShort &&
+                  FindCnrRecord(dcd->hwndCnr, li->list[x], NULL, FALSE, FALSE, TRUE)) {
+                pci = UpdateCnrRecord(dcd->hwndCnr, li->list[x], FALSE, dcd);
+                if (Filter((PMINIRECORDCORE) pci, (PVOID) & dcd->mask)) {
+                  pci->rc.flRecordAttr &= ~CRA_FILTERED;
+                  WinSendMsg(dcd->hwndCnr, CM_INVALIDATERECORD, MPVOID,
+                             MPFROM2SHORT(0, CMA_REPOSITION | CMA_ERASE));
+                }
+                pci = (PCNRITEM) pci->rc.preccNextRecord;
+                if (pciP)
+                  pciP->rc.preccNextRecord = (PMINIRECORDCORE) pci;
+                else
+                  pciFirst = pci;
+              }
+              else if (*li->list[x] &&
+                  !DosQueryPathInfo(li->list[x], FIL_QUERYFULLNAME,
+                                    fullname, sizeof(fullname)) &&
+                  !IsRoot(fullname) &&
+                  !xDosFindFirst(fullname,
+                                 &hdir,
+                                 FILE_NORMAL | FILE_DIRECTORY |
+                                 FILE_ARCHIVED | FILE_SYSTEM |
+                                 FILE_HIDDEN | FILE_READONLY,
+                                 &fb4, sizeof(fb4), &nm, FIL_QUERYEASIZEL)) {
+                DosFindClose(hdir);
+                priority_normal();
+                *fb4.achName = 0;
+                //DbgMsg(pszSrcFile, __LINE__, "hwndCnr %x pci %x fullname %s pci->rc.preccNextRecord %x x %x Max %x",
+                //       dcd->hwndCnr, pci, fullname, pci->rc.preccNextRecord, x, ulMaxFiles);
+                ullTotalBytes = FillInRecordFromFFB(dcd->hwndCnr,
+                                                    pci,
+                                                    fullname, &fb4, FALSE, dcd);
+                dcd->ullTotalBytes += ullTotalBytes;
+                pciP = pci;
+                pci = (PCNRITEM) pci->rc.preccNextRecord;
+              }
+              else {
+                // Oops - fixme to complain?
+                pciT = pci;
+                pci = (PCNRITEM) pci->rc.preccNextRecord;
+                if (pciP)
+                  pciP->rc.preccNextRecord = (PMINIRECORDCORE) pci;
+                else
+                  pciFirst = pci;
+                if (pciT)
+                  FreeCnrItemData(pciT); // FreeCnrItem(hwnd, pciT);
+                ulMaxFiles--;		// Remember gone
+              }
+              SleepIfNeeded(&itdSleep, 1);	// 09 Feb 08 SHL
+              // DosSleep(0); //26 Aug 07 GKY 1	// 09 Feb 08 SHL
+              if (pciP->rc.preccNextRecord == 0) {
+                y = x + 1;
+                break;
+              }
+              y = x + 1;
+            } // for
+            if (ulMaxFiles) {
+              //DbgMsg(pszSrcFile, __LINE__, "ri %x pciFirst %x x %x Max %x",
+              //         ri, pciFirst, x, ulMaxFiles);
+              // Some files OK
+              memset(&ri, 0, sizeof(RECORDINSERT));
+              ri.cb = sizeof(RECORDINSERT);
+              ri.pRecordOrder = (PRECORDCORE) CMA_END;
+              ri.pRecordParent = (PRECORDCORE) 0;
+              ri.zOrder = (ULONG) CMA_TOP;
+              ri.cRecordsInsert = ulMaxFiles;
+              ri.fInvalidateRecord = TRUE;
+              WinSendMsg(dcd->hwndCnr,
+                         CM_INSERTRECORD, MPFROMP(pciFirst), MPFROMP(&ri));
+              PostMsg(dcd->hwndCnr, UM_RESCAN, MPVOID, MPVOID);
+              makeShort++;
+              ulMaxFiles = 0;
+            }
+          }
+        }
+      } //While
     }
     if (dcd->flWindowAttr & CV_DETAIL)
       WinSendDlgItemMsg(hwnd,
 			COLLECTOR_CNR,
 			CM_INVALIDATERECORD,
-			MPVOID, MPFROM2SHORT(0, CMA_ERASE | CMA_REPOSITION));
+                        MPVOID, MPFROM2SHORT(0, CMA_ERASE | CMA_REPOSITION));
     return 0;
 
   case UM_COLLECTFROMFILE:
