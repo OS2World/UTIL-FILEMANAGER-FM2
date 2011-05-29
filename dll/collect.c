@@ -653,7 +653,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
       PCNRITEM pci, pciFirst, pciT, pciP = NULL;
       RECORDINSERT ri;
       ULONG ulMaxFiles;
-      ULONGLONG ullTotalBytes;
+      ULONGLONG ullTotalBytes, ullInitialTotalBytes;
       CHAR fullname[CCHMAXPATH];
       INT makeShort = 0;
 
@@ -665,8 +665,9 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	if (WinQueryFocus(HWND_DESKTOP) == dcd->hwndCnr)
 	  WinSetWindowText(hwndStatus, (CHAR *) GetPString(IDS_COLLECTINGTEXT));
       }
+      ullInitialTotalBytes = dcd->ullTotalBytes;
       while (li->list[y]) {
-        for (ulMaxFiles = 0; li->list[ulMaxFiles + y] && ulMaxFiles < 65000; ulMaxFiles++) ;	// Count
+        for (ulMaxFiles = 0; li->list[ulMaxFiles + y] && ulMaxFiles < USHRT_MAX; ulMaxFiles++) ;	// Count
 
         if (ulMaxFiles) {
           
@@ -686,7 +687,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
               nm = 1;
               hdir = HDIR_CREATE;
               DosError(FERR_DISABLEHARDERR);
-              if (!makeShort &&
+              if (ullInitialTotalBytes && !makeShort &&
                   FindCnrRecord(dcd->hwndCnr, li->list[x], NULL, FALSE, FALSE, TRUE)) {
                 pci = UpdateCnrRecord(dcd->hwndCnr, li->list[x], FALSE, dcd);
                 if (Filter((PMINIRECORDCORE) pci, (PVOID) & dcd->mask)) {
@@ -760,6 +761,11 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
               ulMaxFiles = 0;
             }
           }
+        }
+        if (makeShort > 1000) {
+          Runtime_Error(pszSrcFile, __LINE__,
+                        "You have exceeded 650,000,000 files which probably means either a momory alocation or a list creation failure. Either way contact us.");
+          break;
         }
       } //While
     }
