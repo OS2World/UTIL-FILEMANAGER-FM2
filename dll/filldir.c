@@ -90,6 +90,9 @@
   20 Nov 10 GKY Rework scanning code to remove redundant scans, prevent double directory
                 entries in the tree container, fix related semaphore performance using
                 combination of event and mutex semaphores
+  30 May 11 GKY Fixed trap caused by passing a nonexistant pci to FillInRecordFromFFB in FillDir
+                because pci is limited to 65535 files. (nRecord is a USHORT) SHL's single loop
+  30 May 11 GKY Added SleepIfNeeded to DosFind and container load loops to improve WPS responsiveness
 
 ***********************************************************************/
 
@@ -97,6 +100,7 @@
 #include <string.h>
 #include <malloc.h>			// _msize _heapchk
 #include <ctype.h>
+#include <limits.h>
 // #include <process.h>			// _beginthread
 
 #define INCL_DOS
@@ -133,6 +137,7 @@
 #include "excputil.h"			// xbeginthread
 #include "fm3dlg.h"			// INFO_LABEL
 #include "pathutil.h"			// AddBackslashToPath
+#include "tmrsvcs.h"			// ITIMER_DESC
 
 VOID StubbyScanThread(VOID * arg);
 
@@ -943,6 +948,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
   BOOL ok = TRUE;
   ULONG ulBufBytes;
   ULONG x;
+  ITIMER_DESC itdSleep = { 0 };		// 30 May 11 GKY
 
   if (isalpha(*szDirBase) && szDirBase[1] == ':' && szDirBase[2] == '\\') {
     if ((driveflags[toupper(*szDirBase) - 'A'] & DRIVE_REMOTE) && fRemoteBug)
@@ -979,9 +985,10 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		       ulBufBytes,
 		       &ulFindCnt,
 		       FIL_QUERYEASIZEL);
-    priority_normal();
+    //priority_normal();
     pszFileSpec[strlen(pszFileSpec) - 1] = 0;	// Chop off wildcard
     if (!rc) {
+      InitITimer(&itdSleep, 500);
       do {
 	/*
 	 * remove . and .. from list if present
@@ -1087,10 +1094,10 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	      }
 	      cAffbTotal += ulSelCnt;
 	      // 15 Sep 09 SHL allow timed updates to see
-	      if (dcd) {
+	      /*if (dcd) {
 		dcd->totalfiles += ulSelCnt;
 		dcd->ullTotalBytes += ullTotalBytes;
-	      }
+	      } */  //30 May 11 GKY caused counter to increment twice
 	    }
 	    else {
 	      saymsg(MB_ENTER,
@@ -1105,9 +1112,10 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	DosError(FERR_DISABLEHARDERR);
 	ulFindCnt = ulFindMax;
 	rc = xDosFindNext(hdir, paffbFound, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZEL);
-	priority_normal();
+	//priority_normal();
 	if (rc)
-	  DosError(FERR_DISABLEHARDERR);
+          DosError(FERR_DISABLEHARDERR);
+        SleepIfNeeded(&itdSleep, 1);
       } while (!rc);
 
       DosFindClose(hdir);
@@ -1121,44 +1129,52 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	if (stopflag && *stopflag)
 	  goto Abort;
 
-	pciFirst = WinSendMsg(hwndCnr, CM_ALLOCRECORD,
-			      MPFROMLONG(EXTRA_RECORD_BYTES), MPFROMLONG(cAffbTotal));
+        pci = NULL;
+        ullTotalBytes = 0;
+        pffbFile = paffbTotal;
+        for (x = 0; x < cAffbTotal; x++) {
+          ULONG ulRecsToInsert;
 
-	if (!pciFirst) {
-	  Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
-		    GetPString(IDS_CMALLOCRECERRTEXT));
-	  ok = FALSE;
-	  ullTotalBytes = 0;
-	}
-	else {
-	  // 04 Jan 08 SHL fixme like comp.c to handle less than ulSelCnt records
-	  if (hwndStatus && dcd &&
-	      dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
-	    WinSetWindowText(hwndStatus, (CHAR *) GetPString(IDS_PLEASEWAITCOUNTINGTEXT));
-	  }
-	  pci = pciFirst;
-	  ullTotalBytes = 0;
-	  pffbFile = paffbTotal;
-	  for (x = 0; x < cAffbTotal; x++) {
-	    ullBytes = FillInRecordFromFFB(hwndCnr, pci, pszFileSpec,
-					   pffbFile, partial, dcd);
-	    pci = (PCNRITEM) pci->rc.preccNextRecord;
-	    ullTotalBytes += ullBytes;
-	    // 15 Sep 09 SHL allow timed updates to see
-	    if (dcd) {
-	      dcd->totalfiles = x;
-	      dcd->ullTotalBytes = ullTotalBytes;
-	    }
-	    // Can not use offset since we have merged lists - this should be equivalent
-	    pffbFile = (PFILEFINDBUF4L)((PBYTE)pffbFile + sizeof(FILEFINDBUF4L));
-	  }
-	  if (cAffbTotal) {
+          if (pci ==NULL) {
+            ulRecsToInsert = cAffbTotal - x <  USHRT_MAX  ? cAffbTotal - x : USHRT_MAX;
+            pciFirst = WinSendMsg(hwndCnr, CM_ALLOCRECORD,
+                                  MPFROMLONG(EXTRA_RECORD_BYTES), MPFROMLONG(ulRecsToInsert));
+
+            if (!pciFirst) {
+              Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
+                        GetPString(IDS_CMALLOCRECERRTEXT));
+              ok = FALSE;
+              ullTotalBytes = 0;
+              break;
+            }
+            else {
+              // 04 Jan 08 SHL fixme like comp.c to handle less than ulSelCnt records
+              if (hwndStatus && dcd &&
+                  dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
+                WinSetWindowText(hwndStatus, (CHAR *) GetPString(IDS_PLEASEWAITCOUNTINGTEXT));
+              }
+              pci = pciFirst;
+            }
+          }
+          ullBytes = FillInRecordFromFFB(hwndCnr, pci, pszFileSpec,
+                                         pffbFile, partial, dcd);
+          pci = (PCNRITEM) pci->rc.preccNextRecord;
+          ullTotalBytes += ullBytes;
+          // 15 Sep 09 SHL allow timed updates to see
+          if (dcd) {
+            dcd->totalfiles = x;
+            dcd->ullTotalBytes = ullTotalBytes;
+          }
+          // Can not use offset since we have merged lists - this should be equivalent
+          pffbFile = (PFILEFINDBUF4L)((PBYTE)pffbFile + sizeof(FILEFINDBUF4L));
+
+          if (pci == NULL && ulRecsToInsert) {
 	    memset(&ri, 0, sizeof(RECORDINSERT));
 	    ri.cb = sizeof(RECORDINSERT);
 	    ri.pRecordOrder = (PRECORDCORE) CMA_END;
 	    ri.pRecordParent = (PRECORDCORE) pciParent;
 	    ri.zOrder = (ULONG) CMA_TOP;
-	    ri.cRecordsInsert = cAffbTotal;
+	    ri.cRecordsInsert = ulRecsToInsert;
 	    ri.fInvalidateRecord = (!fSyncUpdates && dcd &&
 				    dcd->type == DIR_FRAME) ? FALSE : TRUE;
 	    if (!WinSendMsg(hwndCnr, CM_INSERTRECORD,
@@ -1172,11 +1188,14 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		ok = FALSE;
 		ullTotalBytes = 0;
 		if (WinIsWindow((HAB) 0, hwndCnr))
-		  FreeCnrItemList(hwndCnr, pciFirst);
+                  FreeCnrItemList(hwndCnr, pciFirst);
+                pciFirst = NULL;
+                break;
 	      }
 	    }
-	  }
-	}
+          }
+          SleepIfNeeded(&itdSleep, 1);
+        }
 	if (ok) {
 	  ullReturnBytes += ullTotalBytes;
 	  ulReturnFiles += ulFindCnt;
@@ -1958,11 +1977,14 @@ VOID FreeCnrItemList(HWND hwnd, PCNRITEM pciFirst)
   PCNRITEM pci = pciFirst;
   PCNRITEM pciNext;
   USHORT usCount;
+  ITIMER_DESC itdSleep = { 0 };		// 30 May 11 GKY
 
+  InitITimer(&itdSleep, 500);
   for (usCount = 0; pci; usCount++) {
     pciNext = (PCNRITEM) pci->rc.preccNextRecord;
     FreeCnrItemData(pci);
     pci = pciNext;
+    SleepIfNeeded(&itdSleep, 1);
   }
 
   if (usCount) {
@@ -1983,6 +2005,8 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
 {
   INT remaining = usCnt;
   PCNRITEM pci;
+  ITIMER_DESC itdSleep = { 0 };		// 30 May 11 GKY
+     
 
   if ((usCnt && !pciFirst) || (!usCnt && pciFirst)) {
       Runtime_Error(pszSrcFile, __LINE__, "pciFirst %p usCnt %u mismatch", pciFirst, usCnt);
@@ -2002,6 +2026,7 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
 	  pci = NULL;
 	}
       }
+      InitITimer(&itdSleep, 500);
       while (pci) {
 	// 12 Sep 07 SHL dwg drivebar crash testing - ticket# ???
 	static PCNRITEM pciLast;	// 12 Sep 07 SHL
@@ -2011,11 +2036,12 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
 	if (apiret)
 	  Dos_Error(MB_ENTER, apiret, HWND_DESKTOP, pszSrcFile, __LINE__,
 		    "DosQueryMem failed pci %p pciLast %p", pci, pciLast);
-	FreeCnrItemData(pci);
+        FreeCnrItemData(pci);
 	pciLast = pci;
 	pci = (PCNRITEM)pci->rc.preccNextRecord;
 	if (remaining && --remaining == 0)
-	  break;
+          break;
+        SleepIfNeeded(&itdSleep, 1);
       }
     }
   }

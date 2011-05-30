@@ -35,6 +35,9 @@
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10).
                 Mostly cast CHAR CONSTANT * as CHAR *.
   29 May 10 GKY Suppress ERROR_FILENAME_EXCED_RANGE error because of problem with NTFS
+  30 May 11 GKY Fixed potential trap caused by passing a nonexistant pci to FillInRecordFromFFB
+                in DoInsertion because pci is limited to 65535 files. (nRecord is a USHORT)
+                SHL's single loop fix.
 
 ***********************************************************************/
 
@@ -42,6 +45,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <share.h>
+#include <limits.h>
 
 #define INCL_DOS
 #define INCL_DOSERRORS
@@ -717,60 +721,65 @@ static BOOL DoInsertion(GREP *grep,
   DIRCNRDATA *dcd;
   PCNRITEM pci, pciFirst;
   UINT x;
+  ULONG ulRecsToInsert;
 
   if (!grep || !grep->toinsert || !grep->insertffb || !grep->dir)
     return FALSE;
 
-  pci = WinSendMsg(grep->hwndFiles,
-                   CM_ALLOCRECORD,
-                   MPFROMLONG(EXTRA_RECORD_BYTES),
-                   MPFROMLONG(grep->toinsert));
-  if (!pci) {
-    Win_Error(grep->hwndFiles, grep->hwndFiles, pszSrcFile, __LINE__,
-              PCSZ_CM_ALLOCRECORD);
-  }
-  else {
-    if (grep->sayfiles) {
-      if (!hwndStatus)
-        WinSetWindowText(grep->hwndCurFile, (CHAR *) GetPString(IDS_GREPINSERTINGTEXT));
+  pci = NULL;
+  dcd = INSTDATA(grep->hwndFiles);
+  for (x = 0; grep->insertffb[x]; x++) {
+    if (pci == NULL) {
+      ulRecsToInsert = grep->toinsert - x < USHRT_MAX  ? grep->toinsert - x : USHRT_MAX;
+      pciFirst = WinSendMsg(grep->hwndFiles, CM_ALLOCRECORD,
+                       MPFROMLONG(EXTRA_RECORD_BYTES),
+                       MPFROMLONG(ulRecsToInsert));
+      if (!pciFirst) {
+        Win_Error(grep->hwndFiles, grep->hwndFiles, pszSrcFile, __LINE__,
+                  PCSZ_CM_ALLOCRECORD);
+        freegreplist(grep);
+        return FALSE;
+      }
       else {
-        if (WinQueryFocus(HWND_DESKTOP) == grep->hwndFiles)
-          WinSetWindowText(hwndStatus, (CHAR *) GetPString(IDS_GREPINSERTINGTEXT));
+        pci = pciFirst;
+        if (grep->sayfiles) {
+          if (!hwndStatus)
+            WinSetWindowText(grep->hwndCurFile, (CHAR *) GetPString(IDS_GREPINSERTINGTEXT));
+          else {
+            if (WinQueryFocus(HWND_DESKTOP) == grep->hwndFiles)
+              WinSetWindowText(hwndStatus, (CHAR *) GetPString(IDS_GREPINSERTINGTEXT));
+          }
+        }
       }
     }
-    pciFirst = pci;
-    dcd = INSTDATA(grep->hwndFiles);
-    for (x = 0; grep->insertffb[x]; x++) {
-      FillInRecordFromFFB(grep->hwndFiles,
-                          pci, grep->dir[x], grep->insertffb[x], FALSE, dcd);
-      pci = (PCNRITEM) pci->rc.preccNextRecord;
-      SleepIfNeeded(pitdSleep, 1);
-    } // for
-    memset(&ri, 0, sizeof(RECORDINSERT));
-    ri.cb = sizeof(RECORDINSERT);
-    ri.pRecordOrder = (PRECORDCORE) CMA_END;
-    ri.pRecordParent = (PRECORDCORE) NULL;
-    ri.zOrder = (USHORT) CMA_TOP;
-    ri.cRecordsInsert = grep->toinsert;
-    ri.fInvalidateRecord = TRUE;
-    WinSendMsg(grep->hwndFiles,
-               CM_INSERTRECORD, MPFROMP(pciFirst), MPFROMP(&ri));
-    if (dcd) {
-      //DosEnterCritSec(); //GKY 11-29-08
-      DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
-      dcd->ullTotalBytes += grep->insertedbytes;
-      DosReleaseMutexSem(hmtxFM2Globals);
-      //DosExitCritSec();
+    FillInRecordFromFFB(grep->hwndFiles,
+                        pci, grep->dir[x], grep->insertffb[x], FALSE, dcd);
+    pci = (PCNRITEM) pci->rc.preccNextRecord;
+    //SleepIfNeeded(pitdSleep, 1);
+    if (pci == NULL && ulRecsToInsert) {
+      memset(&ri, 0, sizeof(RECORDINSERT));
+      ri.cb = sizeof(RECORDINSERT);
+      ri.pRecordOrder = (PRECORDCORE) CMA_END;
+      ri.pRecordParent = (PRECORDCORE) NULL;
+      ri.zOrder = (USHORT) CMA_TOP;
+      ri.cRecordsInsert = ulRecsToInsert;
+      ri.fInvalidateRecord = TRUE;
+      WinSendMsg(grep->hwndFiles,
+                 CM_INSERTRECORD, MPFROMP(pciFirst), MPFROMP(&ri));
+      if (dcd) {
+        DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
+        dcd->ullTotalBytes += grep->insertedbytes;
+        DosReleaseMutexSem(hmtxFM2Globals);
+      }
+      pciFirst = NULL;
     }
     SleepIfNeeded(pitdSleep, 1);
+  }//for
     // if (grep->toinsert == FilesToGet)        // 07 Feb 08 SHL
     //  DosSleep(0);  //26 Aug 07 GKY 1 // 07 Feb 08 SHL
     freegreplist(grep);
     PostMsg(grep->hwndFiles, UM_RESCAN, MPVOID, MPVOID);
     return TRUE;
-  }
-  freegreplist(grep);
-  return FALSE;
 }
 
 /**
