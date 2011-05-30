@@ -74,6 +74,7 @@
   27 Sep 09 SHL Drop unused reset logic
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   23 Oct 10 GKY Add ForwardslashToBackslash function to streamline code
+  29 May 11 SHL Rework >65K records logic - prior fix was not quite right
 
 ***********************************************************************/
 
@@ -82,6 +83,7 @@
 #include <share.h>
 #include <io.h>
 #include <ctype.h>
+#include <limits.h>			// USHRT_MAX
 
 #define INCL_DOS
 #define INCL_WIN
@@ -1066,8 +1068,8 @@ Restart:
 	  UINT compErrno = 0;
 	  CHAR buf1[1024];
 	  CHAR buf2[1024];
-          HAB hab = WinQueryAnchorBlock(hwndCnrS);
-          CHAR *moderb = "rb";
+	  HAB hab = WinQueryAnchorBlock(hwndCnrS);
+	  CHAR *moderb = "rb";
 
 	  if (!*pciS->pszFileName ||
 	      !*pciD->pszFileName) {
@@ -1502,18 +1504,9 @@ static VOID FillCnrsThread(VOID *args)
       FILELIST **filesr = NULL;
       UINT numallocl = 0;
       UINT numallocr = 0;
-      INT ret = 0;
       UINT lenl;			// Directory prefix length
       UINT lenr;
-      UINT recsNeeded;
-      UINT recsGotten;
-      PCNRITEM pcilFirst;
-      PCNRITEM pcirFirst;
-      PCNRITEM pcilLast;
-      PCNRITEM pcirLast;
-      PCNRITEM pcil;
-      PCNRITEM pcir;
-      RECORDINSERT ri;
+      ULONG ulRecsNeeded;
       CHAR *pch;
       HWND hwndLeft;
       HWND hwndRight;
@@ -1560,8 +1553,8 @@ static VOID FillCnrsThread(VOID *args)
 	// Use snapshot file
 	FILE *fp;
 	FILEFINDBUF4L fb4;
-        CHAR str[CCHMAXPATH * 2], *p;
-        CHAR *moder = "r";
+	CHAR str[CCHMAXPATH * 2], *p;
+	CHAR *moder = "r";
 
 	memset(&fb4, 0, sizeof(fb4));
 	fp = xfopen(cmp->rightlist, moder, pszSrcFile, __LINE__, FALSE);
@@ -1696,8 +1689,9 @@ static VOID FillCnrsThread(VOID *args)
 
       // We now have two lists of files, both sorted.
       // Count total number of container entries required on each side
-      l = r = 0;
-      recsNeeded = 0;
+      l = 0;
+      r = 0;
+      ulRecsNeeded = 0;
       while ((filesl && filesl[l]) || (filesr && filesr[r])) {
 
 	if (cmp->stop)
@@ -1717,72 +1711,80 @@ static VOID FillCnrsThread(VOID *args)
 	if (x >= 0)
 	  r++;				// On right side
 
-	recsNeeded++;			// Keep count of how many entries req'd
+	ulRecsNeeded++;			// Count how many entries req'd
 
-      }	// while
+      }	// while counting
 
-      if (cmp->stop) {
-	recsNeeded = 0;
-      }
+      if (cmp->stop)
+	ulRecsNeeded = 0;
 
-      // Now insert records into the containers
+      // Insert records into the containers
 
-      if (recsNeeded) {
+      if (ulRecsNeeded) {
+
+	PCNRITEM pcilFirst;
+	PCNRITEM pcirFirst;
+	PCNRITEM pcil = NULL;
+	PCNRITEM pcir = NULL;
+	INT ret;
+	ULONG ulRecsAllocated = 0;
+	ULONG insertedl;
+	ULONG insertedr;
+
+	l = 0;
+	r = 0;
 
 	// Use send to get message on screen quickly
 	WinSendMsg(cmp->hwnd, UM_CONTAINERHWND, MPVOID, MPVOID);
 
-	pcilFirst = WinSendMsg(hwndLeft,
-			       CM_ALLOCRECORD,
-			       MPFROMLONG(EXTRA_RECORD_BYTES),
-			       MPFROMLONG(recsNeeded));
-	if (!pcilFirst) {
-	  Win_Error(hwndLeft, cmp->hwnd, pszSrcFile, __LINE__, PCSZ_CM_ALLOCRECORD);
-	  recsNeeded = 0;
-	}
-      }
-
-      if (recsNeeded) {
-	pcirFirst = WinSendMsg(hwndRight, CM_ALLOCRECORD,
-			       MPFROMLONG(EXTRA_RECORD_BYTES),
-			       MPFROMLONG(recsNeeded));
-	if (!pcirFirst) {
-	  Win_Error(hwndRight, cmp->hwnd, pszSrcFile, __LINE__, PCSZ_CM_ALLOCRECORD);
-	  recsNeeded = 0;
-	  FreeCnrItemList(hwndLeft, pcilFirst);
-	}
-      }
-
-      if (recsNeeded) {
-
-	l = 0;
-	r = 0;
-	pcil = pcilFirst;
-	pcir = pcirFirst;
-	pcilLast = NULL;
-	pcirLast = NULL;
-
-	recsGotten = 0;
 	cmp->cmp->totalleft = 0;
 	cmp->cmp->totalright = 0;
 
 	while ((filesl && filesl[l]) || (filesr && filesr[r])) {
 
+	  ULONG ulRecsToInsert;	// limited to USHRT_MAX
+
 	  if (cmp->stop)
 	    break;
 
-	  if (!pcil) {
-	    Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_INSUFFICIENTMEMORY),
-			  recsNeeded, recsGotten);
-	    break;
-	  }
+	  // Check alloc needed
+	  if (!pcil || !pcir) {
+	    if (pcil != pcir) {
+	      // 2011-05-29 SHL	fixme to GetPString
+	      Runtime_Error(pszSrcFile, __LINE__, "pcil and pcir out of sync");
+	      cmp->stop = TRUE;
+	      break;
+	    }
+	    ulRecsToInsert = ulRecsNeeded - ulRecsAllocated;
+	    if (ulRecsToInsert > USHRT_MAX)
+	      ulRecsToInsert = USHRT_MAX;
 
-	  if (!pcir) {
-	    Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_INSUFFICIENTMEMORY),
-			  recsNeeded, recsGotten);
-	    break;
-	  }
-	  recsGotten++;
+	    pcilFirst = WinSendMsg(hwndLeft,
+				   CM_ALLOCRECORD,
+				   MPFROMLONG(EXTRA_RECORD_BYTES),
+				   MPFROMLONG(ulRecsToInsert));
+	    if (!pcilFirst) {
+	      Win_Error(hwndLeft, cmp->hwnd, pszSrcFile, __LINE__, PCSZ_CM_ALLOCRECORD);
+	      cmp->stop = TRUE;
+	      break;
+	    }
+	    pcirFirst = WinSendMsg(hwndRight, CM_ALLOCRECORD,
+				   MPFROMLONG(EXTRA_RECORD_BYTES),
+				   MPFROMLONG(ulRecsToInsert));
+	    if (!pcirFirst) {
+	      Win_Error(hwndRight, cmp->hwnd, pszSrcFile, __LINE__, PCSZ_CM_ALLOCRECORD);
+	      FreeCnrItemList(hwndLeft, pcilFirst);
+	      pcilFirst = NULL;
+	      cmp->stop = TRUE;
+	      break;
+	    }
+	    pcil = pcilFirst;
+	    pcir = pcirFirst;
+	    insertedl = 0;
+	    insertedr = 0;
+	    ulRecsAllocated += ulRecsToInsert;
+	  } // if need alloc
+
 	  pcir->hwndCnr = hwndRight;
 	  pcir->rc.hptrIcon = (HPOINTER)0;
 	  pcil->hwndCnr = hwndLeft;
@@ -1800,6 +1802,7 @@ static VOID FillCnrsThread(VOID *args)
 	  if (x <= 0) {
 	    // File appears on left side
 	    cmp->cmp->totalleft++;
+	    insertedl++;
 	    BldFullPathName(szBuf, cmp->leftdir, filesl[l]->fname);
 	    pcil->pszFileName = xstrdup(szBuf, pszSrcFile, __LINE__);
 	    pcil->pszDisplayName = pcil->pszFileName + lenl;
@@ -1839,6 +1842,7 @@ static VOID FillCnrsThread(VOID *args)
 	  if (x >= 0) {
 	    // File appears on right side
 	    cmp->cmp->totalright++;
+	    insertedr++;
 	    BldFullPathName(szBuf, cmp->rightdir, filesr[r]->fname);
 	    pcir->pszFileName = xstrdup(szBuf, pszSrcFile, __LINE__);	// 31 Jul 07 SHL
 	    pcir->pszDisplayName = pcir->pszFileName + lenr;
@@ -1926,12 +1930,12 @@ static VOID FillCnrsThread(VOID *args)
 
 	  } // if on both sides
 
-	  if (x <= 0) {
+	  if (x <= 0)
 	    free(filesl[l++]);		// Done with item on left
-	  }
-	  if (x >= 0) {
+
+	  if (x >= 0)
 	    free(filesr[r++]);		// Done with item on right
-	  }
+
 	  // Ensure empty buffers point somewhere
 	  if (!pcil->pszFileName) {
 	    pcil->pszFileName = NullStr;
@@ -1961,87 +1965,88 @@ static VOID FillCnrsThread(VOID *args)
 	  // Avoid hogging systems
 	  SleepIfNeeded(&itdSleep, 0);
 
-	  pcilLast = pcil;
-	  pcirLast = pcir;
 	  pcil = (PCNRITEM)pcil->rc.preccNextRecord;
 	  pcir = (PCNRITEM)pcir->rc.preccNextRecord;
 
+	  if (pcil == NULL || pcir == NULL) {
+	    RECORDINSERT ri;
+	    if (pcil != pcir) {
+	      Runtime_Error(pszSrcFile, __LINE__, "pcil and pcir out of sync");
+	      cmp->stop = TRUE;
+	      break;
+	    }
+	    // Say inserting
+	    WinSendMsg(cmp->hwnd, UM_CONTAINERDIR, MPVOID, MPVOID);
+
+	    // Insert left side
+	    memset(&ri, 0, sizeof(RECORDINSERT));
+	    ri.cb = sizeof(RECORDINSERT);
+	    ri.pRecordOrder = (PRECORDCORE)CMA_END;
+	    ri.pRecordParent = (PRECORDCORE)NULL;
+	    ri.zOrder = (ULONG)CMA_TOP;
+	    ri.cRecordsInsert = ulRecsToInsert;
+	    ri.fInvalidateRecord = FALSE;
+
+	    if (!WinSendMsg(hwndLeft, CM_INSERTRECORD,
+			    MPFROMP(pcilFirst), MPFROMP(&ri))) {
+	      Win_Error(hwndLeft, cmp->hwnd, pszSrcFile, __LINE__, "CM_INSERTRECORD");
+	      FreeCnrItemList(hwndLeft, pcilFirst);
+	      cmp->cmp->totalleft -= insertedl;
+	    }
+	    pcilFirst = NULL;
+
+	    // Insert right side
+	    memset(&ri, 0, sizeof(RECORDINSERT));
+	    ri.cb = sizeof(RECORDINSERT);
+	    ri.pRecordOrder = (PRECORDCORE)CMA_END;
+	    ri.pRecordParent = (PRECORDCORE)NULL;
+	    ri.zOrder = (ULONG)CMA_TOP;
+	    ri.cRecordsInsert = ulRecsToInsert;
+	    ri.fInvalidateRecord = FALSE;
+
+	    if (!WinSendMsg(hwndRight, CM_INSERTRECORD,
+			    MPFROMP(pcirFirst), MPFROMP(&ri))) {
+	      Win_Error(hwndRight, cmp->hwnd, pszSrcFile, __LINE__, "CM_INSERTRECORD");
+	      // 2011-05-29 SHL	fixme?
+	      RemoveCnrItems(hwndLeft, NULL, 0, CMA_FREE | CMA_INVALIDATE);
+	      FreeCnrItemList(hwndRight, pcirFirst);
+	      cmp->cmp->totalright -= insertedr;
+	    }
+	    pcirFirst = NULL;
+	  } // if need insert
+
 	} // while filling left or right
 
-	// If stopped early CM_ALLOCATERECORD partially failed
-	// Free up container records we did not use on other side
-	// Free up items we did not insert in container
-	if (recsGotten < recsNeeded) {
-	  if (pcil) {
-	    if (pcilLast)
-	      pcilLast->rc.preccNextRecord = NULL;
-	    else
-	      pcilFirst = NULL;
-	    FreeCnrItemList(hwndLeft, pcil);
-	  }
+	// If stopped early clean up
+
+	if (cmp->stop) {
+	  // Free up container records that we did not insert in container
+	  if (pcilFirst)
+	    FreeCnrItemList(hwndLeft, pcilFirst);
+
+	  // Free up items we did not insert in container
 	  if (filesl) {
 	    for(; filesl[l]; l++) {
 	      free(filesl[l]);
 	    }
 	  }
-	  if (pcir) {
-	    if (pcirLast)
-	      pcirLast->rc.preccNextRecord = NULL;
-	    else
-	      pcirFirst = NULL;
-	    FreeCnrItemList(hwndRight, pcir);
-	  }
+
+	  if (pcirFirst)
+	    FreeCnrItemList(hwndRight, pcirFirst);
+
 	  if (filesr) {
 	    for (; filesr[r]; r++) {
 	      free(filesr[r]);
 	    }
 	  }
-	  // Reduce count to match what is in containers
-	  recsNeeded = recsGotten;
 	} // if insufficient resources
 
-	  xfree(filesl, pszSrcFile, __LINE__);	// Free header - have already freed elements
+	xfree(filesl, pszSrcFile, __LINE__);	// Free header - have already freed elements
 	filesl = NULL;
 	  xfree(filesr, pszSrcFile, __LINE__);
 	filesr = NULL;
 
-	// Say inserting
-	WinSendMsg(cmp->hwnd, UM_CONTAINERDIR, MPVOID, MPVOID);
-
-	// Insert left side
-	memset(&ri, 0, sizeof(RECORDINSERT));
-	ri.cb = sizeof(RECORDINSERT);
-	ri.pRecordOrder = (PRECORDCORE)CMA_END;
-	ri.pRecordParent = (PRECORDCORE)NULL;
-	ri.zOrder = (ULONG)CMA_TOP;
-	ri.cRecordsInsert = recsNeeded;
-	ri.fInvalidateRecord = FALSE;
-
-	if (!WinSendMsg(hwndLeft, CM_INSERTRECORD,
-			MPFROMP(pcilFirst), MPFROMP(&ri))) {
-	  Win_Error(hwndLeft, cmp->hwnd, pszSrcFile, __LINE__, "CM_INSERTRECORD");
-	  FreeCnrItemList(hwndLeft, pcilFirst);
-	  cmp->cmp->totalleft = 0;
-	}
-
-	// Insert right side
-	memset(&ri, 0, sizeof(RECORDINSERT));
-	ri.cb = sizeof(RECORDINSERT);
-	ri.pRecordOrder = (PRECORDCORE)CMA_END;
-	ri.pRecordParent = (PRECORDCORE)NULL;
-	ri.zOrder = (ULONG)CMA_TOP;
-	ri.cRecordsInsert = recsNeeded;
-	ri.fInvalidateRecord = FALSE;
-
-	if (!WinSendMsg(hwndRight, CM_INSERTRECORD,
-			MPFROMP(pcirFirst), MPFROMP(&ri))) {
-	  Win_Error(hwndRight, cmp->hwnd, pszSrcFile, __LINE__, "CM_INSERTRECORD");
-	  RemoveCnrItems(hwndLeft, NULL, 0, CMA_FREE | CMA_INVALIDATE);
-	  FreeCnrItemList(hwndRight, pcirFirst);
-	  cmp->cmp->totalright = 0;
-	}
-
-      }	// if recsNeeded
+      }	// if ulRecsNeeded
 
       Deselect(hwndLeft);
       Deselect(hwndRight);
@@ -2829,8 +2834,8 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    fakelist[0] = pci->pszFileName;
 	    fakelist[1] = szPathName;
 	    fakelist[2] = NULL;
-            ExecOnList(hwnd, compare, WINDOWED | SEPARATEKEEP,
-                       NULL, NULL, fakelist, NULL,
+	    ExecOnList(hwnd, compare, WINDOWED | SEPARATEKEEP,
+		       NULL, NULL, fakelist, NULL,
 		       pszSrcFile, __LINE__);
 	  }
 	  else {
