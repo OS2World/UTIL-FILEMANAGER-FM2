@@ -10,7 +10,7 @@
 # 27 Jun 07 SHL Allow DEBUG set from command line or environment
 # 03 Jul 07 SHL Change DEBUG semantics to ifdef/ifndef
 # 04 Jul 07 SHL Pass DEBUG settings to sub-make
-# 04 Jul 07 SHL Add missing .autodepend
+# 04 Jul 07 SHL Add missing .AUTODEPEND
 # 06 Aug 07 SHL Tweak CFLAGS for DEBUG builds
 # 26 Aug 07 SHL Clean *.lrf
 # 05 Sep 07 SHL Correct USE_WRC logic
@@ -36,6 +36,7 @@
 # 12 Jul 09 GKY Allow FM/2 to load in high memory call exehdr /hi
 # 30 Jul 09 SHL Avoid attempting to attach resources to fm3res.map
 # 13 Apr 10 SHL Drop HIMEM support
+# 09 Feb 11 SHL Add exceptq .xqs support
 
 # Environment: see makefile_pre.mk
 
@@ -158,7 +159,7 @@ RCFLAGS2 =
 !endif
 
 !ifndef MAKERES
-.c.obj: .autodepend
+.c.obj: .AUTODEPEND
   $(CC) $(CFLAGS) $*.c
 !else
   # !error "MAKERES mode"
@@ -226,7 +227,7 @@ res:
   @echo Updating resources only
   $(MAKE) $(__MAKEOPTS__) $(DEBUG_OPT) MAKERES=1
 
-$(BASERES).obj: $(BASERES).c .autodepend
+$(BASERES).obj: $(BASERES).c .AUTODEPEND
   $(CC) $(CFLAGSR) $(BASERES).c
 
 $(BASERES).res: *.rc *.dlg fm3dll2.h fm3dlg.h copyright.h $(ICONS)
@@ -256,10 +257,12 @@ $(BASERES).lrf: $(__MAKEFILES__)
 $(BASE).sym: $(BASE).map
    @echo Processing: $?
    -perl ..\debugtools\mapsymw.pl $?
+   -mapxqs $?
 
 $(BASERES).sym: $(BASERES).map
    @echo Processing: $?
    -perl ..\debugtools\mapsymw.pl $?
+   -mapxqs $?
 
 !else # MAKERES defined
 
