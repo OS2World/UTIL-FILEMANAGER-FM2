@@ -78,7 +78,8 @@ PSZ BldFullPathName(PSZ pszFullPathName, PCSZ pszPathName, PCSZ pszFileName)
 {
   UINT c = pszPathName ? strlen(pszPathName) : 0;
   if (c > 0) {
-    memcpy(pszFullPathName, pszPathName, c);
+    if (pszFullPathName != pszPathName)
+      memcpy(pszFullPathName, pszPathName, c);
     if (pszFullPathName[c - 1] != '\\')
       pszFullPathName[c++] = '\\';
   }
