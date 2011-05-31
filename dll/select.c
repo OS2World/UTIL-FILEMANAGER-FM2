@@ -6,7 +6,7 @@
   Container item selection support routines
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2008 Steven H. Levine
+  Copyright (c) 2004, 2011 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   25 May 05 SHL Rework for ULONGLONG
@@ -29,6 +29,7 @@
   26 Aug 07 GKY DosSleep(1) in loops changed to (0)
   12 Jan 08 SHL Localize SpecialSelect in comp.c
   29 Feb 08 GKY Use xfree where appropriate
+  31 May 11 SHL Ensure mask->pszMasks[1] initialize to NULL if not used
 
 ***********************************************************************/
 
@@ -150,10 +151,10 @@ VOID SelectList(HWND hwndCnr, BOOL partial, BOOL deselect, BOOL clearfirst,
 	  if (p)
 	    *p = 0;
 	}
-	/* input now contains name of file to select */
+	// Input now contains name of file to select
 	pci = FindCnrRecord(hwndCnr,
 			    input, pciParent, partial, partial, TRUE);
-	if (pci)			/* found it? */
+	if (pci)			// Found it?
 	  WinSendMsg(hwndCnr,
 		     CM_SETRECORDEMPHASIS,
 		     MPFROMP(pci),
@@ -161,7 +162,7 @@ VOID SelectList(HWND hwndCnr, BOOL partial, BOOL deselect, BOOL clearfirst,
 				  CRA_SELECTED));
 	else
 	  errs++;
-	if (errs > 50) {		/* prevent runaway on bad file */
+	if (errs > 50) {		// Prevent runaway on bad file
 
 	  APIRET ret;
 
@@ -229,7 +230,7 @@ VOID SelectAll(HWND hwndCnr, BOOL files, BOOL dirs, PSZ maskstr,
 	    else
 	      pszToMatch = file;
 	    if (*Mask.pszMasks[x] != '/') {
-              if (wildcard(pszToMatch, Mask.pszMasks[x], TRUE)) {
+	      if (wildcard(pszToMatch, Mask.pszMasks[x], TRUE)) {
 		markit = TRUE;
 	      }
 	    }
@@ -252,11 +253,11 @@ VOID SelectAll(HWND hwndCnr, BOOL files, BOOL dirs, PSZ maskstr,
 	if (input) {
 	  ULONG pos;
 	  LONG len;
-          FILE *inputFile;
-          CHAR *moderb = "rb";
+	  FILE *inputFile;
+	  CHAR *moderb = "rb";
 
-          if ((inputFile = xfsopen(pci->pszFileName, moderb, SH_DENYNO,
-                                   pszSrcFile, __LINE__, TRUE)) != NULL) {
+	  if ((inputFile = xfsopen(pci->pszFileName, moderb, SH_DENYNO,
+				   pszSrcFile, __LINE__, TRUE)) != NULL) {
 	    pos = ftell(inputFile);
 	    while (!feof(inputFile)) {
 	      if (pos)
@@ -358,10 +359,10 @@ VOID DeselectAll(HWND hwndCnr, BOOL files, BOOL dirs, PSZ maskstr,
 	  ULONG pos;
 	  LONG len;
 	  FILE *inputFile;
-          CHAR *moderb = "rb";
+	  CHAR *moderb = "rb";
 
-          if ((inputFile = xfsopen(pci->pszFileName, moderb, SH_DENYNO,
-                                   pszSrcFile, __LINE__, TRUE)) != NULL) {
+	  if ((inputFile = xfsopen(pci->pszFileName, moderb, SH_DENYNO,
+				   pszSrcFile, __LINE__, TRUE)) != NULL) {
 	    pos = ftell(inputFile);
 	    while (!feof(inputFile)) {
 	      if (pos)
@@ -528,7 +529,7 @@ VOID RemoveAll(HWND hwndCnr, ULONGLONG * pullTotalBytes,
 
 //== SetMask() Convert mask string to array of pointers to masks ==
 
-VOID SetMask(PSZ maskstr, MASK * mask)
+VOID SetMask(PSZ maskstr, MASK *mask)
 {
   UINT x;
   PSZ p;
@@ -545,11 +546,13 @@ VOID SetMask(PSZ maskstr, MASK * mask)
     while (*p && *p != ';')
       p++;				// Find separator
     if (*p) {
-      *p = 0;				// Replace ;
+      *p = 0;				// Replace ; will nul to terminate string
       p++;
     }
   }					// for
   mask->pszMasks[x] = NULL;		// Mark end
+  if (!x)
+    mask->pszMasks[1] = NULL;		// Need 1 more for multiple mask detect 2011-05-31 SHL
   DosExitCritSec();
 }
 
@@ -654,7 +657,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
   if (!hwndParent)
     return;
 
-  /* count directory containers, build array of hwnds */
+  // Count directory containers, build array of hwnds
   henum = WinBeginEnumWindows(hwndParent);
   while ((hwnd = WinGetNextWindow(henum)) != NULLHANDLE) {
     if (WinWindowFromID(WinWindowFromID(hwnd, FID_CLIENT), DIR_CNR)) {
@@ -683,10 +686,10 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
     WinSendMsg(Cnrs[0].
 	       hwndCnr,
 	       UM_NOTIFY, MPFROMP(GetPString(IDS_BUILDINGLISTSTEXT)), MPVOID);
-    DosSleep(0); //26 Aug 07 GKY 1
+    DosSleep(0);			// Allow other windows to update
   }
 
-  /* count records, build array of pointers to records */
+  // Count records, build array of pointers to records
   for (z = 0; z < numwindows; z++) {
     pci = (PCNRITEM) WinSendMsg(Cnrs[z].hwndCnr,
 				CM_QUERYRECORD,
@@ -713,7 +716,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 				  MPFROMP(pci),
 				  MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
     }
-    DosSleep(0);  //26 Aug 07 GKY 1
+    DosSleep(0);			// Allow other windows to update
     Cnrs[z].numfiles = x;
     if (Cnrs[z].numfiles)
       qsort(Cnrs[z].ss, Cnrs[z].numfiles, sizeof(struct SS), CompSSNames);
@@ -738,7 +741,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		bsres->pci->cbFile + bsres->pci->easize)
 	      Cnrs[z].ss[x].largest = FALSE;
 	    cmp = TestCDates(&bsres->pci->date, &bsres->pci->time,
-	                     &Cnrs[z].ss[x].pci->date, &Cnrs[z].ss[x].pci->time);
+			     &Cnrs[z].ss[x].pci->date, &Cnrs[z].ss[x].pci->time);
 	      /*(Cnrs[z].ss[x].pci->date.year >
 	       bsres->pci->date.year) ? TRUE : (Cnrs[z].ss[x].pci->date.year <
 						bsres->pci->date.
@@ -836,7 +839,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      DosSleep(0); //26 Aug 07 GKY 1
+      DosSleep(0);			// Allow other windows to update
     }
     break;
   case IDM_SELECTMORE:
@@ -847,7 +850,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      DosSleep(0);  //26 Aug 07 GKY 1
+      DosSleep(0);			// Allow other windows to update
     }
     break;
   case IDM_SELECTONE:
@@ -858,7 +861,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      DosSleep(0);  //26 Aug 07 GKY 1
+      DosSleep(0);			// Allow other windows to update
     }
     break;
   case IDM_SELECTNEWER:
@@ -869,7 +872,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      DosSleep(0); //26 Aug 07 GKY 1
+      DosSleep(0);			// Allow other windows to update
     }
     break;
   case IDM_SELECTOLDER:
@@ -880,7 +883,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      DosSleep(0); //26 Aug 07 GKY 1
+      DosSleep(0);			// Allow other windows to update
     }
     break;
   case IDM_SELECTBIGGER:
@@ -891,7 +894,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      DosSleep(0); //26 Aug 07 GKY 1
+      DosSleep(0);			// Allow other windows to update
     }
     break;
   case IDM_SELECTSMALLER:
@@ -902,7 +905,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(TRUE, CRA_SELECTED));
       }
-      DosSleep(0); //26 Aug 07 GKY 1
+      DosSleep(0);			// Allow other windows to update
     }
     break;
 
@@ -914,7 +917,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      DosSleep(0); //26 Aug 07 GKY 1
+      DosSleep(0);			// Allow other windows to update
     }
     break;
   case IDM_DESELECTMORE:
@@ -925,7 +928,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      DosSleep(0); //26 Aug 07 GKY 1
+      DosSleep(0);			// Allow other windows to update
     }
     break;
   case IDM_DESELECTONE:
@@ -936,7 +939,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      DosSleep(0); //26 Aug 07 GKY 1
+      DosSleep(0);			// Allow other windows to update
     }
     break;
   case IDM_DESELECTNEWER:
@@ -947,7 +950,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      DosSleep(0); //26 Aug 07 GKY 1
+      DosSleep(0);			// Allow other windows to update
     }
     break;
   case IDM_DESELECTOLDER:
@@ -958,7 +961,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      DosSleep(0); //26 Aug 07 GKY 1
+      DosSleep(0);			// Allow other windows to update
     }
     break;
   case IDM_DESELECTBIGGER:
@@ -969,7 +972,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      DosSleep(0); //26 Aug 07 GKY 1
+      DosSleep(0);			// Allow other windows to update
     }
     break;
   case IDM_DESELECTSMALLER:
@@ -980,7 +983,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 		     MPFROMP(Cnrs[z].ss[x].pci),
 		     MPFROM2SHORT(FALSE, CRA_SELECTED));
       }
-      DosSleep(0); //26 Aug 07 GKY 1
+      DosSleep(0);			// Allow other windows to update
     }
     break;
   }
