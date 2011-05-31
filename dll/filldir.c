@@ -6,7 +6,7 @@
   Fill Directory Tree Containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2010 Steven H. Levine
+  Copyright (c) 2001, 2011 Steven H. Levine
 
   10 Jan 04 SHL ProcessDirectory: avoid most large drive failures
   24 May 05 SHL Rework Win_Error usage
@@ -84,15 +84,16 @@
   15 Nov 09 GKY Avoid szBuf overflow in FillTreeCnr
   15 Nov 09 GKY Optimize some check code
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10).
-                Mostly cast CHAR CONSTANT * as CHAR *.
+		Mostly cast CHAR CONSTANT * as CHAR *.
   09 MAY 10 JBS Ticket 434 bug fixes, message box text improvements and parameter update
-                improvements.
+		improvements.
   20 Nov 10 GKY Rework scanning code to remove redundant scans, prevent double directory
-                entries in the tree container, fix related semaphore performance using
-                combination of event and mutex semaphores
+		entries in the tree container, fix related semaphore performance using
+		combination of event and mutex semaphores
   30 May 11 GKY Fixed trap caused by passing a nonexistant pci to FillInRecordFromFFB in FillDir
-                because pci is limited to 65535 files. (nRecord is a USHORT) SHL's single loop
+		because pci is limited to 65535 files. (nRecord is a USHORT) SHL's single loop
   30 May 11 GKY Added SleepIfNeeded to DosFind and container load loops to improve WPS responsiveness
+  31 May 11 SHL Disable antique debug code in RemoveCnrItems - really speeds up container close
 
 ***********************************************************************/
 
@@ -242,24 +243,24 @@ VOID StubbyScanThread(VOID * arg)
       if (hmq) {
 	IncrThreadUsage();
 	priority_normal();
-        if (WinIsWindow((HAB)0, StubbyScan->hwndCnr)) {
-          ULONG flags = driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'];
+	if (WinIsWindow((HAB)0, StubbyScan->hwndCnr)) {
+	  ULONG flags = driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'];
 
-          if ((fRScanLocal && ~flags & DRIVE_REMOTE && ~flags & DRIVE_VIRTUAL) ||
-               (fRScanRemote && flags & DRIVE_REMOTE) ||
-               (fRScanVirtual && flags & DRIVE_VIRTUAL)) {
-            if (!(flags & ((fRScanNoWrite ? 0 : DRIVE_NOTWRITEABLE) ||
-                           (fRScanSlow ? 0 : DRIVE_SLOW)))) {
-              UnFlesh(StubbyScan->hwndCnr, StubbyScan->pci);
-              Flesh(StubbyScan->hwndCnr, StubbyScan->pci);
-            }
-          }
-          else {
-            Stubby(StubbyScan->hwndCnr, StubbyScan->pci);
-            //if (!ok)
-             // FixedVolume--;
-          }       
-        }
+	  if ((fRScanLocal && ~flags & DRIVE_REMOTE && ~flags & DRIVE_VIRTUAL) ||
+	       (fRScanRemote && flags & DRIVE_REMOTE) ||
+	       (fRScanVirtual && flags & DRIVE_VIRTUAL)) {
+	    if (!(flags & ((fRScanNoWrite ? 0 : DRIVE_NOTWRITEABLE) ||
+			   (fRScanSlow ? 0 : DRIVE_SLOW)))) {
+	      UnFlesh(StubbyScan->hwndCnr, StubbyScan->pci);
+	      Flesh(StubbyScan->hwndCnr, StubbyScan->pci);
+	    }
+	  }
+	  else {
+	    Stubby(StubbyScan->hwndCnr, StubbyScan->pci);
+	    //if (!ok)
+	     // FixedVolume--;
+	  }
+	}
 	WinDestroyMsgQueue(hmq);
       }
       DecrThreadUsage();
@@ -268,21 +269,20 @@ VOID StubbyScanThread(VOID * arg)
     free(StubbyScan);
   } // if StubbyScan
   ProcessDirCount++;
-  //DbgMsg(pszSrcFile, __LINE__, "ProcessDirCount %i FixedVolume %i",
-  //       ProcessDirCount, FixedVolume);
+  // DbgMsg(pszSrcFile, __LINE__, "ProcessDirCount %i FixedVolume %i", ProcessDirCount, FixedVolume);
   if (ProcessDirCount >= FixedVolume) {
     DosReleaseMutexSem(hmtxScanning);
     DosPostEventSem(hevTreeCnrScanComplete);
     if (fInitialDriveScan && fSwitchTree && hwndTree && fSaveState && pszFocusDir) {
        // Keep drive tree in sync with directory container
       if (hwndMain) {
-        //if (TopWindow(hwndMain, (HWND) 0) == dcd->hwndFrame)
-          if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszFocusDir), MPVOID))
-            free(pszFocusDir);
+	//if (TopWindow(hwndMain, (HWND) 0) == dcd->hwndFrame)
+	  if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszFocusDir), MPVOID))
+	    free(pszFocusDir);
       }
       else {
-        if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszFocusDir), MPVOID))
-          free(pszFocusDir);
+	if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszFocusDir), MPVOID))
+	  free(pszFocusDir);
       }
     }
     ProcessDirCount = 0;
@@ -301,7 +301,7 @@ VOID ProcessDirectoryThread(VOID * arg)
   PROCESSDIR *ProcessDir;
   HAB thab;
   HMQ hmq = (HMQ) 0;
-  
+
 
   DosError(FERR_DISABLEHARDERR);
 
@@ -1114,8 +1114,8 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	rc = xDosFindNext(hdir, paffbFound, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZEL);
 	//priority_normal();
 	if (rc)
-          DosError(FERR_DISABLEHARDERR);
-        SleepIfNeeded(&itdSleep, 1);
+	  DosError(FERR_DISABLEHARDERR);
+	SleepIfNeeded(&itdSleep, 1);
       } while (!rc);
 
       DosFindClose(hdir);
@@ -1129,46 +1129,46 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	if (stopflag && *stopflag)
 	  goto Abort;
 
-        pci = NULL;
-        ullTotalBytes = 0;
-        pffbFile = paffbTotal;
-        for (x = 0; x < cAffbTotal; x++) {
-          ULONG ulRecsToInsert;
+	pci = NULL;
+	ullTotalBytes = 0;
+	pffbFile = paffbTotal;
+	for (x = 0; x < cAffbTotal; x++) {
+	  ULONG ulRecsToInsert;
 
-          if (pci ==NULL) {
-            ulRecsToInsert = cAffbTotal - x <  USHRT_MAX  ? cAffbTotal - x : USHRT_MAX;
-            pciFirst = WinSendMsg(hwndCnr, CM_ALLOCRECORD,
-                                  MPFROMLONG(EXTRA_RECORD_BYTES), MPFROMLONG(ulRecsToInsert));
+	  if (pci ==NULL) {
+	    ulRecsToInsert = cAffbTotal - x <  USHRT_MAX  ? cAffbTotal - x : USHRT_MAX;
+	    pciFirst = WinSendMsg(hwndCnr, CM_ALLOCRECORD,
+				  MPFROMLONG(EXTRA_RECORD_BYTES), MPFROMLONG(ulRecsToInsert));
 
-            if (!pciFirst) {
-              Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
-                        GetPString(IDS_CMALLOCRECERRTEXT));
-              ok = FALSE;
-              ullTotalBytes = 0;
-              break;
-            }
-            else {
-              // 04 Jan 08 SHL fixme like comp.c to handle less than ulSelCnt records
-              if (hwndStatus && dcd &&
-                  dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
-                WinSetWindowText(hwndStatus, (CHAR *) GetPString(IDS_PLEASEWAITCOUNTINGTEXT));
-              }
-              pci = pciFirst;
-            }
-          }
-          ullBytes = FillInRecordFromFFB(hwndCnr, pci, pszFileSpec,
-                                         pffbFile, partial, dcd);
-          pci = (PCNRITEM) pci->rc.preccNextRecord;
-          ullTotalBytes += ullBytes;
-          // 15 Sep 09 SHL allow timed updates to see
-          if (dcd) {
-            dcd->totalfiles = x;
-            dcd->ullTotalBytes = ullTotalBytes;
-          }
-          // Can not use offset since we have merged lists - this should be equivalent
-          pffbFile = (PFILEFINDBUF4L)((PBYTE)pffbFile + sizeof(FILEFINDBUF4L));
+	    if (!pciFirst) {
+	      Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
+			GetPString(IDS_CMALLOCRECERRTEXT));
+	      ok = FALSE;
+	      ullTotalBytes = 0;
+	      break;
+	    }
+	    else {
+	      // 04 Jan 08 SHL fixme like comp.c to handle less than ulSelCnt records
+	      if (hwndStatus && dcd &&
+		  dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
+		WinSetWindowText(hwndStatus, (CHAR *) GetPString(IDS_PLEASEWAITCOUNTINGTEXT));
+	      }
+	      pci = pciFirst;
+	    }
+	  }
+	  ullBytes = FillInRecordFromFFB(hwndCnr, pci, pszFileSpec,
+					 pffbFile, partial, dcd);
+	  pci = (PCNRITEM) pci->rc.preccNextRecord;
+	  ullTotalBytes += ullBytes;
+	  // 15 Sep 09 SHL allow timed updates to see
+	  if (dcd) {
+	    dcd->totalfiles = x;
+	    dcd->ullTotalBytes = ullTotalBytes;
+	  }
+	  // Can not use offset since we have merged lists - this should be equivalent
+	  pffbFile = (PFILEFINDBUF4L)((PBYTE)pffbFile + sizeof(FILEFINDBUF4L));
 
-          if (pci == NULL && ulRecsToInsert) {
+	  if (pci == NULL && ulRecsToInsert) {
 	    memset(&ri, 0, sizeof(RECORDINSERT));
 	    ri.cb = sizeof(RECORDINSERT);
 	    ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -1188,14 +1188,14 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		ok = FALSE;
 		ullTotalBytes = 0;
 		if (WinIsWindow((HAB) 0, hwndCnr))
-                  FreeCnrItemList(hwndCnr, pciFirst);
-                pciFirst = NULL;
-                break;
+		  FreeCnrItemList(hwndCnr, pciFirst);
+		pciFirst = NULL;
+		break;
 	      }
 	    }
-          }
-          SleepIfNeeded(&itdSleep, 1);
-        }
+	  }
+	  SleepIfNeeded(&itdSleep, 1);
+	}
 	if (ok) {
 	  ullReturnBytes += ullTotalBytes;
 	  ulReturnFiles += ulFindCnt;
@@ -1273,7 +1273,7 @@ VOID FillDirCnr(HWND hwndCnr,
 		   pullTotalBytes);
   DosPostEventSem(CompactSem);
 
-#if 0 // fixme to be gone or to be configurable
+#if 0 // 2011-05-31 SHL	fixme to be gone or to be configurable
   {
     int state = _heapchk();
     if (state != _HEAPOK)
@@ -1417,9 +1417,9 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	    pci->rc.flRecordAttr |= (CRA_CURSORED | CRA_SELECTED);
 
 	  if (~driveflags[iDrvNum] & DRIVE_REMOVABLE) {
-            // Fixed volume
-            if (~flags & DRIVE_INVALID && ~flags & DRIVE_NOPRESCAN)
-              FixedVolume++;
+	    // Fixed volume
+	    if (~flags & DRIVE_INVALID && ~flags & DRIVE_NOPRESCAN)
+	      FixedVolume++;
 	    pci->attrFile |= FILE_DIRECTORY;
 	    DosError(FERR_DISABLEHARDERR);
 	    rc = DosQueryPathInfo(szDrive,
@@ -1767,41 +1767,41 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	     (includesyours) ? GetPString(IDS_SUGGEST2TEXT) : NullStr,
 	     szSuggest);
       if (rc == MBID_YES) {
-        HOBJECT hFM2Object;
+	HOBJECT hFM2Object;
 	char s[64];
 	sprintf(s, "PARAMETERS=%s", szSuggest);
-        hFM2Object = WinQueryObject("<FM/2>");
-        if (hFM2Object) {
-          rc = WinSetObjectData(hFM2Object, (PSZ)s);
-        }
-        hFM2Object = WinQueryObject("<FM/2 LITE>");
-        if (hFM2Object) {
-          rc = WinSetObjectData(hFM2Object, (PSZ)s);
-        }
-        hFM2Object = WinQueryObject("<FM/2_AV/2>");
-        if (hFM2Object) {
-          rc = WinSetObjectData(hFM2Object, (PSZ)s);
-        }
-        hFM2Object = WinQueryObject("<FM/2_DIRSIZE>");
-        if (hFM2Object) {
-          rc = WinSetObjectData(hFM2Object, (PSZ)s);
-        }
-        hFM2Object = WinQueryObject("<FM/2_VTREE>");
-        if (hFM2Object) {
-          rc = WinSetObjectData(hFM2Object, (PSZ)s);
-        }
-        hFM2Object = WinQueryObject("<FM/2_VDIR>");
-        if (hFM2Object) {
-          rc = WinSetObjectData(hFM2Object, (PSZ)s);
-        }
-        hFM2Object = WinQueryObject("<FM/2_SEEALL>");
-        if (hFM2Object) {
-          rc = WinSetObjectData(hFM2Object, (PSZ)s);
-        }
-        hFM2Object = WinQueryObject("<FM/2_DATABAR>");
-        if (hFM2Object) {
-          rc = WinSetObjectData(hFM2Object, (PSZ)s);
-        }
+	hFM2Object = WinQueryObject("<FM/2>");
+	if (hFM2Object) {
+	  rc = WinSetObjectData(hFM2Object, (PSZ)s);
+	}
+	hFM2Object = WinQueryObject("<FM/2 LITE>");
+	if (hFM2Object) {
+	  rc = WinSetObjectData(hFM2Object, (PSZ)s);
+	}
+	hFM2Object = WinQueryObject("<FM/2_AV/2>");
+	if (hFM2Object) {
+	  rc = WinSetObjectData(hFM2Object, (PSZ)s);
+	}
+	hFM2Object = WinQueryObject("<FM/2_DIRSIZE>");
+	if (hFM2Object) {
+	  rc = WinSetObjectData(hFM2Object, (PSZ)s);
+	}
+	hFM2Object = WinQueryObject("<FM/2_VTREE>");
+	if (hFM2Object) {
+	  rc = WinSetObjectData(hFM2Object, (PSZ)s);
+	}
+	hFM2Object = WinQueryObject("<FM/2_VDIR>");
+	if (hFM2Object) {
+	  rc = WinSetObjectData(hFM2Object, (PSZ)s);
+	}
+	hFM2Object = WinQueryObject("<FM/2_SEEALL>");
+	if (hFM2Object) {
+	  rc = WinSetObjectData(hFM2Object, (PSZ)s);
+	}
+	hFM2Object = WinQueryObject("<FM/2_DATABAR>");
+	if (hFM2Object) {
+	  rc = WinSetObjectData(hFM2Object, (PSZ)s);
+	}
       }
       else if (rc == MBID_CANCEL) {
 	fDontSuggestAgain = TRUE;
@@ -2006,7 +2006,7 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
   INT remaining = usCnt;
   PCNRITEM pci;
   ITIMER_DESC itdSleep = { 0 };		// 30 May 11 GKY
-     
+
 
   if ((usCnt && !pciFirst) || (!usCnt && pciFirst)) {
       Runtime_Error(pszSrcFile, __LINE__, "pciFirst %p usCnt %u mismatch", pciFirst, usCnt);
@@ -2028,7 +2028,7 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
       }
       InitITimer(&itdSleep, 500);
       while (pci) {
-	// 12 Sep 07 SHL dwg drivebar crash testing - ticket# ???
+#if 0 // 12 Sep 07 SHL dwg drivebar crash testing - ticket# ??? - fixme to be gone
 	static PCNRITEM pciLast;	// 12 Sep 07 SHL
 	ULONG ulSize = sizeof(*pci);
 	ULONG ulAttr;
@@ -2036,12 +2036,15 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
 	if (apiret)
 	  Dos_Error(MB_ENTER, apiret, HWND_DESKTOP, pszSrcFile, __LINE__,
 		    "DosQueryMem failed pci %p pciLast %p", pci, pciLast);
-        FreeCnrItemData(pci);
+#endif
+	FreeCnrItemData(pci);
+#if 0 // 12 Sep 07 SHL dwg drivebar crash testing - ticket# ??? - fixme to be gone
 	pciLast = pci;
+#endif
 	pci = (PCNRITEM)pci->rc.preccNextRecord;
 	if (remaining && --remaining == 0)
-          break;
-        SleepIfNeeded(&itdSleep, 1);
+	  break;
+	SleepIfNeeded(&itdSleep, 1);
       }
     }
   }
