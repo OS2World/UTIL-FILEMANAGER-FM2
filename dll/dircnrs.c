@@ -1768,11 +1768,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       PCNRITEM pci;
 
-      if (mp1) {
-	//DosEnterCritSec(); // GKY 11-30-08 moved to SetMask
+      if (mp1)
 	SetMask((CHAR *)mp1, &dcd->mask);
-	//DosExitCritSec();
-      }
+
       dcd->suspendview = 1;
       WinSendMsg(hwnd, CM_FILTER, MPFROMP(Filter), MPFROMP(&dcd->mask));
       dcd->suspendview = 0;
@@ -2830,10 +2828,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		//DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
 	      }
 	    }
-	    if (SHORT2FROMMP(mp1) == CN_EXPANDTREE && !dcd->suspendview) {
+	    if (SHORT2FROMMP(mp1) == CN_EXPANDTREE && !dcd->suspendview)
 	      WinSendMsg(hwnd, UM_FILTER, MPVOID, MPVOID);
-	      //DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
-	    }
+
 	  }
 	}
 	break;
