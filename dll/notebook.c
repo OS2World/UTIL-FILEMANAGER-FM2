@@ -1189,9 +1189,9 @@ MRESULT EXPENTRY CfgTSDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	FILE_SYSTEM | FILE_NORMAL | FILE_READONLY;
       mask.fIsTree = TRUE;
       ulSize = sizeof(MASK);
-      if (PrfQueryProfileData(fmprof, appname, "TreeFilter", &mask, &ulSize)) {
+      if (PrfQueryProfileData(fmprof, appname, "TreeFilter", &mask, &ulSize))
 	SetMask(NULL, &mask);
-      }
+
       if (!mask.attrFile)
 	mask.attrFile = (FILE_READONLY | FILE_NORMAL |
 			 FILE_ARCHIVED | FILE_DIRECTORY |
