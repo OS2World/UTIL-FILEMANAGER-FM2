@@ -2726,11 +2726,9 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_FILTER:
     cmp = INSTDATA(hwnd);
     if (cmp) {
-      if (mp1) {
-	//DosEnterCritSec(); // GKY 11-30-08 moved to SetMask
+      if (mp1)
 	SetMask((CHAR *)mp1, &cmp->dcd.mask);
-	//DosExitCritSec();
-      }
+
       WinSetDlgItemText(hwnd, COMP_NOTE,
 			(CHAR *) GetPString(IDS_COMPHOLDFILTERINGTEXT));
       // cmp->dcd.suspendview = 1;	// 12 Jan 08 SHL appears not to be used here
