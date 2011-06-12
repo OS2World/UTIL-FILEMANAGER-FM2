@@ -29,5 +29,6 @@ typedef struct {
 VOID InitITimer(ITIMER_DESC *pitd, UINT interval_msec);
 BOOL IsITimerExpired(ITIMER_DESC *pitd);
 VOID SleepIfNeeded(ITIMER_DESC *pitd, UINT sleepTime);
+ULONG IdleIfNeeded(ITIMER_DESC *pitd, LONG delta);
 
 #endif // TMRSVCS_H

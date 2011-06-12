@@ -1411,7 +1411,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  strcpy(dcd->directory, fullname);
 	  //DosEnterCritSec(); //GKY 11-27-08
 	  dcd->stopflag++;
-	  //DosExitCritSec();
+          //DosExitCritSec();
+          //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
 	  if (!PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
 	    strcpy(dcd->directory, dcd->previous);
 	    //DosEnterCritSec(); //GKY 11-27-08
@@ -1467,7 +1468,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       sprintf(s, "%s / %s", tb, tf);
       WinSetDlgItemText(dcd->hwndClient, DIR_SELECTED, s);
       if (hwndStatus &&
-	  dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
+          dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
 	PostMsg(dcd->hwndObject, UM_RESCAN2, MPVOID, MPVOID);
 	if ((fSplitStatus && hwndStatus2) || fMoreButtons) {
 	  pci = WinSendMsg(hwnd,
@@ -2312,7 +2313,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case IDM_RESCAN:
 	//DosEnterCritSec(); //GKY 11-27-08
 	dcd->stopflag++;
-	//DosExitCritSec();
+        //DosExitCritSec();
+        //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
 	if (!PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPVOID)) {
 	  //DosEnterCritSec(); //GKY 11-27-08
 	  dcd->stopflag--;
@@ -2450,7 +2452,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  strcpy(dcd->directory, (CHAR *)mp2);
 	  //DosEnterCritSec(); // GKY 11-27-08
 	  dcd->stopflag++;
-	  //DosExitCritSec();
+          //DosExitCritSec();
+          //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
 	  if (!PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
 	    strcpy(dcd->directory, dcd->previous);
 	    //DosEnterCritSec(); // GKY 11-27-08
@@ -2473,8 +2476,6 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	  strcpy(tempname1, dcd->directory);
 	  AddBackslashToPath(tempname1);
-	  //if (tempname1[strlen(tempname1) - 1] != '\\')
-	  //  strcat(tempname1, "\\");
 	  strcat(tempname1, "..");
 	  DosError(FERR_DISABLEHARDERR);
 	  if (!DosQueryPathInfo(tempname1,
@@ -2483,15 +2484,12 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    if (stricmp(dcd->directory, tempname2)) {
 	      strcpy(dcd->previous, dcd->directory);
 	      strcpy(dcd->directory, tempname2);
-	      //DosEnterCritSec(); // GKY 11-27-08
 	      dcd->stopflag++;
-	      //DosExitCritSec();
+              //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
 	      if (!PostMsg(dcd->hwndObject,
 			   UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
 		strcpy(dcd->directory, dcd->previous);
-		//DosEnterCritSec();// GKY 11-27-08
 		dcd->stopflag--;
-		//DosExitCritSec();
 	      }
 	      else if (*dcd->directory) {
 		if (hwndMain)
@@ -2515,14 +2513,11 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    strcpy(tempname, dcd->directory);
 	    strcpy(dcd->directory, dcd->previous);
 	    strcpy(dcd->previous, tempname);
-	    //DosEnterCritSec(); // GKY 11-27-08
-	    dcd->stopflag++;
-	    //DosExitCritSec();
+	    dcd->stopflag++; ;
+            //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
 	    if (!PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
 	      strcpy(dcd->directory, dcd->previous);
-	      //DosEnterCritSec(); // GKY 11-27-08
 	      dcd->stopflag--;
-	      //DosExitCritSec();
 	    }
 	    else if (*dcd->directory) {
 	      if (hwndMain)
@@ -2552,14 +2547,11 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (stricmp(newdir, dcd->directory)) {
 	    strcpy(dcd->previous, dcd->directory);
 	    strcpy(dcd->directory, newdir);
-	    //DosEnterCritSec(); //GKY 11-27-08
 	    dcd->stopflag++;
-	    //DosExitCritSec();
+            //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
 	    if (!PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
 	      strcpy(dcd->directory, dcd->previous);
-	      //DosEnterCritSec(); // GKY 11-27-08
 	      dcd->stopflag--;
-	      //DosExitCritSec();
 	    }
 	    else if (*dcd->directory) {
 	      if (hwndMain)
@@ -3398,14 +3390,11 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		else {
 		  strcpy(dcd->previous, dcd->directory);
 		  strcpy(dcd->directory, pci->pszFileName);
-		  //DosEnterCritSec();  // GKY 11-27-08
 		  dcd->stopflag++;
-		  //DosExitCritSec();
+                  //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
 		  if (!PostMsg(dcd->hwndObject,
 			       UM_RESCAN, MPVOID, MPFROMLONG(1))) {
-		    //DosEnterCritSec();  // GKY 11-27-08
 		    dcd->stopflag--;
-		    //DosExitCritSec();
 		  }
 		  else if (*dcd->directory) {
 		    if (hwndMain)
@@ -3445,14 +3434,11 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				   (CHAR *) GetPString(IDS_RESCANSUGGESTEDTEXT));
 	      }
 	      else {
-		//DosEnterCritSec();  // GKY 11-27-08
 		dcd->stopflag++;
-		//DosExitCritSec();
+                //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
 		if (!PostMsg(dcd->hwndObject,
 			     UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
-		  //DosEnterCritSec(); // GKY 11-27-08
 		  dcd->stopflag--;
-		  //DosExitCritSec();
 		}
 		else if (*dcd->directory) {
 		  if (hwndMain)

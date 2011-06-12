@@ -8,6 +8,8 @@
   Copyright (c) 2008 Steven H. Levine
 
   05 Jan 08 SHL Baseline
+  12 Jun 11 GKY Added IdleIfNeeded to the container/list fill and free loops to improve system
+                responsiveness when dealing with large numbers of items
 
 ***********************************************************************/
 
@@ -106,4 +108,16 @@ VOID SleepIfNeeded(ITIMER_DESC *pitd, UINT sleepTime)
   }
 }
 
-#pragma alloc_text(TMRSVCS,InitITimer,IsITimerExpired,SleepIfNeeded)
+ULONG IdleIfNeeded(ITIMER_DESC *pitd, LONG delta)
+{
+  APIRET rc;
+
+  if (IsITimerExpired(pitd)) {
+    rc = DosSetPriority(PRTYS_THREAD,PRTYC_IDLETIME,delta,0L);
+    InitITimer(pitd, 0);
+    return rc;
+  }
+  return 1;
+}
+
+#pragma alloc_text(TMRSVCS,InitITimer,IsITimerExpired,SleepIfNeeded,IdleIfNeeded)

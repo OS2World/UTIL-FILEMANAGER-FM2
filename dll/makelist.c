@@ -15,6 +15,8 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   29 Feb 08 GKY Use xfree where appropriate
   17 Jul 08 SHL Add SetListOwner for Fortify support
+  12 Jun 11 GKY Added IdleIfNeeded to the freelist loop to improve system
+                responsiveness when freeing lists with large numbers of items
 
 ***********************************************************************/
 
@@ -35,6 +37,7 @@
 #include "newview.h"			// Data declarations
 #include "wrappers.h"			// xfree
 #include "fortify.h"			// 06 May 08 SHL
+#include "tmrsvcs.h"			// ITIMER_DESC
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -84,20 +87,29 @@ VOID FreeListInfo(LISTINFO *li)
 VOID FreeList(CHAR **list)
 {
   UINT x;
-
+  ITIMER_DESC itdSleep = { 0 };		
+           
   if (list) {
+     InitITimer(&itdSleep, 500);
     for (x = 0; list[x]; x++) {
 #ifdef __DEBUG_ALLOC__
       _heap_check();
 #endif
       free(list[x]);
+      if (!IdleIfNeeded(&itdSleep, 30)) { 
+        for (x = x + 1; list[x]; x++) {
+          free(list[x]);
+        }
+        break;
+      }
     }
 #ifdef __DEBUG_ALLOC__
     _heap_check();
 #endif
     free(list);
+    priority_normal();
+    DosPostEventSem(CompactSem);
   }
-  DosPostEventSem(CompactSem);
 }
 
 INT AddToFileList(CHAR *string, FILEFINDBUF4L *ffb4, FILELIST ***list,

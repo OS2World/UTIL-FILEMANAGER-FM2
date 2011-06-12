@@ -94,6 +94,9 @@
 		because pci is limited to 65535 files. (nRecord is a USHORT) SHL's single loop
   30 May 11 GKY Added SleepIfNeeded to DosFind and container load loops to improve WPS responsiveness
   31 May 11 SHL Disable antique debug code in RemoveCnrItems - really speeds up container close
+  12 Jun 11 GKY Added IdleIfNeeded to the container "free" loops to improve system
+                responsiveness when closing containers with large numbers of items
+  12 Jun 11 GKY Replaced SleepIfNeeded with IdleIfNeeded in the container loade loop
 
 ***********************************************************************/
 
@@ -985,7 +988,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		       ulBufBytes,
 		       &ulFindCnt,
 		       FIL_QUERYEASIZEL);
-    //priority_normal();
+    priority_normal();
     pszFileSpec[strlen(pszFileSpec) - 1] = 0;	// Chop off wildcard
     if (!rc) {
       InitITimer(&itdSleep, 500);
@@ -1112,7 +1115,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	DosError(FERR_DISABLEHARDERR);
 	ulFindCnt = ulFindMax;
 	rc = xDosFindNext(hdir, paffbFound, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZEL);
-	//priority_normal();
+	priority_normal();
 	if (rc)
 	  DosError(FERR_DISABLEHARDERR);
 	SleepIfNeeded(&itdSleep, 1);
@@ -1129,6 +1132,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	if (stopflag && *stopflag)
 	  goto Abort;
 
+        InitITimer(&itdSleep, 500);
 	pci = NULL;
 	ullTotalBytes = 0;
 	pffbFile = paffbTotal;
@@ -1168,6 +1172,25 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	  // Can not use offset since we have merged lists - this should be equivalent
 	  pffbFile = (PFILEFINDBUF4L)((PBYTE)pffbFile + sizeof(FILEFINDBUF4L));
 
+          if (!IdleIfNeeded(&itdSleep, 30)) {
+            for (x = x+1; x < cAffbTotal; x++) {
+              ullBytes = FillInRecordFromFFB(hwndCnr, pci, pszFileSpec,
+                                          pffbFile, partial, dcd);
+              pci = (PCNRITEM) pci->rc.preccNextRecord;
+              ullTotalBytes += ullBytes;
+              if (dcd) {
+                dcd->totalfiles = x;
+                dcd->ullTotalBytes = ullTotalBytes;
+              }
+              pffbFile = (PFILEFINDBUF4L)((PBYTE)pffbFile + sizeof(FILEFINDBUF4L));
+              if (pci == NULL) {
+                priority_normal();
+                InitITimer(&itdSleep, 500);
+                break;
+              }
+            }
+          }
+
 	  if (pci == NULL && ulRecsToInsert) {
 	    memset(&ri, 0, sizeof(RECORDINSERT));
 	    ri.cb = sizeof(RECORDINSERT);
@@ -1194,8 +1217,9 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	      }
 	    }
 	  }
-	  SleepIfNeeded(&itdSleep, 1);
-	}
+	  //SleepIfNeeded(&itdSleep, 1);
+        }
+        priority_normal();
 	if (ok) {
 	  ullReturnBytes += ullTotalBytes;
 	  ulReturnFiles += ulFindCnt;
@@ -1984,9 +2008,17 @@ VOID FreeCnrItemList(HWND hwnd, PCNRITEM pciFirst)
     pciNext = (PCNRITEM) pci->rc.preccNextRecord;
     FreeCnrItemData(pci);
     pci = pciNext;
-    SleepIfNeeded(&itdSleep, 1);
+    if (!IdleIfNeeded(&itdSleep, 30)) {
+      for (usCount = usCount + 1; pci; usCount++) {
+        pciNext = (PCNRITEM) pci->rc.preccNextRecord;
+        FreeCnrItemData(pci);
+        pci = pciNext;
+      }
+      break;
+    }
   }
-
+  priority_normal();
+  DosPostEventSem(CompactSem);
   if (usCount) {
     if (!WinSendMsg(hwnd, CM_FREERECORD, MPFROMP(&pci), MPFROMSHORT(usCount))) {
       Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_FREERECORD hwnd %x pci %p cnt %u", hwnd, pci, usCount);
@@ -2044,8 +2076,17 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
 	pci = (PCNRITEM)pci->rc.preccNextRecord;
 	if (remaining && --remaining == 0)
 	  break;
-	SleepIfNeeded(&itdSleep, 1);
+        if (!IdleIfNeeded(&itdSleep, 30)) {
+          while (pci) {
+            FreeCnrItemData(pci);
+            pci = (PCNRITEM)pci->rc.preccNextRecord;
+            if (remaining && --remaining == 0)
+              break;
+          }
+        }
       }
+      priority_normal();
+      DosPostEventSem(CompactSem);
     }
   }
 

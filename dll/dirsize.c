@@ -54,6 +54,7 @@
                 Mostly cast CHAR CONSTANT * as CHAR *.
   20 Nov 10 GKY Check that pTmpDir IsValid and recreate if not found; Fixes hangs caused
                 by temp file creation failures.
+  12 Jun 11 GKY Added SleepIfNeeded in the container fill loop
 
 ***********************************************************************/
 
@@ -95,6 +96,7 @@
 #include "fortify.h"
 #include "excputil.h"			// xbeginthread
 #include "pathutil.h"                   // AddBackslashToPath
+#include "tmrsvcs.h"
 
 typedef struct
 {
@@ -266,7 +268,9 @@ static BOOL ProcessDir(HWND hwndCnr,
   if (!rc) {
     PFILEFINDBUF4L pffbFile;
     ULONG x;
+    ITIMER_DESC itdSleep = { 0 };		// 30 May 11 GKY
 
+    InitITimer(&itdSleep, 500);
     while (!rc) {
 
       priority_normal();
@@ -302,6 +306,7 @@ static BOOL ProcessDir(HWND hwndCnr,
       ulFindCnt = FilesToGet;
       DosError(FERR_DISABLEHARDERR);
       rc = xDosFindNext(hdir, pffbArray, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZEL);
+      SleepIfNeeded(&itdSleep, 1);
     } // while more found
 
     DosFindClose(hdir);

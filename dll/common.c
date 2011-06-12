@@ -149,7 +149,7 @@ MRESULT EXPENTRY CommonFrameWndProc(USHORT id,
 
   case UM_RESCAN:
     if (fAutoTile &&
-	!fAmClosing && !fNoTileUpdate && !ParentIsDesktop(hwnd, (HWND) 0))
+        !fAmClosing && !fNoTileUpdate && !ParentIsDesktop(hwnd, (HWND) 0))
       PostMsg(WinQueryWindow(hwnd, QW_PARENT), UM_RESCAN, MPVOID, MPVOID);
     return 0;
 

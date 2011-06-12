@@ -75,6 +75,7 @@
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   23 Oct 10 GKY Add ForwardslashToBackslash function to streamline code
   29 May 11 SHL Rework >65K records logic - prior fix was not quite right
+  12 Jun 11 GKY Added SleepIfNeeded in the container fill loop
 
 ***********************************************************************/
 
@@ -1342,6 +1343,7 @@ static VOID FillDirList(CHAR *str, UINT skiplen, BOOL recurse,
   ULONG ulBufBytes = sizeof(FILEFINDBUF4L) * FilesToGet;
   APIRET rc;
   static BOOL fDone;
+  ITIMER_DESC itdSleep = { 0 };		// 30 May 11 GKY
 
   if (!str || !*str) {
     Runtime_Error(pszSrcFile, __LINE__, NULL);
@@ -1375,6 +1377,7 @@ static VOID FillDirList(CHAR *str, UINT skiplen, BOOL recurse,
 		     (recurse ? FILE_DIRECTORY : 0),
 		     pffbArray, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZEL);
   if (!rc) {
+    InitITimer(&itdSleep, 500);
     do {
       pffbFile = pffbArray;
       for (x = 0; x < ulFindCnt; x++) {
@@ -1422,6 +1425,7 @@ static VOID FillDirList(CHAR *str, UINT skiplen, BOOL recurse,
       DosError(FERR_DISABLEHARDERR);
       ulFindCnt = FilesToGet;
       rc = xDosFindNext(hDir, pffbArray, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZEL);
+      SleepIfNeeded(&itdSleep, 1);
     } while (!rc);
 
 Abort:

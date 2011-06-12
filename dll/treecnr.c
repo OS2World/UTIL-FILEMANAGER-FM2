@@ -877,7 +877,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       WinSendMsg(dcd->hwndCnr,
 		 CM_INVALIDATERECORD,
-		 MPVOID, MPFROM2SHORT(0, CMA_ERASE | CMA_REPOSITION));
+                 MPVOID, MPFROM2SHORT(0, CMA_ERASE | CMA_REPOSITION));
       PostMsg(dcd->hwndCnr, UM_RESCAN, MPVOID, MPVOID);
     }
     return 0;
