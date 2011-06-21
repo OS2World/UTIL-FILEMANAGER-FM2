@@ -37,6 +37,7 @@
 # 30 Jul 09 SHL Avoid attempting to attach resources to fm3res.map
 # 13 Apr 10 SHL Drop HIMEM support
 # 09 Feb 11 SHL Add exceptq .xqs support
+# 21 Jun 11 GKY Make high memory builds the default
 
 # Environment: see makefile_pre.mk
 
@@ -196,6 +197,7 @@ all: &
      $(BASE).dll &
      $(BASERES).res &
      $(BASERES).dll &
+     loadhigh &
      ipf\fm3.hlp
      
 syms: $(SYMS) .symbolic
@@ -318,4 +320,6 @@ clean: .symbolic
   -del *.map
   -del *.obj
   -del *.res
-  -del *.sym
+  -del *.sym 
+  -del *.xqs
+  

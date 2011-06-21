@@ -20,6 +20,7 @@
 # 18 Nov 08 JBS Ticket 297: Various build improvements/corrections
 # 12 Jul 09 GKY Allow FM/2 to load in high memory call exehdr /hi
 # 13 Apr 10 SHL Drop HIMEM support
+# 21 Jun 11 GKY Add exceptq .xqs support
 
 # Environment: see dll\makefile
 
@@ -129,7 +130,7 @@ RCFLAGS2 =-ad
 !endif
 
 .SUFFIXES:
-.SUFFIXES: .obj .c .res .rc .ipf .sym .map
+.SUFFIXES: .obj .c .res .rc .ipf .sym .map .xqs
 
 !ifdef USE_RC
 .rc.res:

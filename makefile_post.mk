@@ -12,6 +12,8 @@
 # 19 Nov 08 JBS Ticket 297: Removed bldlevel calls
 # 14 Dec 08 SHL Drop EXCEPTQ support - will not be used
 # 24 Jul 09 SHL Comments
+# 21 Jun 11 GKY Add exceptq .xqs support
+# 21 Jun 11 GKY Make high memory builds the default resources only for exes
 
 !ifndef MAKERES
 
@@ -26,6 +28,7 @@ $(BASE).exe: $(BASE).lrf $(BASE).obj $(BASE).res $(BASE).def .explicit
   @echo Attaching resources to $@
   @echo.
   $(RC) $(RCFLAGS2) $(BASE).res $@
+  !exehdr /hi:3 $@
 
 $(BASE).lrf: $(__MAKEFILES__) .explicit
    @%write $^@ $(LFLAGS)
@@ -34,9 +37,10 @@ $(BASE).lrf: $(__MAKEFILES__) .explicit
    @%append $^@ library dll\fm3dll.lib
    @%append $^@ library os2386.lib
 
-$(BASE).sym: $(BASE).map .explicit
+$(BASE).sym: $(BASE).map $(BASE).xqs .explicit
    @echo Processing: $?
-   -perl debugtools\mapsymw.pl $?
+   -perl debugtools\mapsymw.pl $?   
+   -mapxqs $?
 
 !else
 
@@ -68,5 +72,7 @@ clean:: .symbolic .explicit
   -del $(BASE).map
   -del $(BASE).obj
   -del $(BASE).res
+  -del $(BASE).sym
+  -del $(BASE).xqs
 
 # The end

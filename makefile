@@ -26,6 +26,8 @@
 # 14 Dec 08 SHL Build fm3.sym
 # 12 Jul 09 GKY Allow FM/2 to load in high memory call exehdr /hi
 # 13 Apr 10 SHL Drop HIMEM support
+# 21 Jun 11 GKY Add exceptq .xqs support
+# 21 Jun 11 GKY Make high memory builds the default (resources only for exes)
 
 # Environment - see makefile_pre.mk and dll\makefile
 
@@ -131,6 +133,7 @@ clean:: .symbolic
   -del *.obj
   -del *.res
   -del *.sym
+  -del *.xqs
 
 distclean: clean .symbolic
   cd warpin
