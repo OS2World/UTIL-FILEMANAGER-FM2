@@ -1531,7 +1531,7 @@ BEGIN
             WS_SAVEBITS, FCF_SYSMENU | FCF_TITLEBAR | FCF_MINBUTTON |
             FCF_TASKLIST
     BEGIN
-        PUSHBUTTON      "~Open file", EA_OPENFILE, 8, 204, 40, 12,
+        PUSHBUTTON      "~Open file", EA_OPENFILE, 64, 4, 40, 14,
                         BS_NOPOINTERFOCUS
         CTEXT           "These are the EA types this object contains -- pick"
                         " one.", EA_HELP, 58, 206, 236, 8, DT_VCENTER
