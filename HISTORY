@@ -1,5 +1,28 @@
 New stuff at the top.  This list is not necessarily complete.
 
+3.19
+ o Added the option to open the directory container of an item in the collector. Ticket 362 (Gregg)
+ o Finally appear to have fixed the duplicate names in the tree container on drive scanning
+   Ticket 363 (Gregg)
+ o Corrected the drive space display in the drive information dialog. Ticket 367 (Gregg)
+ o Eliminate "Drive not Ready" error when change the "Show in tree" option. Ticket 437 (Gregg)
+ o Force a reload of Archiver.bb2 anytime it is edited using FM/2's archiver editor and on
+   opening the editor if it has been changed on disk. Ticket 438, 441 (Steven, Gregg)
+ o Added an Open file button to the EA editor so multiple files can be edited without opening and 
+   closing the dialog box. Ticket 439 (Gregg)
+ o Prevent an AV/2 hang caused by deletion of the temp directory and check that the temp
+   directory exists before creating temp files also prevents some hangs. Ticket 440, 442 (Gregg)
+ o Fixed trap that occurred if seeall is closed while it is scanning. Ticket 444 (Steven)
+ o Fixed trap that occurred when a scan added more than 64k files to a container. Ticket 446, 448
+   (Steven, Gregg)
+ o Improved UI and PM response during large file scans and container closes. Tickets 452-57
+   (Steven, Gregg)
+ o Eliminate double count up of files and kibs in directory containers Ticket 458 (Gregg)
+ o Removed instructions for updating resources which was badly out of date. Ticket 371 (Gregg)
+ o Added .xqs files and now install debug package by default to better utilize exceptq. 
+   Ticket 447 (Gregg)
+ o Load as much of FM/2 in high memory as possible. (Gregg)  
+
 3.18 
  o Rework compare directories for speed; allow AND'ed selections;
    allow fast cancel from long running operations; more content menu items Ticket 276 (Steven)

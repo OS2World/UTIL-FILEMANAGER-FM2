@@ -4,6 +4,24 @@
  �       See end of document for contact info           �
  읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
 
+FM/2 3.19 I would like to dedicate this release of FM/2 to the memory
+of my parents Ralph and Helen Young both of whom passed away earlier 
+this year. It has been over a year since the last release. The FM/2
+team has been busy with a lot of other projects. This release mostly
+fixes bugs. 
+
+The major change is that this version uses high memory to
+load much of FM/2's code, data and resources. If your version of OS/2
+doesn't support high memory please contact me and I will provide a low
+memory version. If anyone contacts me, I will plan on both a high and
+low memory version (or a way to convert one to the other) for future
+releases.
+
+You can now open a directory container from an item in the collector and
+the EA editor now has a file open option. We also made some improvements
+to FM/2's handling of containers holding large numbers of files
+(greater than 64k). Please see the history file for more details.
+
 FM/2 3.18 This release removes high memory support at least for now.
 Changes made to the openwatcom compiler which adds large file support to the
 open file functions created a problem since DosOpenL doesn't work correctly
