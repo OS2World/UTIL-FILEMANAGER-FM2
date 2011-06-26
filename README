@@ -4,11 +4,10 @@
  �       See end of document for contact info           �
  읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
 
-FM/2 3.19 I would like to dedicate this release of FM/2 to the memory
-of my parents Ralph and Helen Young both of whom passed away earlier 
-this year. It has been over a year since the last release. The FM/2
-team has been busy with a lot of other projects. This release mostly
-fixes bugs. 
+FM/2 3.19 I am dedicating this release of FM/2 to the memory of my
+parents Ralph and Helen Young both of whom passed away earlier  this
+year. It has been over a year since the last release. The FM/2 team has
+been busy with a lot of other projects. This release mostly fixes bugs.
 
 The major change is that this version uses high memory to
 load much of FM/2's code, data and resources. If your version of OS/2
