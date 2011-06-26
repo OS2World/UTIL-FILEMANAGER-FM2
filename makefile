@@ -53,7 +53,7 @@ WARPIN_OPTS = $(WARPIN_OPTS) BUILD_FM2UTILS=$(BUILD_FM2UTILS)
 
 all: dll $(BASE) allexe .symbolic
 
-syms: fm3.sym exesyms dllsyms .symbolic
+syms: fm3.sym fm3.xqs exesyms dllsyms .symbolic
 
 dist: all syms lxlite wpi .symbolic
 
