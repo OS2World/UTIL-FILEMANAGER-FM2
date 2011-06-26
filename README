@@ -12,9 +12,10 @@ fixes bugs.
 
 The major change is that this version uses high memory to
 load much of FM/2's code, data and resources. If your version of OS/2
-doesn't support high memory please contact me and I will provide a low
-memory version. If anyone contacts me, I will plan on both a high and
-low memory version (or a way to convert one to the other) for future
+(Warp 4 pre about Fixpack 13 or Warp 3 pre about Fixpack 37) doesn't
+support high memory please contact me and I will provide a low memory
+version. If anyone contacts me, I will plan on both a high and low
+memory version (or a way to convert one to the other) for future
 releases.
 
 You can now open a directory container from an item in the collector and
