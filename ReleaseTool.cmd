@@ -818,6 +818,7 @@ CfgInit: procedure expose (globals)
                         s = 0
                      end
                   otherwise
+                     nop
                end
                parse upper var line '[' node ']'
                cfg.node.0 = cfg.node.0 + 1
