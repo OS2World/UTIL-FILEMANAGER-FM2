@@ -118,7 +118,9 @@ FILE: shdwmgr.cmd              1  .  Utils
 FILE: logfm2.cmd               10 .  Debug
 FILE: *.map                    10 .  Debug
 FILE: *.sym                    10 .  .
+FILE: *.xqs                    10 .  . 
 FILE: *.map                    10 dll  Debug
 FILE: *.sym                    10 dll  .
+FILE: *.xqs                    10 dll  .
 
 ;NOFILESPACKAGE: 100
