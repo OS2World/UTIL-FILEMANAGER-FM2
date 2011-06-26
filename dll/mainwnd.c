@@ -2431,7 +2431,7 @@ VOID ResizeDrives(HWND hwndT, long xwidth)
       DriveLines++;
     }
   }
-  if (ctrlxpos == 2 && DriveLines)
+  if (ctrlxpos == 1 && DriveLines)
     DriveLines--;
 }
 
