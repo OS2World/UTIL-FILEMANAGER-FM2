@@ -956,7 +956,7 @@ BuildHobbesTxt: procedure expose (globals)
       call charout , 'Email address of the releaser (default:' Hobbes.default_email '): '
       entry = strip(linein())
       if entry = '' then
-         Hobbes.uploader_email_address = default_email
+         Hobbes.uploader_email_address = Hobbes.default_email
       else
          Hobbes.uploader_email_address = entry
       say;say
