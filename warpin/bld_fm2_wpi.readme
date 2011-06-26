@@ -20,10 +20,9 @@ anyone to create the WPI file needed for a Warpin installation of FM/2:
             described below are downloaded
       c) You now have the source files. You also need the binary files.
          These can be obtained in two ways:
-         1) If you are a programmer and you have IBM C++ 3.65 and the OS/2
-            toolkit installed, then you will be referred to below as
-            <Developers>. <Developers> should run NMAKE ALL to build the
-            FM/2 binary files.
+         1) If you are a programmer and you have OpenWatcom C 1.9 then you will 
+            be referred to below as  <Developers>. <Developers> should run 
+            WMAKE ALL to build the FM/2 binary files.
          2) For others, referred to below as <Others>, you should
             a) Download a zipped distribution of FM/2 (e.g. fm2-3_08beta.zip)
             b) Create a new (i.e. empty) directory. This directory will be
@@ -40,7 +39,7 @@ anyone to create the WPI file needed for a Warpin installation of FM/2:
    5) You are now ready to create an FM/2 Warpin installation file: fm2.wpi
       NOTE: The following BLD_FM2_WPI* commands use default values. See the
       documentation below for each program to see what options are available.
-      a) <Developers>: From <trunk-dir>, run NMAKE DIST
+      a) <Developers>: From <trunk-dir>, run WMAKE DIST
       b) <Others>    : Run <trunk-dir>\warpin\BLD_FM2_WPIDIRS SRC=<unzipped-dir>
          <Others>    : Run <trunk-dir>\warpin\BLD_FM2_WPI
    6) To test your new WPI file:
@@ -48,7 +47,7 @@ anyone to create the WPI file needed for a Warpin installation of FM/2:
    7) Periodically you should run SVN UPDATE from the <trunk-dir>. This will
       ensure you have the latest versions of the files. If SVN UPDATE shows
       that files have been added, deleted or updated, then
-      <Developers>:  From <trunk-dir>, run NMAKE ALL
+      <Developers>:  From <trunk-dir>, run WMAKE ALL
       <Others>    :  repeat the COPY commands from 4.c.2.d
       <Others>    :  repeat the commands from 5.b
 

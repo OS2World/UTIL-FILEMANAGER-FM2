@@ -233,6 +233,6 @@ for speed.
 
 .im errors.ipf
 
-.im resource.ipf
+.*.im resource.ipf
 
 
