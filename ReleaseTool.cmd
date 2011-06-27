@@ -743,7 +743,7 @@ SetVer: procedure expose (globals)
       if ver.in = '' then
          do
             say
-            call charout , 'Please enter the version (x.yy.zz) for the pending release: '
+            call charout , 'Please enter the version (x.yy.z) for the pending release: '
             ver.in = linein()
          end
       parse var ver.in num1 '.' num2 '.' num3
@@ -765,8 +765,8 @@ SetVer: procedure expose (globals)
    ver.CSDlevel   = num3 + 0
    ver.full       = ver.major || '.' || ver.minor || '.' || ver.CSDlevel
    ver.list       = ver.major || '.' || right(ver.minor, 2, '0') || '.' || right(ver.CSDlevel, 2, '0')
-   ver.wpi        = translate(ver.list, '-', '.')
-   ver.tag        = translate(ver.list, '_', '.')
+   ver.wpi        = translate(ver.full, '-', '.')
+   ver.tag        = translate(ver.full, '_', '.')
 return
 
 CfgInit: procedure expose (globals)
@@ -781,7 +781,10 @@ CfgInit: procedure expose (globals)
    cfg.SMTP.0     = 0
    cfg.FTP.keys   = 'HOST USERID PASSWORD DIRECTORY FILE DESCRIPTIVE_HOSTNAME'
    cfg.NNTP.keys  = 'HOST USERID PASSWORD FROM SIGNATURE NEWSGROUPS'
+/*
    cfg.SMTP.keys  = 'HOST USERID PASSWORD FROM SIGNATURE COMMAND UTCOFFSET'
+*/
+   cfg.SMTP.keys  = 'HOST PORT USERID PASSWORD FROM SIGNATURE COMMAND UTCOFFSET'
 
    cfg.NNTP.signature_preface     = cfg.crlf || '-- ' || cfg.crlf
    cfg.NNTP.mime_version          = '1.0'
@@ -834,7 +837,7 @@ CfgInit: procedure expose (globals)
                parse var line key_name '=' key_value
                key_name = translate(strip(key_name))
                key_value = strip(key_value)
-               if left(key_value, 1) = '"' then
+               if left(key_value, 1) = '"' & key_name \= 'FROM' then
                   parse var key_value '"' key_value '"'
                select
                   when wordpos(key_name, cfg.node.keys) = 0 then
@@ -1475,7 +1478,6 @@ NNTPSetup: procedure expose (globals)
    call lineout tempfile, ''
    call lineout tempfile, ver.full 'Changes:'
    history_file = 'history'
-   call stream history_file, 'c', 'close'
    do until left(history_line || 'xxx', 3)  = ' o '
       history_line = linein(history_file)
    end
@@ -1934,7 +1936,7 @@ SendEmail: procedure expose (globals)
             return
          end
 
-   socket = ConnectToMailServer(cfg.SMTP.currentSMTP.host)
+   socket = ConnectToMailServer(cfg.SMTP.currentSMTP.host, cfg.SMTP.currentSMTP.port)
    if socket < 0 then
       do
          say 'Unable to connect to' cfg.SMTP.currentSMTP.host
@@ -2130,6 +2132,10 @@ EncodeB64: procedure expose (globals) /* encodes a text string */
 return B64Str  /* end of Encode64 */
 
 ConnectToMailServer: procedure expose (globals)
+   parse arg email_server_name, email_server_port
+   if strip(email_server_port) = '' then
+      email_server_port = 25
+
    myIPaddr = SockGetHostid()
    rc = SockGetHostByAddr(myIPaddr, 'hoststem.')
    if rc = 0 then
@@ -2138,7 +2144,10 @@ ConnectToMailServer: procedure expose (globals)
          return (-1000)
       end
    cfg.myName = hoststem.name
+/*
    rc = SockGetHostByName(cfg.SMTP.currentSMTP.host, 'hoststem.')
+*/
+   rc = SockGetHostByName(email_server_name, 'hoststem.')
    if rc = 0 then
       do
          say 'Error: SockGetHostByAddr'
@@ -2153,7 +2162,7 @@ ConnectToMailServer: procedure expose (globals)
       do
          inetaddr.family = 'AF_INET'
          inetaddr.addr   = serverIPaddr
-         inetaddr.port   = 25
+         inetaddr.port   = email_server_port
          exit_rc         = SockConnect(socket, 'inetaddr.')
       end
    if exit_rc < 0 then
