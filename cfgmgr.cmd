@@ -35,6 +35,7 @@
          if not already done then
             backup existing .\ARCHIVER.BB2 file to .\USER_CONFIG_BACKUP\B4UNZIP6.BB2
             insert the UNZIP v6 entry from .\TMPLATES\ARCHVER.TMP into ,\ARCHIVER.BB2 (at the end)
+      30 Jun 11 JBS Ticket 459: Fix a bug and improve text when support for Unzip v6 has already been added.
 
 */
 
@@ -720,10 +721,10 @@ UpdateArchiverBB2: procedure expose (globals)
             do
                backup_file       = '.\User_Config_backup\B4Unzip6.bb2'
                if stream(backup_file, 'c', 'query exists') \= '' then
-                  if cfg.unattended = 1 then
+                  if cfg.unattended = 0 then
                      do
-                        say 'This process has already been executed.'
-                        if GetResponse("If you want to repeat this proceed, type 'Y': ") \= 'Y' then
+                        say 'Support for Unzip v6 has previously been added.'
+                        if GetResponse("If you want to repeat this process, type 'Y'") \= 'Y' then
                            return
                      end
                   else
@@ -750,6 +751,7 @@ UpdateArchiverBB2: procedure expose (globals)
                         call lineout bb2_file, bb2_lines.j
                      end
                      call stream bb2_file, 'c', 'close'
+                     cfg.action_taken = 1
                   end
                else
                   if cfg.unattended = 1 then
