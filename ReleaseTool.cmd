@@ -51,6 +51,8 @@
  *       - Use DIFF to compare changes in WARNALL builds
  *    31 May 10 JBS Add support of use of PAGER env. variable to the the pager used.
  *    31 May 10 JBS Build zip file and Hobbes txt file in Warpin directory
+ *    29 Jun 11 JBS Ticket 462: Fixed bug in NNTP code and standardized version format to x.yy.z
+ *    02 Jul 11 JBS Ticket 462: Updated Wiki updates instructions per SHL
  *
  * To Do
  *    -  Support multiple SMTP definitions?
@@ -167,6 +169,11 @@ select
             when user_choice = 'C' then
                do /* Open a command line */
                   call Commandline
+                  prev_user_choice = user_choice
+               end
+            when user_choice = 'G' then
+               do /* Lead user through configuration */
+                  call Configuration
                   prev_user_choice = user_choice
                end
             when user_choice = 'S' then
@@ -359,10 +366,7 @@ select
                end
             when user_choice = mainmenu.WIKI_updates_num then
                do /* Wiki updates */
-                  call NotYet user_choice
-                  say '   Update "WikiStart" with the new version:' ver.full
-                  say
-                  say '   Update "RBuild" with the new tag: FM2-' || ver.tag
+                  call WikiUpdates user_choice
                   prev_user_choice = user_choice
                end
             when user_choice = mainmenu.Upload_num then
@@ -409,6 +413,7 @@ select
             call Commandline
          say;say;say
          if user_choice \= 'Q' & ,
+            user_choice \= 'G' & ,
             user_choice \= 'C' & ,
             user_choice \= mainmenu.Test_WPI_file_num then
             '@pause'
@@ -779,12 +784,12 @@ CfgInit: procedure expose (globals)
    cfg.FTP.0      = 0
    cfg.NNTP.0     = 0
    cfg.SMTP.0     = 0
-   cfg.FTP.keys   = 'HOST USERID PASSWORD DIRECTORY FILE DESCRIPTIVE_HOSTNAME'
+   cfg.FTP.keys   = 'HOST USERID PASSWORD DIRECTORY FILE DESCRIPTIVE_HOSTNAME COMMAND'
    cfg.NNTP.keys  = 'HOST USERID PASSWORD FROM SIGNATURE NEWSGROUPS'
 /*
    cfg.SMTP.keys  = 'HOST USERID PASSWORD FROM SIGNATURE COMMAND UTCOFFSET'
 */
-   cfg.SMTP.keys  = 'HOST PORT USERID PASSWORD FROM SIGNATURE COMMAND UTCOFFSET'
+   cfg.SMTP.keys  = 'HOST PORT USERID PASSWORD TO FROM SIGNATURE COMMAND UTCOFFSET'
 
    cfg.NNTP.signature_preface     = cfg.crlf || '-- ' || cfg.crlf
    cfg.NNTP.mime_version          = '1.0'
@@ -888,12 +893,13 @@ DisplayMenu: procedure expose (globals)
          say right(m, 2) || '.' mainmenu.m.text
       end
       say
-      call charout , 'N)ext C)ommandline '
+      call charout , 'N)ext C)ommandline cfG) '
       if cmd.smartsvn \= '' then
          call charout , 'S)martSVN '
-      call charout , 'Q)uit or mennu item number: '
+      call charout , 'Q)uit or menu item number: '
       user_choice = translate(translate(SysGetKey()), 'N', '0d'x)
       if user_choice = 'N' | ,
+         user_choice = 'G' | ,
          user_choice = 'C' | ,
          user_choice = 'Q' | ,
          (cmd.smartsvn \= '' & user_choice = 'S') then
@@ -981,10 +987,10 @@ BuildHobbesTxt: procedure expose (globals)
       replaced_ver_zip = 'fm2-' || translate(linein(), '-', '.') || '.zip'
       say;say
       say 'Data entered:'
-      say '  Name of releaser  :' name
-      say '  Email of releaser :' Hobbes.uploader_email_address
-      say '  OK to list email  :' OKtoListEmail
-      say '  Zip to be replaced:' replaced_ver_zip
+      say '  Name of releaser   :' name
+      say '  Email of releaser  :' Hobbes.uploader_email_address
+      say '  OK to list email   :' OKtoListEmail
+      say '  Zip to be replaced :' replaced_ver_zip
       say;say
       call charout , 'OK to proceed with file write? (Y/n) '
       entry = translate(SysGetKey())
@@ -2187,4 +2193,153 @@ SendDataAndGetServerReply: procedure expose (globals)
       end
    else
       return GetServerReply(socket)
+
+WikiUpdates: procedure expose (globals)
+   call NotYet arg(1)
+   say '1) Add the next version to: http://svn.netlabs.org/fm2/admin/ticket/versions'
+   say '2) Make this version the default'
+   say '3) Add the next milestone'
+   say '4) Make the next milestone the default'
+   say '5) Close the old milestone and move residual tickets to the new one.'
+   say '6) Update "WikiStart" with the newly released version:' ver.full
+   say '7) Update "RBuild" with the new tag: FM2-' || ver.tag
+return
+
+Configuration: procedure expose (globals)
+   do until option = 'S' | option = 'Q'
+      call SysCls
+      say
+      say 'ReleaseTool configuration'
+      say
+      say 'If this is the first time through this configuration, please maake sure all'
+      say 'of the following are properly configured for you. Defaults will not work'
+      say 'for everyone.'
+      say
+      say 'With proper configuration, the following activities can be automated:'
+      say '   Uploads of files (to Netlabs, Hobbes, etc.).'
+      say '   Requesting that Netlabs move the uploaded file.'
+      say '   Email notifications of the release (to lists and/or individuals).'
+      say '   Newsgroup notifications of the release (to vraious newsgroups).'
+      say
+      say "Enter the first letter of the activity to configure or..."
+      say "'S' to save or 'Q' to quit. ('S' or 'Q' will return you to the main menv)."
+      call charout , "Enter 'U', 'R', 'E', 'N', 'S' or 'Q': "
+      option = translate(SysGetKey())
+      say
+      select
+         when option = 'S' then
+            do
+               /* save configuration */
+               call SaveConfiguration
+            end
+         when option = 'Q' then
+            do
+               /* restore initially read configuration */
+               /*
+                * if missing or invalid config data, get confirmation
+                * before restoring file data.
+                */
+            end
+         when option = 'U' then
+            do
+               /* configure uploads                    */
+               call ConfigureUploads
+            end
+         when option = 'R' then
+            do
+               /* configure Netlabs request            */
+               call ConfigureNetlabsRequest
+            end
+         when option = 'E' then
+            do
+               /* configure (other) email notifications*/
+               call ConfigureEmailNotifications
+            end
+         when option = 'N' then
+            do
+               /* configure newsgroup  notifications   */
+               call ConfigureNewsgroupNotifications
+            end
+         otherwise
+            nop
+      end
+   end
+return
+
+SaveConfiguration: procedure expose (globals)
+return
+
+ConfigureUploads: procedure expose (globals)
+   do until option = 'Q'
+      call SysCls
+      say
+      say 'Configure uploads'
+      say
+      say 'The following uploads are currently configured:'
+      do i = 1 to cfg.FTP.0
+         say '   ' || i || ')' cfg.FTP.i.descriptive_hostname
+      end
+      say
+      say 'Enter the number of the upload to configure, or ...'
+      say "'A' to add a new upload definition, or ..."
+      say "'D' to delete one of these definitions, or ..."
+      call charout , "'Q' to return to the previous menu: "
+      option = translate(SysGetKey())
+      say
+      select
+         when option = 'Q' then
+            nop
+         when option = 'A' then
+            call AddUpload
+         when option = 'D' then
+            do
+               say
+               say 'Enter the number of the upload definition to delete.'
+               call charout , '(An invalid entry will cancel the deletion): '
+               i = SysGetKey()
+               say
+               if CheckNum(i, cfg.FTP.0) then
+                  do
+                     call charout , "Confirm deletion of upload #" || i '(y/N): '
+                     if translate(SysGetKey()) = 'Y' then
+                        do
+                        /* Delete an upload definition here */
+                        end
+                  end
+            end
+         when CheckNum(option, cfg.FTP.0) then
+            do
+               /* Edit an upload here */
+               call EditUpload
+            end
+         otherwise
+            nop
+      end
+   end
+return
+
+CheckNum: procedure
+   parse arg num, maxval
+   retval = 0
+   if datatype(num, 'NUM') then
+      if num <= maxval then
+         if num > 0 then
+            if trunc(num) = num then
+               retval = 1
+return retval
+
+AddUpload: procedure expose (globals)
+return
+
+EditUpload: procedure expose (globals)
+return
+
+ConfigureNetlabsRequest: procedure expose (globals)
+return
+
+ConfigureEmailNotifications: procedure expose (globals)
+return
+
+ConfigureNewsgroupNotifications: procedure expose (globals)
+return
 
