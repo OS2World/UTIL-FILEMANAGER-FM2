@@ -37,3 +37,4 @@ fm3.hlp: *.ipf bitmaps\*.bmp ..\..\bitmaps\*.bmp
 
 clean: .symbolic
    -del *.hlp
+   -del *~

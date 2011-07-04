@@ -134,6 +134,7 @@ clean:: .symbolic
   -del *.res
   -del *.sym
   -del *.xqs
+  -del *~
 
 distclean: clean .symbolic
   cd warpin

@@ -11,7 +11,7 @@ BASE=vdir
 
 all: $(BASE).exe $(BASE).res .symbolic
 
-sym: $(BASE).sym .symbolic
+sym: $(BASE).sym $(BASE).xqs .symbolic
 
 $(BASE).res: $(BASE).rc dll\fm3dll.h icons\$(BASE).ico bitmaps\*.bmp
 

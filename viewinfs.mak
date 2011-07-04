@@ -11,7 +11,7 @@ BASE=viewinfs
 
 all: $(BASE).exe $(BASE).res .symbolic
 
-sym: $(BASE).sym .symbolic
+sym: $(BASE).sym $(BASE).xqs .symbolic
 
 $(BASE).res: $(BASE).rc icons\$(BASE).ico
 

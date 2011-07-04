@@ -85,7 +85,7 @@ WARNALL = $(%WARNALL)		# use value from environment
 FORTIFY = $(%FORTIFY)		# use value from environment
 !endif
 
-SYMS = $(BASE).sym $(BASERES).sym # targets for building SYM files
+SYMS = $(BASE).sym $(BASERES).sym $(BASE).xqs $(BASERES).xqs # targets for building SYM files
 
 # Some flags are order dependent - see OpenWatcom docs
 # -bc		console app
@@ -256,15 +256,21 @@ $(BASERES).lrf: $(__MAKEFILES__)
    @%append $^@ name $(BASERES)
    @for %f in ($(BASERES).obj) do @%append $^@ file %f
 
-$(BASE).sym: $(BASE).map
+$(BASE).sym: $(BASE).map .explicit
    @echo Processing: $?
    -perl ..\debugtools\mapsymw.pl $?
-   -mapxqs $?
+   
+$(BASE).xqs: $(BASE).map .explicit
+   @echo Processing: $?
+   -mapxqs $?   
 
-$(BASERES).sym: $(BASERES).map
+$(BASERES).sym: $(BASERES).map .explicit
    @echo Processing: $?
    -perl ..\debugtools\mapsymw.pl $?
-   -mapxqs $?
+   
+$(BASERES).xqs: $(BASERES).map .explicit
+   @echo Processing: $?
+   -mapxqs $?   
 
 !else # MAKERES defined
 
@@ -322,4 +328,5 @@ clean: .symbolic
   -del *.res
   -del *.sym 
   -del *.xqs
+  -del *~
   

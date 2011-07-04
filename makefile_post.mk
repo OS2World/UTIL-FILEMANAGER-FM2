@@ -37,10 +37,13 @@ $(BASE).lrf: $(__MAKEFILES__) .explicit
    @%append $^@ library dll\fm3dll.lib
    @%append $^@ library os2386.lib
 
-$(BASE).sym: $(BASE).map 
+$(BASE).xqs: $(BASE).map .explicit
    @echo Processing: $?
-   -perl debugtools\mapsymw.pl $?  
    -mapxqs $?
+
+$(BASE).sym: $(BASE).map .explicit
+   @echo Processing: $?
+   -perl debugtools\mapsymw.pl $?   
 
 !else
 
