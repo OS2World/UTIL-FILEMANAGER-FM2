@@ -25,6 +25,7 @@
                 Mostly cast CHAR CONSTANT * as CHAR *.
   01 May 10 GKY Add ENVIRONMENT_SIZE variable to standardize this size everywhere.
   01 May 10 GKY Changes to move environment storage to INI file
+  03 Jul 11 GKY Fixed failure to save associations after reordering item to the top or bottom.
 
 **************************************************************************************/
 
@@ -708,7 +709,8 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    info->next = asshead;
 	    asshead->prev = info;
 	    asshead = info;
-	    WinSendMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
+            WinSendMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
+            save_associations();
 	  }
 	}
       }
@@ -734,7 +736,8 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    info->prev = asstail;
 	    asstail->next = info;
 	    asstail = info;
-	    WinSendMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
+            WinSendMsg(hwnd, UM_UNDO, MPVOID, MPVOID);
+            save_associations();
 	  }
 	}
       }
