@@ -39,6 +39,7 @@
                 Mostly cast CHAR CONSTANT * as CHAR *.
   01 May 10 GKY Add ENVIRONMENT_SIZE variable to standardize this size everywhere.
   01 May 10 GKY Changes to move environment storage to INI file
+  03 Jul 11 GKY Fixed problem with creation of duplicate command IDs.
 
 ***********************************************************************/
 
@@ -94,8 +95,8 @@ VOID save_commands(VOID);
 
 static PSZ pszSrcFile = __FILE__;
 static LINKCMDS *cmdtail;
-static BOOL UsedCommandIDs[300];
-static BOOL UsedHotKeyIDs[40];
+static BOOL UsedCommandIDs[300] = {FALSE};
+static BOOL UsedHotKeyIDs[40] = {FALSE};
 static PSZ pszCommandsList;
 static ULONG ulSizeCommandsList = 10000;
 static BOOL fLoadCommandsFromINI = FALSE;
@@ -376,12 +377,12 @@ VOID load_commands(VOID)
   ULONG size;
 
 
-  size = sizeof(BOOL) * 300;
+  /*size = sizeof(BOOL) * 300;
   PrfQueryProfileData(fmprof, FM3Str, "COMMANDS.UsedCommandIDs", &UsedCommandIDs,
                       &size);
   size = sizeof(BOOL) * 40;
   PrfQueryProfileData(fmprof, FM3Str, "COMMANDS.UsedHotKeyIDs", &UsedHotKeyIDs,
-                      &size);
+                      &size);*/    // No need to use profile just count them GKY 02 JUL 11
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "COMMANDS.LoadCommandsFromINI",
                       &fLoadCommandsFromINI, &size);
@@ -506,9 +507,11 @@ VOID load_inicommands(VOID)
             sprintf(key, "COMMAND.%sID", szTitle);
             size = sizeof(ULONG);
             PrfQueryProfileData(fmprof, FM3Str, key, &ID, &size);
+            UsedCommandIDs[ID - IDM_COMMANDSTART] = TRUE; // No need to use profile just count them GKY 02 JUL 11
             sprintf(key, "COMMAND.%sHotKeyID", szTitle);
             size = sizeof(ULONG);
             PrfQueryProfileData(fmprof, FM3Str, key, &HotKeyID, &size);
+            UsedHotKeyIDs[HotKeyID - IDM_COMMANDNUM0] = TRUE;  // No need to use profile just count them GKY 02 JUL 11
             sprintf(key, "COMMAND.%sflags", szTitle);
             size = sizeof(ULONG);
             PrfQueryProfileData(fmprof, FM3Str, key, &flags, &size);
@@ -619,8 +622,10 @@ VOID save_commands(VOID)
       bstripcr(info->title);
       sprintf(key, "COMMAND.%sID", info->title);
       PrfWriteProfileData(fmprof, FM3Str, key, &info->ID, sizeof(INT));
+      UsedCommandIDs[info->ID - IDM_COMMANDSTART] = TRUE;
       sprintf(key, "COMMAND.%sHotKeyID", info->title);
       PrfWriteProfileData(fmprof, FM3Str, key, &info->HotKeyID, sizeof(INT));
+      UsedHotKeyIDs[info->HotKeyID - IDM_COMMANDNUM0] = TRUE;
       if (info->env != NullStr) {
         sprintf(key, "COMMAND.%senv", info->title);
         PrfWriteProfileString(fmprof, FM3Str, key, info->env);
@@ -634,9 +639,9 @@ VOID save_commands(VOID)
       info = info->next;
     } // while info
     PrfWriteProfileData(fmprof, FM3Str, "COMMANDS.UsedCommandIDs", &UsedCommandIDs,
-                        sizeof(BOOL) * 300);
+                        sizeof(BOOL) * 300); // left for backward compatability GKY 02 Jul 11
     PrfWriteProfileData(fmprof, FM3Str, "COMMANDS.UsedHotKeyIDs", &UsedHotKeyIDs,
-                        sizeof(BOOL) * 40);
+                        sizeof(BOOL) * 40);// left for backward compatability GKY 02 Jul 11
     ulSizeCommandsList = strlen(pszCommandsList) + 1;
     PrfWriteProfileData(fmprof, FM3Str, "COMMANDS.SizeSortOrder",
                         &ulSizeCommandsList, sizeof(ULONG));
@@ -681,7 +686,7 @@ LINKCMDS *add_command(COMMAND *addme, BOOL fDontCheckHotKey)
           break;
         }
         else
-          return NULL;
+          return (LINKCMDS *) -1;
       }
       info = info->next;
     }
@@ -1015,6 +1020,8 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           if (temp->HotKeyID == 0)
             fDontCheckHotKey = TRUE;
           info = add_command(temp, fDontCheckHotKey);
+          if (info == (LINKCMDS *) -1)
+            break;
         }
         else {
           free(temp->pszCmdLine);
