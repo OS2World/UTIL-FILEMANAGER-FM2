@@ -199,7 +199,7 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
       while (strchr(szCmdLine, '\"'))
 	   remove_first_occurence_of_character("\"", szCmdLine);
       if ((szArgs[0] == '\"' && szArgs[1] == ' ') ||
-	   !strstr(pszCmdLine_, "\\:")||
+	   //!strstr(pszCmdLine_, "\\:")||
 	   strchr(szArgs, '\"') == strrchr(szArgs, '\"'))
 	remove_first_occurence_of_character("\"", szArgs);
       if (strchr(szArgs, '\"') != strrchr(szArgs, '\"'))
