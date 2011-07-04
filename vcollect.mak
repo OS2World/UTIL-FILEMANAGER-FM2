@@ -4,6 +4,7 @@
 
 # 16 Jun 07 GKY Convert to OpenWatcom
 # 23 Feb 08 JBS Add support for building SYM files
+# 04 Jul 11 GKY Make xqs files an explicit target so they will be rebuild if lost somehow.
 
 BASE=vcollect
 

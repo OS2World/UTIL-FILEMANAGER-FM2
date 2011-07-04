@@ -4,6 +4,7 @@
 
 # 16 Jun 07 GKY Convert to OpenWatcom
 # 23 Feb 08 JBS Add support for building SYM files
+# 04 Jul 11 GKY Make xqs files an explicit target so they will be rebuild if lost somehow.
 
 BASE=dirsize
 
@@ -11,7 +12,7 @@ BASE=dirsize
 
 all: $(BASE).exe $(BASE).res .symbolic
 
-sym: $(BASE).sym .symbolic
+sym: $(BASE).sym $(BASE).xqs .symbolic
 
 $(BASE).res: dll\dirsize.h dll\fm3dll.h $(BASE).rc $(BASE).dlg
 

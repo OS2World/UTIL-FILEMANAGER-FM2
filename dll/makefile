@@ -38,6 +38,8 @@
 # 13 Apr 10 SHL Drop HIMEM support
 # 09 Feb 11 SHL Add exceptq .xqs support
 # 21 Jun 11 GKY Make high memory builds the default
+# 04 Jul 11 GKY Make xqs files an explicit target so they will be rebuild if lost somehow.
+# 04 Jul 11 GKY Add eFTE backup files (*~) to clean target
 
 # Environment: see makefile_pre.mk
 

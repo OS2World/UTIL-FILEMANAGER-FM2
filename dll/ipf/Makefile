@@ -7,6 +7,7 @@
 # 15 Jun 07 SHL Update for OpenWatcom
 # 25 Apr 09 SHL Support wipfc; use USE_WIPFC to enable
 # 19 Mar 10 SHL Default to wipfc; support USE_IPFC option to override
+# 04 Jul 11 GKY Add eFTE backup files (*~) to clean target
 
 !ifndef USE_WIPFC			# if not defined on command line
 !ifdef %USE_WIPFC			# if defined in environment
