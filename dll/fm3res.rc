@@ -3355,7 +3355,7 @@ STRINGTABLE
     IDS_INSUFFICIENTMEMORY                "Insufficient memory or %u items (%u)"
     IDS_DOSQAPPTYPEFAILEDTEXT             "DosQAppType failed for %s\n called from %s %d."
     IDS_DOSQAPPTYPEFAILEDTEXT2            "The program %s was not found on the PATH or is not an executible file type."
-    IDS_DOSQAPPTYPEFAILEDTEXT3            "The drive specified in %s is loked or invalid."
+    IDS_DOSQAPPTYPEFAILEDTEXT3            "The drive specified in %s is locked or invalid."
 
     // Add strings that need to be combined by GetPString here
     IDS_SUGGEST1TEXT1                     "Based on this scan of your drives, I would like to suggest the following parameters for your FM/2 program object (each letter following the '/' character is a drive that probably should be excluded from viewing by FM/2 (see README), and the '%%*' on the"
