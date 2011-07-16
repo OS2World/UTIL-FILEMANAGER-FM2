@@ -1531,7 +1531,7 @@ BEGIN
             WS_SAVEBITS, FCF_SYSMENU | FCF_TITLEBAR | FCF_MINBUTTON |
             FCF_TASKLIST
     BEGIN
-        PUSHBUTTON      "~Open file", EA_OPENFILE, 64, 4, 40, 14,
+        PUSHBUTTON      "~Open file", EA_OPENFILE, 54, 4, 40, 14,
                         BS_NOPOINTERFOCUS
         CTEXT           "These are the EA types this object contains -- pick"
                         " one.", EA_HELP, 58, 206, 236, 8, DT_VCENTER
@@ -1548,13 +1548,13 @@ BEGIN
                         PRESPARAMS PP_FONTNAMESIZE, "5.System VIO"
         DEFPUSHBUTTON   "Okay", DID_OK, 4, 4, 40, 14, BS_NOPOINTERFOCUS |
                         WS_GROUP
-        PUSHBUTTON      "~Change", EA_CHANGE, 63, 4, 40, 14,
+        PUSHBUTTON      "~Change", EA_CHANGE, 104, 4, 40, 14,
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "~Add...", EA_ADD, 124, 4, 40, 14, BS_NOPOINTERFOCUS
-        PUSHBUTTON      "~Delete", EA_DELETE, 187, 4, 40, 14,
+        PUSHBUTTON      "~Add...", EA_ADD, 154, 4, 40, 14, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "~Delete", EA_DELETE, 204, 4, 40, 14,
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "~Help", IDM_HELP, 248, 4, 40, 14, BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Cancel", DID_CANCEL, 308, 4, 40, 14,
+        PUSHBUTTON      "~Help", IDM_HELP, 254, 4, 40, 14, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "Cancel", DID_CANCEL, 304, 4, 40, 14,
                         BS_NOPOINTERFOCUS
         LISTBOX         EA_NAMES, 4, 168, 344, 32
     END
