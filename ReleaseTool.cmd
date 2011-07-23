@@ -53,13 +53,32 @@
  *    31 May 10 JBS Build zip file and Hobbes txt file in Warpin directory
  *    29 Jun 11 JBS Ticket 462: Fixed bug in NNTP code and standardized version format to x.yy.z
  *    02 Jul 11 JBS Ticket 462: Updated Wiki updates instructions per SHL
+ *    02 Jul 11 JBS Ticket 462:
+ *       - Major rework of email code.
+ *          - Simplified process to add/change CFG data dynamically
+ *          - Added support for COMMAND to FTP and NNTP code
+ *          - Added support for multiple SMTP servers
+ *          - Added support non-authenticated SMTP transactions
+ *          - Added structure to support other SMTP authentication methods
+ *       - Major rework of CFG file.
+ *          - Improved documentation
+ *          - Added support for COMMAND in all sections
+ *          - New syntax used!
+ *       - Added email to developers asking for work to be committed. (Task #1)
+ *       - Improved support for external commands which perform some or all of a task
+ *          - Improved error handling
+ *          - Added support for FTP and NNTP commands
  *
  * To Do
- *    -  Support multiple SMTP definitions?
- *    -  Support "To" address lists in CFG file?
- *    -  Support optional view of SMTP message bodies
- *    -  Support optional view of NNTP message bodies
- *    -  Improve support for external CMD files which perform some or all of a task
+ *    -  Make sure ##macro## key_values are filled before use?
+ *    -  Better error handling for emails
+ *    -  More flexibility for SMTP settings for the "Commit work" (to FM/2 developers)
+ *       and the "Please move uplaoded file" (to Netlabs) emails. Currently only the
+ *       first SMTP definition found in the CFG file will be used for both.
+ *    -  Support multiple commands for an SMTP (or NNTP or FTP) task?
+ *    -  Support configurable Hobbes names and email address? via parameter or CFG file?
+ *    -  "hidden" display/entry for passwords?
+ *
 */
 
 n = setlocal()
@@ -73,8 +92,6 @@ signal on SYNTAX name Error
 signal on Novalue
 
 globals = 'cfg. ver. mainmenu. cmd. email. Hobbes. available. prev_user_choice currentSMTP'
-/* JBS: Change this to be set dynamically */
-currentSMTP = 1
 
 parse arg args
 if wordpos('/?', args) > 0 | ,
@@ -171,13 +188,15 @@ select
                   call Commandline
                   prev_user_choice = user_choice
                end
+/* JBS: Disabled internal CFG code:
             when user_choice = 'G' then
                do /* Lead user through configuration */
                   call Configuration
                   prev_user_choice = user_choice
                end
+*/
             when user_choice = 'S' then
-               do /* Open a command line */
+               do /* Run SmartSVN */
                   dirsave = directory()
                   svndrive = filespec('D', cmd.smartsvn)
                   svndrive_dirsave = directory(svndrive)
@@ -192,30 +211,13 @@ select
                end
             when user_choice = mainmenu.Ensure_work_done_num then
                do /* Ensure all work (by others) is comitted */
-                  if GatherEmailData(mainmenu.Ensure_work_done_num) = 1 then
+                  if Email(user_choice) \= 0 then
                      do
-                        call SendEmail
-                     end
-                  else
-                     do
-                        say 'Error prevert automated emails.'
-                        say 'This nositification will have to be done manually.'
+                        say 'Error prevented automated emails.'
+                        say 'This notification will have to be done manually.'
                      end
                   prev_user_choice = user_choice
                end
-/*
-                  if cfg.SMTP.currentSMTP.Command = '' then
-                     do
-                        say
-                        say 'A "send-email" command was not found in' cfg.filename || '.'
-                        say 'So this will have to be done manually.'
-                        say
-                        say 'Notify programmers to commit their work for this release.'
-                        say
-                        say 'Use the Netlabs FM/2 Developer''s mailing list and wait 24 hours.'
-                     end
-                  else
-*/
             when user_choice = mainmenu.Verify_tickets_closed_num then
                do /* Verify completed tickets are marked closed */
                   call NotYet user_choice
@@ -344,7 +346,7 @@ select
                   prev_user_choice = user_choice
                end
             when user_choice = mainmenu.Test_WPI_file_num then
-               do
+               do /* Test WPI file */
                   call TestWPI user_choice
                   prev_user_choice = user_choice
                end
@@ -360,7 +362,7 @@ select
                   prev_user_choice = user_choice
                end
             when user_choice = mainmenu.Zip_files_num then
-               do
+               do /* Zip up files */
                   call ZipFiles
                   prev_user_choice = user_choice
                end
@@ -370,33 +372,21 @@ select
                   prev_user_choice = user_choice
                end
             when user_choice = mainmenu.Upload_num then
-               do /* Upload to distribution points and announce. */
+               do /* Upload to distribution points and request Netlabs move of uploaded file. */
                   say
-                  call UploadRelease
+                  if UploadRelease() = 0 then
+                     do
+                        '@pause'
+                        call Email user_choice
+                     end
+                  else	
+                     say 'Upload(s) failed. Email to Netlabs cancelled.'
                   prev_user_choice = user_choice
               end
             when user_choice = mainmenu.Announce_num then
                do /* Announce the release. */
-                  if available.RXSOCK = 1 then
-                     do
-                        say
-                        say 'Posting a note to "Netlabs Community" <community@netlabs.org>'
-                        if GatherEmailData(mainmenu.Upload_num) = 1 then
-                           do
-                              call SendEmail
-                           end
-                        else
-                           do
-                              say 'Errors prevented an automated email.'
-                              say 'This nositification will have to be done manually.'
-                           end
-                           end
-                        else
-                           do
-                              say 'Since RXSOCK.DLL failed to load, this will have to be done manually.'
-                              say
-                           end
-                        call AnnounceToNewsgroups
+                  if Email(user_choice) = 0 then
+                     call AnnounceToNewsgroups
                   prev_user_choice = user_choice
               end
             when user_choice = mainmenu.TRAC_update_and_Next_ver_num then
@@ -412,8 +402,7 @@ select
          if cmdfile_option = 'A' then
             call Commandline
          say;say;say
-         if user_choice \= 'Q' & ,
-            user_choice \= 'G' & ,
+         if user_choice \= 'Q' & /* JBS: Disabled internal CFG code: user_choice \= 'G' & */ ,
             user_choice \= 'C' & ,
             user_choice \= mainmenu.Test_WPI_file_num then
             '@pause'
@@ -427,94 +416,35 @@ n = endlocal()
 return
 
 /*** Subroutines ***/
-GatherEmailData: procedure expose (globals)
-   parse arg tasknum
-   if cfg.SMTP.currentSMTP.userid = '' then
+Email: procedure expose (globals)
+   parse arg user_choice
+   if cfg.SMTP.0 = 0 then
       do
-         say
-         say 'No SMTP userid was found in the CFG file for host:' cfg.SMTP.currentSMTP.host
-         say
-         say 'If one is needed, plese enter it. If not, just press the ENTER key:'
-         response = strip(linein())
-         if response \= '' then
-            cfg.SMTP.currentSMTP.userid = response
+         say 'Error: Cannot send Email. No SMTP sections were found in RELEASETOOL.CFG!'
+         return -1
       end
-   if cfg.SMTP.currentSMTP.password = '' then
-      do
-         say
-         say 'No SMTP password was found in the CFG file for host:' cfg.SMTP.currentSMTP.host
-         say
-         say 'If one is needed, plese enter it. If not, just press the ENTER key:'
-         response = strip(linein())
-         if response \= '' then
-            cfg.SMTP.currentSMTP.password = response
-      end
+   rcx = -1
+   email.body_file = SysTempFilename('SMTPBody.???')
    select
-      when tasknum = mainmenu.Ensure_work_done_num then
+      when user_choice = mainmenu.Ensure_work_done_num then
          do
-            say
-            say 'Sending a notification email to FM/2 developers...'
-            say
-            say 'Proposed list of addressee(s):'
+            server_count = 1
+            page_title = 'Note to FM/2 developer list requesting work commit.'
+            email.subject = 'Request: Commit work for upcoming release.'
             email.to_list = '"FM/2 Developmers" <fm2-dev@netlabs.org>'
-            say '   ' || email.to_list
-            say
-            say 'If this list is acceptable, just press Enter. Otherwise'
-            say 'type in the desired comma-separated list of addressees:'
-            response = strip(linein())
-            if response \= '' then
-               email.to_list = response
-            say
-            say 'Proposed subject:'
-            email.subject = 'Commit work for FM/2' ver.full
-            say '   ' || email.subject
-            say
-            say 'If this subject is acceptable, just press Enter. Otherwise'
-            say 'type in the desired subject for the notification email:'
-            response = strip(linein())
-            if response \= '' then
-               email.subject = response
-            email.body_file = SysTempFilename('SMTPBody.???')
             call lineout email.body_file, 'The release of FM/2' ver.full 'is imminent.'
             call lineout email.body_file, ''
             call lineout email.body_file, 'Please commit all work for this release within 24 hours.'
             call lineout email.body_file, ''
             call lineout email.body_file, 'Reply to this email if there are reasons to delay the release.'
             call stream  email.body_file, 'c', 'close'
-            say
-            say 'The proposed body of the notification email will now be loaded into an editor.'
-            say 'Make desired changes, if any, and save the file.'
-            say
-            call charout, 'Press any key when ready to load the message body into an editor: '
-            call SysGetKey
-            say
-            call ExecCmd cmd.editor email.body_file
-         end
-      when tasknum = mainmenu.Upload_num then
+        end
+      when user_choice = mainmenu.Upload_num then
          do
-            say
-            say 'Sending a notification email to Netlabs...'
-            say
-            say 'Proposed list of addressee(s):'
+            server_count = 1
+            page_title = 'Note to Netlabs requesting move of release file'
+            email.subject = 'Request: Move uploaded file'
             email.to_list = '"Netlabs Community" <community@netlabs.org>'
-            say '   ' || email.to_list
-            say
-            say 'If this list is acceptable, just press Enter. Otherwise'
-            say 'type in the desired comma-separated list of addressees:'
-            response = strip(linein())
-            if response \= '' then
-               email.to_list = response
-            say
-            say 'Proposed subject:'
-            email.subject = 'FM/2 version' ver.full 'released and uploaded.'
-            say '   ' || email.subject
-            say
-            say 'If this subject is acceptable, just press Enter. Otherwise'
-            say 'type in the desired subject for the notification email:'
-            response = strip(linein())
-            if response \= '' then
-               email.subject = response
-            email.body_file = SysTempFilename('SMTPBody.???')
             call lineout email.body_file, 'The FM/2' ver.full 'has been released.'
             call lineout email.body_file, ''
             call lineout email.body_file, 'The file: fm2-' || ver.wpi
@@ -522,22 +452,467 @@ GatherEmailData: procedure expose (globals)
             call lineout email.body_file, ''
             call lineout email.body_file, 'Please move this file to /pub/fm2'
             call stream  email.body_file, 'c', 'close'
-            say
-            say 'The proposed body of the notification email will now be loaded into an editor.'
-            say 'Make desired changes, if any, and save the file.'
-            say
-            call charout, 'Press any key when ready to load the message body into an editor: '
-            call SysGetKey
-            say
-            call ExecCmd cmd.editor email.body_file
-         end
+        end
+      when user_choice = mainmenu.Announce_num then
+         do
+            server_count = cfg.SMTP.0
+            page_title = 'Release announcement'
+            email.subject = 'File Manager/2 v3.19.1 released'
+            call SetDefaultAnnouncementText email.body_file
+        end
       otherwise
          do
-            say 'Program Error: Email for task not yet programmed.'
-            return 0
+            say 'Email for option' user_choice 'has not been implemented.'
+            return
          end
    end
-return 1
+   _text = '<Standard>'
+   do until ((option = 'C') | (option = 'Q'))
+      call SysCls
+      say
+      say 'Email: Verify/edit content'
+      say
+      say 'Subject  :' email.subject
+      say 'Text     :' _text
+      say
+      say 'Type "C" to confirm the above and proceed.'
+      say '     "Q" to abort.'
+      say '     "S" to edit the subject.'
+      say '     "T" to edit the message text (in an editor).'
+      say
+      call charout, '==> '
+      option = translate(SysGetKey())
+      say
+      say
+      say
+      select
+         when ((option = 'C') | (option = 'Q')) then
+            nop
+         when option = 'S' then
+            do
+               say 'Enter the Subject (followed by the ENTER key):'
+               email.subject = linein()
+            end
+         when option = 'T' then
+            do
+               b4_timestamp = SysGetFileDateTime(email.body_file)
+               say 'The current body of the email will now be loaded into an editor.'
+               say 'Make desired changes, if any, and save the file.'
+               say
+               call charout, 'Press any key when ready to load the message body into an editor: '
+               call SysGetKey
+               say
+               call ExecCmd cmd.editor email.body_file
+               if b4_timestamp \= SysGetFileDateTime(email.body_file) then
+                  _text = '<Modified>'
+            end
+         otherwise
+            nop
+      end
+   end
+   if option \= 'Q' then
+      do currentSMTP = 1 to server_count
+         if user_choice = mainmenu.Announce_num then
+            email.to_list = cfg.SMTP.currentSMTP.to
+         do until ((option = 'C') | (option = 'Q'))
+            call SysCls
+            say
+            say 'Email: Verify/edit server-specific data for' cfg.SMTP.currentSMTP.description
+            say
+            say 'To       :' email.to_list
+            say 'UserID   :' cfg.SMTP.currentSMTP.userid
+            say 'Password :' cfg.SMTP.currentSMTP.password
+            say
+            say 'Type "C" to confirm the above and send.'
+            say '     "Q" to abort sending this email.'
+            say '     "T" to change the list of addressees.'
+            say '     "U" to change the Userid.'
+            say '     "P" to change the Password.'
+            say
+            call charout, '==> '
+            option = translate(SysGetKey())
+            say
+            say
+            select
+               when option = 'T' then
+                  do
+                     say 'NOTE: Currently no edits are done on the email addresses.'
+                     say 'So make sure you use a proper format.'
+                     say
+                     say 'For multiple addressees, enter a comma-separated list.'
+                     say
+                     say 'Enter the addressee(s) (followed by the ENTER key).'
+                     email.to_list = linein()
+                  end
+               when option = 'U' then
+                  do
+                     say 'Enter the UserID (followed by the ENTER key):'
+                     cfg.SMTP.currentSMTP.userid = linein()
+                  end
+               when option = 'P' then
+                  do
+                     say 'Enter the Password (followed by the ENTER key):'
+                     cfg.SMTP.currentSMTP.password = linein()
+                  end
+               otherwise
+                  nop
+            end
+         end
+         if option = 'C' then
+            if cfg.SMTP.currentSMTP.command = '' then /* Use internal SMTP code */
+               rcx = SendEmail()
+            else                                      /* Use external command */
+               do
+                  say 'Using external command(s) to send email...'
+                  _command = cfg.SMTP.currentSMTP.Command
+                  do while pos('##TO##', _command) > 0
+                     parse var _command part1 '##TO##' part2
+                     _command = part1 || email.to_list || part2
+                  end
+                  do while pos('##FROM##', _command) > 0
+                     parse var _command part1 '##FROM##' part2
+                     _command = part1 || cfg.SMTP.currentSMTP.from || part2
+                  end
+                  do while pos('##SUBJECT##', _command) > 0
+                     parse var _command part1 '##SUBJECT##' part2
+                     _command = part1 || email.subject || part2
+                  end
+                  do while pos('##MESSAGE_BODY_FILE##', _command) > 0
+                     parse var _command part1 '##MESSAGE_BODY_FILE##' part2
+                     _command = part1 || stream(email.body_file, 'c', 'query exists') || part2
+                  end
+                  do while pos('##HOST##', _command) > 0
+                     parse var _command part1 '##HOST##' part2
+                     _command = part1 || cfg.SMTP.currentSMTP.host || part2
+                  end
+                  do while pos('##PORT##', _command) > 0
+                     parse var _command part1 '##PORT##' part2
+                     _command = part1 || cfg.SMTP.currentSMTP.port || part2
+                  end
+                  do while pos('##USERID##', _command) > 0
+                     parse var _command part1 '##USERID##' part2
+                     _command = part1 || cfg.SMTP.currentSMTP.userid || part2
+                  end
+                  do while pos('##PASSWORD##', _command) > 0
+                     parse var _command part1 '##PASSWORD##' part2
+                     _command = part1 || cfg.SMTP.currentSMTP.password || part2
+                  end
+                  do while pos('##UTCOFFSET##', _command) > 0
+                     parse var _command part1 '##UTCOFFSET##' part2
+                     _command = part1 || cfg.SMTP.currentSMTP.UTCOffset || part2
+                  end
+                  retval = ExecCmd(_command)
+                  '@pause'
+               end
+         else
+            rcx = -1
+      end
+   call SysFileDelete email.body_file
+return rcx
+
+SetDefaultAnnouncementText: procedure expose (globals)
+   parse arg tempfile
+   release_file = 'fm2-' || ver.wpi || '.zip'
+   call lineout tempfile, 'FM/2' ver.full 'has been released. The file name is' release_file
+   call lineout tempfile, ''
+   call lineout tempfile, 'It has been uploaded to Netlabs and to Hobbes.'
+   call lineout tempfile, ''
+   call lineout tempfile, 'NETLABS'
+   call lineout tempfile, 'Initially uploaded to:'
+   call lineout tempfile, '  <ftp://ftp.netlabs.org/incoming/' || release_file || '>'
+   call lineout tempfile, 'Eventual location:'
+   call lineout tempfile, '  <ftp://ftp.netlabs.org/pub/fm2/' || release_file || '>'
+   call lineout tempfile, ''
+   call lineout tempfile, 'HOBBES'
+   call lineout tempfile, 'Search for it at:'
+   call lineout tempfile, '  <http://hobbes.nmsu.edu/h-search.php?sh=1&button=Search&key=' || release_file || '&dir=%2Fpub>'
+   call lineout tempfile, 'Initially uploaded to:'
+   call lineout tempfile, '  <http://hobbes.nmsu.edu/pub/incoming/' || release_file || '>'
+   call lineout tempfile, 'Eventual location:'
+   call lineout tempfile, '  <http://hobbes.nmsu.edu/pub/os2/util/browser/' || release_file || '>'
+/*
+   call lineout tempfile, '  http://hobbes.nmsu.edu/h-search.php?sh=1&button=Search&key=fm2&dir=%2Fpub%2Fincoming'
+   call lineout tempfile, 'which will eventually move to'
+   call lineout tempfile, '  http://hobbes.nmsu.edu/h-search.php?sh=1&button=Search&key=fm2&dir=%2Fpub%2Fos2%2Futil%2Fbrowser'
+*/
+   call lineout tempfile, ''
+   call lineout tempfile, ver.full 'Changes:'
+   history_file = 'history'
+   do until left(history_line || 'xxx', 3)  = ' o '
+      history_line = linein(history_file)
+   end
+   history_line = strip(history_line, 'T')
+   do until left(history_line, 1) > ' '
+      if length(history_line) > 3 then
+         if left(history_line, 3) = ' o ' then
+            history_line = ' * ' || substr(history_line, 4)
+      call lineout tempfile, history_line
+      history_line = strip(linein(history_file), 'T')
+   end
+   call stream tempfile, 'c', 'close'
+   call stream history_file, 'c', 'close'
+return
+
+SendEmail: procedure expose (globals)
+   retval = -2    /* Assume error of some sort */
+   say "Using ReleaseTool's internal SMTP code to send email..."
+   say 'Connecting to mail server...'
+   do 1
+      socket = ConnectToMailServer(cfg.SMTP.currentSMTP.host, cfg.SMTP.currentSMTP.port)
+      if socket < 0 then
+         do
+            say 'Unable to connect to' cfg.SMTP.currentSMTP.host
+            call SockPSock_errno
+            leave
+         end
+      reply = GetServerReply(socket)
+      if left(reply, 3) \= '220' then
+          do
+             say 'Unexpected initial response from:' cfg.SMTP.currentSMTP.host
+             say reply
+             leave
+          end
+      reply = SendDataAndGetServerReply(socket, 'EHLO' cfg.myHostName)
+      if left(reply, 3) \= '250' then
+         do
+            /* JBS: Send HELO instead? */
+            say reply
+            leave
+         end
+      select
+         when pos('AUTH LOGIN', reply) > 0 then
+            do
+               /* AUTH LOGIN login here */
+               reply = SendDataAndGetServerReply(socket, 'AUTH LOGIN')
+               if left(reply, 3) \= '334' then
+                  do
+                     say 'Authorization failed (or unexpected response to AUTH LOGIN).' || cfg.crlf || reply
+                     leave
+                  end
+               reply = SendDataAndGetServerReply(socket, EncodeB64(cfg.SMTP.currentSMTP.userid))
+               if left(reply, 3) \= '334' then
+                  do
+                     say 'Authorization failed (or unexpected response to userid).' || cfg.crlf || reply
+                     leave
+                  end
+               reply = SendDataAndGetServerReply(socket, EncodeB64(cfg.SMTP.currentSMTP.password))
+               if left(reply, 3) \= '235' then
+                  do
+                     say 'Authorization failed (or unexpected response to password).' || cfg.crlf || reply
+                     leave
+                  end
+            end
+         when pos('AUTH PLAIN', reply) > 0 then
+            do
+               /* JBS: Implment AUTH PLAIN here? */
+               /*
+                * "The mechanism consists of a single message from the client to the server.
+                * The client sends the authorization identity (identity to login as),
+                * followed by a US-ASCII NULL character, followed by the authentication
+                * identity (identity whose password will be used), followed by a US-ASCII
+                * NULL character, followed by the clear-text password. The client may leave the
+                * authorization identity empty to indicate that it is the same as the authentication identity."
+                */
+               say 'AUTH PLAIN not yet implemented!'
+               leave
+            end
+         when pos('AUTH CRAM-MD5', reply) > 0 then
+            do
+               /* JBS: Implment AUTH CRAM-MD5 here? */
+               /* JBS: If implemented, move to top to become "preferred" authentication? */
+               say 'AUTH CRAM-MD5 not yet implemented!'
+               leave
+            end
+         otherwise /* No or unknown authorization required */
+            /* JBS: OK to assume no authorization? */
+            say 'Assuming no authentication required...'
+      end
+      say 'Preparing data to send...'
+      reply = SendDataAndGetServerReply(socket, 'MAIL FROM:<' || StrippedEmailAddress(cfg.SMTP.currentSMTP.from) || '>')
+      if left(reply, 3) \= '250' then
+         do
+            say 'Unexpected response to MAIL FROM:' || cfg.crlf || reply
+            leave
+         end
+      temp_to_list = email.to_list
+      do until (temp_to_list = '' | left(reply, 3) \= 250)
+         parse var temp_to_list addressee ',' temp_to_list
+         reply = SendDataAndGetServerReply(socket, 'RCPT TO: <' || StrippedEmailAddress(addressee) || '>')
+      end
+      if left(reply, 3) \= '250' then
+         do
+            say 'Unexpected response to RCPT TO:' || cfg.crlf || reply
+            leave
+         end
+      reply = SendDataAndGetServerReply(socket, 'DATA')
+      if left(reply, 3) \= '354' then
+         do
+            say 'Unexpected response to DATA:' || cfg.crlf || reply
+            leave
+         end
+      data = 'Date:' left(date('W'),3) || ', ' || date('N') || ' ' || time('N') || ' ' || cfg.SMTP.currentSMTP.UTCOffset || cfg.crlf
+      /* JBS: Message Id? */
+      data = data || 'To:' email.to_list || cfg.crlf
+      data = data || 'From:' cfg.SMTP.currentSMTP.FROM || cfg.crlf
+      /* JBS: Reply-to same as From? */
+      data = data || 'Reply-To:' cfg.SMTP.currentSMTP.FROM || cfg.crlf
+      data = data || 'Subject:' email.subject || cfg.crlf
+      data = data || 'MIME-Version: 1.0' || cfg.crlf
+      data = data || 'X-Mailer:' cfg.user_agent || cfg.crlf
+      data = data || 'X-Mailer-Platform: OS/2; architecture=x86; version=20.45' || cfg.crlf
+      data = data || cfg.crlf /* End of Header */
+      do while lines(email.body_file) > 0
+         line = linein(email.body_file)
+         data = data || line || cfg.crlf
+      end
+      call stream email.body_file, 'c', 'close'
+
+      data = data || cfg.SMTP.signature_preface || cfg.crlf   /* Start of signature */
+      do i = 1 to cfg.SMTP.currentSMTP.signature.0
+         data = data || cfg.SMTP.currentSMTP.signature.i || cfg.crlf
+      end
+      data = data || cfg.closing                             /* End of Message */
+      say
+
+/*
+      call charout , 'OK to send email? (Y/n): '
+      reply = translate(SysGetKey())
+      say
+      if reply \= 'N' then
+*/
+
+         do
+            reply = SendDataAndGetServerReply(socket, data)
+            if left(reply, 3) \= '250' then
+               do
+                  say 'Unexpected response to message send:' || cfg.crlf || reply
+                  leave
+               end
+            else
+               do
+                  say 'Message sent successfully...'
+                  retval = 0
+               end
+         end
+      say 'Sending "QUIT" to server...'
+      reply = SendDataAndGetServerReply(socket, 'QUIT')
+      if left(reply, 3) \= '221' then
+         do
+            say 'Unexpected response to QUIT:' || cfg.crlf || reply
+         end
+   end
+   if socket >= 0 then
+      do
+         say 'Disconnecting from server...'
+         call SockClose(socket)
+      end
+return retval
+
+StrippedEmailAddress: procedure
+   parse arg email_address
+   email_address = strip(email_address)
+   if left(email_address, 1) = '"' then
+      parse var email_address '"' . '"' email_address
+return strip(strip(strip(email_address), 'L', '<'), 'T', '>')
+
+GetServerReply: procedure expose (globals)
+   /* JBS: 1-time receive with large buffer or as-many-as-needed receives? */
+   max_recv_buffersize = 1024
+   parse arg socket
+   rc = SockRecv(socket, 'server_reply', max_recv_buffersize)
+   select
+      when rc < 0 then
+         return 'ERROR on receive:' rc
+      when rc = 0 then
+         return 'ERROR on receive: Connection closed prematurely.'
+      when rc = max_recv_buffersize then
+         return 'ERROR on receive: Buffer size too small?'
+      when pos(cfg.crlf, server_reply) = 0 then
+         return 'ERROR No CRLF found. Buffer too small?' || cfg.crlf || 'Reply:' server_reply
+      otherwise
+         nop
+   end
+return server_reply
+
+/**********************************************************************/
+EncodeB64: procedure expose (globals) /* encodes a text string */
+/**********************************************************************/
+   parse arg Text  /* get the argument */
+   B64Chars = xrange('A','Z')||xrange('a','z')||xrange('0','9')||'+/'  /* define the base64 character set */
+   B64Str = ''  /* start with nothing */
+   do while (length(Text) > 3)  /* go on while the length is sufficient */
+      parse var Text NextBlock 4 Text  /* get the next block of 3 characters */
+      NextBits = x2b(c2x(NextBlock))  /* convert it to 24 bits */
+      do 4  /* do 4 times */
+         parse var NextBits NextSext 7 NextBits  /* get the next sextet */
+         B64Str = B64Str||substr(B64Chars,x2d(b2x(NextSext))+1,1)  /* convert to decimal, get the corresponding B64 character, and add */
+      end
+   end
+   TextLeft = length(Text)  /* the number of 8-bit characters left (1, 2, or 3) */
+   if (TextLeft > 0) then  /* if we have anything left */
+      do
+         NextBits = x2b(c2x(Text))||copies('00',(3-TextLeft))  /* convert to bits and add zeroes */
+         do (TextLeft + 1)  /* do so many times */
+            parse var NextBits NextSext 7 NextBits  /* get the next sextet */
+            B64Str = B64Str||substr(B64Chars,x2d(b2x(NextSext))+1,1)  /* convert to decimal, get the corresponding B64 character, and add */
+         end
+         B64Str = B64Str||copies('=',3 - TextLeft)  /* add this */
+      end
+return B64Str  /* end of Encode64 */
+
+ConnectToMailServer: procedure expose (globals)
+   parse arg email_server_name, email_server_port
+   if strip(email_server_port) = '' then
+      email_server_port = 25
+
+   myIPaddr = SockGetHostid()
+   rc = SockGetHostByAddr(myIPaddr, 'hoststem.')
+   if rc = 0 then
+      do
+         say 'Error: SockGetHostByAddr'
+         return (-1000)
+      end
+   cfg.myHostName = hoststem.name
+   rc = SockGetHostByName(email_server_name, 'hoststem.')
+   if rc = 0 then
+      do
+         say 'Error: SockGetHostByAddr'
+         return (-1001)
+      end
+   serverIPaddr = hoststem.addr
+
+   socket = SockSocket('AF_INET', 'SOCK_STREAM', 'IPPROTO_TCP')
+   if socket < 0 then
+      exit_rc = -1
+   else
+      do
+         inetaddr.family = 'AF_INET'
+         inetaddr.addr   = serverIPaddr
+         inetaddr.port   = email_server_port
+         exit_rc         = SockConnect(socket, 'inetaddr.')
+      end
+   if exit_rc < 0 then
+      return exit_rc
+   else
+      return socket
+
+SendDataAndGetServerReply: procedure expose (globals)
+   parse arg socket, data
+   p = pos(cfg.crlf, data)
+   if p > 1 then
+      say 'Sending:' left(data, min(p - 1, 60)) || '...'
+   else if length(data) >  60 then
+      say 'Sending:' left(data, 60) || '...'
+   else
+      say 'Sending:' data
+   rc = SockSend(socket, data || cfg.crlf)
+   if rc <= 0 then
+      do
+         call SockPSock_errno
+         return 'ERROR on send:' rc
+      end
+   else
+      return GetServerReply(socket)
 
 Init: procedure expose (globals)
    call RxFuncAdd 'SysLoadFuncs', 'REXXUTIL', 'SysLoadFuncs'
@@ -665,7 +1040,7 @@ rxftperr:
       do
          upperwrd1 = translate(word(cmd.editor, 1))
          if upperwrd1 = 'EPM' | upperwrd1 = 'EPM.EXE' then
-            cmd.editorparms = "'3'"
+            cmd.editorparms = "/m '3'"
       end
 
    cmd.smartsvn   = SysSearchPath('PATH', 'smartsvn.cmd')
@@ -769,9 +1144,9 @@ SetVer: procedure expose (globals)
    ver.minor      = num2 + 0
    ver.CSDlevel   = num3 + 0
    ver.full       = ver.major || '.' || ver.minor || '.' || ver.CSDlevel
-   ver.list       = ver.major || '.' || right(ver.minor, 2, '0') || '.' || right(ver.CSDlevel, 2, '0')
-   ver.wpi        = translate(ver.full, '-', '.')
-   ver.tag        = translate(ver.full, '_', '.')
+   ver.list       = ver.major || '.' || right(ver.minor, 2, '0') || '.' || ver.CSDlevel
+   ver.wpi        = translate(ver.list, '-', '.')
+   ver.tag        = translate(ver.list, '_', '.')
 return
 
 CfgInit: procedure expose (globals)
@@ -784,12 +1159,9 @@ CfgInit: procedure expose (globals)
    cfg.FTP.0      = 0
    cfg.NNTP.0     = 0
    cfg.SMTP.0     = 0
-   cfg.FTP.keys   = 'HOST USERID PASSWORD DIRECTORY FILE DESCRIPTIVE_HOSTNAME COMMAND'
-   cfg.NNTP.keys  = 'HOST USERID PASSWORD FROM SIGNATURE NEWSGROUPS'
-/*
-   cfg.SMTP.keys  = 'HOST USERID PASSWORD FROM SIGNATURE COMMAND UTCOFFSET'
-*/
-   cfg.SMTP.keys  = 'HOST PORT USERID PASSWORD TO FROM SIGNATURE COMMAND UTCOFFSET'
+   cfg.FTP.keys   = 'DESCRIPTION COMMAND HOST USERID PASSWORD DIRECTORY FILE'
+   cfg.NNTP.keys  = 'DESCRIPTION COMMAND HOST USERID PASSWORD FROM SIGNATURE NEWSGROUPS'
+   cfg.SMTP.keys  = 'DESCRIPTION COMMAND HOST USERID PASSWORD PORT TO FROM SIGNATURE UTCOFFSET'
 
    cfg.NNTP.signature_preface     = cfg.crlf || '-- ' || cfg.crlf
    cfg.NNTP.mime_version          = '1.0'
@@ -842,8 +1214,14 @@ CfgInit: procedure expose (globals)
                parse var line key_name '=' key_value
                key_name = translate(strip(key_name))
                key_value = strip(key_value)
-               if left(key_value, 1) = '"' & key_name \= 'FROM' then
-                  parse var key_value '"' key_value '"'
+               p =  lastpos(';', key_value)
+               if p = 1 then
+                  do
+                     retval = 10000 + linenum
+                     iterate
+                  end
+               else if p > 1 then
+                  key_value = strip(left(key_value, p - 1))
                select
                   when wordpos(key_name, cfg.node.keys) = 0 then
                      retval = -(10000 + linenum)
@@ -893,13 +1271,15 @@ DisplayMenu: procedure expose (globals)
          say right(m, 2) || '.' mainmenu.m.text
       end
       say
-      call charout , 'N)ext C)ommandline cfG) '
+      call charout , 'N)ext C)ommandline '
+/*
+      call charout , 'cfG) '
+*/
       if cmd.smartsvn \= '' then
          call charout , 'S)martSVN '
       call charout , 'Q)uit or menu item number: '
       user_choice = translate(translate(SysGetKey()), 'N', '0d'x)
-      if user_choice = 'N' | ,
-         user_choice = 'G' | ,
+      if user_choice = 'N' | /* JBS: Disabled internal CFG code: user_choice = 'G' | */ ,
          user_choice = 'C' | ,
          user_choice = 'Q' | ,
          (cmd.smartsvn \= '' & user_choice = 'S') then
@@ -1041,8 +1421,9 @@ ExecCmd: procedure
    parse arg command
    signal off Error
    command
+   rcx = rc
    signal on Error
-return
+return rcx
 
 /*=== Is4OS2() Return true if 4OS2 running ===*/
 Is4OS2: procedure
@@ -1341,177 +1722,281 @@ UploadRelease: procedure expose (globals)
       end
    else
       do
+         retval = 0
          do u = 1 to cfg.FTP.0
-            say 'Uploading to' cfg.FTP.u.descriptive_hostname || '...'
-            say '   Setting up logon data...'
-            if cfg.FTP.u.password = '[Hobbes-email]' then
-               if left(Hobbes.uploader_email_address, 3) = 'N/A' then
-                  cfg.FTP.u.password = ''
-               else
-                  cfg.FTP.u.password = Hobbes.uploader_email_address
-            if (cfg.FTP.u.userid = '' | cfg.FTP.u.password = '') then
+            say 'Uploading to' cfg.FTP.u.description || '...'
+            if cfg.FTP.u.command \= '' then
                do
-                  say
-                  say '      The userid and/or password were not found in ReleaseTool.cfg.'
-                  say '      You will now be prompted for the missing data.'
-                  say
-                  if cfg.FTP.u.userid = '' then
-                     do
-                        call charout , '      Please enter the userid for' cfg.FTP.u.descriptive_hostname ||': '
-                        cfg.FTP.u.userid = strip(linein())
-                        say
-                     end
-                  say
-                  if cfg.FTP.u.password = '' then
-                     do
-                        call charout , '      Please enter the password for' cfg.FTP.u.descriptive_hostname ||': '
-                        cfg.FTP.u.password  = strip(linein())
-                        say
-                     end
-                  say '      In order to avoid being prompted in the future, edit the'
-                  say '      ReleaseTool.cfg file to include this data.'
+                  say 'Using external command(s) to upload...'
+                  _command = cfg.FTP.u.command
+                  do while pos('##HOST##', _command) > 0
+                     parse var _command part1 '##HOST##' part2
+                     _command = part1 || cfg.FTP.u.host || part2
+                  end
+                  do while pos('##PORT##', _command) > 0
+                     parse var _command part1 '##PORT##' part2
+                     _command = part1 || cfg.FTP.u.port || part2
+                  end
+                  do while pos('##USERID##', _command) > 0
+                     parse var _command part1 '##USERID##' part2
+                     _command = part1 || cfg.FTP.u.userid || part2
+                  end
+                  do while pos('##PASSWORD##', _command) > 0
+                     parse var _command part1 '##PASSWORD##' part2
+                     _command = part1 || cfg.FTP.u.password || part2
+                  end
+                  do while pos('[Release-zip]', _command) > 0
+                     parse var _command part1 '[Release-zip]' part2
+                     _command = part1 || 'warpin\fm2-' || ver.wpi || '.zip' || part2
+                  end
+                  do while pos('[Hobbes-text]', _command) > 0
+                     parse var _command part1 '[Hobbes-text]' part2
+                     _command = part1 || 'warpin\fm2-' || ver.wpi || '.txt' || part2
+                  end
+                  rcx = ExecCmd(_command)
                   say
                end
-            rcx = FtpSetUser( cfg.FTP.u.host, StripNotNeeded(cfg.FTP.u.userid), StripNotNeeded(cfg.FTP.u.password), '')
-            if rcx \= 1 then
-               say '      Unable to set user data. Unable to continue.'
             else
                do
-                  do d = 1 to cfg.FTP.u.directory.0
-                     if cfg.FTP.u.directory.d \= '' then
-                        do
-                           say '   Changing directory to:' cfg.FTP.u.directory.d
-                           rcx = FtpChDir(cfg.FTP.u.directory.d)
-                           if rcx \= 0 then
-                              do
-                                 say '   Unable to change directory. FTP Error:' FTPERRNO
-                                 iterate
-                              end
-                        end
-                     do f = 1 to cfg.FTP.u.directory.d.file.0
-                        select
-                           when translate(cfg.FTP.u.directory.d.file.f) = '[RELEASE-ZIP]' then
-                              uploadfile = 'warpin\fm2-' || ver.wpi || '.zip'
-                           when translate(cfg.FTP.u.directory.d.file.f) = '[HOBBES-TEXT]' then
-                              uploadfile = 'warpin\fm2-' || ver.wpi || '.txt'
-                           otherwise
-                              uploadfile = cfg.FTP.u.directory.d.file.f
-                        end
-                        say '   Uploading:' uploadfile
-                        rcx = FtpPut(uploadfile, filespec('n', uploadfile), "Binary")
-                        if rcx \= 0 then
+                  say '   Setting up logon data...'
+                  if cfg.FTP.u.password = '[Hobbes-email]' then
+                     if left(Hobbes.uploader_email_address, 3) = 'N/A' then
+                        cfg.FTP.u.password = ''
+                     else
+                        cfg.FTP.u.password = Hobbes.uploader_email_address
+                  if (cfg.FTP.u.userid = '' | cfg.FTP.u.password = '') then
+                     do
+                        say
+                        say '      The userid and/or password were not found in ReleaseTool.cfg.'
+                        say '      You will now be prompted for the missing data.'
+                        say
+                        if cfg.FTP.u.userid = '' then
                            do
-                              say '   Unable to upload. FTP Error:' FTPERRNO
-                              leave
+                              call charout , '      Please enter the userid for' cfg.FTP.u.descriptive_hostname ||': '
+                              cfg.FTP.u.userid = strip(linein())
+                              say
                            end
+                        say
+                        if cfg.FTP.u.password = '' then
+                           do
+                              call charout , '      Please enter the password for' cfg.FTP.u.descriptive_hostname ||': '
+                              cfg.FTP.u.password  = strip(linein())
+                              say
+                           end
+                        say '      In order to avoid being prompted in the future, edit the'
+                        say '      ReleaseTool.cfg file to include this data.'
+                        say
                      end
-                  end
-                  say '   Logging off' cfg.FTP.u.descriptive_hostname || '...'
-                  call FtpLogoff
-                  say
+                  rcx = FtpSetUser( cfg.FTP.u.host, StripNotNeeded(cfg.FTP.u.userid), StripNotNeeded(cfg.FTP.u.password), '')
+                  if rcx \= 1 then
+                     say '      Unable to set user data. Unable to continue.'
+                  else
+                     do
+                        do d = 1 to cfg.FTP.u.directory.0
+                           if cfg.FTP.u.directory.d \= '' then
+                              do
+                                 say '   Changing directory to:' cfg.FTP.u.directory.d
+                                 rcx = FtpChDir(cfg.FTP.u.directory.d)
+                                 if rcx \= 0 then
+                                    do
+                                       say '   Unable to change directory. FTP Error:' FTPERRNO
+                                       iterate
+                                    end
+                              end
+                           do f = 1 to cfg.FTP.u.directory.d.file.0
+                              select
+                                 when cfg.FTP.u.directory.d.file.f = '[Release-zip]' then
+                                    uploadfile = 'warpin\fm2-' || ver.wpi || '.zip'
+                                 when cfg.FTP.u.directory.d.file.f = '[Hobbes-text]' then
+                                    uploadfile = 'warpin\fm2-' || ver.wpi || '.txt'
+                                 otherwise
+                                    uploadfile = cfg.FTP.u.directory.d.file.f
+                              end
+                              say '   Uploading:' uploadfile
+                              rcx = FtpPut(uploadfile, filespec('n', uploadfile), "Binary")
+                              if rcx \= 0 then
+                                 do
+                                    say '   Unable to upload. FTP Error:' FTPERRNO
+                                    leave
+                                 end
+                           end
+                        end
+                        say '   Logging off' cfg.FTP.u.descriptive_hostname || '...'
+                        call FtpLogoff
+                        say
+                     end
                end
+            if rcx \= 0 then
+               leave
          end
       end
-return
+return rcx
 
 AnnounceToNewsgroups: procedure expose (globals)
-   call NNTPSetup
-   do s = 1 to cfg.NNTP.0
-      say
-      do while cfg.NNTP.s.host = ''
-            say 'NNTP: Please provide a news server name for the following newsgroups:'
-            say '   ' || cfg.NNTP.s.newsgroups
-            cfg.NNTP.s.host = strip(linein())
-      end
-      if cfg.NNTP.s.userid = '' then
-         do
-            say 'NNTP: If' cfg.NNTP.s.host 'requires a user name, please provide it.'
-            call charout , 'NNTP: (Just press ENTER if no user name is required.): '
-            cfg.NNTP.s.userid = strip(linein())
-         end
-      if cfg.NNTP.s.password = '' then
-         do
-            say 'NNTP: If' cfg.NNTP.s.host 'requires a password, please provide it.'
-            call charout , 'NNTP: (Just press ENTER if no password is required.): '
-            cfg.NNTP.s.password = strip(linein())
-         end
-      if cfg.NNTP.s.from = '' then
-         do
-            say 'NNTP: The Hobbes email address is:' Hobbes.uploader_email_address
-            say
-            say 'NNTP: Type the desired email address for the newsgroups announcements.'
-            say 'NNTP: You may want to disguise the address to avoid spam.'
-            call charout , 'NNTP: (Just press ENTER to accept the Hobbes email address): '
-            reply = strip(linein())
-            if reply \= '' then
-               cfg.NNTP.s.from = reply
-            else
-               cfg.NNTP.s.from = Hobbes.uploader_email_address
-         end
-      call SendNNTP s
-   end
-return
-
-NNTPSetup: procedure expose (globals)
-   say;say
+   body_file = SysTempFilename('NNTPBody.???')
+   call SetDefaultAnnouncementText body_file
    cfg.NNTP.subject = 'FM/2' ver.full 'has been released.'
-   say 'NNTP: The "Subject" for the newsgroup announcements will be:'
-   say cfg.NNTP.subject
-   say 'NNTP: Just press ENTER to accept. Otherwise type the desired subject:'
-   reply = strip(linein())
-   if reply \= '' then
-      cfg.NNTP.subject = reply
-   say;say
-
-   tempfile = SysTempFilename('RTNNTPBody.???')
-   release_file = 'fm2-' || ver.wpi || '.zip'
-   call lineout tempfile, 'FM/2' ver.full 'has been released. The file name is' release_file
-   call lineout tempfile, ''
-   call lineout tempfile, 'It has been uploaded to Netlabs and to Hobbes.'
-   call lineout tempfile, ''
-   call lineout tempfile, 'Netlabs:'
-   call lineout tempfile, '  ftp://ftp.netlabs.org/incoming/' || release_file
-   call lineout tempfile, 'which will eventually move to'
-   call lineout tempfile, '  ftp://ftp.netlabs.org/pub/fm2/' || release_file
-   call lineout tempfile, ''
-   call lineout tempfile, 'Hobbes:'
-   call lineout tempfile, '  http://hobbes.nmsu.edu/h-search.php?sh=1&button=Search&key=' || release_file || '&dir=%2Fpub'
+   _text = '<Standard>'
+   do until ((option = 'C') | (option = 'Q'))
+      call SysCls
+      say
+      say 'News: Verify/edit content'
+      say
+      say 'Subject  :' cfg.NNTP.subject
+      say 'Text     :' _text
+      say
+      say 'Type "C" to confirm the above and proceed.'
+      say '     "Q" to abort.'
+      say '     "S" to edit the subject.'
+      say '     "T" to edit the message text (in an editor).'
+      say
+      call charout, '==> '
+      option = translate(SysGetKey())
+      say
+      say
+      select
+         when ((option = 'C') | (option = 'Q')) then
+            nop
+         when option = 'S' then
+            do
+               say 'Enter the Subject (followed by the ENTER key):'
+               email.subject = linein()
+            end
+         when option = 'T' then
+            do
+               b4_timestamp = SysGetFileDateTime(tempfile)
+               say 'The current body of the newsgroup message will now be loaded into an editor.'
+               say 'Make desired changes, if any, and save the file.'
+               say
+               call charout, 'Press any key when ready to load the message body into an editor: '
+               call SysGetKey
+               say
+               call ExecCmd cmd.editor tempfile
+               if b4_timestamp \= SysGetFileDateTime(tempfile) then
+                  _text = '<Modified>'
+            end
+         otherwise
+            nop
+      end
+   end
+   if option = 'Q' then
+      rcx = -1      /* User aborted operation */
+   else
+      do s = 1 to cfg.NNTP.0
+         call SysCls
+         say
+         do until ((option = 'C') | (option = 'Q'))
+            call SysCls
+            say
+            say 'News: Verify/edit server-specific data for' cfg.NNTP.s.description
+            say
+            say 'Host     :' cfg.NNTP.s.host
+            say 'To       :' cfg.NNTP.s.newsgroups
+            say 'From     :' cfg.NNTP.s.from
+            say 'UserID   :' cfg.NNTP.s.userid
+            say 'Password :' cfg.NNTP.s.password
+            say
+            say 'Type "C" to confirm the above and send.'
+            say '     "Q" to abort sending this email.'
+            say '     "H" to change the name of the host.'
+            say '     "T" to change the list of newsgroups.'
+            say '     "F" to change the From address.'
+            say '     "U" to change the Userid.'
+            say '     "P" to change the Password.'
+            say
+            call charout, '==> '
+            option = translate(SysGetKey())
+            say
+            say
+            say
+            select
+               when option = 'H' then
+                  do
+                     say 'Enter the newsgroup host to use (followed by the ENTER key).'
+                     cfg.NNTP.s.host = linein()
+                  end
+               when option = 'T' then
+                  do
+                     say 'Enter a comma=separated list of newagroup(s) (followed by the ENTER key).'
+                     cfg.NNTP.s.newsgroups = linein()
+                  end
+               when option = 'F' then
+                  do
 /*
-   call lineout tempfile, '  http://hobbes.nmsu.edu/h-search.php?sh=1&button=Search&key=fm2&dir=%2Fpub%2Fincoming'
-   call lineout tempfile, 'which will eventually move to'
-   call lineout tempfile, '  http://hobbes.nmsu.edu/h-search.php?sh=1&button=Search&key=fm2&dir=%2Fpub%2Fos2%2Futil%2Fbrowser'
+                     say 'F.Y.I. The Hobbes email address is:' Hobbes.uploader_email_address
+                     say
+                  if reply \= '' then
+                     cfg.NNTP.s.from = reply
+                  else
+                     cfg.NNTP.s.from = Hobbes.uploader_email_address
 */
-   call lineout tempfile, ''
-   call lineout tempfile, ver.full 'Changes:'
-   history_file = 'history'
-   do until left(history_line || 'xxx', 3)  = ' o '
-      history_line = linein(history_file)
-   end
-   history_line = strip(history_line, 'T')
-   do until left(history_line, 1) > ' '
-      if length(history_line) > 3 then
-         if left(history_line, 3) = ' o ' then
-            history_line = ' * ' || substr(history_line, 4)
-      call lineout tempfile, history_line
-      history_line = strip(linein(history_file), 'T')
-   end
-   call stream tempfile, 'c', 'close'
-   call stream history_file, 'c', 'close'
-   say;say
-   say 'NNTP: The proposed body of the newsgroup announcements will now'
-   say 'NNTP: be loaded into an editor. Make changes and save.'
-   say
-   call charout , 'NNTP: Press a key when ready to view/edit the message body.'
-   call SysGetKey
-   say
-   call ExecCmd cmd.editor tempfile
-   cfg.NNTP.message_body = ''
-   do while lines(tempfile) > 0
-      cfg.NNTP.message_body = cfg.NNTP.message_body || linein(tempfile) || cfg.crlf
-   end
-   call stream tempfile, 'c', 'close'
-   call SysFileDelete tempfile
-return
+                     say 'Enter the From email address. (followed by the ENTER key).'
+                     say '(You may want to disguise the address to avoid spam.)'
+                     cfg.NNTP.s.from = linein()
+                  end
+               when option = 'U' then
+                  do
+                     say 'Enter the UserID (followed by the ENTER key):'
+                     cfg.NNTP.s.userid = linein()
+                  end
+               when option = 'P' then
+                  do
+                     say 'Enter the Password (followed by the ENTER key):'
+                     cfg.NNTP.s.password = linein()
+                  end
+               otherwise
+                  nop
+            end
+         end
+         if option = 'C' then
+            if cfg.NNTP.s.command \= '' then
+               do
+                  say 'Using external command(s) to post to newsgroup(s)...'
+                  _command = cfg.NNTP.s.command
+                  do while pos('##HOST##', _command) > 0
+                     parse var _command part1 '##HOST##' part2
+                     _command = part1 || cfg.NNTP.s.host || part2
+                  end
+                  do while pos('##PORT##', _command) > 0
+                     parse var _command part1 '##PORT##' part2
+                     _command = part1 || cfg.NNTP.s.port || part2
+                  end
+                  do while pos('##USERID##', _command) > 0
+                     parse var _command part1 '##USERID##' part2
+                     _command = part1 || cfg.NNTP.s.userid || part2
+                  end
+                  do while pos('##PASSWORD##', _command) > 0
+                     parse var _command part1 '##PASSWORD##' part2
+                     _command = part1 || cfg.NNTP.s.password || part2
+                  end
+                  do while pos('##MESSAGE_BODY_FILE##', _command) > 0
+                     parse var _command part1 '##MESSAGE_BODY_FILE##' part2
+                     _command = part1 || stream(body_file, 'c', 'query exists') || part2
+                  end
+                  do while pos('##FROM##', _command) > 0
+                     parse var _command part1 '##FROM##' part2
+                     _command = part1 || cfg.NNTP.s.from || part2
+                  end
+                  do while pos('##NEWSGROUPS##', _command) > 0
+                     parse var _command part1 '##NEWSGROUPS##' part2
+                     _command = part1 || cfg.NNTP.s.newsgroups || part2
+                  end
+                  rcx = ExecCmd(_command)
+               end
+            else
+               do
+                  cfg.NNTP.message_body = ''
+                  do while lines(body_file) > 0
+                     cfg.NNTP.message_body = cfg.NNTP.message_body || linein(body_file) || cfg.crlf
+                  end
+                  call stream body_file, 'c', 'close'
+                  rcx = SendNNTP(s)
+               end
+         else
+            rcx = -1 /* User aborted */
+      end
+   call SysFileDelete body_file
+return rcx
 
 SendNNTP: procedure expose (globals)
    parse arg s
@@ -1638,7 +2123,7 @@ SendNNTP: procedure expose (globals)
             end
          call SockSoClose(socket)
       end
-return
+return rc
 
 NNTPReceive: procedure expose (globals)
    parse arg socket, maxdatasize
@@ -1685,7 +2170,7 @@ ZipFiles: procedure expose (globals)
    'zip -jX9' release_zipfile 'warpin\fm2-' || ver.wpi || '.wpi'
 
    /* Zip FM/2 Utilities' */
-   /* JBS: Following code is temprarily abondoned */
+   /* JBS: Following code is temprarily abandoned */
 /*
    call SysFileTree 'warpin\fm2utils*.wpi', 'utilswpi.', 'FO'
    utilsmajor = '1'
@@ -1788,85 +2273,6 @@ CommitIfOK: procedure
    if translate(SysGetKey()) \= 'N' then call ExecCmd svn_cmd filelist
 return
 
-ExecuteExternalSMTPProgram: procedure expose (globals)
-/*
-                        call SendSMTP 'TO=fm2-dev@netlabs.org <fm2-dev@netlabs.org>', ,
-                                      'SUBJ=' || subj, ,
-                                      'BODYFILE=' || SMTPBody_file
-                        call SendSMTP 'TO=fm2-dev@netlabs.org <fm2-dev@netlabs.org>', ,
-                                      'FROM=' || 'jsmall@os2world.net', ,
-                                      'SUBJ=' || subj, ,
-                                      'BODYFILE=' || SMTPBody_file, ,
-                                      'SERVER=' || cfg.SMTP.currentSMTP.host, ,
-                                      'USERID=' || cfg.SMTP.currentSMTP.userid, ,
-                                      'PASSWORD=' || 'jfkdl', ,
-                                      'UTCOFFSET=' || '-0500'
-                     end
-*/
-   email_command = cfg.SMTP.currentSMTP.Command
-   do i = 1 to arg()
-      parse value arg(i) with key '=' key_value
-      key = translate(key)
-      select
-         when pos('%%TO%%', email_command) > 0 then
-            do
-               parse var email_command part1 '%%TO%%' part2
-               email_command = part1 || email.to_list || part2
-            end
-         when pos('%%FROM%%', email_command) > 0 then
-            do
-               parse var email_command part1 '%%FROM%%' part2
-               email_command = part1 || cfg.SMTP.currentSMTP.from || part2
-            end
-         when pos('%%SUBJECT%%', email_command) > 0 then
-            do
-               parse var email_command part1 '%%SUBJECT%%' part2
-               email_command = part1 || email.subject || part2
-            end
-         when pos('%%MESSAGE_BODY_FILE%%', email_command) > 0 then
-            do
-               parse var email_command part1 '%%MESSAGE_BODY_FILE%%' part2
-               email_command = part1 || stream(email.bofykey_value, 'c', 'query exists') || part2
-            end
-         when pos('%%SERVER%%', email_command) > 0 then
-            do
-               parse var email_command part1 '%%SERVER%%' part2
-               email_command = part1 || cfg.SMTP.currentSMTP.host || part2
-            end
-         when pos('%%USERID%%', email_command) > 0 then
-            do
-               parse var email_command part1 '%%USERID%%' part2
-               email_command = part1 || cfg.SMTP.currentSMTP.userid || part2
-            end
-         when pos('%%PASSWORD%%', email_command) > 0 then
-            do
-               parse var email_command part1 '%%PASSWORD%%' part2
-               email_command = part1 || cfg.SMTP.currentSMTP.password || part2
-            end
-         when pos('%%UTCOFFSET%%', email_command) > 0 then
-            do
-               parse var email_command part1 '%%UTCOFFSET%%' part2
-               email_command = part1 || cfg.SMTP.currentSMTP.UTCOffset || part2
-            end
-         otherwise
-            nop
-      end
-   end
-   say 'A "preview" of the pending email command will be displayed.'
-   say
-   say 'If the email command is unsuccessful, please copy and paste it and'
-   say 'post it, along with a description of the error(s) and, if possible,'
-   say 'a proposed correction to the fm2-dev mailing list.'
-   say
-   say 'The pending email command:'
-   say '   ' email_command
-   say
-   call charout , 'Press any key when ready to execute this command...'
-   call SysGetKey
-   say;say
-   call ExecCmd email_command
-return
-
 /*** Usage/Error routines ***/
 
 Usage: procedure
@@ -1934,266 +2340,6 @@ Error:
 
 return
 
-SendEmail: procedure expose (globals)
-   if cfg.SMTP.0 > 1 then
-      if cfg.SMTP.currentSMTP.command \= '' then
-         do
-            call ExecuteExternalSMTPProgram
-            return
-         end
-
-   socket = ConnectToMailServer(cfg.SMTP.currentSMTP.host, cfg.SMTP.currentSMTP.port)
-   if socket < 0 then
-      do
-         say 'Unable to connect to' cfg.SMTP.currentSMTP.host
-         call SockPSock_errno
-         return
-      end
-   do forever
-      reply = GetServerReply(socket)
-      if left(reply, 3) \= '220' then
-          do
-             say 'Unexpected initial response from:' cfg.SMTP.currentSMTP.host
-             say reply
-             leave
-          end
-      reply = SendDataAndGetServerReply(socket, 'EHLO' cfg.myName)
-      if left(reply, 3) \= '250' then
-         do
-            /* JBS: Send HELO instead? */
-            say reply
-            leave
-         end
-      auth_login_pos = pos('AUTH LOGIN', reply)
-      auth_plain_pos = pos('AUTH PLAIN', reply)
-      if auth_login_pos = 0 then
-         if auth_plain_pos = 0 then
-            do
-               say 'Unsupported authorization method:' reply
-               call SockClose socket
-               return
-            end
-         else
-            do
-               /* AUTH PLAIN login here */
-               /* JBS: Implement AUTH PLAIN login here */
-                  say 'AUTH PLAIN not yet implemented!'
-                  return
-            end
-      else
-         do
-            /* AUTH LOGIN login here */
-            reply = SendDataAndGetServerReply(socket, 'AUTH LOGIN')
-            if left(reply, 3) \= '334' then
-               do
-                  say 'Authorization failed (or unexpected response to AUTH LOGIN).' || cfg.crlf || reply
-                  leave
-               end
-            reply = SendDataAndGetServerReply(socket, EncodeB64(cfg.SMTP.currentSMTP.userid))
-            if left(reply, 3) \= '334' then
-               do
-                  say 'Authorization failed (or unexpected response to userid).' || cfg.crlf || reply
-                  leave
-               end
-            reply = SendDataAndGetServerReply(socket, EncodeB64(cfg.SMTP.currentSMTP.password))
-            if left(reply, 3) \= '235' then
-               do
-                  say 'Authorization failed (or unexpected response to password).' || cfg.crlf || reply
-                  leave
-               end
-            reply = SendDataAndGetServerReply(socket, 'MAIL FROM:<' || StrippedEmailAddress(cfg.SMTP.currentSMTP.from) || '>')
-            if left(reply, 3) \= '250' then
-               do
-                  say 'Unexpected response to MAIL FROM:' || cfg.crlf || reply
-                  leave
-               end
-            temp_to_list = email.to_list
-            do until (temp_to_list = '' | left(reply, 3) \= 250)
-               parse var temp_to_list addressee ',' temp_to_list
-               reply = SendDataAndGetServerReply(socket, 'RCPT TO: <' || StrippedEmailAddress(addressee) || '>')
-            end
-            if left(reply, 3) \= '250' then
-               do
-                  say 'Unexpected response to RCPT TO:' || cfg.crlf || reply
-                  leave
-               end
-            reply = SendDataAndGetServerReply(socket, 'DATA')
-            if left(reply, 3) \= '354' then
-               do
-                  say 'Unexpected response to DATA:' || cfg.crlf || reply
-                  leave
-               end
-            data = 'Date:' left(date('W'),3) || ', ' || date('N') || ' ' || time('N') || ' ' || cfg.SMTP.currentSMTP.UTCOffset || cfg.crlf
-            /* JBS: Message Id? */
-            data = data || 'To:' email.to_list || cfg.crlf
-            data = data || 'From:' '"John B. Small" <jsmall@toast.net>' || cfg.crlf
-            /* JBS Reply-to same as From? */
-            data = data || 'Reply-To:' '"John Small" <jsmall@toast.net>' || cfg.crlf
-            data = data || 'Subject:' email.subject || cfg.crlf
-/*
-            data = data || 'MIME-Version: 1.0' || cfg.crlf
-*/
-            data = data || 'X-Mailer:' cfg.user_agent || cfg.crlf
-            data = data || 'X-Mailer-Platform: OS/2; architecture=x86; version=20.45' || cfg.crlf
-            data = data || cfg.crlf /* End of Header */
-            do while lines(email.body_file) > 0
-               line = linein(email.body_file)
-               data = data || line || cfg.crlf
-            end
-            call stream email.body_file, 'c', 'close'
-            call SysFileDelete email.body_file
-
-            data = data || cfg.SMTP.signature_preface || cfg.crlf   /* Start of signature */
-            do i = 1 to cfg.SMTP.currentSMTP.signature.0
-               data = data || cfg.SMTP.currentSMTP.signature.i || cfg.crlf
-            end
-            data = data || cfg.closing                             /* End of Message */
-            say
-            call charout , 'OK to send email? (Y/n): '
-            reply = translate(SysGetKey())
-            say
-            if reply \= 'N' then
-               do
-                  reply = SendDataAndGetServerReply(socket, data)
-                  if left(reply, 3) \= '250' then
-                     do
-                        say 'Unexpected response to message send:' || cfg.crlf || reply
-                        leave
-                     end
-               end
-            reply = SendDataAndGetServerReply(socket, 'QUIT')
-            if left(reply, 3) \= '221' then
-               do
-                  say 'Unexpected response to QUIT:' || cfg.crlf || reply
-               end
-         end
-      leave
-   end
-   call SockClose(socket)
-return
-
-StrippedEmailAddress: procedure
-   parse arg email_address
-   email_address = strip(email_address)
-   if left(email_address, 1) = '"' then
-      parse var email_address '"' . '"' email_address
-return strip(strip(strip(email_address), 'L', '<'), 'T', '>')
-
-GetServerReply: procedure expose (globals)
-   /* JBS: 1-time receive with large buffer or as-many-as-needed receives? */
-   max_recv_buffersize = 1024
-   parse arg socket
-   rc = SockRecv(socket, 'server_reply', max_recv_buffersize)
-   select
-      when rc < 0 then
-         return 'ERROR on receive:' rc
-      when rc = 0 then
-         return 'ERROR on receive: Connection closed prematurely.'
-      when rc = max_recv_buffersize then
-         return 'ERROR on receive: Buffer size too small?'
-      when pos(cfg.crlf, server_reply) = 0 then
-         return 'ERROR No CRLF found. Buffer too small?' || cfg.crlf || 'Reply:' server_reply
-      otherwise
-         return server_reply
-   end
-
-
-/**********************************************************************/
-EncodeB64: procedure expose (globals) /* encodes a text string */
-/**********************************************************************/
-
-   parse arg Text  /* get the argument */
-
-   B64Chars = xrange('A','Z')||xrange('a','z')||xrange('0','9')||'+/'  /* define the base64 character set */
-   B64Str = ''  /* start with nothing */
-
-   do while (length(Text) > 3)  /* go on while the length is sufficient */
-
-      parse var Text NextBlock 4 Text  /* get the next block of 3 characters */
-      NextBits = x2b(c2x(NextBlock))  /* convert it to 24 bits */
-
-      do 4  /* do 4 times */
-         parse var NextBits NextSext 7 NextBits  /* get the next sextet */
-         B64Str = B64Str||substr(B64Chars,x2d(b2x(NextSext))+1,1)  /* convert to decimal, get the corresponding B64 character, and add */
-      end
-
-   end
-
-   TextLeft = length(Text)  /* the number of 8-bit characters left (1, 2, or 3) */
-
-   if (TextLeft > 0) then  /* if we have anything left */
-      do
-
-         NextBits = x2b(c2x(Text))||copies('00',(3-TextLeft))  /* convert to bits and add zeroes */
-
-         do (TextLeft + 1)  /* do so many times */
-            parse var NextBits NextSext 7 NextBits  /* get the next sextet */
-            B64Str = B64Str||substr(B64Chars,x2d(b2x(NextSext))+1,1)  /* convert to decimal, get the corresponding B64 character, and add */
-         end
-
-         B64Str = B64Str||copies('=',3 - TextLeft)  /* add this */
-
-      end
-
-return B64Str  /* end of Encode64 */
-
-ConnectToMailServer: procedure expose (globals)
-   parse arg email_server_name, email_server_port
-   if strip(email_server_port) = '' then
-      email_server_port = 25
-
-   myIPaddr = SockGetHostid()
-   rc = SockGetHostByAddr(myIPaddr, 'hoststem.')
-   if rc = 0 then
-      do
-         say 'Error: SockGetHostByAddr'
-         return (-1000)
-      end
-   cfg.myName = hoststem.name
-/*
-   rc = SockGetHostByName(cfg.SMTP.currentSMTP.host, 'hoststem.')
-*/
-   rc = SockGetHostByName(email_server_name, 'hoststem.')
-   if rc = 0 then
-      do
-         say 'Error: SockGetHostByAddr'
-         return (-1001)
-      end
-   serverIPaddr = hoststem.addr
-
-   socket = SockSocket('AF_INET', 'SOCK_STREAM', 'IPPROTO_TCP')
-   if socket < 0 then
-      exit_rc = -1
-   else
-      do
-         inetaddr.family = 'AF_INET'
-         inetaddr.addr   = serverIPaddr
-         inetaddr.port   = email_server_port
-         exit_rc         = SockConnect(socket, 'inetaddr.')
-      end
-   if exit_rc < 0 then
-      return exit_rc
-   else
-      return socket
-
-SendDataAndGetServerReply: procedure expose (globals)
-   parse arg socket, data
-   p = pos(cfg.crlf, data)
-   if p > 1 then
-      say 'Sending:' left(data, min(p - 1, 60)) || '...'
-   else if length(data) >  60 then
-      say 'Sending:' left(data, 60) || '...'
-   else
-      say 'Sending:' data
-   rc = SockSend(socket, data || cfg.crlf)
-   if rc <= 0 then
-      do
-         call SockPSock_errno
-         return 'ERROR on send:' rc
-      end
-   else
-      return GetServerReply(socket)
-
 WikiUpdates: procedure expose (globals)
    call NotYet arg(1)
    say '1) Add the next version to: http://svn.netlabs.org/fm2/admin/ticket/versions'
@@ -2205,6 +2351,7 @@ WikiUpdates: procedure expose (globals)
    say '7) Update "RBuild" with the new tag: FM2-' || ver.tag
 return
 
+/* JBS: Disabled internal CFG code:
 Configuration: procedure expose (globals)
    do until option = 'S' | option = 'Q'
       call SysCls
@@ -2342,4 +2489,5 @@ return
 
 ConfigureNewsgroupNotifications: procedure expose (globals)
 return
+*/
 

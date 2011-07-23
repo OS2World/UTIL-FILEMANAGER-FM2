@@ -1,0 +1,180 @@
+
+;  $Id$
+
+;  This file is a sample of a file used by ReleaseTool to provide
+;  various configuration data to ReleaseTool.cmd (RT).
+
+;  The actual file used by RT is named ReleaseTool.cfg. This file
+;  can be editted and saved with that file name.
+
+;  This file contains extensive comments explaining the possible
+;  configurations that can be made.
+
+;  SYNTAX: ReleaseTool expects each line to be one of four types:
+;  1) Blank/empty lines (which are ignored)
+
+;  2) Comment lines. All text following a semicolon, ";", will be ignored.
+;     Any line whose first non-blank is a semicolon, like this line, is
+;     a comment line and will be ignored by ReleaseTool.
+
+;     Section and data lines (below) can have end-of-line comments like
+;     C++'s // comments EXCEPT that only the LAST semicolon on a data line
+;     is considered the start of a comment. Any other semicolons on a data
+;     line are considered part of the key_value.
+
+;  3) Section lines. Section lines are of the form:
+;        [section-name]
+;     Section lines mark the start of a new set of data.  The section
+;     name (within the brackets) defines which type of data follows.
+
+;     Details for each section recognized by RT follow.
+
+;  4) Data lines. These lines provide the actual data to ReleaseTool.
+;     The format of these lines is:
+;        key-name = key-value
+
+;     Leading and trailing whitespace are ignored.
+
+;     Key-name's are case-insensitive. Key-values are case sensitive.
+
+;     Within a section, data lines can be in any order except that DIRECTORY lines,
+;     if any, must precede the FILE lines to which they apply.
+
+;     Details for each data line recognized by RT follow.
+
+
+;  SECTIONS : RT currently supports section names: FTP, NNTP and SMTP.
+;     FTP
+;        FTP sections are used to define data for uploading one or more files.
+;     NNTP
+;        NNTP sections are used to define data for uploading messages to one
+;        or more newsgroups on a single newsgroup server.
+;     SMTP
+;        SMTP sections are used to define data for sending email messages
+;        through a single email server.
+
+;  DATA LINES
+
+;     The following table lists the key-names recognized by ReleaseTool, the
+;     sections to which they apply, a code (explained below) and a short description:
+
+;     Key-name      Sections       Codes  Description
+
+;     DESCRIPTION   FTP,NNTP,SMTP   N N   Text used by ReleaseTool to identify to the user the
+;                                         section currently "in use" while RT runs.
+;     COMMAND       FTP,NNTP,SMTP   N N   An external command to run to perform the task.
+;                                         (See COMMAND notes below!)
+;     HOST          FTP,NNTP,SMTP   Y N   The host name of the FTP/NNTP/SMTP server
+;     PORT          FTP,NNTP,SMTP   N N   Port number. If not set, standard defaults are used.
+;     USERID        FTP,NNTP,SMTP   Y N   The userid used to log in
+;     PASSWORD      FTP,NNTP,SMTP   Y N   The password used to log in.
+;     TO            NNTP,SMTP       Y N   NNTP: Comma-separated list of newsgroups
+;                                         SMTP: Comma-separated list of addressees (email address(es))
+;     FROM          NNTP,SMTP       Y N   "From" email address
+;     SIGNATURE     NNTP,SMTP       N Y   Zero or more lines of "signature"
+;     UTCOFFSET     SMTP            N N   Offset from UTC/GMT (e.g. for EST, UTCOFFSET is -0500
+;                                         (05 hours, 00 minutes before UTC)
+;     DIRECTORY     FTP             N Y   If a change directory command is needed before uploading
+;                                         a file, then this key-value should be provided. If more
+;                                         than one file is to be uploaded and they are to be uploaded
+;                                         into different directories, precede each set of FILE lines
+;                                         by an appropriate Directory line.
+;     FILE          FTP             N Y   The local name of a file to be uploaded. This should include
+;                                         path info if the file is not in the same directory as RT.
+
+;     Codes:
+;        First code  : This data can be set in the CFG file and optionally reset while RT runs.
+;        Second code : Multiple lines of this data can be set within each section.
+
+;     "Special" key-values:
+;        PASSWORD
+;           [Hobbes-email] : RT automatically replaces this with the email address from the Hobbes text file.
+;        FILE
+;           [Release-Zip]  : RT automatically replaces this with FM/2 release zip filename.
+;           [Hobbes-text]  : RT automatically replaces this with Hobbes text filename.
+;        [Release-Zip] and [Hobbes-text] can also be used as part of a COMMAND key_value
+
+;     COMMAND notes:
+;        - If no COMMAND is provided, RT will use internal code to perform the task.
+;        - If a COMMAND is provided, all other keys for that section are optional.
+;        - If multiple external commands are needed to perform a task, then either
+;           - roll them into a CMD file and use COMMAND = call <cmdfile> <parameters>
+;           - use "&&" to separate multiple commands run from a single command line. For example:
+;              COMMAND = copy a b && copy c d
+;        - COMMAND key values may include certain "macros". The syntax for these
+;          macros is: ##macroname##. The macros recognized by RT are:
+;            HOST, PORT, USERID, PASSWORD, TO, FROM, SUBJECT, UTCOFFSET and MESSAGE_BODY_FILE
+;          With the exception of MESSAGE_BODY_FILE, the value for the macro comes from
+;          the correspondingly-named key. MESSAGE_BODY_FILE, on the other hand, is replaced
+;          with the name of a temporary file which is built by RT and holds all the text
+;          of the message to be sent.
+;           - NOTE:  Not all keys currently have corresponding macros!
+;           - NOTE:  RT recognizes these macros only when they are relevant. For example,
+;                    TO is not relevant to FTP transfers so ##TO## would be ignored in an FTP COMMAND.
+;           - NOTE:  If macros are used, make sure the corresponding keys have values, via the CFG file
+;                    or during execution of RT. RT does not check that each macro has a setting.
+;           - NOTE:  If macros are used, keep in mind that their values will become part of a
+;                    commandline command. So certain characters may cause problems: " > < / - ^ & |
+
+;     PASSWORD note: Instead of recording passwords in this file, you may prefer to provide them as RT runs.
+
+;     TO/FROM note: Accepted email address formats:
+;           "Full name" <user@domain.net>
+;           <user@domain.net>
+;           user@domain.net
+;        If you plan to use the ##TO## or ##FROM## macros, then probably the third form would be the wisest choice
+;        because the other two forms have characters which can cause problems when used on a command line.
+
+;     FROM note: For newsgroups you may want to use a disguised/false email address to avoid spam.
+
+
+[FTP]
+Description = Netlabs
+Host        = ftp.netlabs.org
+Userid      =
+Password    =
+Directory   = /incoming/fm2
+File        = [Release-zip]
+
+[FTP]
+Description = Hobbes
+Host        = hobbes.nmsu.edu
+Userid      = anonymous
+Password    = [Hobbes-email]
+Directory   = /pub/incoming
+File        = [Hobbes-text]
+File        = [Release-zip]
+
+[NNTP]
+Description = Newsgroup announcement(s) via eComstation news server
+Host        = news.ecomstation.nl
+;Userid      =
+;Password    =
+To          = ecomstation.apps
+From        = zjsmallz@osworld.net
+Signature   = John Small
+Signature   = FM/2 Development Team
+Signature   = (Remove z's for address)
+
+[NNTP]
+Description = Newsgroup announcement(s) via non-eComstation (i.e. "other") news server
+Host        =            ; ISP's or free news server
+Userid      =
+Password    =
+To          = comp.os.os2.apps,comp.os.os2.utilities     ; "alt.test" can be used for testing
+From        = zjsmallz@osworld.net
+Signature   = John Small
+Signature   = FM/2 Development Team
+Signature   = (Remove z's for address)
+
+[SMTP]
+;Command     = G:\pmmail\bin\pmmsend -a G:\PMMail\Accounts\ygk_us0.act -t "##USERTD##" -s "##SUBJECT##" -m ##MESSAGE_BODY_FILE##
+;Command     = call d:\utils\internet\rexxmail\rexxmail /NewMessageSend "##USERTD## ?subject=##SUBJECT## &body=##MESSAGE_BODY_FILE##" /Address=##FROM## /SMTPServer=##SERVER## /SMTPUSER=##USERID## /SMTPPASSWORD=##PASSWORD## /TimeZone=##UTCOFFSET##
+Host        = smtp.toast.net
+;Port        = 587
+Userid      =
+Password    =
+To          = "FM/2 Developers" <fm2-dev@netlabs.org>,"FM/2 Users" <fm2-user@netlabs.org>    ; <== Add other users/lists (separated by commas) as appropriate
+From        =
+Signature   = FM/2 Development Team
+UTCOffset   = -0500
