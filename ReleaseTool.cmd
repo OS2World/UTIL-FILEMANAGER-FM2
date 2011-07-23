@@ -53,7 +53,7 @@
  *    31 May 10 JBS Build zip file and Hobbes txt file in Warpin directory
  *    29 Jun 11 JBS Ticket 462: Fixed bug in NNTP code and standardized version format to x.yy.z
  *    02 Jul 11 JBS Ticket 462: Updated Wiki updates instructions per SHL
- *    02 Jul 11 JBS Ticket 462:
+ *    23 Jul 11 JBS Ticket 462:
  *       - Major rework of email code.
  *          - Simplified process to add/change CFG data dynamically
  *          - Added support for COMMAND to FTP and NNTP code
