@@ -1,6 +1,13 @@
 
 ;  $Id$
 
+;  Change log:
+;     11-07-23 JBS   Initial version (replaces obsolete ReleaseTool.CFG
+;                    in the repository.)
+;     11-88-05 JBS   -  Added comp.os.os2.announce and submit@os2voice.org
+;                       to proposed list of addressees
+;                    -  Updated the documentation
+
 ;  This file is a sample of a file used by ReleaseTool to provide
 ;  various configuration data to ReleaseTool.cmd (RT).
 
@@ -46,12 +53,32 @@
 ;  SECTIONS : RT currently supports section names: FTP, NNTP and SMTP.
 ;     FTP
 ;        FTP sections are used to define data for uploading one or more files.
+;        If the internal REXX FTP code is used (instead of COMMAND's), then
+;        an FTP section will be required for each FTP server.
 ;     NNTP
 ;        NNTP sections are used to define data for uploading messages to one
-;        or more newsgroups on a single newsgroup server.
+;        or more newsgroups on a single newsgroup server. Since the
+;        eComstation newsgroups are available only at news.ecomstation.com
+;        and since news.ecomstation.com does not offer other newsgroups
+;        (comp.os.os2.*, for example), more than one NNTP section will
+;        ususally be required.
 ;     SMTP
 ;        SMTP sections are used to define data for sending email messages
-;        through a single email server.
+;        through a single email server. Use multiple SMTP sections if:
+;           -  You need to use different "From" addresses (perhaps because you
+;              are registered to different lists under different ids
+;           -  You want diffferent lists of "To"  addressees. Perhaps you
+;              want to send individually addressed emails to particular
+;              individfuals/lists.
+;        NOTE: Only the first SMTP section is used to send...
+;           -  The email requesting commtted work (Task #1)
+;           -  The email to Netlabs requesting that the uploaded file be moved (Task #18)
+;        For these two tasks the addressees, "To", are hard-coded in RT. (IOW, the "To"
+;        setting in the CFG file is not used for these two tasks.
+
+;        All SMTP sections are used when sending announcement emails. So the "To" setting
+;        for each section should be a list of addressees who should get an announcemnt using
+;        the settings for that section.
 
 ;  DATA LINES
 
@@ -161,7 +188,7 @@ Description = Newsgroup announcement(s) via non-eComstation (i.e. "other") news 
 Host        =            ; ISP's or free news server
 Userid      =
 Password    =
-To          = comp.os.os2.apps,comp.os.os2.utilities     ; "alt.test" can be used for testing
+To          = comp.os.os2.apps,comp.os.os2.utilities,comp.os.os2.announce     ; "alt.test" can be used for testing
 From        = zjsmallz@osworld.net
 Signature   = John Small
 Signature   = FM/2 Development Team
@@ -174,7 +201,7 @@ Host        = smtp.toast.net
 ;Port        = 587
 Userid      =
 Password    =
-To          = "FM/2 Developers" <fm2-dev@netlabs.org>,"FM/2 Users" <fm2-user@netlabs.org>    ; <== Add other users/lists (separated by commas) as appropriate
+To          = "FM/2 Developers" <fm2-dev@netlabs.org>,"FM/2 Users" <fm2-user@netlabs.org>,submit@os2voice.org    ; <== Add other users/lists (separated by commas) as appropriate
 From        =
 Signature   = FM/2 Development Team
 UTCOffset   = -0500
