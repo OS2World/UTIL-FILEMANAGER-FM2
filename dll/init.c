@@ -636,6 +636,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   FILESTATUS3 fs3;
   PSZ env;
   CHAR dllfile[CCHMAXPATH];
+  CHAR temp[CCHMAXPATH];
   ULONG size;
   BOOL fSeparateParmsApp;
 
@@ -716,6 +717,9 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     OS2ver[1] = 1;
   }
 
+  //Save the FM2 save directory name. This is the location of the ini, dat files etc.
+  save_dir2(temp);
+  pFM2SaveDirectory = xstrdup(temp, pszSrcFile, __LINE__);
   // set up default root names for temp file storage and archive goodies
   env = getenv("TMP");
   if (env == NULL)
@@ -724,18 +728,13 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     DosError(FERR_DISABLEHARDERR);
     rc = DosQueryPathInfo(env, FIL_STANDARD, &fs3, sizeof(fs3));
     if (!rc) {
-      CHAR *enddir, *p, szTempName[CCHMAXPATH], temp[CCHMAXPATH];
+      CHAR *enddir, *p, szTempName[CCHMAXPATH];
       FILEFINDBUF3 ffb;
       HDIR search_handle;
       ULONG num_matches, ul;
 
-      //Save the FM2 save directory name. This is the location of the ini, dat files etc.
-      save_dir2(temp);
-      pFM2SaveDirectory = xstrdup(temp, pszSrcFile, __LINE__);
       strcpy(szTempName, env);
       AddBackslashToPath(szTempName);
-      //if (szTempName[strlen(szTempName) - 1] != '\\')
-      //  strcat(szTempName, "\\");
       enddir = &szTempName[strlen(szTempName)];
       strcat(szTempName, "$FM2????.");
       strcat(szTempName, "???");
@@ -746,8 +745,8 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 			FILE_NORMAL | FILE_DIRECTORY |
 			FILE_SYSTEM | FILE_READONLY | FILE_HIDDEN |
 			FILE_ARCHIVED,
-			&ffb, sizeof(ffb), &num_matches, FIL_STANDARD)) {
-	do {
+                        &ffb, sizeof(ffb), &num_matches, FIL_STANDARD)) {
+        do {
 	  strcpy(enddir, ffb.achName);
 	  p = strrchr(szTempName, '.');
 	  if (p) {
@@ -760,11 +759,11 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 	      DosDeleteDir(szTempName);
 	    }
 	  }
-	}
-      while (!DosFindNext(search_handle,
-			  &ffb, sizeof(ffb), &num_matches));
-      DosFindClose(search_handle);
-    }
+        }
+        while (!DosFindNext(search_handle,
+                            &ffb, sizeof(ffb), &num_matches));
+        DosFindClose(search_handle);
+      }
       if (fs3.attrFile & FILE_DIRECTORY) {
 	strcpy(szTempName, env);
 	MakeTempName(szTempName, NULL, 1);
@@ -772,13 +771,14 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 	if (!rc)
           pTmpDir = xstrdup(szTempName, pszSrcFile, __LINE__);	// if writable
         else
-          pTmpDir = xstrdup(pFM2SaveDirectory, pszSrcFile, __LINE__); 
-	}
+          pTmpDir = xstrdup(pFM2SaveDirectory, pszSrcFile, __LINE__);
       }
     }
+  }
+  else
+    pTmpDir = xstrdup(pFM2SaveDirectory, pszSrcFile, __LINE__);
   // Check free space on TMP and FM2 Save drives
   {
-    //ullTmpSpaceNeeded = 5120000;
     if (pTmpDir && CheckDriveSpaceAvail(pTmpDir, ullTmpSpaceNeeded, 0) == 1) {
       if (CheckDriveSpaceAvail(pFM2SaveDirectory, ullTmpSpaceNeeded, 0) == 0){
 	ret = saymsg(MB_YESNO,
