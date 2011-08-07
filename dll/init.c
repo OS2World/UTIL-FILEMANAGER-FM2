@@ -319,6 +319,13 @@ PCSZ PCSZ_STARDOTINI    =  "*.INI";
 PCSZ PCSZ_STARDOTLST    =  "*.LST";
 PCSZ PCSZ_STARDOTPMD    =  "*.PMD";
 PCSZ PCSZ_STARDOTTXT    =  "*.TXT";
+PCSZ PCSZ_FM3DOTINI     =  "FM3.INI";
+PCSZ PCSZ_FM3INI        =  "FM3INI";
+PCSZ PCSZ_FM3INIDOTBAK  =  "FM3INI.BAK";
+PCSZ PCSZ_FM3INIDOTBAD  =  "FM3INI.BAD";
+PCSZ PCSZ_FM3INIDOTBAD2 =  "FM3INI.BAD2";
+PCSZ PCSZ_FM3RES        =  "FM3RES";
+PCSZ PCSZ_FM3DOTHLP     =  "FM3.HLP";
 PCSZ PCSZ_DOTEXE   =  ".EXE";
 PCSZ PCSZ_DOTCOM   =  ".COM";
 PCSZ PCSZ_DOTCMD   =  ".CMD";
@@ -545,7 +552,7 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
     fmprof = (HINI) 0;
     if (fIniExisted) {
       DosError(FERR_DISABLEHARDERR);
-      DosCopy("FM3.INI", "FM3INI.BAK", DCPY_EXISTING);
+      DosCopy(PCSZ_FM3DOTINI, PCSZ_FM3INIDOTBAK, DCPY_EXISTING);
     }
   }
 
@@ -644,17 +651,17 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   ULONG size;
   BOOL fSeparateParmsApp;
 
-  strcpy(dllfile, "FM3RES");
-  env = getenv("FM3INI");
+  strcpy(dllfile, PCSZ_FM3RES);
+  env = getenv(PCSZ_FM3INI);
   if (env) {
     DosError(FERR_DISABLEHARDERR);
     rc = DosQueryPathInfo(env, FIL_STANDARD, &fs3, sizeof(fs3));
     if (!rc) {
       if (fs3.attrFile & FILE_DIRECTORY) {
-	BldFullPathName(dllfile, env, "FM3RES");        // 23 Aug 07 SHL
+	BldFullPathName(dllfile, env, PCSZ_FM3RES);        // 23 Aug 07 SHL
 	DosError(FERR_DISABLEHARDERR);
 	if (DosQueryPathInfo(dllfile, FIL_STANDARD, &fs3, sizeof(fs3)))
-	  strcpy(dllfile, "FM3RES");
+	  strcpy(dllfile, PCSZ_FM3RES);
       }
     }
   }
@@ -696,7 +703,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   }
 
   if (!*profile)
-    strcpy(profile, "FM3.INI");
+    strcpy(profile, PCSZ_FM3DOTINI);
   mypid = getpid();
   /* give default appname if none set by caller */
   if (!*appname)
@@ -851,7 +858,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 
   if ((!strchr(profile, '\\') && !strchr(profile, ':')) ||
       !(fmprof = PrfOpenProfile((HAB)0, profile))) {
-    /* figure out where to put INI file... */
+    // figure out where to put INI file...
     CHAR inipath[CCHMAXPATH];
 
     DosError(FERR_DISABLEHARDERR);
@@ -859,7 +866,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     DosError(FERR_DISABLEHARDERR);
     memset(driveserial, -1, sizeof(driveserial));
     *inipath = 0;
-    env = getenv("FM3INI");
+    env = getenv(PCSZ_FM3INI);
     if (env) {
       strcpy(inipath, env);
       DosError(FERR_DISABLEHARDERR);
@@ -881,7 +888,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     rc = DosQueryPathInfo(inipath, FIL_STANDARD, &fs3, sizeof(fs3));
     if (rc) {
       if (rc == ERROR_FILE_NOT_FOUND) {
-        DosCopy("FM3INI.BAK", "FM3.INI", 0);
+        DosCopy(PCSZ_FM3INIDOTBAK, PCSZ_FM3DOTINI, 0);
       }
       rc = DosQueryPathInfo(inipath, FIL_STANDARD, &fs3, sizeof(fs3));
       if (rc)
@@ -891,10 +898,10 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
       if (!CheckFileHeader(inipath, "\xff\xff\xff\xff\x14\x00\x00\x00", 0L)) {
         saymsg(MB_ENTER,HWND_DESKTOP, GetPString(IDS_DEBUG_STRING),
                GetPString(IDS_INIFAILURETEXT));
-        DosCopy("FM3.INI", "FM3INI.BAD", DCPY_EXISTING);
-        DosCopy("FM3INI.BAK", "FM3.INI", DCPY_EXISTING);
+        DosCopy(PCSZ_FM3DOTINI, PCSZ_FM3INIDOTBAD, DCPY_EXISTING);
+        DosCopy(PCSZ_FM3INIDOTBAK, PCSZ_FM3DOTINI, DCPY_EXISTING);
         if (!CheckFileHeader(inipath, "\xff\xff\xff\xff\x14\x00\x00\x00", 0L)) {
-          DosCopy("FM3.INI", "FM3INI.BAD2", DCPY_EXISTING);
+          DosCopy(PCSZ_FM3DOTINI, PCSZ_FM3INIDOTBAD2, DCPY_EXISTING);
           fWantFirstTimeInit = TRUE;
         }
       }
@@ -914,7 +921,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     }
     fmprof = PrfOpenProfile((HAB)0, inipath);
     if (!fmprof) {
-      strcpy(inipath, "FM3.INI");
+      strcpy(inipath, PCSZ_FM3DOTINI);
       fmprof = PrfOpenProfile((HAB)0, inipath);
     }
 
@@ -953,22 +960,24 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   hini.pszHelpWindowTitle = (PSZ)GetPString(IDS_FM2HELPTITLETEXT);
   hini.hmodHelpTableModule = FM3ModHandle;
   hini.fShowPanelId = CMIC_HIDE_PANEL_ID;
-  hini.pszHelpLibraryName = "FM3.HLP";
+  hini.pszHelpLibraryName = (CHAR *) PCSZ_FM3DOTHLP;
   hwndHelp = WinCreateHelpInstance(hab, &hini);
   if (!hwndHelp) {
     CHAR helppath[CCHMAXPATH];
-    env = getenv("FM3INI");
+    env = getenv(PCSZ_FM3INI);
     if (env) {
       strcpy(helppath, env);
       DosError(FERR_DISABLEHARDERR);
       rc = DosQueryPathInfo(helppath, FIL_STANDARD, &fs3, sizeof(fs3));
       if (!rc) {
 	if (fs3.attrFile & FILE_DIRECTORY) {
-	  BldFullPathName(helppath, helppath, "FM3.HLP");
+	  BldFullPathName(helppath, helppath, PCSZ_FM3DOTHLP);
 	  hini.pszHelpLibraryName = helppath;
 	  hwndHelp = WinCreateHelpInstance(hab, &hini);
 	  if (!hwndHelp)
-	    Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__, "WinCreateHelpInstance failed for %s with error 0x%x", hini.pszHelpLibraryName, hini.ulReturnCode);
+            Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+                      "WinCreateHelpInstance failed for %s with error 0x%x",
+                      hini.pszHelpLibraryName, hini.ulReturnCode);
 	}
       }
     }

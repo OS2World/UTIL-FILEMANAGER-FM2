@@ -26,7 +26,7 @@
 
 APIRET save_dir2(CHAR * curdir)
 {
-  CHAR *env = getenv("FM3INI");
+  CHAR *env = getenv(PCSZ_FM3INI);
 
   if (env && *env) {
     strncpy(curdir, env, CCHMAXPATH);
