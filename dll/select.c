@@ -388,7 +388,7 @@ VOID DeselectAll(HWND hwndCnr, BOOL files, BOOL dirs, PSZ maskstr,
     }
 
     if (unmarkit)
-      WinSendMsg(hwndCnr, CM_SETRECORDEMPHASIS, pci,
+      WinSendMsg(hwndCnr, CM_SETRECORDEMPHASIS, MPFROMP(pci),
 		 MPFROM2SHORT(FALSE, CRA_SELECTED | CRA_CURSORED |
 			      CRA_INUSE | CRA_SOURCE));
     pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pci),

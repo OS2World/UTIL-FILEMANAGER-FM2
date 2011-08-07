@@ -970,6 +970,7 @@
 #define IDS_GREPFILETEXT                                      963
 #define IDS_CMINSERTERRTEXT                                   964
 #define IDS_CMALLOCRECERRTEXT                                 965
+#define IDS_FM3SAVEDIRERROR1TEXT                              966
 #define IDS_NOWINDOWTEXT                                      968
 #define IDS_2SYSTEMVIOTEXT                                    969
 #define IDS_MAKEARCTITLETEXT                                  970

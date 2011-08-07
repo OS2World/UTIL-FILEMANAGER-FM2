@@ -94,7 +94,8 @@
                 miniapp; FM3Str should be used for setting only relavent to FM/2 or that
                 aren't user settable; realappname should be used for setting applicable to
                 one or more miniapp but not to FM/2
-  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR
+                CONSTANT * as CHAR *.
   09 MAY 10 JBS Ticket 434: Make fDontSuggestAgain a "global" flag, not a per app flag
   23 Oct 10 GKY Changes to populate and utilize a HELPTABLE for context specific help
   20 Nov 10 GKY Rework scanning code to remove redundant scans, prevent double directory
@@ -103,6 +104,8 @@
   20 Nov 10 GKY Check that pTmpDir IsValid and recreate if not found; Fixes hangs caused
                 by temp file creation failures.
   03 Mar 11 SHL Try using FM3INI to create help instance if fm3.hlp not in current directory
+  06 Aug 11 GKY Fixed failure to initalize pFM2SaveDirectory if TEMP and TMP were not present
+                or invalid
 
 ***********************************************************************/
 
@@ -637,6 +640,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PSZ env;
   CHAR dllfile[CCHMAXPATH];
   CHAR temp[CCHMAXPATH];
+  CHAR *p;
   ULONG size;
   BOOL fSeparateParmsApp;
 
@@ -718,17 +722,30 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   }
 
   //Save the FM2 save directory name. This is the location of the ini, dat files etc.
-  save_dir2(temp);
+  rc = save_dir2(temp);
+  if (rc) {
+    saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
+	   HWND_DESKTOP,
+	   GetPString(IDS_ERRORTEXT), GetPString(IDS_FM3SAVEDIRERROR1TEXT));
+    return FALSE;
+  }
   pFM2SaveDirectory = xstrdup(temp, pszSrcFile, __LINE__);
+  if (!pFM2SaveDirectory)
+    return FALSE; // already complained
   // set up default root names for temp file storage and archive goodies
-  env = getenv("TMP");
-  if (env == NULL)
-    env = getenv("TEMP");
+  env = getenv("TEMP");
+  if (env != NULL) {
+    rc = 0;
+    DosError(FERR_DISABLEHARDERR);
+    rc = DosQueryPathInfo(env, FIL_STANDARD, &fs3, sizeof(fs3));
+  }
+  if (rc || env == NULL)
+    env = getenv("TMP");
   if (env != NULL) {
     DosError(FERR_DISABLEHARDERR);
     rc = DosQueryPathInfo(env, FIL_STANDARD, &fs3, sizeof(fs3));
     if (!rc) {
-      CHAR *enddir, *p, szTempName[CCHMAXPATH];
+      CHAR *enddir, szTempName[CCHMAXPATH];
       FILEFINDBUF3 ffb;
       HDIR search_handle;
       ULONG num_matches, ul;
@@ -833,8 +850,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 	       (stricmp(env, "YES") == 0 || atoi(env) == 1);
 
   if ((!strchr(profile, '\\') && !strchr(profile, ':')) ||
-      !(fmprof = PrfOpenProfile((HAB)0, profile)))
-  {
+      !(fmprof = PrfOpenProfile((HAB)0, profile))) {
     /* figure out where to put INI file... */
     CHAR inipath[CCHMAXPATH];
 
@@ -853,45 +869,47 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 	  BldFullPathName(inipath, inipath, profile);
       }
     }
-    if (!env) {
+    else {
       env = searchpath(profile);
       if (!env)
 	env = profile;
       strcpy(inipath, env);
-    }
-
-    /* in some odd cases the INI file can get set to readonly status */
-    /* here we test it and reset the readonly bit if necessary */
+    } //fixme the DosCopies probably fail if the INI isn't in the FM2 directory GKY 06 Aug 11
     if (!*inipath)
       strcpy(inipath, profile);
     DosError(FERR_DISABLEHARDERR);
-    // fixme to check for backup if ini not found GKY 1-30-09
     rc = DosQueryPathInfo(inipath, FIL_STANDARD, &fs3, sizeof(fs3));
     if (rc) {
-      if (rc == ERROR_FILE_NOT_FOUND)
-      fWantFirstTimeInit = TRUE;
-    }
-    else { //Check the ini file header and restore from backup if corupted
-      if (!CheckFileHeader(inipath, "\xff\xff\xff\xff\x14\x00\x00\x00", 0L)) {
-	saymsg(MB_ENTER,HWND_DESKTOP, GetPString(IDS_DEBUG_STRING),
-	       GetPString(IDS_INIFAILURETEXT));
-	DosCopy("FM3.INI", "FM3INI.BAD", DCPY_EXISTING);
-	DosCopy("FM3INI.BAK", "FM3.INI", DCPY_EXISTING);
-	if (!CheckFileHeader(inipath, "\xff\xff\xff\xff\x14\x00\x00\x00", 0L)) {
-	  DosCopy("FM3.INI", "FM3INI2.BAD", DCPY_EXISTING);
-	  fWantFirstTimeInit = TRUE;
-	}
+      if (rc == ERROR_FILE_NOT_FOUND) {
+        DosCopy("FM3INI.BAK", "FM3.INI", 0);
       }
-      if (!fWantFirstTimeInit) {
-	fIniExisted = TRUE;
-	if (fs3.attrFile & (FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM)) {
-	  fs3.attrFile &= ~(FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM);
-	  rc = xDosSetPathInfo(inipath, FIL_STANDARD, &fs3, sizeof(fs3), 0);
-	  if (rc) {
-	    Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-			GetPString(IDS_INIREADONLYTEXT), inipath);
-	  }
-	}
+      rc = DosQueryPathInfo(inipath, FIL_STANDARD, &fs3, sizeof(fs3));
+      if (rc)
+        fWantFirstTimeInit = TRUE;
+    }
+    if (!fWantFirstTimeInit) { //Check the ini file header and restore from backup if corupted
+      if (!CheckFileHeader(inipath, "\xff\xff\xff\xff\x14\x00\x00\x00", 0L)) {
+        saymsg(MB_ENTER,HWND_DESKTOP, GetPString(IDS_DEBUG_STRING),
+               GetPString(IDS_INIFAILURETEXT));
+        DosCopy("FM3.INI", "FM3INI.BAD", DCPY_EXISTING);
+        DosCopy("FM3INI.BAK", "FM3.INI", DCPY_EXISTING);
+        if (!CheckFileHeader(inipath, "\xff\xff\xff\xff\x14\x00\x00\x00", 0L)) {
+          DosCopy("FM3.INI", "FM3INI.BAD2", DCPY_EXISTING);
+          fWantFirstTimeInit = TRUE;
+        }
+      }
+    }
+    // in some odd cases the INI file can get set to readonly status
+    // here we test it and reset the readonly bit if necessary
+    if (!fWantFirstTimeInit) {
+      fIniExisted = TRUE;
+      if (fs3.attrFile & (FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM)) {
+        fs3.attrFile &= ~(FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM);
+        rc = xDosSetPathInfo(inipath, FIL_STANDARD, &fs3, sizeof(fs3), 0);
+        if (rc) {
+          Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+                      GetPString(IDS_INIREADONLYTEXT), inipath);
+        }
       }
     }
     fmprof = PrfOpenProfile((HAB)0, inipath);

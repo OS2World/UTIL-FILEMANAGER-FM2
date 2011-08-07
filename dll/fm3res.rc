@@ -3307,6 +3307,7 @@ STRINGTABLE
     IDS_GREPFILETEXT                      "; FM/2 seek and scan mask file, one mask set per line\n"
     IDS_CMINSERTERRTEXT                   "Record insert failed"
     IDS_CMALLOCRECERRTEXT                 "Record allocation failed"
+    IDS_FM3SAVEDIRERROR1TEXT              "Unable to find FM2.INI directory and current directory"
     IDS_NOWINDOWTEXT                      "No window"
     IDS_MAKEARCTITLETEXT                  "FM/2: Makearc                       "
     IDS_MAKEARCUSAGETEXT                  "Usage:\r\rMAKEARC <file or directory to archive>\r"
