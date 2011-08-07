@@ -1161,7 +1161,7 @@ CfgInit: procedure expose (globals)
    cfg.NNTP.0     = 0
    cfg.SMTP.0     = 0
    cfg.FTP.keys   = 'DESCRIPTION COMMAND HOST USERID PASSWORD DIRECTORY FILE'
-   cfg.NNTP.keys  = 'DESCRIPTION COMMAND HOST USERID PASSWORD TO FROM SIGNATURE NEWSGROUPS'
+   cfg.NNTP.keys  = 'DESCRIPTION COMMAND HOST USERID PASSWORD TO FROM SIGNATURE'
    cfg.SMTP.keys  = 'DESCRIPTION COMMAND HOST USERID PASSWORD PORT TO FROM SIGNATURE UTCOFFSET'
 
    cfg.NNTP.signature_preface     = cfg.crlf || '-- ' || cfg.crlf
@@ -1865,15 +1865,15 @@ AnnounceToNewsgroups: procedure expose (globals)
             end
          when option = 'T' then
             do
-               b4_timestamp = SysGetFileDateTime(tempfile)
+               b4_timestamp = SysGetFileDateTime(body_file)
                say 'The current body of the newsgroup message will now be loaded into an editor.'
                say 'Make desired changes, if any, and save the file.'
                say
                call charout, 'Press any key when ready to load the message body into an editor: '
                call SysGetKey
                say
-               call ExecCmd cmd.editor tempfile
-               if b4_timestamp \= SysGetFileDateTime(tempfile) then
+               call ExecCmd cmd.editor body_file
+               if b4_timestamp \= SysGetFileDateTime(body_file) then
                   _text = '<Modified>'
             end
          otherwise
@@ -1892,7 +1892,7 @@ AnnounceToNewsgroups: procedure expose (globals)
             say 'News: Verify/edit server-specific data for' cfg.NNTP.s.description
             say
             say 'Host     :' cfg.NNTP.s.host
-            say 'To       :' cfg.NNTP.s.newsgroups
+            say 'To       :' cfg.NNTP.s.to
             say 'From     :' cfg.NNTP.s.from
             say 'UserID   :' cfg.NNTP.s.userid
             say 'Password :' cfg.NNTP.s.password
@@ -1919,7 +1919,7 @@ AnnounceToNewsgroups: procedure expose (globals)
                when option = 'T' then
                   do
                      say 'Enter a comma=separated list of newagroup(s) (followed by the ENTER key).'
-                     cfg.NNTP.s.newsgroups = linein()
+                     cfg.NNTP.s.to = linein()
                   end
                when option = 'F' then
                   do
@@ -1978,9 +1978,9 @@ AnnounceToNewsgroups: procedure expose (globals)
                      parse var _command part1 '##FROM##' part2
                      _command = part1 || cfg.NNTP.s.from || part2
                   end
-                  do while pos('##NEWSGROUPS##', _command) > 0
-                     parse var _command part1 '##NEWSGROUPS##' part2
-                     _command = part1 || cfg.NNTP.s.newsgroups || part2
+                  do while pos('##TO##', _command) > 0
+                     parse var _command part1 '##TO##' part2
+                     _command = part1 || cfg.NNTP.s.to || part2
                   end
                   rcx = ExecCmd(_command)
                end
@@ -2094,7 +2094,7 @@ SendNNTP: procedure expose (globals)
                         NNTPsig = NNTPsig || cfg.NNTP.s.signature.i || cfg.crlf
                      end
                      rc = SockSend(socket, 'From:' cfg.NNTP.s.from || cfg.crlf || ,
-                                           'Newsgroups:' cfg.NNTP.s.newsgroups || cfg.crlf || ,
+                                           'Newsgroups:' cfg.NNTP.s.to || cfg.crlf || ,
                                            'Subject:' cfg.NNTP.subject || cfg.crlf || ,
                                            'User-Agent:' cfg.user_agent || cfg.crlf || ,
                                            'MIME-version:' cfg.NNTP.mime_version || cfg.crlf || ,
@@ -2367,7 +2367,7 @@ Configuration: procedure expose (globals)
       say '   Uploads of files (to Netlabs, Hobbes, etc.).'
       say '   Requesting that Netlabs move the uploaded file.'
       say '   Email notifications of the release (to lists and/or individuals).'
-      say '   Newsgroup notifications of the release (to vraious newsgroups).'
+      say '   Newsgroup notifications of the release (to various newsgroups).'
       say
       say "Enter the first letter of the activity to configure or..."
       say "'S' to save or 'Q' to quit. ('S' or 'Q' will return you to the main menv)."
