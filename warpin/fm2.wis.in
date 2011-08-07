@@ -15,6 +15,8 @@ Change log
    23 Oct 08 JBS Ticket 292: Fix parameters field of Helpfile Viewer icon.
    28 Oct 08 JBS Ticket 294: Add support for new object icons.
    12 Apr 10 JBS Ticket 430: Add deletion of the now obsolete FM2RES.STR, if present
+   07 Aug 11 JBS Ticket 460: Fix bug in standalone installation of FM/2 Utilities (and
+                             correct a couple of object settings)
 
    NOTE: If a NON-EXTERNAL package (i.e. a package whose files
    will be staged before building the WPI file) with an index
@@ -75,9 +77,9 @@ Change log
   LONGFILENAMES
   CREATEOBJECT="WPFolder|File Manager/2|<WP_DESKTOP>|ICONFILE=$(1)\icons\fm2fldr.ICO;ICONNFILE=1,$(1)\icons\fm2fldr2.ICO;CCVIEW=NO;OBJECTID=<FM3_Folder>;"
   CREATEOBJECT="FAIL WPProgram|FM/2|<FM3_Folder>|EXENAME=$(1)\fm3.exe;PARAMETERS=%*;STARTUPDIR=$(1);CCVIEW=YES;OBJECTID=<FM/2>;"
-  CREATEOBJECT="WPProgram|FM/2|<FM3_Folder>|EXENAME=$(1)\fm3.exe;STARTUPDIR=$(1);CCVIEW=YES;OBJECTID=<FM/2>;"
+  CREATEOBJECT="WPProgram|FM/2|<FM3_Folder>|EXENAME=$(1)\fm3.exe;STARTUPDIR=$(1);OBJECTID=<FM/2>;"
   CREATEOBJECT="FAIL WPProgram|FM/2 Lite|<FM3_Folder>|EXENAME=$(1)\fm4.exe;PARAMETERS=%*;STARTUPDIR=$(1);CCVIEW=YES;TITLE=FM/2 LITE;OBJECTID=<FM/2 LITE>;"
-  CREATEOBJECT="WPProgram|FM/2 Lite|<FM3_Folder>|EXENAME=$(1)\fm4.exe;STARTUPDIR=$(1);CCVIEW=YES;TITLE=FM/2 LITE;OBJECTID=<FM/2 LITE>;"
+  CREATEOBJECT="WPProgram|FM/2 Lite|<FM3_Folder>|EXENAME=$(1)\fm4.exe;STARTUPDIR=$(1);TITLE=FM/2 LITE;OBJECTID=<FM/2 LITE>;"
   CREATEOBJECT="WPFolder|FM/2 Tools|<FM3_Folder>|ICONFILE=$(1)\icons\toolbox.ICO;ICONNFILE=1,$(1)\icons\toolbox2.ICO;OBJECTID=<FM3_Tools>;"
   CREATEOBJECT="WPFolder|FM/2 Docs|<FM3_Folder>|ICONFILE=$(1)\icons\docs.ICO;ICONNFILE=1,$(1)\icons\docs2.ICO;OBJECTID=<FM3_Docs>;"
   CREATEOBJECT="WPProgram|Back up FM/2 Customizations^ and reset to defaults|<FM3_Folder>|EXENAME=*;PARAMETERS=/c cfgmgr /INSTALL /DEFAULTS /UNATTENDED;STARTUPDIR=$(1);PROGTYPE=WINDOWABLEVIO;MINIMIZED=YES;ICONFILE=$(1)\Icons\backup.ico;OBJECTID=<FM/2_RESET_TO_DEFAULTS>;"
@@ -106,7 +108,6 @@ Change log
   DEEXECUTE="$(1)\utilsmgr /DELETE /UNATTENDED"
   CLEARPROFILE="USER\FM/2"
 
-
 >This package contains the base File Manager/2 (FM/2) package.
 
 The FM/2 base package must be installed to a drive with long filename support!
@@ -129,7 +130,7 @@ replacing your current version. See the readme for more information.
   CREATEOBJECT="WPProgram|Iconify|<FM2_Utilities>|EXENAME=$(7)\iconify.exe;PARAMETERS=%*;OBJECTID=<FM2Iconify>;"
   CREATEOBJECT="WPProgram|Delete Tree|<FM2_Utilities>|EXENAME=*;PROGTYPE=WINDOWABLEVIO;PARAMETERS=/c ($(7)\deltree.exe [Enter directory to delete:] || pause);OBJECTID=<FM2Deltree>;"
   CONFIGSYS="SET PATH=$(7); | ADDRIGHT"
-  EXECUTE="$(7)\shdwmgr FM2UTILS"
+  EXECUTE="$(1)\Utils\shdwmgr FM2UTILS"
 >This package contains the FM/2 Utilities, a
 collection of more than 60  utilities which may
 be used with or without FM/2. Included are
@@ -165,13 +166,11 @@ not be needed.
 <README EXTRACTFROMPCK="1">docs\copying</README>
 </PAGE>
 
-
 <!-- The TYPE=CONTAINER will list the packages which can be installed. -->
 <PAGE INDEX=3 TYPE=CONTAINER>
 <NEXTBUTTON TARGET=4>~Next</NEXTBUTTON>
 <TEXT>Select your installation directory.</TEXT>
 </PAGE>
-
 
 <PAGE INDEX=4 TYPE=CONFIGURE>
 <NEXTBUTTON TARGET=0>I~nstall</NEXTBUTTON>
@@ -203,11 +202,10 @@ not be needed.
 <NEXTBUTTON TARGET=0>I~nstall</NEXTBUTTON>
 <TEXT>Please select/deselect the desired configuration option(s).
 
-The CONFIG.SYS modification is the addition of the FM/2 Utilities installation directory to end of the PATH (if it is not already on the PATH), simplifying access to the utiities from the command line.
+If "FM/2 Utilities" have been selected, a "CONFIG.SYS modification" will appear below. This modification is the addition of the FM/2 Utilities installation directory to end of the PATH (if it is not already on the PATH), simplifying access to the utiities from the command line.
 
-Uncheck "Modify CONFIG.SYS" if you do not want your PATH changed.</TEXT>
+Uncheck "Modify CONFIG.SYS" (if present) if you do not want your PATH changed.</TEXT>
 </PAGE>
-
 
 </BODY>
 </WARPIN>
