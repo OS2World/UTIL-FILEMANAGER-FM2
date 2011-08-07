@@ -68,6 +68,7 @@
  *       - Improved support for external commands which perform some or all of a task
  *          - Improved error handling
  *          - Added support for FTP and NNTP commands
+ *    07 Aug 11 JBS Ticket 462: Fix bug in NNTP "To" code
  *
  * To Do
  *    -  Make sure ##macro## key_values are filled before use?
@@ -1160,7 +1161,7 @@ CfgInit: procedure expose (globals)
    cfg.NNTP.0     = 0
    cfg.SMTP.0     = 0
    cfg.FTP.keys   = 'DESCRIPTION COMMAND HOST USERID PASSWORD DIRECTORY FILE'
-   cfg.NNTP.keys  = 'DESCRIPTION COMMAND HOST USERID PASSWORD FROM SIGNATURE NEWSGROUPS'
+   cfg.NNTP.keys  = 'DESCRIPTION COMMAND HOST USERID PASSWORD TO FROM SIGNATURE NEWSGROUPS'
    cfg.SMTP.keys  = 'DESCRIPTION COMMAND HOST USERID PASSWORD PORT TO FROM SIGNATURE UTCOFFSET'
 
    cfg.NNTP.signature_preface     = cfg.crlf || '-- ' || cfg.crlf
