@@ -73,9 +73,10 @@
   23 Oct 10 GKY Add menu items for opening directory cnrs based on path of selected item
 		including the option to use walk directories to select path
   28 May 11 GKY Fixed trap caused by passing a nonexistant pci to FillInRecordFromFFB in
-                UM_COLLECT because pci is limited to 65535 files. (nRecord is a USHORT)
+		UM_COLLECT because pci is limited to 65535 files. (nRecord is a USHORT)
   29 May 11 SHL Rework UM_COLLECT >65K records logic to not require double loop
   29 May 11 SHL Tweak UM_COLLECT to bypass FindCnrRecord when container initially empty
+  08 Aug 11 SHL Rework UM_COLLECT to avoid spurious container items free
 
 ***********************************************************************/
 
@@ -668,13 +669,13 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
       if (ulMaxFiles) {
 	PCNRITEM pci = NULL;
 	PCNRITEM pciFirst = NULL;
-	PCNRITEM pciNext;
-	PCNRITEM pciPrev = NULL;
+	PCNRITEM pciPrev;
 	ULONG nm;
 	ULONG ulRecsAtStart;
 	ULONG ulRecsToInsert;
-	ULONG ulRecsAllocated = 0;
+	ULONG ulRecsInserted = 0;
 	ULONGLONG ullTotalBytes;
+	BOOL checkToInsert = FALSE;
 	CNRINFO cnri;
 	RECORDINSERT ri;
 	ITIMER_DESC itdSleep = { 0 };	// 06 Feb 08 SHL
@@ -696,21 +697,23 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	}
 
 	for (x = 0; li->list[x]; x++) {
-	  // Allocate container items if needed
+
+	  // Allocate more container items if needed
 	  if (!pci) {
-	    ulRecsToInsert = ulMaxFiles - ulRecsAllocated;
+	    ulRecsToInsert = ulMaxFiles - ulRecsInserted;	// Left to do
 	    if (ulRecsToInsert > USHRT_MAX)
-	      ulRecsToInsert = USHRT_MAX;
-	    pciPrev = NULL;
+	      ulRecsToInsert = USHRT_MAX;		// Avoid USHORT overflows
 	    pci = WinSendMsg(dcd->hwndCnr, CM_ALLOCRECORD,
 			     MPFROMLONG(EXTRA_RECORD_BYTES),
 			     MPFROMLONG(ulRecsToInsert));
+	    pciFirst = pci;
+	    pciPrev = NULL;
 	    if (!pci) {
 	      Runtime_Error(pszSrcFile, __LINE__, PCSZ_CM_ALLOCRECORD);
 	      break;
 	    }
-	    pciFirst = pci;
 	  } // if need allocate
+
 	  nm = 1;
 	  hdir = HDIR_CREATE;
 	  DosError(FERR_DISABLEHARDERR);
@@ -721,33 +724,27 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 			    NULL,
 			    FALSE,
 			    FALSE,
-			    TRUE)) {
-	    pciNext = (PCNRITEM)pci->rc.preccNextRecord;
-	    pci = UpdateCnrRecord(dcd->hwndCnr, li->list[x], FALSE, dcd);
-	    if (!pci) {
+			    TRUE))
+	  {
+	    // Updating existing record
+	    PCNRITEM pciUpd = UpdateCnrRecord(dcd->hwndCnr, li->list[x], FALSE, dcd);
+	    if (!pciUpd) {
+	      // file has disappeared
 	      Runtime_Error(pszSrcFile, __LINE__, "pci NULL for list[%u]", x);
-	      pci = pciNext;		// Try to recover
 	    }
 	    else {
-	      if (Filter((PMINIRECORDCORE) pci, (PVOID) & dcd->mask)) {
-		pci->rc.flRecordAttr &= ~CRA_FILTERED;	// Ensure visible
+	      // Update OK
+	      if (Filter((PMINIRECORDCORE) pciUpd, (PVOID) & dcd->mask)) {
+		pciUpd->rc.flRecordAttr &= ~CRA_FILTERED;	// Ensure visible
 		// 2011-05-29 SHL fixme to check fail
 		WinSendMsg(dcd->hwndCnr, CM_INVALIDATERECORD, MPVOID,
 			   MPFROM2SHORT(0, CMA_REPOSITION | CMA_ERASE));
 	      }
-	      // Remove extra record from chain and free
-	      if (pciPrev)
-		pciPrev->rc.preccNextRecord = (PMINIRECORDCORE)pciNext;
-	      else
-		pciFirst = pciNext;
-	      if (pci)
-		FreeCnrItem(dcd->hwndCnr, pci);
-	      pci = pciNext;
-	      ulRecsToInsert--;		// Remember gone
-	      ulMaxFiles--;		// Remember gone
 	    }
+	    ulMaxFiles--;		// No insert needed
+	    checkToInsert = TRUE;
 	  }
-	  // Add new entry
+	  // Add new entry maybe
 	  else if (*li->list[x] &&
 	      !DosQueryPathInfo(li->list[x], FIL_QUERYFULLNAME,
 				fullname, sizeof(fullname)) &&
@@ -757,7 +754,9 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 			     FILE_NORMAL | FILE_DIRECTORY |
 			     FILE_ARCHIVED | FILE_SYSTEM |
 			     FILE_HIDDEN | FILE_READONLY,
-			     &fb4, sizeof(fb4), &nm, FIL_QUERYEASIZEL)) {
+			     &fb4, sizeof(fb4), &nm, FIL_QUERYEASIZEL))
+	  {
+	    // OK to add
 	    DosFindClose(hdir);
 	    priority_normal();
 	    *fb4.achName = 0;
@@ -771,21 +770,31 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	  else {
 	    // DosQueryPathInfo etc. failed - try to recover
 	    Runtime_Error(pszSrcFile, __LINE__, "DosQueryPathInfo failed for %s", fullname);
-	    // Remove extra CNRITEM from chain
-	    pciNext = (PCNRITEM)pci->rc.preccNextRecord;
-	    if (pciPrev)
-	      pciPrev->rc.preccNextRecord = (PMINIRECORDCORE)pciNext;
-	    else
-	      pciFirst = pciNext;
-	    if (pci)
-	      FreeCnrItem(dcd->hwndCnr, pci);
-	    pci = pciNext;
-	    ulRecsToInsert--;		// Remember gone
-	    ulMaxFiles--;		// Remember gone
+	    ulMaxFiles--;		// Nothing to insert
+	    checkToInsert = TRUE;
 	  }
+
+	  if (checkToInsert) {
+	    checkToInsert = FALSE;
+	    // Remove extra records from chain
+	    while (ulRecsInserted + ulRecsToInsert > ulMaxFiles) {
+	      PCNRITEM pciNext = (PCNRITEM)pci->rc.preccNextRecord;
+	      if (pciPrev)
+		pciPrev->rc.preccNextRecord = (PMINIRECORDCORE)pciNext;
+	      else
+		pciFirst = pciNext;
+	      pci->pszFileName = NullStr;	// Avoid spurious complaints
+	      FreeCnrItem(dcd->hwndCnr, pci);
+	      pci = pciNext;
+	      ulRecsToInsert--;		// Remember gone
+	    }
+	  }
+
 	  // Check if time to insert
 	  if (!pci) {
+	    // All allocated CNRITEMs filled
 	    if (ulRecsToInsert) {
+	      // Have CNRITEMs to insert
 	      memset(&ri, 0, sizeof(RECORDINSERT));
 	      ri.cb = sizeof(RECORDINSERT);
 	      ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -797,7 +806,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 			 CM_INSERTRECORD, MPFROMP(pciFirst), MPFROMP(&ri));
 	      // 2011-05-29 SHL fixme to complain on failure
 	      PostMsg(dcd->hwndCnr, UM_RESCAN, MPVOID, MPVOID);
-	      ulRecsAllocated += ulRecsToInsert;
+	      ulRecsInserted += ulRecsToInsert;
 	      pciFirst = NULL;
 	      ulRecsToInsert = 0;
 	    }
@@ -806,9 +815,9 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	} // for
 
 	// Clean up in case stopped early by error
-	if (pci) {
+	if (pci)
 	  Runtime_Error(pszSrcFile, __LINE__, "pci not NULL");
-	}
+
 	if (pciFirst) {
 	  Runtime_Error(pszSrcFile, __LINE__, "pciFirst not NULL");
 	  FreeCnrItemList(dcd->hwndCnr, pciFirst);
@@ -1401,6 +1410,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if (pci->attrFile & FILE_DIRECTORY)
 	      p = pci->pszFileName;
 	    else {
+	      if (!pci->pszFileName)
+		Runtime_Error(pszSrcFile, __LINE__, "pci->pszFileName NULL for %p", pci);
 	      p = strrchr(pci->pszFileName, '\\');
 	      if (p) {
 		if (*(p + 1))
@@ -2752,8 +2763,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		else
 		  li->type = (li->type == DO_MOVE) ? IDM_MOVE : IDM_COPY;
 		break;
-	      }
-	    }
+	      } // switch
+	    } // if !collect
 	    if (!li->list || !li->list[0])
 	      FreeListInfo(li);
 	    else if (!PostMsg(dcd->hwndObject, action, MPFROMP(li), MPVOID))
