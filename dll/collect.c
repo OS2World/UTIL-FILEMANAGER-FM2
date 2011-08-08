@@ -820,6 +820,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 
 	if (pciFirst) {
 	  Runtime_Error(pszSrcFile, __LINE__, "pciFirst not NULL");
+	  // 2011-08-08 SHL fixme to initialze pszFileName to prevent spurious complaints
 	  FreeCnrItemList(dcd->hwndCnr, pciFirst);
 	}
 
@@ -3044,7 +3045,6 @@ MRESULT EXPENTRY CollectorMenuProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      0};
 	PCSZ szHelpString = NULL;
 
-
 	for (i=0; i<MenuItems; i++) {
 	  sCurrentMenuitem = asMenuIDs[i];
 	  oldMenuProc(hwnd,MM_QUERYITEMRECT,
@@ -3057,7 +3057,6 @@ MRESULT EXPENTRY CollectorMenuProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    MOUSEMSG(&msg)->y < rectl.yTop)
 	   break;
 	} // for
-
 
 	 switch (sCurrentMenuitem) {
 	 case 0:
