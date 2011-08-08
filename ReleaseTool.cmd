@@ -1861,7 +1861,7 @@ AnnounceToNewsgroups: procedure expose (globals)
          when option = 'S' then
             do
                say 'Enter the Subject (followed by the ENTER key):'
-               email.subject = linein()
+               cfg.NNTP.subject = linein()
             end
          when option = 'T' then
             do
