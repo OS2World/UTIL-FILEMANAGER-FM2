@@ -2,16 +2,8 @@
 # $Id$
 
 # Copyright (c) 1993-98 M. Kimes
-# Copyright (c) 2002, 2010 Steven H. Levine
+# Copyright (c) 2002, 2011 Steven H. Levine
 
-# 01 Sep 06 SHL Adjust .res case
-# 02 Jun 07 SHL Convert to OpenWatcom
-# 27 Jun 07 SHL Use same CFLAGS for all builds
-# 27 Jun 07 SHL Allow DEBUG set from command line or environment
-# 03 Jul 07 SHL Change DEBUG semantics to ifdef/ifndef
-# 04 Jul 07 SHL Pass DEBUG settings to sub-make
-# 22 Sep 07 SHL Switch to 4 byte packing (-zp4)
-# 26 Sep 07 SHL Support USE_WRC from environment
 # 03 Jan 08 SHL Switch to wrc.exe default; support USE_RC from environment
 # 23 Jan 08 JBS Add support for building SYM files (Ticket 226)
 # 27 May 08 SHL Add WARNALL and FORTIFY support
@@ -21,6 +13,7 @@
 # 12 Jul 09 GKY Allow FM/2 to load in high memory call exehdr /hi
 # 13 Apr 10 SHL Drop HIMEM support
 # 21 Jun 11 GKY Add exceptq .xqs support
+# 2011-07-01 SHL sort map
 
 # Environment: see dll\makefile
 
@@ -112,7 +105,7 @@ CFLAGS += -we
 CFLAGS += -dFORTIFY
 !endif
 
-LFLAGS = sys os2v2_pm op quiet op verbose op cache op caseexact op map
+LFLAGS = sys os2v2_pm op quiet op verbose op cache op caseexact op map sort global
 !ifdef DEBUG
 CFLAGS += -d$DEBUG_OPT
 LFLAGS += debug dwarf all
