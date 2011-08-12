@@ -38,6 +38,7 @@
 # 13 Apr 10 SHL Drop HIMEM support
 # 09 Feb 11 SHL Add exceptq .xqs support
 # 21 Jun 11 GKY Make high memory builds the default
+# 01 Jul 11 SHL sort map
 # 04 Jul 11 GKY Make xqs files an explicit target so they will be rebuild if lost somehow.
 # 04 Jul 11 GKY Add eFTE backup files (*~) to clean target
 
@@ -142,12 +143,11 @@ CFLAGS += -dFORTIFY
 # for fm3res only
 CFLAGSR = -bt=os2 -mf -bd -bm         -olirs -s     -j -we -wx -zfp -zgp -zp4 -zq
 
+LFLAGS = sys os2v2_dll initinstance terminstance op quiet op verbose op cache &
+	 op caseexact op implib op map sort global
+
 !ifdef DEBUG
-LFLAGS = sys os2v2_dll initinstance terminstance op quiet op verbose op cache &
-	 op caseexact op implib op map debug dwarf all
-!else
-LFLAGS = sys os2v2_dll initinstance terminstance op quiet op verbose op cache &
-	 op caseexact op implib op map
+LFLAGS += debug dwarf all
 !endif
 
 # rc Includes can be in current director or dll subdirectory
