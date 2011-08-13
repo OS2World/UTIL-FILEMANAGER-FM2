@@ -4,6 +4,13 @@
  �       See end of document for contact info           �
  읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
 
+FM/2 3.19.1 This is a bug fix release. Most of these have existed for a 
+very long time but were only discovered recently. Included is a fixed
+FM/2 utilities wpi file. None of the utilities have been updated. The
+fix allows you to install the utilities without having to install FM/2.
+See the history file for more details. Please let us know if you find
+a defect.
+
 FM/2 3.19 I am dedicating this release of FM/2 to the memory of my
 parents Ralph and Helen Young both of whom passed away earlier  this
 year. It has been over a year since the last release. The FM/2 team has

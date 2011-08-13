@@ -4,6 +4,6 @@
 
 # 16 Jun 07 GKY Convert to OpenWatcom
 
-option description '@#The Netlabs FM/2 team:3.19.0#@##1## 06/26/2011 03:19:00      tresbopeep::EN:US:0:U:@@FM/2 View Directory MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, 2011 Steven Levine and Associates, Inc. All rights reserved'
+option description '@#The Netlabs FM/2 team:3.19.1#@##1## 08/13/2011 03:19:01      tresbopeep::EN:US:0:U:@@FM/2 View Directory MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, 2011 Steven Levine and Associates, Inc. All rights reserved'
 
 option stack = 488416

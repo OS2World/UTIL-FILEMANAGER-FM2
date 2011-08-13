@@ -1,5 +1,23 @@
 New stuff at the top.  This list is not necessarily complete.
 
+3.19.1
+ o This is a bug fix release. Most of these have existed for a very long time but were only
+   discovered recently.
+ o Fixed trap on startup when TMP and TEMP environment variable aren't present or aren't valid
+   Ticket 468 (Gregg)
+ o Fixed overlapped buttons in EA editor which prevented changing EAs. Ticket 467 (Gregg)
+ o Fixed collector trap when duplicate files were drop in. Ticket 461 (Steven)
+ o Fixed counter in collector to update # of files and KIBs at the same time. Ticket 455 (Gregg)
+ o Fixed path quoting code to prevent it adding a single " in some cases Ticket 463 (Gregg)
+ o Fixed commands to avoid assigning duplicate ID numbers. Ticket 463 (Gregg)
+ o Fixed commands dialog not to exit following clearing of a duplicate hotkey error. Ticket 464
+   (Gregg)
+ o Fixed FM/2 utilities wpi script so it can be installed without install FM/2 also. None of
+   the utilities have been updated. Ticket 460 (John)
+ o Fixed CMD file that installs unzip V6 support to avoid a warpin hang. Ticket 459 (John)
+ o Associations were not being saved when an association was moved to the top or bottom of the
+   list. Ticket 466 (Gregg)
+
 3.19
  o Added the option to open the directory container of an item in the collector. Ticket 362 (Gregg)
  o Finally appear to have fixed the duplicate names in the tree container on drive scanning
