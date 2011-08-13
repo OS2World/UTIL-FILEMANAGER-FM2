@@ -34,7 +34,7 @@ all: fm3.hlp .symbolic
 fm3.hlp: *.ipf bitmaps\*.bmp ..\..\bitmaps\*.bmp
   set WIPFC=$(%WATCOM)\wipfc
   $(IPFC) $(IFLAGS) fm3.ipf
-  ren fm3.hlp fm3.hlp
+#  ren fm3.hlp fm3.hlp  # pointless rename
 
 clean: .symbolic
    -del *.hlp
