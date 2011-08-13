@@ -77,6 +77,7 @@
   29 May 11 SHL Rework UM_COLLECT >65K records logic to not require double loop
   29 May 11 SHL Tweak UM_COLLECT to bypass FindCnrRecord when container initially empty
   08 Aug 11 SHL Rework UM_COLLECT to avoid spurious container items free
+  13 Aug 11 GKY Have file count and KIBs update at the same time
 
 ***********************************************************************/
 
@@ -674,7 +675,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	ULONG ulRecsAtStart;
 	ULONG ulRecsToInsert;
 	ULONG ulRecsInserted = 0;
-	ULONGLONG ullTotalBytes;
+	ULONGLONG ullTotalBytes = 0;
 	BOOL checkToInsert = FALSE;
 	CNRINFO cnri;
 	RECORDINSERT ri;
@@ -760,10 +761,9 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	    DosFindClose(hdir);
 	    priority_normal();
 	    *fb4.achName = 0;
-	    ullTotalBytes = FillInRecordFromFFB(dcd->hwndCnr,
+	    ullTotalBytes += FillInRecordFromFFB(dcd->hwndCnr,
 						pci,
 						fullname, &fb4, FALSE, dcd);
-	    dcd->ullTotalBytes += ullTotalBytes;
 	    pciPrev = pci;
 	    pci = (PCNRITEM) pci->rc.preccNextRecord;
 	  }
@@ -806,7 +806,8 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 			 CM_INSERTRECORD, MPFROMP(pciFirst), MPFROMP(&ri));
 	      // 2011-05-29 SHL fixme to complain on failure
 	      PostMsg(dcd->hwndCnr, UM_RESCAN, MPVOID, MPVOID);
-	      ulRecsInserted += ulRecsToInsert;
+              ulRecsInserted += ulRecsToInsert;
+              dcd->ullTotalBytes = ullTotalBytes;
 	      pciFirst = NULL;
 	      ulRecsToInsert = 0;
 	    }
@@ -886,7 +887,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	      if (p)
 		*p = 0;
 	    }
-	    /* fullname now contains name of file to collect */
+	    // fullname now contains name of file to collect
 	    DosError(FERR_DISABLEHARDERR);
 	    if (FindCnrRecord(dcd->hwndCnr,
 			      fullname,
@@ -900,11 +901,6 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 		WinSendMsg(dcd->hwndCnr, CM_INVALIDATERECORD, MPVOID,
 			   MPFROM2SHORT(0, CMA_REPOSITION | CMA_ERASE));
 	      }
-	      /*pci = (PCNRITEM) pci->rc.preccNextRecord;
-	      if (pciPrev)
-		pciPrev->rc.preccNextRecord = (PMINIRECORDCORE) pci;
-	      else
-		pciFirst = pci;*/
 	    }
 	    else if (IsFullName(fullname) &&
 		!IsRoot(fullname) &&
@@ -912,7 +908,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 				  FIL_QUERYEASIZEL,
 				  &fs4,
 				  sizeof(fs4))) {
-	      /* collect it */
+	      // collect it
 	      pci = WinSendMsg(dcd->hwndCnr,
 			       CM_ALLOCRECORD,
 			       MPFROMLONG(EXTRA_RECORD_BYTES),
