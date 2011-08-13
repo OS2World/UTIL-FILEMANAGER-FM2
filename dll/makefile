@@ -41,6 +41,7 @@
 # 01 Jul 11 SHL sort map
 # 04 Jul 11 GKY Make xqs files an explicit target so they will be rebuild if lost somehow.
 # 04 Jul 11 GKY Add eFTE backup files (*~) to clean target
+# 13 Aug 11 GKY Build xqs and sym files as part of dll and all targets
 
 # Environment: see makefile_pre.mk
 
@@ -200,6 +201,7 @@ all: &
      $(BASERES).res &
      $(BASERES).dll &
      loadhigh &
+     $(SYMS) &
      ipf\fm3.hlp
      
 syms: $(SYMS) .symbolic

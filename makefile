@@ -30,6 +30,7 @@
 # 21 Jun 11 GKY Make high memory builds the default (resources only for exes)
 # 04 Jul 11 GKY Make xqs files an explicit target so they will be rebuild if lost somehow.
 # 04 Jul 11 GKY Add eFTE backup files (*~) to clean target
+# 13 Aug 11 GKY Build xqs and sym files as part of dll and all targets
 
 # Environment - see makefile_pre.mk and dll\makefile
 
@@ -53,7 +54,7 @@ WARPIN_OPTS = $(WARPIN_OPTS) BUILD_FM2UTILS=$(BUILD_FM2UTILS)
 
 !include makefile_pre.mk
 
-all: dll $(BASE) allexe .symbolic
+all: dll $(BASE) allexe fm3.sym fm3.xqs exesyms .symbolic
 
 syms: fm3.sym fm3.xqs exesyms dllsyms .symbolic
 
