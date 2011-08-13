@@ -39,6 +39,7 @@
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   23 Oct 10 GKY Changes to populate and utilize a HELPTABLE for context specific help
   21 Nov 10 GKY Check if archiver.bb2 has been changed on disk before editing
+  13 Aug 11 GKY Change to Doxygen comment format
 
 ***********************************************************************/
 
@@ -125,7 +126,7 @@ static VOID fill_listbox(HWND hwnd, BOOL fShowAll, SHORT sOldSelect)
   WinSendDlgItemMsg(hwnd, ASEL_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
 
   for (pat = arcsighead; pat; pat = pat->next) {
-    /*
+    /**
      * this inner loop tests for a dup signature entry and assures
      * that only the entry at the top of the list gets used for
      * conversion; editing any is okay
@@ -241,8 +242,8 @@ ARC_TYPE *find_type(CHAR * filespec, ARC_TYPE * topsig)
     l = min(l, 79);
     if (!DosChgFilePtr(handle,
 		       abs(info->file_offset),
-		       (info->file_offset >= 0) ?
-		       FILE_BEGIN : FILE_END, &len)) {
+                       (info->file_offset >= 0) ? FILE_BEGIN : FILE_END,
+                       &len)) {
       if (!DosRead(handle, buffer, l, &len) && len == l) {
 	if (!memcmp(info->signature, buffer, l))
 	  break;			// Matched
@@ -251,8 +252,8 @@ ARC_TYPE *find_type(CHAR * filespec, ARC_TYPE * topsig)
     }
   }					// for
 
-  DosClose(handle);			/* Either way, we're done for now */
-  return info;				/* Return signature, if any */
+  DosClose(handle);			// Either way, we're done for now
+  return info;				// Return signature, if any
 }
 
 # ifdef FORTIFY
@@ -658,7 +659,6 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg,
 	  ditem.hstrContainerName = DrgAddStrHandle(NullStr);
 	  ditem.hstrSourceName = DrgAddStrHandle(NullStr);
 	  ditem.hstrTargetName = DrgAddStrHandle(NullStr);
-	  // ditem.fsControl = 0;
 	  ditem.fsSupportedOps = DO_MOVEABLE;
 
 	  memset(&dimage, 0, sizeof(DRAGIMAGE));
@@ -670,14 +670,13 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg,
 	  dimage.sizlStretch.cy = 32;
 	  dimage.cxOffset = -16;
 	  dimage.cyOffset = 0;
-	  DrgSetDragitem(pDInfo, &ditem, sizeof(DRAGITEM), 0);	/* Index of DRAGITEM */
-	  hwndDrop = DrgDrag(hwnd, pDInfo, &dimage, 1,	/* One DRAGIMAGE */
+	  DrgSetDragitem(pDInfo, &ditem, sizeof(DRAGITEM), 0);	// Index of DRAGITEM
+	  hwndDrop = DrgDrag(hwnd, pDInfo, &dimage, 1,	// One DRAGIMAGE
 			     VK_ENDDRAG, NULL);
 	  if (!hwndDrop)
 	    Win_Error(hwnd, hwnd, pszSrcFile, __LINE__, "DrgDrag");
 
 	  DrgFreeDraginfo(pDInfo);
-	  // WinSetWindowPos(hwnd,HWND_TOP,0,0,0,0,SWP_ACTIVATE);
 	}
       }
       break;
@@ -700,7 +699,7 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg,
 		 MPFROM2SHORT(HT_NORMAL, KC_NONE));
       // fprintf(stderr, "DRAGOVER posted 0x%x WM_BUTTON1CLICK x y %d %d\n", hwnd, ptl2.x, ptl2.y);
     }
-    pDInfo = (PDRAGINFO) mp1;		/* Get DRAGINFO pointer */
+    pDInfo = (PDRAGINFO) mp1;		// Get DRAGINFO pointer
     if (pDInfo) {
       if (!DrgAccessDraginfo(pDInfo)) {
 	Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
@@ -708,7 +707,7 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg,
       }
       else {
 	pDItem = DrgQueryDragitemPtr(pDInfo, 0);
-	/* Check valid rendering mechanisms and data format */
+	// Check valid rendering mechanisms and data format
 	ok = DrgVerifyRMF(pDItem, DRM_LBOX, NULL);
 	DrgFreeDraginfo(pDInfo);
       }
@@ -736,7 +735,7 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg,
       emphasized = FALSE;
       // DrawTargetEmphasis(hwnd, emphasized);
     }
-    pDInfo = (PDRAGINFO) mp1;		/* Get DRAGINFO pointer */
+    pDInfo = (PDRAGINFO) mp1;		// Get DRAGINFO pointer
     if (pDInfo) {
       if (!DrgAccessDraginfo(pDInfo)) {
 	Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
@@ -746,12 +745,11 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg,
 	pDItem = DrgQueryDragitemPtr(pDInfo, 0);
 	if (!pDItem)
 	  Win_Error(hwnd, hwnd, pszSrcFile, __LINE__, "DM_DROP");
-	/* Check valid rendering mechanisms and data */
+	// Check valid rendering mechanisms and data
 	ok = DrgVerifyRMF(pDItem, DRM_LBOX, NULL)
 			  && ~pDItem->fsControl & DC_PREPARE;
 	if (ok) {
-	  // ret = FullDrgName(pDItem,buffer,buflen);
-	  /* note: targetfail is returned to source for all items */
+	  // note: targetfail is returned to source for all items
 	  DrgSendTransferMsg(pDInfo->hwndSource, DM_ENDCONVERSATION,
 			     MPFROMLONG(pDItem->ulItemID),
 			     MPFROMLONG(DMFL_TARGETSUCCESSFUL));
@@ -803,7 +801,7 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDismissDlg(hwnd, 0);
       break;
     }
-    /* Passed arg points to where to return selected archiver definition
+    /** Passed arg points to where to return selected archiver definition
      * On input arg value controls selection list content
      * If non-NULL, dup names are suppressed
      * If NULL, all definitions are shown
@@ -1120,13 +1118,13 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
 
-/*
-   see archiver.tmp
-   02-08-96  23:55              1
-   8 Feb 96 23:55:32            2
-   8 Feb 96  11:55p             3
-   96-02-08 23:55:32            4
-   31-02-98  23:55              5
+/**
+ *  see archiver.tmp
+ *  02-08-96  23:55              1
+ *  8 Feb 96 23:55:32            2
+ *  8 Feb 96  11:55p             3
+ *  96-02-08 23:55:32            4
+ *  31-02-98  23:55              5
  */
 
 BOOL ArcDateTime(CHAR * dt, INT type, CDATE * cdate, CTIME * ctime)

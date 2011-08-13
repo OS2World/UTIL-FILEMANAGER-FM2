@@ -85,6 +85,7 @@
   23 Oct 10 GKY Add ForwardslashToBackslash function to streamline code
   20 Nov 10 GKY Check that pTmpDir IsValid and recreate if not found; Fixes hangs caused
                 by temp file creation failures.
+  13 Aug 11 GKY Change to Doxygen comment format
 
 ***********************************************************************/
 
@@ -382,18 +383,6 @@ static SHORT APIENTRY ArcSort(PMINIRECORDCORE pmrc1, PMINIRECORDCORE pmrc2,
     case SORT_LWDATE:
       ret = TestCDates(&pai1->date, &pai1->time,
 		       &pai2->date, &pai2->time);
-	/*(pai1->date.year < pai2->date.year) ? 1 :
-	(pai1->date.year > pai2->date.year) ? -1 :
-	(pai1->date.month < pai2->date.month) ? 1 :
-	(pai1->date.month > pai2->date.month) ? -1 :
-	(pai1->date.day < pai2->date.day) ? 1 :
-	(pai1->date.day > pai2->date.day) ? -1 :
-	(pai1->time.hours < pai2->time.hours) ? 1 :
-	(pai1->time.hours > pai2->time.hours) ? -1 :
-	(pai1->time.minutes < pai2->time.minutes) ? 1 :
-	(pai1->time.minutes > pai2->time.minutes) ? -1 :
-	(pai1->time.seconds < pai2->time.seconds) ? 1 :
-	(pai1->time.seconds > pai2->time.seconds) ? -1 : 0;*/
       break;
 
     case SORT_SIZE:
@@ -717,7 +706,7 @@ ReTry:
 	else if (info->endlist && !strcmp(s, info->endlist))
 	  gotend = TRUE;
 	else {
-	  /* add to container */
+	  // add to container
 	  fname = NULL;
 	  bstrip(s);
 	  if (info->nameisfirst) {
@@ -738,7 +727,7 @@ ReTry:
 	  p = s;
 	  for (fieldnum = 0; fieldnum <= highest; fieldnum++) {
 	    pp = p;
-	    while (*pp && (*pp == ' ' || *pp == '\t'))	/* skip leading */
+	    while (*pp && (*pp == ' ' || *pp == '\t'))	// skip leading
 	      pp++;
 	    if (!*pp)
 	      break;
@@ -794,7 +783,7 @@ ReTry:
 	    }
 	    else if (fieldnum == info->fnpos) {
 	      fname = pp;
-	      if (pp && *pp == '*' && !*(pp + 1))	/* workaround for LH.EXE */
+	      if (pp && *pp == '*' && !*(pp + 1))	// workaround for LH.EXE
 		fname = NULL;
 	      if (info->nameislast)
 		break;
@@ -926,7 +915,7 @@ ReTry:
 		  ArcErrProc, FM3ModHandle, ARCERR_FRAME, MPFROMP(&ad));
       }
       else if (!nomove && tinfo) {
-	/* if we got a false hit, move working hit to top */
+	// if we got a false hit, move working hit to top
 	tinfo = info->next;
 	info->next = arcsighead;
 	arcsighead->prev = info;
@@ -1218,7 +1207,7 @@ MRESULT EXPENTRY ArcTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case DM_DRAGOVER:
 	if (AcceptOneDrop(hwnd, mp1, mp2))
 	  return MRFROM2SHORT(DOR_DROP, DO_MOVE);
-	return MRFROM2SHORT(DOR_NODROP, 0);	/* Drop not valid */
+	return MRFROM2SHORT(DOR_NODROP, 0);	// Drop not valid
       case DM_DROPHELP:
 	DropHelp(mp1, mp2, hwnd, GetPString(IDS_ARCCNRFOLDERDROPHELPTEXT));
 	return 0;
@@ -1511,7 +1500,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 #     ifdef FORTIFY
       Fortify_BecomeOwner(dcd);
 #     endif
-      /* set unique id */
+      // set unique id
       WinSetWindowUShort(hwnd, QWS_ID, ARCOBJ_FRAME + (ARC_FRAME - dcd->id));
       dcd->hwndObject = hwnd;		// pass back hwnd
       if (ParentIsDesktop(hwnd, dcd->hwndParent))
@@ -1520,7 +1509,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_RESCAN:
-    /*
+    /**
      * populate container
      */
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
@@ -1679,9 +1668,11 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    ad = *dcd;
 	    ad.namecanchange = 0;
 	    ad.fmoving = (li->type == IDM_ARCHIVEM);
-	    if (!WinDlgBox(HWND_DESKTOP, dcd->hwndClient, ArchiveDlgProc, FM3ModHandle, ARCH_FRAME, (PVOID) & ad) || !*ad.arcname || !*ad.command)	/* we blew it */
+            if (!WinDlgBox(HWND_DESKTOP, dcd->hwndClient, ArchiveDlgProc,
+                           FM3ModHandle, ARCH_FRAME, (PVOID) & ad) || !*ad.arcname ||
+                !*ad.command)	// we blew it
 	      break;
-	    /* build the sucker */
+	    // build the sucker
 	    strcpy(szBuffer, ad.command);
 	    strcat(szBuffer, " ");
 
@@ -1915,7 +1906,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      *endofit = 0;
 	    } while (li->list[x]);
 	    if (li->type == IDM_EXTRACT || li->type == IDM_EXTRACTWDIRS) {
-	      /* update windows */
+	      // update windows
 	      for (x = 0; li->list[x]; x++) {
 
 		CHAR *temp, *p;
@@ -2297,7 +2288,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
     return 0;
 
   case WM_SETFOCUS:
-    /*
+    /**
      * put name of our window (archive name) on status line
      */
     if (dcd && hwndStatus && mp2)
@@ -2413,7 +2404,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
     }
     else {
       if (!dcd->hwndObject) {
-	/*
+	/**
 	 * first time through -- set things up
 	 */
 	{
@@ -2692,7 +2683,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	break;
 
       case IDM_WINDOWSMENU:
-	/*
+	/**
 	 * add switchlist entries to end of pulldown menu
 	 */
 	SetupWinList((HWND)mp2,
@@ -2892,7 +2883,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_SORTLAST:
       case IDM_SORTLWDATE:
 	dcd->sortFlags &= SORT_REVERSE;
-	/* intentional fallthru */
+	// intentional fallthru
       case IDM_SORTREVERSE:
 	switch (SHORT1FROMMP(mp1)) {
 	case IDM_SORTSMARTNAME:
@@ -3217,8 +3208,8 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  PDRAGINFO pDInfo;
 
 	  pDInfo = ((PCNRDRAGINFO) mp2)->pDragInfo;
-	  DrgAccessDraginfo(pDInfo);	/* Access DRAGINFO */
-	  DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO */
+	  DrgAccessDraginfo(pDInfo);	// Access DRAGINFO
+	  DrgFreeDraginfo(pDInfo);	// Free DRAGINFO
 	}
 	return 0;
 
@@ -3226,15 +3217,15 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case CN_DRAGOVER:
 	if (mp2) {
 
-	  PDRAGITEM pDItem;		/* Pointer to DRAGITEM */
-	  PDRAGINFO pDInfo;		/* Pointer to DRAGINFO */
+	  PDRAGITEM pDItem;		// Pointer to DRAGITEM
+	  PDRAGINFO pDInfo;		// Pointer to DRAGINFO
 	  PARCITEM pci;
 
 	  pci = (PARCITEM) ((PCNRDRAGINFO) mp2)->pRecord;
 	  if (SHORT1FROMMP(mp1) == CN_DRAGAFTER)
 	    pci = NULL;
 	  pDInfo = ((PCNRDRAGINFO) mp2)->pDragInfo;
-	  DrgAccessDraginfo(pDInfo);	/* Access DRAGINFO */
+	  DrgAccessDraginfo(pDInfo);	// Access DRAGINFO
 	  if (*dcd->arcname) {
 	    if ((driveflags[toupper(*dcd->arcname) - 'A'] &
 		 DRIVE_NOTWRITEABLE) || !dcd->info || !dcd->info->create) {
@@ -3246,18 +3237,18 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    DrgFreeDraginfo(pDInfo);
 	    return MRFROM2SHORT(DOR_NODROP, 0);
 	  }
-	  pDItem = DrgQueryDragitemPtr(pDInfo,	/* Access DRAGITEM */
-				       0);	/* Index to DRAGITEM */
-	  if (DrgVerifyRMF(pDItem,	/* Check valid rendering */
-			   (CHAR *) DRM_OS2FILE,	/* mechanisms and data */
+	  pDItem = DrgQueryDragitemPtr(pDInfo,	        // Access DRAGITEM
+				       0);	        // Index to DRAGITEM
+	  if (DrgVerifyRMF(pDItem,	                // Check valid rendering
+			   (CHAR *) DRM_OS2FILE,	// mechanisms and data
 			   NULL) && !(pDItem->fsControl & DC_PREPARE)) {
-	    DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO */
-	    return MRFROM2SHORT(DOR_DROP,	/* Return okay to drop */
+	    DrgFreeDraginfo(pDInfo);	// Free DRAGINFO
+	    return MRFROM2SHORT(DOR_DROP,	// Return okay to drop
 				fCopyDefault ? DO_COPY : DO_MOVE);
 	  }
-	  DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO */
+	  DrgFreeDraginfo(pDInfo);	// Free DRAGINFO
 	}
-	return (MRFROM2SHORT(DOR_NEVERDROP, 0));	/* Drop not valid */
+	return (MRFROM2SHORT(DOR_NEVERDROP, 0));	// Drop not valid
 
       case CN_INITDRAG:
 	if (mp2) {
@@ -3586,7 +3577,7 @@ MRESULT EXPENTRY ArcCnrMenuProc(HWND hwnd, ULONG msg, MPARAM mp1,
 HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 		 ARC_TYPE * sinfo)
 {
-  /*
+  /**
    * bitmapped flags:
    *  1 = am extracted from another archive
    *  4 = don't kill proc on close

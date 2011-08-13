@@ -29,6 +29,7 @@
   23 Nov 08 JBS Support use of CMD files in archiver definitions
   11 Jan 08 GKY Replace "ARCHIVER.BB2" in string file with global set at compile in init.c
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  13 Aug 11 GKY Change to Doxygen comment format
 
 ***********************************************************************/
 
@@ -246,11 +247,11 @@ VOID rewrite_archiverbb2(PSZ archiverbb2)
 	   GetPString(IDS_NOTETEXT), GetPString(IDS_SAVEARCBB2TEXT));
     archiverbb2 = (PSZ) PCSZ_ARCHIVERBB2;
   }
-  /* Check space on drive*/
-  if (CheckDriveSpaceAvail(archiverbb2, ullDATFileSpaceNeeded * 4, 1) == 2) //* 4 is because this file is larger than other .dat files
+  // Check space on drive
+  if (CheckDriveSpaceAvail(archiverbb2, ullDATFileSpaceNeeded * 4, 1) == 2) // 4 is because this file is larger than other .dat files
     return; //already gave error msg
 
-  /* save a backup */
+  // save a backup
   psz = strrchr(archiverbb2, '.');
   if (psz && !stricmp(psz, PCSZ_DOTBB2)) {
     strcpy(psz, ".BAK");

@@ -35,6 +35,7 @@
                 aren't user settable; realappname should be used for setting applicable to
                 one or more miniapp but not to FM/2
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  13 Aug 11 GKY Change to Doxygen comment format
 
 ***********************************************************************/
 
@@ -97,7 +98,7 @@ static CHAR currfile[CCHMAXPATH];
 BOOL WriteEA(HWND hwnd, CHAR * filename, PCSZ eaname, USHORT type,
 	     CHAR * data)
 {
-  /* save an ea to disk */
+  // save an ea to disk
 
   FEA2LIST *pfealist = NULL;
   EAOP2 eaop;
@@ -235,8 +236,7 @@ BOOL WriteEA(HWND hwnd, CHAR * filename, PCSZ eaname, USHORT type,
       }
       break;
     }
-    pfealist->list[0].cbValue = /*(ULONG)*/ (eaval -
-					 (pfealist->list[0].szName +
+    pfealist->list[0].cbValue = (eaval - (pfealist->list[0].szName +
 					  pfealist->list[0].cbName + 1));
     memset(&eaop, 0, sizeof(eaop));
     eaop.fpFEA2List = pfealist;
@@ -255,7 +255,7 @@ BOOL PutComments(HWND hwnd, CHAR * filename, CHAR * comments)
 {
   register CHAR *p;
 
-  if (comments) {			/* check -- is it empty? */
+  if (comments) {			// check -- is it empty?
     p = comments;
     while (*p && isspace(*p))
       p++;
@@ -631,7 +631,7 @@ MRESULT EXPENTRY AutoObjProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  else
 		    readonly = TRUE;
 		}
-		/* else EA not present */
+		// else EA not present
 		MLEsetchanged(hwndAutoMLE, FALSE);
 		MLEsetreadonly(hwndAutoMLE, readonly);
 	      }

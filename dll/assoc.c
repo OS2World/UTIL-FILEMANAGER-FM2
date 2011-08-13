@@ -26,6 +26,7 @@
   01 May 10 GKY Add ENVIRONMENT_SIZE variable to standardize this size everywhere.
   01 May 10 GKY Changes to move environment storage to INI file
   03 Jul 11 GKY Fixed failure to save associations after reordering item to the top or bottom.
+  13 Aug 11 GKY Change to Doxygen comment format
 
 **************************************************************************************/
 
@@ -194,7 +195,7 @@ VOID load_associations(VOID)
 	  !xfgets(sig, CCHMAXPATH + 24, fp, pszSrcFile, __LINE__) ||
 	  !xfgets(offset, sizeof(offset), fp, pszSrcFile, __LINE__) ||
 	  !xfgets(flags, sizeof(flags), fp, pszSrcFile, __LINE__))
-	break;				/* error! */
+	break;				// error!
       pszCmdLine[MaxComLineStrg - 1] = 0;
       bstripcr(pszCmdLine);
       sig[CCHMAXPATH] = 0;
@@ -240,15 +241,9 @@ VOID load_associations(VOID)
 
 VOID display_associations(HWND hwnd, ASSOC *temp, LINKASSOC *info)
 {
-  //CHAR szEnviroment[ENVIRONMENT_SIZE];
   PSZ pszDisplayStr;
   SHORT x;
 
-  //*szEnviroment = 0;
-  //WinQueryDlgItemText(hwnd, ASS_ENVIRON, ENVIRONMENT_SIZE - 1, szEnviroment);
-  //bstripcr(szEnviroment);
-  //if (*szEnviroment)
-  //  PrfWriteProfileString(fmprof, FM3Str, temp->pszCmdLine, szEnviroment);
   pszDisplayStr = xmallocz((CCHMAXPATH * 2) + MaxComLineStrg + 6,
 			   pszSrcFile, __LINE__);
   if (pszDisplayStr) {
@@ -288,7 +283,7 @@ VOID save_associations(VOID)
   while (info) {
     next = info->next;
     if (!strcmp("*", info->mask)) {
-      if (info != asshead) {		/* already top record */
+      if (info != asshead) {		// already top record
 	if (info->prev)
 	  (info->prev)->next = info->next;
 	if (info->next)
@@ -370,10 +365,10 @@ LINKASSOC *add_association(ASSOC * addme)
 	  free(info);
 	}
 	else {
-	  if (!asshead)			/* only item in list */
+	  if (!asshead)			// only item in list
 	    asshead = asstail = info;
 	  else {
-	    if (asstail) {		/* place at tail */
+	    if (asstail) {		// place at tail
 	      asstail->next = info;
 	      info->prev = asstail;
 	    }
@@ -504,7 +499,7 @@ INT ExecAssociation(HWND hwnd, CHAR * datafile)
         }
         fclose(fp);
       }
-      if (didmatch) {			/* got a match; do it... */
+      if (didmatch) {			// got a match; do it...
 
 	CHAR *list[2];
 	INT flags, rc;
@@ -806,7 +801,7 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	else
 	info = add_association(&temp);
 	if (!info)
-	  WinDismissDlg(hwnd, 1);	/* Runtime_Error(pszSrcFile, __LINE__, "add_association"); */
+	  WinDismissDlg(hwnd, 1);	
 	else {
 	  display_associations(hwnd, &temp, info);
 	  save_associations();
