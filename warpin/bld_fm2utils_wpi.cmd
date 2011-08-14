@@ -142,21 +142,12 @@ Init: procedure expose (globals)
          otherwise
             call ErrorExit 5
       end
-   end
-   WPI.WIC_pgm = 'WIC.EXE'
-   WIC_filename = SysSearchPath( 'PATH', 'WIC.EXE' )
-   if WIC_filename == '' then
-      do
-         parse value SysIni( , 'WarpIN', 'Path' ) with Warpin_Path '00'x .
-         WPI.WIC_pgm = Warpin_Path || '\WIC.EXE'
-         if stream( WPI.WIC_pgm, 'C', 'query exists') = '' then
-            call ErrorExit 2
-      end
-   else
-      Warpin_Path = left(WIC_filename, lastpos('\', WIC_filename) - 1)
-
+   end    
+   parse value SysIni( , 'WarpIN', 'Path' ) with Warpin_Path '00'x .
+   WPI.WIC_pgm = Warpin_Path || '\WIC.EXE'
+   if stream( WPI.WIC_pgm, 'C', 'query exists') = '' then
+      call ErrorExit 2
    Warpin_pathentry = ';' || translate(Warpin_path) || ';'
-
    ext_libpath = SysQueryExtLibpath('B')
    if pos( Warpin_pathentry, ';' || translate(ext_libpath) || ';' ) == 0 then
       call SysSetExtLibpath Warpin_Path || ';' || ext_libpath, 'B'
