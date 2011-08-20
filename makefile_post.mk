@@ -29,7 +29,11 @@ $(BASE).exe: $(BASE).lrf $(BASE).obj $(BASE).res $(BASE).def .explicit
   @echo Attaching resources to $@
   @echo.
   $(RC) $(RCFLAGS2) $(BASE).res $@
+!ifndef LOW
   !exehdr /hi:3 $@
+!endif
+
+LOW =
 
 $(BASE).lrf: $(__MAKEFILES__) .explicit
    @%write $^@ $(LFLAGS)

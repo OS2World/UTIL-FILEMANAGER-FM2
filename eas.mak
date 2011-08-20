@@ -7,6 +7,7 @@
 # 04 Jul 11 GKY Make xqs files an explicit target so they will be rebuild if lost somehow.
 
 BASE=eas
+LOW=1
 
 !include makefile_pre.mk
 
