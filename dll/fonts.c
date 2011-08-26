@@ -191,7 +191,6 @@ FATTRS *SetMLEFont(HWND hwndMLE, FATTRS * fattrs, ULONG flags)
   // 12 Jan 09 SHL fixme to do multiple previews or rename to IDS_BLURBTEXT
   pcszPreview = GetPString(IDS_BLURB1TEXT);
   DosReleaseMutexSem(hmtxFM2Globals);
-  //DosExitCritSec();
   memset(&fontDlg, 0, sizeof(fontDlg)); /* initialize all fields */
   /*
    * Get the current font attributes
