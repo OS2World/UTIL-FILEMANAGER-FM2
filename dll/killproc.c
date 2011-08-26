@@ -30,6 +30,8 @@
                 Mostly cast CHAR CONSTANT * as CHAR *.
   20 Nov 10 GKY Check that pTmpDir IsValid and recreate if not found; Fixes hangs caused
                 by temp file creation failures.
+  26 Aug 11 GKY Add a low mem version of xDosAlloc* wrappers; move error checking into all the
+                xDosAlloc* wrappers.
 
 ***********************************************************************/
 
@@ -126,12 +128,8 @@ static VOID FillKillListThread2(VOID * arg)
   IncrThreadUsage();
 
   WinSendDlgItemMsg(hwnd, KILL_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
-  rc = xDosAllocMem((PVOID) & pbh, USHRT_MAX + 4096,
-		    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__);
-  if (rc)
-    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-	      GetPString(IDS_OUTOFMEMORY));
-  else {
+  if (!xDosAllocMem((PVOID) & pbh, USHRT_MAX + 4096,
+		    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__)) {
     rc = DosQProcStatus((ULONG *)pbh, USHRT_MAX);
     if (!rc) {
       ppi = pbh->ppi;
@@ -195,12 +193,8 @@ static VOID FillKillListThread3(VOID * arg)
   IncrThreadUsage();
 
   WinSendDlgItemMsg(hwnd, KILL_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
-  rc = xDosAllocMem((PVOID) & pbh, USHRT_MAX + 4096,
-		    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__);
-  if (rc)
-    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-	      GetPString(IDS_OUTOFMEMORY));
-  else {
+  if (!xDosAllocMem((PVOID) & pbh, USHRT_MAX + 4096,
+		    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__)) {
     rc = DosQuerySysState(QS_PROCESS | QS_MTE, 0, 0, 0, pbh, USHRT_MAX);
     if (!rc) {
       ppi = pbh->pProcRec;

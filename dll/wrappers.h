@@ -10,6 +10,8 @@
 
   08 Dec 08 SHL Add missing OS2_INCLUDED check
   12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
+  26 Aug 11 GKY Add a low mem version of xDosAlloc* wrappers; move error checking into all the
+                xDosAlloc* wrappers.
 
 ***********************************************************************/
 
@@ -25,13 +27,21 @@ APIRET xDosQueryAppType(PCSZ pszName, PULONG pFlags);
 APIRET xDosAllocSharedMem(PPVOID ppb,
                           PSZ pszName,
                           ULONG cb,
-                          ULONG flag);
+                          ULONG flag,
+                          PCSZ pszSrcFile,
+	                  UINT uiLineNumber);
 
 APIRET xDosAllocMem(PPVOID ppb,
                     ULONG cb,
                     ULONG flag,
                     PCSZ pszSrcFile,
-	            UINT uiLineNumber);
+                    UINT uiLineNumber);
+
+APIRET xDosAllocMemLow(PPVOID ppb,
+                       ULONG cb,
+                       ULONG flag,
+                       PCSZ pszSrcFile,
+	               UINT uiLineNumber);
 
 APIRET xDosFindFirst(PSZ pszFileSpec,
 		     PHDIR phdir,

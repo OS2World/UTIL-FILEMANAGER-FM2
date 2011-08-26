@@ -24,6 +24,8 @@
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  26 Aug 11 GKY Add a low mem version of xDosAlloc* wrappers; move error checking into all the
+                xDosAlloc* wrappers.
 
 ***********************************************************************/
 
@@ -173,7 +175,6 @@ VOID MLEinternet(HWND h, BOOL ftp)
   CHAR *temp = NULL;
   IPT ancpos, curpos, here;
   LONG len, oldlen;
-  APIRET rc;
   ULONG size;
 
   len = MLEsizeofsel(h);
@@ -181,12 +182,8 @@ VOID MLEinternet(HWND h, BOOL ftp)
   oldlen = len;
   if (len) {
     len++;
-    rc = xDosAllocMem((PVOID) & temp, 4096,
-		      PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__);
-    if (rc || !temp)
-      Dos_Error(MB_CANCEL, rc, h, pszSrcFile, __LINE__,
-		GetPString(IDS_OUTOFMEMORY));
-    else {
+    if (!xDosAllocMem((PVOID) & temp, 4096,
+		      PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__)) {
       ancpos = MLEancpos(h);
       curpos = MLEcurpos(h);
       here = min(curpos, ancpos);
@@ -256,7 +253,6 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
   CHAR *sel, *temp = NULL;
   IPT ancpos, curpos, here;
   LONG sellen, oldlen;
-  APIRET rc;
 
   oldlen = MLEsizeofsel(h);
   if (!oldlen)
@@ -264,11 +260,8 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
   sel = xmallocz((size_t) (oldlen + 2), pszSrcFile, __LINE__);
   if (!sel)
     return FALSE;
-  rc = xDosAllocMem((PVOID) & temp, 32768L,
-	 	    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__);
-  if (rc || !temp) {
-    Dos_Error(MB_CANCEL, rc, h, pszSrcFile, __LINE__,
-	      GetPString(IDS_OUTOFMEMORY));
+  if (xDosAllocMem((PVOID) & temp, 32768L,
+                   PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__)) {
     free(sel);
 #   ifdef FORTIFY
     Fortify_LeaveScope();
@@ -539,13 +532,9 @@ BOOL MLEHexLoad(HWND h, CHAR * filename)
     DosChgFilePtr(handle, 0, FILE_END, &len);
     DosChgFilePtr(handle, 0, FILE_BEGIN, &action);
     if (len) {
-      rc = xDosAllocMem((PVOID) & hexbuff, 50001,
-		        PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__);
-      if (rc || !hexbuff) {
-	Dos_Error(MB_CANCEL, rc, h, pszSrcFile, __LINE__,
-		  GetPString(IDS_OUTOFMEMORY));
+      if (xDosAllocMem((PVOID) & hexbuff, 50001,
+                       PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__))
 	ret = FALSE;
-      }
       else {
 	buffer = xmalloc(10000, pszSrcFile, __LINE__);
 	if (!buffer)
@@ -669,13 +658,9 @@ BOOL MLEinsertfile(HWND h, CHAR * filename)
     len = (INT) ftell(fp);
     fseek(fp, 0L, SEEK_SET);
     if (len && len != -1) {
-      rc = xDosAllocMem((PVOID) & buffer,
-		        50000L, PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__);
-      if (rc || !buffer) {
-	Dos_Error(MB_CANCEL, rc, h, pszSrcFile, __LINE__,
-		  GetPString(IDS_OUTOFMEMORY));
+      if (xDosAllocMem((PVOID) & buffer,
+		        50000L, PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__))
 	ret = FALSE;
-      }
       else {
 	WinSendMsg(h,
 		   MLM_SETIMPORTEXPORT, MPFROMP(buffer), MPFROMLONG(50000L));
@@ -895,7 +880,6 @@ BOOL MLEexportfile(HWND h, CHAR * filename, INT tabspaces,
   BOOL ok = TRUE;
   INT blanklines = 0;
   BOOL fWrap = MLEgetwrap(h);
-  APIRET rc;
   CHAR *mode;
 
   if (!MLEgetlen(h))			/* nothing to save; forget it */
@@ -922,13 +906,9 @@ BOOL MLEexportfile(HWND h, CHAR * filename, INT tabspaces,
     }
   }
 
-  rc = xDosAllocMem((PVOID) & buffer, 4096L,
-		    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__);
-  if (rc || !buffer) {
-    Dos_Error(MB_CANCEL, rc, h, pszSrcFile, __LINE__,
-	      GetPString(IDS_OUTOFMEMORY));
+  if (xDosAllocMem((PVOID) & buffer, 4096L,
+		    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__))
     ok = FALSE;
-  }
   else {
     mode = "a+";
     fp = xfopen(filename, mode, pszSrcFile, __LINE__, TRUE);

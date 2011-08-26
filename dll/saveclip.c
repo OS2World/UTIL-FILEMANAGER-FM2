@@ -31,6 +31,8 @@
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
   29 May 10 GKY Fix SaveListDlgProc to append to a file when Append checkbox is selected
+  26 Aug 11 GKY Add a low mem version of xDosAlloc* wrappers; move error checking into all the
+                xDosAlloc* wrappers.
 
 ***********************************************************************/
 
@@ -101,8 +103,8 @@ BOOL SaveToClipHab(HAB hab, CHAR * text, BOOL append)
 	  clip = (CHAR *)WinQueryClipbrdData(hab, CF_TEXT);
 	if (clip)
 	  len += strlen(clip) + 1;
-	if (!xDosAllocSharedMem((PPVOID) &hold, (PSZ) NULL, len, PAG_COMMIT |
-			       OBJ_GIVEABLE | PAG_READ | PAG_WRITE)) {
+        if (!xDosAllocSharedMem((PPVOID) &hold, (PSZ) NULL, len, PAG_COMMIT |
+                                OBJ_GIVEABLE | PAG_READ | PAG_WRITE, __FILE__, __LINE__)) {
 	  *hold = 0;
 	  if (clip)
 	    strcpy(hold, clip);

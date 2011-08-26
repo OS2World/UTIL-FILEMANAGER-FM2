@@ -13,6 +13,8 @@
   22 Mar 07 GKY Use QWL_USER
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
+  26 Aug 11 GKY Add a low mem version of xDosAlloc* wrappers; move error checking into all the
+                xDosAlloc* wrappers.
 
 ***********************************************************************/
 
@@ -104,11 +106,8 @@ MRESULT EXPENTRY InstantDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	mem = MLEgetlen(hwndMLE);
 	if (mem) {
-	  rc = xDosAllocMem((PVOID) & bat, mem,
-			    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__);
-	  if (rc || !bat) {
-	    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-		      GetPString(IDS_OUTOFMEMORY));
+	  if (xDosAllocMem((PVOID) & bat, mem,
+                           PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__)) {
 	    WinDismissDlg(hwnd, 0);
 	    break;
 	  }

@@ -26,6 +26,8 @@
   22 Jul 09 GKY Delete .LONGNAME EA if it becomes the filename on a copy or move.
   19 Oct 09 SHL Correct copyf regression when moving to save volume
   31 Mar 10 JBS Correct copyf which was creating 8.4, not 8.3, temporary names
+  26 Aug 11 GKY Add a low mem version of xDosAlloc* wrappers; move error checking into all the
+                xDosAlloc* wrappers.
 
 ***********************************************************************/
 
@@ -325,12 +327,10 @@ BOOL WriteLongName(CHAR * filename, CHAR * longname)
     ealen = sizeof(FEA2LIST) + 10 + len + 4;
   else
     ealen = sizeof(FEALIST) + 10;
-  rc = xDosAllocMem((PPVOID) & pfealist,
-		    ealen + 32L, PAG_COMMIT | PAG_READ | PAG_WRITE,
-		    pszSrcFile, __LINE__);
-  if (rc)
-    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-	      GetPString(IDS_OUTOFMEMORY));
+  if (xDosAllocMem((PPVOID) &pfealist,
+                   ealen + 32L, PAG_COMMIT | PAG_READ | PAG_WRITE,
+                   pszSrcFile, __LINE__))
+    return FALSE;
   else {
     memset(pfealist, 0, ealen + 1);
     pfealist->cbList = ealen;

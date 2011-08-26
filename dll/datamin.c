@@ -34,6 +34,8 @@
                 aren't user settable; realappname should be used for setting applicable to
                 one or more miniapp but not to FM/2
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  26 Aug 11 GKY Add a low mem version of xDosAlloc* wrappers; move error checking into all the
+                xDosAlloc* wrappers.
 
 ***********************************************************************/
 
@@ -852,15 +854,10 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	BUFFHEADER *pbh = NULL;
 	MODINFO *pmi;
 	ULONG numprocs = 0, numthreads = 0;
-	APIRET rc;
 
-	rc = xDosAllocMem((PVOID)&pbh, USHRT_MAX + 4096,
+	if (!xDosAllocMem((PVOID)&pbh, USHRT_MAX + 4096,
                           PAG_COMMIT | PAG_READ | PAG_WRITE,
-                          pszSrcFile, __LINE__);
-	if (rc)
-	  Dos_Error(MB_CANCEL, rc, hwnd, pszSrcFile, __LINE__,
-		    GetPString(IDS_OUTOFMEMORY));
-	else {
+                          pszSrcFile, __LINE__)) {
 	  if (DosQProcStatus((ULONG *)pbh, USHRT_MAX))
 	    noqproc = TRUE;
 	  else {
@@ -892,15 +889,11 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	QSPTRREC *pbh = NULL;
 	QSLREC *pmi;
 	ULONG numprocs = 0, numthreads = 0;
-	APIRET rc;
 
-	rc = xDosAllocMem((PVOID) & pbh, USHRT_MAX + 4096,
+	if (!xDosAllocMem((PVOID) & pbh, USHRT_MAX + 4096,
                           PAG_COMMIT | PAG_READ | PAG_WRITE,
-                          pszSrcFile, __LINE__);
-	if (rc)
-	  Dos_Error(MB_CANCEL, rc, hwnd, pszSrcFile, __LINE__,
-		    GetPString(IDS_OUTOFMEMORY));
-	else { //2 Sep 07 GKY 0x05 = process & Mod data only
+                          pszSrcFile, __LINE__)) {
+          //2 Sep 07 GKY 0x05 = process & Mod data only
 	  if (DosQuerySysState(QS_PROCESS | QS_MTE, 0, 0, 0, pbh, USHRT_MAX))
 	    noqproc = TRUE;
 	  else {

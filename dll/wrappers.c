@@ -18,6 +18,8 @@
   17 Jun 09 SHL Correct missing rc set
   12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
   15 Nov 09 GKY Rework xDosQueryAppType to remove HIMEM ifdefs
+  26 Aug 11 GKY Add a low mem version of xDosAlloc* wrappers; move error checking into all the
+                xDosAlloc* wrappers.
 
 ***********************************************************************/
 
@@ -67,7 +69,9 @@ APIRET xDosQueryAppType(PCSZ pszName, PULONG pFlags)
 APIRET xDosAllocSharedMem(PPVOID ppb,
                           PSZ pszName,
                           ULONG cb,
-                          ULONG flag)
+                          ULONG flag,
+                          PCSZ pszSrcFile,
+	                  UINT uiLineNumber)
 {
   APIRET rc; ;
 
@@ -75,6 +79,8 @@ APIRET xDosAllocSharedMem(PPVOID ppb,
   //DbgMsg(pszSrcFile, __LINE__, "ppb %p", *ppb);
   if (rc)
     rc = DosAllocSharedMem(ppb, pszName, cb, flag);
+  if (rc)
+    Runtime_Error(pszSrcFile, uiLineNumber, GetPString(IDS_OUTOFMEMORY));
   return rc;
 }
 
@@ -90,6 +96,23 @@ APIRET xDosAllocMem(PPVOID ppb,
   //DbgMsg(pszSrcFile, uiLineNumber, "ppb %p %x", *ppb, rc);
   if (rc)
     rc = DosAllocMem(ppb, cb, flag);
+  if (rc)
+    Runtime_Error(pszSrcFile, uiLineNumber, GetPString(IDS_OUTOFMEMORY));
+  //DbgMsg(pszSrcFile, uiLineNumber, "ppb %p", *ppb);
+  return rc;
+}
+
+APIRET xDosAllocMemLow(PPVOID ppb,
+                       ULONG cb,
+                       ULONG flag,
+                       PCSZ pszSrcFile,
+	               UINT uiLineNumber)
+{
+  APIRET rc;
+
+  rc = DosAllocMem(ppb, cb, flag);
+  if (rc)
+    Runtime_Error(pszSrcFile, uiLineNumber, GetPString(IDS_OUTOFMEMORY));
   //DbgMsg(pszSrcFile, uiLineNumber, "ppb %p", *ppb);
   return rc;
 }
@@ -249,7 +272,7 @@ APIRET xDosQueryPathInfo (PSZ pszPathName, ULONG ulInfoLevel, PVOID pInfoBuf, UL
  * Wrap DosSetPathInfo to avoid spurious ERROR_INVALID_NAME returns and
  * support systems without large file support
  *
- * Some kernels to do not correctly handle FILESTATUS3 and PEAOP2 buffers
+ * Some kernels do not correctly handle FILESTATUS3 and PEAOP2 buffers
  * that cross a 64K boundary.
  * When this occurs, they return ERROR_INVALID_NAME.
  * This code works around the problem because if the passed buffer crosses

@@ -67,6 +67,8 @@
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   23 Oct 10 GKY Add menu items for opening directory cnrs based on path of selected item
                 including the option to use walk directories to select path
+  26 Aug 11 GKY Add a low mem version of xDosAlloc* wrappers; move error checking into all the
+                xDosAlloc* wrappers.
 
 ***********************************************************************/
 
@@ -881,12 +883,8 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    ealen = sizeof(FEA2LIST) + 9 + len + 4;
 	  else
 	    ealen = sizeof(FEALIST) + 9;
-	  rc = xDosAllocMem((PPVOID) & pfealist, ealen + 64,
-			    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__);
-	  if (rc)
-	    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile,
-		      __LINE__, GetPString(IDS_OUTOFMEMORY));
-	  else {
+	  if (!xDosAllocMem((PPVOID) & pfealist, ealen + 64,
+			    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__)) {
 	    memset(pfealist, 0, ealen + 1);
 	    pfealist->cbList = ealen;
 	    pfealist->list[0].oNextEntryOffset = 0;

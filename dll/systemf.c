@@ -36,6 +36,8 @@
                 (the largest value I found).
   20 Nov 10 GKY Check that pTmpDir IsValid and recreate if not found; Fixes hangs caused
                 by temp file creation failures.
+  26 Aug 11 GKY Add a low mem version of xDosAlloc* wrappers; move error checking into all the
+                xDosAlloc* wrappers.
 
 ***********************************************************************/
 
@@ -767,14 +769,11 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
   if (!hwnd)
     hwnd = HWND_DESKTOP;
 
-  rc = DosAllocMem((PVOID)&pszPgm,
-		   MaxComLineStrg,
-		   PAG_COMMIT | PAG_READ | PAG_WRITE);
-  if (rc) {
-    Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
-    return -1;
-  }
-
+  if (xDosAllocMemLow((PVOID)&pszPgm,
+                       MaxComLineStrg,
+                       PAG_COMMIT | PAG_READ | PAG_WRITE,
+                       pszSrcFile,__LINE__))
+    return -1; //already complained
   *szSavedir = 0;
 
   *pszPgm = 0;
@@ -815,11 +814,12 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
       p++;
       temp = *p;
       if (temp) {
-	rc = DosAllocMem((PVOID)&pszArgs,
-			 MaxComLineStrg * 2,
-			 PAG_COMMIT | PAG_READ | PAG_WRITE);
-	if (rc)
-	  Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
+	if (xDosAllocMemLow((PVOID)&pszArgs, MaxComLineStrg * 2,
+                             PAG_COMMIT | PAG_READ | PAG_WRITE,
+                            pszSrcFile, __LINE__)) {
+          DosFreeMem(pszPgm);
+          return -1;   //already complained
+        }
       }
       else
 	pszArgs = NULL;
@@ -957,12 +957,11 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
     else {
       if (~type & FULLSCREEN)
 	type |= WINDOWED;
-      rc = DosAllocMem((PVOID) & pszArgs, MaxComLineStrg * 2,
-		       PAG_COMMIT | PAG_READ | PAG_WRITE);
-      if (rc) {
-	Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,GetPString(IDS_OUTOFMEMORY));
+      if (xDosAllocMemLow((PVOID) &pszArgs, MaxComLineStrg * 2,
+                           PAG_COMMIT | PAG_READ | PAG_WRITE,
+                           pszSrcFile, __LINE__)) {
 	DosFreeMem(pszPgm);
-	return -1;
+	return -1;   //already complained
       }
       *pszArgs = 0;
       memset(&sdata, 0, sizeof(sdata));

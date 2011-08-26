@@ -40,6 +40,8 @@
   22 Jul 09 GKY Add LocalHD driveflag
   22 Jul 09 GKY Streamline scanning code for faster Tree rescans
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  26 Aug 11 GKY Add a low mem version of xDosAlloc* wrappers; move error checking into all the
+                xDosAlloc* wrappers.
 
 ***********************************************************************/
 
@@ -306,14 +308,9 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
     *pulType = 0;
 
 # define BUFFER_BYTES 8192
-  rc = xDosAllocMem(&pvBuffer, BUFFER_BYTES,
-		    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__);
-  if (rc) {
-    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-	      GetPString(IDS_OUTOFMEMORY));
+  if (xDosAllocMem(&pvBuffer, BUFFER_BYTES,
+		    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__))
     return -1;				// Say failed
-  }
-
   szPath[0] = chDrive;
   szPath[1] = ':';
   szPath[2] = 0;

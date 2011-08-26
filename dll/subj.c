@@ -15,6 +15,8 @@
   01 Sep 07 GKY Use xDosSetPathInfo to fix case where FS3 buffer crosses 64k boundry
   08 Mar 09 GKY Additional strings move to PCSZs
   12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
+  26 Aug 11 GKY Add a low mem version of xDosAlloc* wrappers; move error checking into all the
+                xDosAlloc* wrappers.
 
 ***********************************************************************/
 
@@ -125,12 +127,8 @@ INT Subject(HWND hwnd, CHAR * filename)
 	ealen = sizeof(FEA2LIST) + 9 + len + 4;
       else
 	ealen = sizeof(FEALIST) + 9;
-      rc = xDosAllocMem((PPVOID) & pfealist, ealen + 1L,
-		        PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__);
-      if (rc)
-	Dos_Error(MB_CANCEL, rc, hwnd, pszSrcFile, __LINE__,
-		  GetPString(IDS_OUTOFMEMORY));
-      else {
+      if (!xDosAllocMem((PPVOID) & pfealist, ealen + 1L,
+		        PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__)) {
 	memset(pfealist, 0, ealen + 1);
 	pfealist->cbList = ealen;
 	pfealist->list[0].oNextEntryOffset = 0L;

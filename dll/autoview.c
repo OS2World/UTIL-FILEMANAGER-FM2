@@ -36,6 +36,8 @@
                 one or more miniapp but not to FM/2
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   13 Aug 11 GKY Change to Doxygen comment format
+  26 Aug 11 GKY Add a low mem version of xDosAlloc* wrappers; move error checking into all the
+                xDosAlloc* wrappers.
 
 ***********************************************************************/
 
@@ -143,11 +145,9 @@ BOOL WriteEA(HWND hwnd, CHAR * filename, PCSZ eaname, USHORT type,
     return ret;
   }
 
-  rc = xDosAllocMem((PPVOID) & pfealist, ealen, PAG_COMMIT | PAG_READ |
-	            PAG_WRITE, pszSrcFile, __LINE__);
-  if (rc || !pfealist)
-    Dos_Error(MB_CANCEL, rc, hwnd, pszSrcFile, __LINE__,
-	      GetPString(IDS_OUTOFMEMORY));
+  if (xDosAllocMem((PPVOID) &pfealist, ealen, PAG_COMMIT | PAG_READ |
+                   PAG_WRITE, pszSrcFile, __LINE__))
+    ret = FALSE;
   else {
     memset(pfealist, 0, ealen);
     pfealist->list[0].cbName = strlen(eaname);

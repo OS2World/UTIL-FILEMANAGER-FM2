@@ -25,6 +25,8 @@
   12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   23 Oct 10 GKY Added button to allow opening of a new file's eas from the EA dialog.
+  26 Aug 11 GKY Add a low mem version of xDosAlloc* wrappers; move error checking into all the
+                xDosAlloc* wrappers.
 
 ***********************************************************************/
 
@@ -199,16 +201,11 @@ MRESULT EXPENTRY AddEAProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             EAOP2 eaop;
             ULONG ealen;
             CHAR *eaval;
-            APIRET rc;
 
             ealen = sizeof(FEA2LIST) + strlen(s) + 64;
-            rc = xDosAllocMem((PPVOID) & pfealist, ealen + 1,
+            if (!xDosAllocMem((PPVOID) & pfealist, ealen + 1,
                               PAG_COMMIT | PAG_READ | PAG_WRITE,
-                              pszSrcFile, __LINE__);
-            if (rc)
-              Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-                        GetPString(IDS_OUTOFMEMORY));
-            else {
+                              pszSrcFile, __LINE__)) {
               memset(pfealist, 0, ealen + 1);
               pfealist->cbList = ealen;
               pfealist->list[0].oNextEntryOffset = 0;
@@ -1107,12 +1104,8 @@ PVOID SaveEA(CHAR * filename, HOLDFEA * current, CHAR * newdata,
     return (PVOID) pfealist;
   }
 
-  rc = xDosAllocMem((PPVOID) & pfealist, ealen,
-                    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__);
-  if (rc)
-    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-              GetPString(IDS_OUTOFMEMORY));
-  else {
+  if (!xDosAllocMem((PPVOID) & pfealist, ealen,
+                    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__)) {
     memset(pfealist, 0, ealen);
     pfealist->list[0].oNextEntryOffset = 0;
     pfealist->list[0].fEA = 0;          //current->fEA;
