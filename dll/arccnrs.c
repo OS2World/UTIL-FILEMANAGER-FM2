@@ -844,7 +844,7 @@ ReTry:
 	      if (nsize)
 		pai->cbComp = atol(nsize);
 	      if (info->datetype && fdate && *fdate)
-		ArcDateTime(fdate, info->datetype, &pai->date, &pai->time);
+	        ArcDateTime(fdate, info->datetype, &pai->date, &pai->time);
 	      memset(&ri, 0, sizeof(RECORDINSERT));
 	      ri.cb = sizeof(RECORDINSERT);
 	      ri.pRecordOrder = (PRECORDCORE) CMA_END;
@@ -2315,11 +2315,11 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		      dcd->info->fdpos != -1 && !dcd->info->datetype, FALSE);
       // Display parsed date/time columns if type specified
       AdjustCnrColVis(hwnd,
-		      GetPString(IDS_TIMECOLTEXT),
-		      dcd->info->fdpos != -1 && dcd->info->datetype, FALSE);
+        	      GetPString(IDS_TIMECOLTEXT),
+        	      dcd->info->fdpos != -1 && dcd->info->datetype, FALSE);
       AdjustCnrColVis(hwnd,
-		      GetPString(IDS_DATECOLTEXT),
-		      dcd->info->fdpos != -1 && dcd->info->datetype, FALSE);
+        	      GetPString(IDS_DATECOLTEXT),
+        	      dcd->info->fdpos != -1 && dcd->info->datetype, FALSE);
       WinSendMsg(hwnd, CM_INVALIDATEDETAILFIELDINFO, MPVOID, MPVOID);
     }
     return 0;

@@ -40,6 +40,8 @@
   23 Oct 10 GKY Changes to populate and utilize a HELPTABLE for context specific help
   21 Nov 10 GKY Check if archiver.bb2 has been changed on disk before editing
   13 Aug 11 GKY Change to Doxygen comment format
+  26 Aug 11 GKY Add the code to correctly format the date time strings for tar.gz archives
+                viewed using tar 1.15+
 
 ***********************************************************************/
 
@@ -1125,6 +1127,7 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
  *  8 Feb 96  11:55p             3
  *  96-02-08 23:55:32            4
  *  31-02-98  23:55              5
+ *  Aug 21 23:55 2011            6 Fixes tar.gz date/time formatting when using tar 1..15+
  */
 
 BOOL ArcDateTime(CHAR * dt, INT type, CDATE * cdate, CTIME * ctime)
@@ -1188,7 +1191,7 @@ BOOL ArcDateTime(CHAR * dt, INT type, CDATE * cdate, CTIME * ctime)
 	      break;
 	  }
 	  if (x < 12) {
-	    cdate->month = x;
+	    cdate->month = x + 1;
 	    p = strchr(p, ' ');
 	    if (p) {
 	      p++;
@@ -1229,7 +1232,7 @@ BOOL ArcDateTime(CHAR * dt, INT type, CDATE * cdate, CTIME * ctime)
 	      break;
 	  }
 	  if (x < 12) {
-	    cdate->month = x;
+	    cdate->month = x + 1;
 	    p = strchr(p, ' ');
 	    if (p) {
 	      p++;
@@ -1340,8 +1343,42 @@ BOOL ArcDateTime(CHAR * dt, INT type, CDATE * cdate, CTIME * ctime)
 	    }
 	  }
 	}
-	break;
-
+        break;
+      case 6:
+        for (x = 0; x < 12; x++) {
+	    if (!strnicmp(p, GetPString(IDS_JANUARY + x), 3))
+	      break;
+	  }
+	  if (x < 12) {
+	    cdate->month = x + 1;
+	    p = strchr(p, ' ');
+	    if (p) {
+	      p++;
+              cdate->day = atoi(p);
+	      p = strchr(p, ' ');
+	      if (p) {
+                p++;
+                ctime->hours = atoi(p);
+	        p = to_delim(pd, ":.");
+	        if (p) {
+		  p++;
+		  ctime->minutes = atoi(p);
+                  p = to_delim(pd, ":.");
+                  p = strchr(p, ' ');
+                  if (p) {
+                    p++;
+                    cdate->year = atoi(p);
+                    if (cdate->year > 80 && cdate->year < 1900)
+                      cdate->year += 1900;
+                    else if (cdate->year < 1900)
+                      cdate->year += 2000;
+                    ret = TRUE;
+                  }
+                }
+              }
+            }
+          }
+        break;
       default:
 	break;
       }
