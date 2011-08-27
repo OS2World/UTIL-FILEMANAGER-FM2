@@ -128,8 +128,7 @@ static VOID FillKillListThread2(VOID * arg)
   IncrThreadUsage();
 
   WinSendDlgItemMsg(hwnd, KILL_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
-  if (!xDosAllocMem((PVOID) & pbh, USHRT_MAX + 4096,
-		    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__)) {
+  if (!xDosAllocMem((PVOID) & pbh, USHRT_MAX + 4096, pszSrcFile, __LINE__)) {
     rc = DosQProcStatus((ULONG *)pbh, USHRT_MAX);
     if (!rc) {
       ppi = pbh->ppi;
@@ -193,8 +192,7 @@ static VOID FillKillListThread3(VOID * arg)
   IncrThreadUsage();
 
   WinSendDlgItemMsg(hwnd, KILL_LISTBOX, LM_DELETEALL, MPVOID, MPVOID);
-  if (!xDosAllocMem((PVOID) & pbh, USHRT_MAX + 4096,
-		    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__)) {
+  if (!xDosAllocMem((PVOID) & pbh, USHRT_MAX + 4096, pszSrcFile, __LINE__)) {
     rc = DosQuerySysState(QS_PROCESS | QS_MTE, 0, 0, 0, pbh, USHRT_MAX);
     if (!rc) {
       ppi = pbh->pProcRec;

@@ -27,19 +27,16 @@ APIRET xDosQueryAppType(PCSZ pszName, PULONG pFlags);
 APIRET xDosAllocSharedMem(PPVOID ppb,
                           PSZ pszName,
                           ULONG cb,
-                          ULONG flag,
                           PCSZ pszSrcFile,
 	                  UINT uiLineNumber);
 
 APIRET xDosAllocMem(PPVOID ppb,
                     ULONG cb,
-                    ULONG flag,
                     PCSZ pszSrcFile,
                     UINT uiLineNumber);
 
 APIRET xDosAllocMemLow(PPVOID ppb,
                        ULONG cb,
-                       ULONG flag,
                        PCSZ pszSrcFile,
 	               UINT uiLineNumber);
 

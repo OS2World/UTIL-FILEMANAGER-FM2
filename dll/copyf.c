@@ -327,9 +327,7 @@ BOOL WriteLongName(CHAR * filename, CHAR * longname)
     ealen = sizeof(FEA2LIST) + 10 + len + 4;
   else
     ealen = sizeof(FEALIST) + 10;
-  if (xDosAllocMem((PPVOID) &pfealist,
-                   ealen + 32L, PAG_COMMIT | PAG_READ | PAG_WRITE,
-                   pszSrcFile, __LINE__))
+  if (xDosAllocMem((PPVOID) &pfealist, ealen + 32L, pszSrcFile, __LINE__))
     return FALSE;
   else {
     memset(pfealist, 0, ealen + 1);

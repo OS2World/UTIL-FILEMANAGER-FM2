@@ -883,8 +883,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    ealen = sizeof(FEA2LIST) + 9 + len + 4;
 	  else
 	    ealen = sizeof(FEALIST) + 9;
-	  if (!xDosAllocMem((PPVOID) & pfealist, ealen + 64,
-			    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__)) {
+	  if (!xDosAllocMem((PPVOID) & pfealist, ealen + 64, pszSrcFile, __LINE__)) {
 	    memset(pfealist, 0, ealen + 1);
 	    pfealist->cbList = ealen;
 	    pfealist->list[0].oNextEntryOffset = 0;

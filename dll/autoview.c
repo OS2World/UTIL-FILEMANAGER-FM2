@@ -145,8 +145,7 @@ BOOL WriteEA(HWND hwnd, CHAR * filename, PCSZ eaname, USHORT type,
     return ret;
   }
 
-  if (xDosAllocMem((PPVOID) &pfealist, ealen, PAG_COMMIT | PAG_READ |
-                   PAG_WRITE, pszSrcFile, __LINE__))
+  if (xDosAllocMem((PPVOID) &pfealist, ealen, pszSrcFile, __LINE__))
     ret = FALSE;
   else {
     memset(pfealist, 0, ealen);

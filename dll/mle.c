@@ -182,8 +182,7 @@ VOID MLEinternet(HWND h, BOOL ftp)
   oldlen = len;
   if (len) {
     len++;
-    if (!xDosAllocMem((PVOID) & temp, 4096,
-		      PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__)) {
+    if (!xDosAllocMem((PVOID) & temp, 4096, pszSrcFile, __LINE__)) {
       ancpos = MLEancpos(h);
       curpos = MLEcurpos(h);
       here = min(curpos, ancpos);
@@ -260,8 +259,7 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
   sel = xmallocz((size_t) (oldlen + 2), pszSrcFile, __LINE__);
   if (!sel)
     return FALSE;
-  if (xDosAllocMem((PVOID) & temp, 32768L,
-                   PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__)) {
+  if (xDosAllocMem((PVOID) & temp, 32768L, pszSrcFile, __LINE__)) {
     free(sel);
 #   ifdef FORTIFY
     Fortify_LeaveScope();
@@ -532,8 +530,7 @@ BOOL MLEHexLoad(HWND h, CHAR * filename)
     DosChgFilePtr(handle, 0, FILE_END, &len);
     DosChgFilePtr(handle, 0, FILE_BEGIN, &action);
     if (len) {
-      if (xDosAllocMem((PVOID) & hexbuff, 50001,
-                       PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__))
+      if (xDosAllocMem((PVOID) & hexbuff, 50001, pszSrcFile, __LINE__))
 	ret = FALSE;
       else {
 	buffer = xmalloc(10000, pszSrcFile, __LINE__);
@@ -658,8 +655,7 @@ BOOL MLEinsertfile(HWND h, CHAR * filename)
     len = (INT) ftell(fp);
     fseek(fp, 0L, SEEK_SET);
     if (len && len != -1) {
-      if (xDosAllocMem((PVOID) & buffer,
-		        50000L, PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__))
+      if (xDosAllocMem((PVOID) & buffer, 50000L, pszSrcFile, __LINE__))
 	ret = FALSE;
       else {
 	WinSendMsg(h,
@@ -906,8 +902,7 @@ BOOL MLEexportfile(HWND h, CHAR * filename, INT tabspaces,
     }
   }
 
-  if (xDosAllocMem((PVOID) & buffer, 4096L,
-		    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__))
+  if (xDosAllocMem((PVOID) & buffer, 4096L, pszSrcFile, __LINE__))
     ok = FALSE;
   else {
     mode = "a+";

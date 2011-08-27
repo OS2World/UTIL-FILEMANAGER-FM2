@@ -769,10 +769,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
   if (!hwnd)
     hwnd = HWND_DESKTOP;
 
-  if (xDosAllocMemLow((PVOID)&pszPgm,
-                       MaxComLineStrg,
-                       PAG_COMMIT | PAG_READ | PAG_WRITE,
-                       pszSrcFile,__LINE__))
+  if (xDosAllocMemLow((PVOID)&pszPgm, MaxComLineStrg, pszSrcFile,__LINE__))
     return -1; //already complained
   *szSavedir = 0;
 
@@ -814,9 +811,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
       p++;
       temp = *p;
       if (temp) {
-	if (xDosAllocMemLow((PVOID)&pszArgs, MaxComLineStrg * 2,
-                             PAG_COMMIT | PAG_READ | PAG_WRITE,
-                            pszSrcFile, __LINE__)) {
+	if (xDosAllocMemLow((PVOID)&pszArgs, MaxComLineStrg * 2, pszSrcFile, __LINE__)) {
           DosFreeMem(pszPgm);
           return -1;   //already complained
         }
@@ -957,9 +952,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
     else {
       if (~type & FULLSCREEN)
 	type |= WINDOWED;
-      if (xDosAllocMemLow((PVOID) &pszArgs, MaxComLineStrg * 2,
-                           PAG_COMMIT | PAG_READ | PAG_WRITE,
-                           pszSrcFile, __LINE__)) {
+      if (xDosAllocMemLow((PVOID) &pszArgs, MaxComLineStrg * 2, pszSrcFile, __LINE__)) {
 	DosFreeMem(pszPgm);
 	return -1;   //already complained
       }

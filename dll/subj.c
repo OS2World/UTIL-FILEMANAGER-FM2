@@ -127,8 +127,7 @@ INT Subject(HWND hwnd, CHAR * filename)
 	ealen = sizeof(FEA2LIST) + 9 + len + 4;
       else
 	ealen = sizeof(FEALIST) + 9;
-      if (!xDosAllocMem((PPVOID) & pfealist, ealen + 1L,
-		        PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__)) {
+      if (!xDosAllocMem((PPVOID) & pfealist, ealen + 1L, pszSrcFile, __LINE__)) {
 	memset(pfealist, 0, ealen + 1);
 	pfealist->cbList = ealen;
 	pfealist->list[0].oNextEntryOffset = 0L;

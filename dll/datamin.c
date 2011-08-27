@@ -855,9 +855,7 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	MODINFO *pmi;
 	ULONG numprocs = 0, numthreads = 0;
 
-	if (!xDosAllocMem((PVOID)&pbh, USHRT_MAX + 4096,
-                          PAG_COMMIT | PAG_READ | PAG_WRITE,
-                          pszSrcFile, __LINE__)) {
+	if (!xDosAllocMem((PVOID)&pbh, USHRT_MAX + 4096, pszSrcFile, __LINE__)) {
 	  if (DosQProcStatus((ULONG *)pbh, USHRT_MAX))
 	    noqproc = TRUE;
 	  else {
@@ -890,9 +888,7 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	QSLREC *pmi;
 	ULONG numprocs = 0, numthreads = 0;
 
-	if (!xDosAllocMem((PVOID) & pbh, USHRT_MAX + 4096,
-                          PAG_COMMIT | PAG_READ | PAG_WRITE,
-                          pszSrcFile, __LINE__)) {
+	if (!xDosAllocMem((PVOID) & pbh, USHRT_MAX + 4096, pszSrcFile, __LINE__)) {
           //2 Sep 07 GKY 0x05 = process & Mod data only
 	  if (DosQuerySysState(QS_PROCESS | QS_MTE, 0, 0, 0, pbh, USHRT_MAX))
 	    noqproc = TRUE;

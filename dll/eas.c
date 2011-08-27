@@ -203,9 +203,7 @@ MRESULT EXPENTRY AddEAProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             CHAR *eaval;
 
             ealen = sizeof(FEA2LIST) + strlen(s) + 64;
-            if (!xDosAllocMem((PPVOID) & pfealist, ealen + 1,
-                              PAG_COMMIT | PAG_READ | PAG_WRITE,
-                              pszSrcFile, __LINE__)) {
+            if (!xDosAllocMem((PPVOID) & pfealist, ealen + 1, pszSrcFile, __LINE__)) {
               memset(pfealist, 0, ealen + 1);
               pfealist->cbList = ealen;
               pfealist->list[0].oNextEntryOffset = 0;
@@ -1104,8 +1102,7 @@ PVOID SaveEA(CHAR * filename, HOLDFEA * current, CHAR * newdata,
     return (PVOID) pfealist;
   }
 
-  if (!xDosAllocMem((PPVOID) & pfealist, ealen,
-                    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__)) {
+  if (!xDosAllocMem((PPVOID) & pfealist, ealen, pszSrcFile, __LINE__)) {
     memset(pfealist, 0, ealen);
     pfealist->list[0].oNextEntryOffset = 0;
     pfealist->list[0].fEA = 0;          //current->fEA;

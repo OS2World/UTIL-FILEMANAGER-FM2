@@ -66,51 +66,71 @@ APIRET xDosQueryAppType(PCSZ pszName, PULONG pFlags)
   return rc;
 }
 
+/**
+ * xDosAllocSharedMem uses OBJ_ANY on systems that support high memory use
+ * and falls back to low memory allocation where it is not supported.
+ * Flags are hard coded PAG_COMMIT | OBJ_GIVEABLE | PAG_READ | PAG_WRITE
+ * The wrapper provides error checking.
+ */
+
 APIRET xDosAllocSharedMem(PPVOID ppb,
                           PSZ pszName,
                           ULONG cb,
-                          ULONG flag,
                           PCSZ pszSrcFile,
 	                  UINT uiLineNumber)
 {
   APIRET rc; ;
 
-  rc = DosAllocSharedMem(ppb, pszName, cb, flag | OBJ_ANY);
+  rc = DosAllocSharedMem(ppb, pszName, cb,
+                         PAG_COMMIT | OBJ_GIVEABLE | PAG_READ | PAG_WRITE | OBJ_ANY);
   //DbgMsg(pszSrcFile, __LINE__, "ppb %p", *ppb);
   if (rc)
-    rc = DosAllocSharedMem(ppb, pszName, cb, flag);
+    rc = DosAllocSharedMem(ppb, pszName, cb, PAG_COMMIT | OBJ_GIVEABLE | PAG_READ | PAG_WRITE);
   if (rc)
     Runtime_Error(pszSrcFile, uiLineNumber, GetPString(IDS_OUTOFMEMORY));
   return rc;
 }
 
+/**
+ * xDosAllocMem uses OBJ_ANY on systems that support high memory use
+ * and falls back to low memory allocation where it is not supported.
+ * Flags are hard coded PAG_COMMIT | PAG_READ | PAG_WRITE.
+ * The wrapper provides error checking.
+ */
+
 APIRET xDosAllocMem(PPVOID ppb,
                     ULONG cb,
-                    ULONG flag,
                     PCSZ pszSrcFile,
 	            UINT uiLineNumber)
 {
   APIRET rc;
 
-  rc = DosAllocMem(ppb, cb, flag | OBJ_ANY);
+  rc = DosAllocMem(ppb, cb, PAG_COMMIT | PAG_READ | PAG_WRITE | OBJ_ANY);
   //DbgMsg(pszSrcFile, uiLineNumber, "ppb %p %x", *ppb, rc);
   if (rc)
-    rc = DosAllocMem(ppb, cb, flag);
+    rc = DosAllocMem(ppb, cb, PAG_COMMIT | PAG_READ | PAG_WRITE);
   if (rc)
     Runtime_Error(pszSrcFile, uiLineNumber, GetPString(IDS_OUTOFMEMORY));
   //DbgMsg(pszSrcFile, uiLineNumber, "ppb %p", *ppb);
   return rc;
 }
 
+/**
+ * xDosAllocMemLow doesn't use OBJ_ANY. It should be used when the buffer
+ * is going to be used by 16 functions that fail to thunk high memory addresses properly
+ * such as DosQueryAppType, DosOpenL, DosGetMessage  and DosReadQueue (probably others)
+ * Flags are hard coded PAG_COMMIT | PAG_READ | PAG_WRITE.
+ * The wrapper provides error checking.
+ */
+
 APIRET xDosAllocMemLow(PPVOID ppb,
                        ULONG cb,
-                       ULONG flag,
                        PCSZ pszSrcFile,
 	               UINT uiLineNumber)
 {
   APIRET rc;
 
-  rc = DosAllocMem(ppb, cb, flag);
+  rc = DosAllocMem(ppb, cb, PAG_COMMIT | PAG_READ | PAG_WRITE);
   if (rc)
     Runtime_Error(pszSrcFile, uiLineNumber, GetPString(IDS_OUTOFMEMORY));
   //DbgMsg(pszSrcFile, uiLineNumber, "ppb %p", *ppb);

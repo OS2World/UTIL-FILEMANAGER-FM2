@@ -106,8 +106,7 @@ MRESULT EXPENTRY InstantDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	mem = MLEgetlen(hwndMLE);
 	if (mem) {
-	  if (xDosAllocMem((PVOID) & bat, mem,
-                           PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__)) {
+	  if (xDosAllocMem((PVOID) & bat, mem, pszSrcFile, __LINE__)) {
 	    WinDismissDlg(hwnd, 0);
 	    break;
 	  }

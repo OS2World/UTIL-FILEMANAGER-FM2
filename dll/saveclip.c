@@ -103,8 +103,7 @@ BOOL SaveToClipHab(HAB hab, CHAR * text, BOOL append)
 	  clip = (CHAR *)WinQueryClipbrdData(hab, CF_TEXT);
 	if (clip)
 	  len += strlen(clip) + 1;
-        if (!xDosAllocSharedMem((PPVOID) &hold, (PSZ) NULL, len, PAG_COMMIT |
-                                OBJ_GIVEABLE | PAG_READ | PAG_WRITE, __FILE__, __LINE__)) {
+        if (!xDosAllocSharedMem((PPVOID) &hold, (PSZ) NULL, len, __FILE__, __LINE__)) {
 	  *hold = 0;
 	  if (clip)
 	    strcpy(hold, clip);

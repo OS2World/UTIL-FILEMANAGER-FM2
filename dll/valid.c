@@ -308,8 +308,7 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
     *pulType = 0;
 
 # define BUFFER_BYTES 8192
-  if (xDosAllocMem(&pvBuffer, BUFFER_BYTES,
-		    PAG_COMMIT | PAG_READ | PAG_WRITE, pszSrcFile, __LINE__))
+  if (xDosAllocMem(&pvBuffer, BUFFER_BYTES, pszSrcFile, __LINE__))
     return -1;				// Say failed
   szPath[0] = chDrive;
   szPath[1] = ':';
