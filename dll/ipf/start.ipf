@@ -5,9 +5,10 @@
 .* Start up
 .*
 .* Copyright (c) 1993-98 M. Kimes
-.* Copyright (c) 2009 Steven H.Levine
+.* Copyright (c) 2009, 2011 Steven H.Levine
 .*
-.* 29 Dec 09 SHL Split from install.ipf
+.* 2009-12-29 SHL Split from install.ipf
+.* 2011-09-14 SHL Correct typo
 .*
 .***********************************************************************
 .*
@@ -18,7 +19,7 @@ command line parameters&comma. it opens the  :link reftype=hd res=97600.Drive Tr
 but no directory windows &lpar.unless the :link reftype=hd res=97000."Save state of dir windows":elink.
 toggle is checked&per.
 :p.File Manager&slash.2 optionally accepts names of directories in the
-parameters field of its program object&semi. it willopen a directory window for each
+parameters field of its program object&semi. it will open a directory window for each
 one&per.
 :p.
 Hint&colon.  If you often do different specific things with FM&slash.2&comma.
