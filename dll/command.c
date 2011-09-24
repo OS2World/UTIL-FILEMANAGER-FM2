@@ -40,6 +40,7 @@
   01 May 10 GKY Add ENVIRONMENT_SIZE variable to standardize this size everywhere.
   01 May 10 GKY Changes to move environment storage to INI file
   03 Jul 11 GKY Fixed problem with creation of duplicate command IDs.
+  24 Sep 11 GKY Fixed trap caused by selecting cancel from duplicate hotkey dialog if adding or replacing a command
 
 ***********************************************************************/
 
