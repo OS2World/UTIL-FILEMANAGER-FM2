@@ -1020,8 +1020,11 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           if (temp->HotKeyID == 0)
             fDontCheckHotKey = TRUE;
           info = add_command(temp, fDontCheckHotKey);
-          if (info == (LINKCMDS *) -1)
+          if (info == (LINKCMDS *) -1) {
+            free(temp->pszCmdLine);
+            free(temp);
             break;
+          }
         }
         else {
           free(temp->pszCmdLine);
@@ -1075,20 +1078,25 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             free(temp);
             break;
           }
-        x = (SHORT) WinSendDlgItemMsg(hwnd,
-                                      CMD_LISTBOX,
-                                      LM_INSERTITEM,
-                                      MPFROM2SHORT(LIT_END, 0),
-                                      MPFROMP(temp->title));
-        if (x >= 0) {
-          WinSendDlgItemMsg(hwnd,
-                            CMD_LISTBOX,
-                            LM_SETITEMHANDLE,
-                            MPFROMSHORT(x), MPFROMP(info));
-          WinSendDlgItemMsg(hwnd,
-                            CMD_LISTBOX,
-                            LM_SELECTITEM,
-                            MPFROMSHORT(x), MPFROMSHORT(TRUE));
+          if (info == (LINKCMDS *) -1) {
+            free(temp->pszCmdLine);
+            free(temp);
+            break;
+          }
+          x = (SHORT) WinSendDlgItemMsg(hwnd,
+                                        CMD_LISTBOX,
+                                        LM_INSERTITEM,
+                                        MPFROM2SHORT(LIT_END, 0),
+                                        MPFROMP(temp->title));
+          if (x >= 0) {
+            WinSendDlgItemMsg(hwnd,
+                              CMD_LISTBOX,
+                              LM_SETITEMHANDLE,
+                              MPFROMSHORT(x), MPFROMP(info));
+            WinSendDlgItemMsg(hwnd,
+                              CMD_LISTBOX,
+                              LM_SELECTITEM,
+                              MPFROMSHORT(x), MPFROMSHORT(TRUE));
           }
           save_commands();
         }
@@ -1191,10 +1199,11 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
         } // then do an add
         info = add_command(temp, fDontCheckHotKey);
-        if (!info) {
-	  saymsg(MB_ENTER, hwnd, GetPString(IDS_ERRORTEXT),
-	         GetPString(IDS_CANTADDCOMMANDTEXT),
-                 temp->title);
+        if (!info || info == (LINKCMDS *) -1) {
+          if (!info)
+            saymsg(MB_ENTER, hwnd, GetPString(IDS_ERRORTEXT),
+                   GetPString(IDS_CANTADDCOMMANDTEXT),
+                   temp->title);
         }
 	else {
           //put item back in original place
