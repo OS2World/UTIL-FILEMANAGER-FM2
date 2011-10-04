@@ -6,7 +6,7 @@
   fm/2 main window
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2010 Steven H. Levine
+  Copyright (c) 2001, 2011 Steven H. Levine
 
   11 Jun 02 SHL Drop obsolete xor code
   16 Oct 02 SHL Handle large partitions
@@ -99,22 +99,23 @@
   12 Sep 09 GKY Add FM3.INI User ini and system ini to submenu for view ini
   14 Sep 09 SHL Blink thread LEDs when workers busy
   13 Dec 09 GKY Fixed separate paramenters. Please note that appname should be used in
-                profile calls for user settings that work and are setable in more than one
-                miniapp; FM3Str should be used for setting only relavent to FM/2 or that
-                aren't user settable; realappname should be used for setting applicable to
-                one or more miniapp but not to FM/2
+	        profile calls for user settings that work and are setable in more than one
+	        miniapp; FM3Str should be used for setting only relavent to FM/2 or that
+	        aren't user settable; realappname should be used for setting applicable to
+	        one or more miniapp but not to FM/2
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast
-                CHAR CONSTANT * as CHAR *.
+	        CHAR CONSTANT * as CHAR *.
   11 Apr 10 GKY Fix drive tree rescan failure and program hang caused by event sem
-                never being posted
+	        never being posted
   23 Oct 10 GKY Changes to populate and utilize a HELPTABLE for context specific help
+  03 Oct 11 SHL Add needTile to ensure containers opened on command line render correctly
+  03 Oct 11 SHL Minor code cleanup
 
 ***********************************************************************/
 
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-// #include <process.h>			// _beginthread
 
 #define INCL_DOS
 #define INCL_WIN
@@ -309,9 +310,9 @@ static MRESULT EXPENTRY MainObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      (fsa.cUnitAvail * 100) / fsa.cUnit : 0;
 	    CommaFmtULL(szQty, sizeof(szQty), ullFreeQty, ' ');
 	    sprintf(s, "%s %s (%lu%%) %s", dv, szQty, ulPctFree, GetPString(IDS_FREETEXT));
-          }
-          else
-            sprintf(s, "%s ", dv);
+	  }
+	  else
+	    sprintf(s, "%s ", dv);
 	}
       }
       if ((!hwndBubble ||
@@ -1942,7 +1943,7 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	PostMsg(MainObjectHwnd, UM_SETUP6, MPFROMLONG((ULONG) hwnd), MPVOID);
       }
       else
-        helpid = 0;
+	helpid = 0;
     }
     break;
 
@@ -2028,17 +2029,17 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if ((char *)mp1 &&
 	  (!hwndBubble ||
 	   WinQueryWindowULong(hwndBubble, QWL_USER) != hwnd) &&
-          !WinQueryCapture(HWND_DESKTOP)) {
+	  !WinQueryCapture(HWND_DESKTOP)) {
 
-        RECTL rcl;
+	RECTL rcl;
 	POINTL ptl;
 
 	WinQueryPointerPos(HWND_DESKTOP, &ptl);
 	WinMapWindowPoints(HWND_DESKTOP, hwnd, &ptl, 1);
 	WinQueryWindowRect(hwnd, &rcl);
-        if (WinPtInRect(WinQueryAnchorBlock(hwnd), &rcl, &ptl)) {
-          BubbleHelp(hwnd, FALSE, TRUE, FALSE, (char *)mp1);
-        }
+	if (WinPtInRect(WinQueryAnchorBlock(hwnd), &rcl, &ptl)) {
+	  BubbleHelp(hwnd, FALSE, TRUE, FALSE, (char *)mp1);
+	}
       }
     }
     return 0;
@@ -3315,7 +3316,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
       if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) &swp, &size)) {
 	strcpy(eos, "Dir"); ;
 	size = sizeof(szDir);
-        if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) szDir, &size)) {
+	if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) szDir, &size)) {
 	  // If restoring shutdown state and drive marked no prescan
 	  // bypass window restore
 	  if (fIsShutDownState &&
@@ -3323,9 +3324,9 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 	    RemoveCnrSwitches(szKeyBase, NULL);
 	    RemoveOldCnrSwitches(szPrefix, x);
 	    continue;
-          }
-          if (x == 0 && fSwitchTree)
-            pszFocusDir = xstrdup(szDir, pszSrcFile, __LINE__);
+	  }
+	  if (x == 0 && fSwitchTree)
+	    pszFocusDir = xstrdup(szDir, pszSrcFile, __LINE__);
 	  LoadDetailsSwitches(szKeyBase, &localdcd.ds, TRUE);
 	  hwndDir = (HWND) WinSendMsg(hwndClient,
 				      UM_SETDIR,
@@ -3564,16 +3565,15 @@ VOID TileChildren(HWND hwndClient, BOOL absolute)
   ULONG ulNumMinChildren;
   RECTL Rectl;
   HWND hwndChild;
+  SWP swp;
 
   if (fNoTileUpdate || hwndClient == HWND_DESKTOP)
     return;
-  {
-    SWP swp;
 
-    WinQueryWindowPos(hwndClient, &swp);
-    if (swp.fl & (SWP_HIDE | SWP_MINIMIZE))
-      return;
-  }
+  WinQueryWindowPos(hwndClient, &swp);
+  if (swp.fl & (SWP_HIDE | SWP_MINIMIZE))
+    return;
+
   ulChildCnt = CountChildren(hwndClient, &ulNumMinChildren);
   ulChildCnt -= ulNumMinChildren;
   if (!ulChildCnt)
@@ -3597,9 +3597,6 @@ VOID TileChildren(HWND hwndClient, BOOL absolute)
   WinQueryWindowRect(hwndClient, &Rectl);
 
   if (!fFreeTree) {
-
-    SWP swp;
-
     WinQueryWindowPos(hwndTree, &swp);
     if (!(swp.fl & (SWP_MAXIMIZE | SWP_HIDE | SWP_MINIMIZE))) {
       if (swp.y < 0)
@@ -3665,8 +3662,8 @@ VOID TileChildren(HWND hwndClient, BOOL absolute)
 			      swp.cx, swp.cy, SWP_MOVE | SWP_SIZE | SWP_SHOW);
 	      WinSetWindowUShort(hwndChild,
 				 QWS_XRESTORE,
-                                 (USHORT) ((USHORT) ulWidth * (USHORT) ulCurCol)
-                                 + (USHORT) Rectl.xLeft);
+	                         (USHORT) ((USHORT) ulWidth * (USHORT) ulCurCol)
+	                         + (USHORT) Rectl.xLeft);
 	      WinSetWindowUShort(hwndChild,
 				 QWS_YRESTORE,
 				 (USHORT) (Rectl.yTop -
@@ -5435,7 +5432,9 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
   USHORT idSysMenu;
   MENUITEM mi, mit;
   ULONG size;
-  BOOL temp = FALSE;
+  BOOL temp;
+
+  static BOOL needTile;
 
   switch (msg) {
   case WM_CREATE:
@@ -5712,15 +5711,15 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
 
     size = sizeof(BOOL);
     if (PrfQueryProfileData(fmprof, FM3Str, "MenuInvisible", &temp, &size) &&
-        size && temp)
+	size && temp)
       WinSendMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_HIDEMENU, 0), MPVOID);
     size = sizeof(BOOL);
     if (PrfQueryProfileData(fmprof, FM3Str, "FreeTree", &temp, &size) &&
-        size && temp)
+	size && temp)
       WinSendMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_FREETREE, 0), MPVOID);
     size = sizeof(BOOL);
     if (PrfQueryProfileData(fmprof, FM3Str, "AutoTile", &temp, &size) &&
-        size && !temp)
+	size && !temp)
       WinSendMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_AUTOTILE, 0), MPVOID);
     size = sizeof(BOOL);
     if (PrfQueryProfileData(fmprof, appname, "Toolbar", &temp, &size) && size && !temp)
@@ -5784,8 +5783,10 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
 			  swp.fl | SWP_MOVE | SWP_SIZE | SWP_SHOW |
 			  SWP_ZORDER | SWP_ACTIVATE);
       }
-//       ResizeTools(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
-//                                MAIN_TOOLS));
+#     if 0
+      ResizeTools(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
+		  MAIN_TOOLS));
+#     endif
     }
     PostMsg(MainObjectHwnd, UM_SETUP3, mp1, mp2);
     return 0;
@@ -5813,8 +5814,9 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
       for (x = 1; x < argc; x++) {
 	if (*argv[x] == '/' || *argv[x] == ';')
 	  continue;
-	if (!IsFile(argv[x]) && !FindDirCnrByName(argv[x], FALSE)) {
+	if (IsFile(argv[x]) == 0 && !FindDirCnrByName(argv[x], FALSE)) {
 	  OpenDirCnr((HWND) 0, hwndMain, hwndTree, TRUE, argv[x]);
+	  needTile = TRUE; // 2011-10-03 SHL
 	}
       }
     }
@@ -5822,8 +5824,10 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
     return 0;
 
   case UM_SETUP5:
-//     if (fAutoTile)
-//       TileChildren(hwnd, TRUE);
+#   if 0
+    if (fAutoTile)
+      TileChildren(hwnd, TRUE);
+#   endif
     PostMsg(hwnd, UM_FILLUSERLIST, MPVOID, MPVOID);
     PostMsg(hwnd, UM_FILLSETUPLIST, MPVOID, MPVOID);
     PostMsg(hwnd, UM_FILLCMDLIST, MPVOID, MPVOID);
@@ -5839,13 +5843,17 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
       PostMsg(hwndTree, UM_MINIMIZE, MPVOID, MPVOID);
     else if (fStartMaximized)
       PostMsg(hwndTree, UM_MAXIMIZE, MPVOID, MPVOID);
-    fRunning = TRUE;
+    else if (needTile)
+      WinSendMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);	// 2011-10-03 SHL
+
+    fRunning = TRUE;			// Allow status window PRESPARM updates
+
     if (fWantFirstTimeInit) {
       fWantFirstTimeInit = FALSE;
       PostMsg(hwnd, WM_COMMAND, MPFROMLONG(IDM_QUICKSETTINGS), MPVOID);
     }
     return 0;
-  }
+  } // switch
 
   return WinDefWindowProc(hwnd, msg, mp1, mp2);
 }
@@ -6014,7 +6022,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_ADDTOMENU:
     AddToMenu((
-               CHAR *)mp1, WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
+	       CHAR *)mp1, WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 					    FID_MENU));
     return 0;
 
@@ -6350,24 +6358,24 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    else if (SHORT1FROMMP(mp1) == MAIN_CMDLIST) {
 
 	      SHORT sSelect = (SHORT) WinSendMsg(hwndCmdlist,
-					         LM_QUERYSELECTION,
+						 LM_QUERYSELECTION,
 						 MPFROMSHORT(LIT_FIRST), MPVOID);
-              if (sSelect >= 0) {
-                CHAR s[CCHMAXPATH];
-                CHAR *p;
+	      if (sSelect >= 0) {
+		CHAR s[CCHMAXPATH];
+		CHAR *p;
 
-                WinSendMsg(hwndCmdlist, LM_QUERYITEMTEXT,
-                           MPFROM2SHORT(sSelect, CCHMAXPATH), MPFROMP(s));
-                p = strrchr(s, '}');
-                p = 0;
-                p = strrchr(s, '{');
-                p++;
+		WinSendMsg(hwndCmdlist, LM_QUERYITEMTEXT,
+			   MPFROM2SHORT(sSelect, CCHMAXPATH), MPFROMP(s));
+		p = strrchr(s, '}');
+		p = 0;
+		p = strrchr(s, '{');
+		p++;
 		WinPostMsg(hwnd,
 			   WM_COMMAND,
 			   MPFROM2SHORT(atol(p), 0), //IDM_COMMANDSTART + sSelect, 0),
-                           MPVOID);
-              }
-                WinSetWindowText(hwndCmdlist, (CHAR *) GetPString(IDS_COMMANDSTEXT));
+			   MPVOID);
+	      }
+		WinSetWindowText(hwndCmdlist, (CHAR *) GetPString(IDS_COMMANDSTEXT));
 	    }
 	  }
 	} // CBN_ENTER
