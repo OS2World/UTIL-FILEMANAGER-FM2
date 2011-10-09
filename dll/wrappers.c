@@ -20,6 +20,8 @@
   15 Nov 09 GKY Rework xDosQueryAppType to remove HIMEM ifdefs
   26 Aug 11 GKY Add a low mem version of xDosAlloc* wrappers; move error checking into all the
                 xDosAlloc* wrappers.
+  09 Oct 11 GKY Modify xfsopen so it doesn't fail when called with r+ because the file doesn't exist.
+                We should be creating the file unless it is set to fail silently.
 
 ***********************************************************************/
 
@@ -452,6 +454,8 @@ FILE *xfsopen(PCSZ pszFileName, PCSZ pszMode, INT fSharemode, PCSZ pszSrcFile,
 
   strcpy(FileName, pszFileName);
   fp = _fsopen(FileName, pszMode, fSharemode);
+  if (!fp && !strcmp(pszMode,  "r+") && !fSilent)
+    fp = _fsopen(FileName, "w+", fSharemode);
 
   if (!fp && !fSilent)
     Runtime_Error(pszSrcFile, uiLineNumber, "_fsopen");
