@@ -1,3 +1,17 @@
+.***********************************************************************
+.*
+.* $Id$
+.*
+.* fm/2 help - Hints
+.*
+.* Copyright (c) 1993-98 M. Kimes
+.* Copyright (c) 2002-2011 Steven H.Levine
+.*
+.* 26 Jun 11 GKY Removed Resource.ipf which was out dated and no longer relevent.
+.* 09 Oct 11 GKY Fixed line length to eliminate the need for horizntal scrolling
+.*
+.***********************************************************************
+.*
 :h1 res=93000 name=PANEL_HINTS.Hints and troubleshooting
 :i1 id=aboutHints.Hints and troubleshooting
 
@@ -7,9 +21,10 @@ This section contains hints about obscure functions, FM/2 "secrets" and
 other rubbish.
 .br
 :p.
-With most video display drivers, :color fc=default bc=cyan.chording:color fc=default bc=default. a directory in the Drive Tree
-(or clicking the :color fc=default bc=cyan.B3:color fc=default bc=default. on a three button mouse) will cause FM/2
-to open a new FM/2 Directory Container window for that directory without further ado.
+With most video display drivers, :color fc=default bc=cyan.chording:color fc=default bc=default. 
+a directory in the Drive Tree (or clicking the :color fc=default bc=cyan.B3:color fc=default bc=default. 
+on a three button mouse) will cause FM/2 to open a new FM/2 Directory Container window for that 
+directory without further ado.
 :p.
 Want to open FM/2 with various different configurations see :link reftype=hd res=100125.Starting FM/2:elink.
 for command line options.
@@ -20,8 +35,8 @@ dialog allowing you to specify a name for a new directory into which to
 place the files.
 :p.
 To set the label of a drive, pick :link reftype=hd
-res=90900.Files->Info:elink. (&CtrlKey. + :color fc=default bc=palegray.i:color fc=default bc=default. accelerator) on the root of the
-drive in the Drive Tree container. You'll find :hp1.Format:ehp1. and
+res=90900.Files->Info:elink. (&CtrlKey. + :color fc=default bc=palegray.i:color fc=default bc=default. 
+accelerator) on the root of the drive in the Drive Tree container. You'll find :hp1.Format:ehp1. and
 :hp1.Chkdsk:ehp1. in that menu, too, under the :hp1.Miscellaneous:ehp1.
 submenu.
 :p.
@@ -137,19 +152,23 @@ and requesting context menus, like empty container space (whitespace).
 :p.
 To begin a direct edit of the current file's name using the keyboard,
 use &CtrlKey. + :color fc=default bc=palegray.F10
-:color fc=default bc=default.. To end (complete) the direct edit, use  &CtrlKey. +  :color fc=default bc=palegray.F11:color fc=default bc=default.. To
+:color fc=default bc=default.. To end (complete) the direct edit, use  &CtrlKey. +  
+:color fc=default bc=palegray.F11:color fc=default bc=default.. To
 cancel an edit underway, use :color fc=default bc=palegray.Esc:color fc=default bc=default..
 :p.
-PM uses several :color fc=default bc=palegray.ALT:color fc=default bc=default. + :color fc=default bc=palegray.F?:color fc=default bc=default. accelerators to control frame windows. However,
+PM uses several :color fc=default bc=palegray.ALT:color fc=default bc=default. + 
+:color fc=default bc=palegray.F?:color fc=default bc=default. accelerators to control frame windows. However,
 this applies to the current frame window, which can be within the main
 FM/2 window when run monolithically. Add &CtrlKey. to these accelerators to
-affect the main window in that case. For example, &CtrlKey.  + :color fc=default bc=palegray.Alt:color fc=default bc=default. + :color fc=default bc=palegray.F9:color fc=default bc=default. will
-minimize the main FM/2 window, while :color fc=default bc=palegray.Alt:color fc=default bc=default.  + :color fc=default bc=palegray.F9:color fc=default bc=default.  will minimize whichever
+affect the main window in that case. For example, &CtrlKey.  + :color fc=default bc=palegray.Alt
+:color fc=default bc=default. + :color fc=default bc=palegray.F9:color fc=default bc=default. will
+minimize the main FM/2 window, while :color fc=default bc=palegray.Alt:color fc=default bc=default.  + 
+:color fc=default bc=palegray.F9:color fc=default bc=default.  will minimize whichever
 frame window has the focus.
 :p.
 If you have the bottom buttons turned on in FM/2 and have a 3-button
-mouse, clicking the  :color fc=default bc=cyan.B3:color fc=default bc=default. (or holding down &CtrlKey.  while clicking
-:color fc=default bc=cyan.B1:color fc=default bc=default.) on them will change your sort type.
+mouse, clicking the  :color fc=default bc=cyan.B3:color fc=default bc=default. (or holding down &CtrlKey.  
+while clicking :color fc=default bc=cyan.B1:color fc=default bc=default.) on them will change your sort type.
 :p.
 Problem with ZIP or EZ drive -- slow scanning&colon. See :link
 reftype=hd res=99980.Edit->Drive flags:elink. command. The problem
@@ -213,7 +232,8 @@ You can press the [Home] key to move the cursor to the start of the
 entry field and enter the name of a program to run with the file as an
 argument, or just press [Enter] to execute the file.
 :p.
-Alternatively, if running FM/2 monolithically, press :color fc=default bc=palegray.F5:color fc=default bc=default. to get a
+Alternatively, if running FM/2 monolithically, press :color fc=default bc=palegray.F5
+:color fc=default bc=default. to get a
 miniature command line at the bottom of the window. Enter any commands
 you'd like here, including :link reftype=hd
 res=100075.metastrings:elink.. Type /HELP in the command line entry

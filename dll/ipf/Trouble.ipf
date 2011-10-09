@@ -1,7 +1,23 @@
+.***********************************************************************
+.*
+.* $Id$
+.*
+.* fm/2 help - Troubleshooting
+.*
+.* Copyright (c) 1993-98 M. Kimes
+.* Copyright (c) 2002-2011 Steven H.Levine
+.*
+.* 06 Apr 07 GKY Added drag limit information
+.* 24 Jun 07 GKY Added change from VAC to open Watcom notes and Global issue with 4OS2.
+.* 27 Dec 09 GKY Added information regarding use of the xworkplace trachcan with FM/2
+.* 09 Oct 11 GKY Added note about GBM.dll related trap.
+.*
+.***********************************************************************
+.*
 :h2 res=100100 id='PANEL_TROUBLE'.
 Troubleshooting
-:p.If FM&slash.2 won&apos.t run&comma. &lpar.Error Message&colon. FM3RES.STR isn't in right format, at least for this version of FM/2.&rpar.
-the probable culprit is CONFIG&per.SYS&per.  Your LIBPATH statement should contain a "&per.&bsl." entry&per.
+:p.If FM&slash.2 won&apos.t run&comma. &lpar.the probable culprit is CONFIG&per.SYS&per.  
+Your LIBPATH statement should contain a "&per.&bsl." entry&per.
 If yours doesn&apos.t&comma. add it&per.  It&apos.s
 standard for an OS&slash.2 installation&comma. but some buggy install programs knock
 it out because they translate entries to their full pathname before
@@ -15,7 +31,7 @@ rather huge pain in the&comma. uh&comma. neck&per.
 :p.If things in FM&slash.2 are suddenly acting strange after an upgrade&comma.
 first make &us.sure&us. you unpacked &us.all&us. the files and overwrote the old
 ones&comma. then run INSTALL&per.CMD to update your WPS objects&per.
-:p.If the "FM&slash.2 Online Help" object in the "FM&slash.2 Docs" subfolder
+:p.If the "FM&slash.2 Online Help" object in the "FM&slash.2 Docs" sub-folder
 won&apos.t work properly&comma. you&apos.ve got a version of VIEW&per.EXE that won&apos.t
 directly display help &lpar.&per.HLP&rpar. files&per.  Use SEEHELP&per.EXE from the
 :link reftype=hd res=100090.FM&slash.2 Utilities:elink. package to
@@ -45,11 +61,11 @@ to prevent this problem.
 results in the execution of 4OS2's "Global" command. Global.exe can be run by placing
 it in quotes or prefixing it with *. See 4OS2's documentation for more information.
 :p. &endash. As with any OS/2 program significant changes (such as our change to OpenWatcom)
-will result in the incompatibility of older (VAC) exes with new dlls and viceversa. Attempting to run
+will result in the incompatibility of older (VAC) exes with new dlls and vice-versa. Attempting to run
 OpenWatcom exes with a VAC dll loaded in memory or in your libpath ahead of the new version
 will result in a SYS3175 in popuplog.os2. The reverse gives a SYS2070. If you experience these
 problems search your libpath for fm3dll.dll and remove or rename it. Your libpath should have "."
-(without the quotes) as your first entry to minimize the likelyhood of this problem. FM/2's installer
+(without the quotes) as your first entry to minimize the likely hood of this problem. FM/2's installer
 does not add the FM/2 directory to the libpath.
 :p. &endash. Accessing a subdirectory on a vfat (fat) formatted USB removable drive may result
 in a SYS3175. If this occurs try accessing the directory using "open" from the context (popup)
@@ -58,5 +74,12 @@ menu. Mounting it using netdrives' vfat plugin also solves the problem.
 of the xworkplace trashcan). The result will be a permanent delete for all other 
 drive types. Also be aware that deleted files are still retained on the drive 
 they were deleted from. The result can be full drive type errors. If you are 
-deleting to free up drive space you must either empty the trashscan or use 
+deleting to free up drive space you must either empty the trashcan or use 
 :hp6.Permanent Delete:ehp6. which deletes the files directly bypassing the trashcan.
+:p. &endash. Under some circumstances a trap may occur in GBM.dll when attempting to view a file.
+This appears to be a random occurrence. It occurs when attempting to view a binary file or a file 
+FM2 thinks is binary. It appears it only happens if you use FM2's internal view for binary files.
+To solve the problem you should update GBM.dll to version 1.73 or higher (Available on Hobbes . 
+HTTP&colon.//hobbes.nmsu.edu/h-search.php?key=GBM&amp.pushbutton=Search)
+If that is not a workable solution designating a "Binary Viewer" on the Viewers page of the settings 
+notebook appears to suppress the problem.
