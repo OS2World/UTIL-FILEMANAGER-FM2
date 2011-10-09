@@ -1109,21 +1109,23 @@ MRESULT EXPENTRY CommandDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case CMD_DELETE:
       {
         CHAR temp[100];
-        CHAR keyID[120];
-        CHAR keyHotKeyID[120];
-        CHAR keyenv[120];
+        CHAR key[120];
 
 	WinQueryDlgItemText(hwnd, CMD_TITLE, 100, temp);
         bstripcr(temp);
 	if (!kill_command(temp))
 	  Runtime_Error(pszSrcFile, __LINE__, "kill_command");
         else {
-          sprintf(keyID, "COMMAND.%sID", temp);
-          sprintf(keyHotKeyID, "COMMAND.%sHotKeyID", temp);
-          sprintf(keyenv, "COMMAND.%senv", temp);
-          PrfWriteProfileData(fmprof, FM3Str, keyID, NULL, 0);
-          PrfWriteProfileData(fmprof, FM3Str, keyHotKeyID, NULL, 0);
-          PrfWriteProfileString(fmprof, FM3Str, keyenv, NULL);
+          sprintf(key, "COMMAND.%sID", temp);
+          PrfWriteProfileData(fmprof, FM3Str, key, NULL, 0);
+          sprintf(key, "COMMAND.%sHotKeyID", temp);
+          PrfWriteProfileData(fmprof, FM3Str, key, NULL, 0);
+          sprintf(key, "COMMAND.%senv", temp);
+          PrfWriteProfileData(fmprof, FM3Str, key, NULL, 0);
+          sprintf(key, "COMMAND.%sflags", temp);
+          PrfWriteProfileData(fmprof, FM3Str, key, NULL, 0);
+          sprintf(key, "COMMAND.%sCmdLine", temp);
+          PrfWriteProfileData(fmprof, FM3Str, key, NULL, 0);
 	  x = (SHORT) WinSendDlgItemMsg(hwnd,
 					CMD_LISTBOX,
 					LM_QUERYSELECTION,
