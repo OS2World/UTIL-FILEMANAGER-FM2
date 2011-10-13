@@ -259,6 +259,8 @@ HWND DoFileDrag(HWND hwndCnr, HWND hwndObj, PCNRDRAGINIT pcd, CHAR * arcfile,
 
   // Count items to unhilite, pass to UnHilite when partial unhilite required
   dcd = INSTDATA(hwndCnr);
+  if (!dcd)
+    return hDrop;
   dcd->ulItemsToUnHilite = 0;
   if (!pciRec && directory && *directory)
     return DragOne(hwndCnr, hwndObj, directory, moveok);
