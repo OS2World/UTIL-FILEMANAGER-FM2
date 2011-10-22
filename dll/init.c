@@ -106,6 +106,7 @@
   03 Mar 11 SHL Try using FM3INI to create help instance if fm3.hlp not in current directory
   06 Aug 11 GKY Fixed failure to initalize pFM2SaveDirectory if TEMP and TMP were not present
                 or invalid
+  22 Oct 11 GKY Thread notes dialog now reopens on startup if it was open on shutdown.
 
 ***********************************************************************/
 
@@ -1323,8 +1324,6 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "NoFoldMenu", &fNoFoldMenu, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, appname, "ThreadNotes", &fThreadNotes, &size);
-  size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "Prnpagenums", &prnpagenums, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "Prnalt", &prnalt, &size);
@@ -1596,6 +1595,10 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, appname, "FM2Deletes", &fFM2Deletes, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "TrashCan", &fTrashCan, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "ThreadNotes", &fThreadNotes, &size);
+  if (fThreadNotes)
+    ShowNote();
 
   LoadDetailsSwitches(PCSZ_DIRCNR, &dsDirCnrDefault, FALSE);
 
