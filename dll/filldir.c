@@ -97,6 +97,7 @@
   12 Jun 11 GKY Added IdleIfNeeded to the container "free" loops to improve system
                 responsiveness when closing containers with large numbers of items
   12 Jun 11 GKY Replaced SleepIfNeeded with IdleIfNeeded in the container loade loop
+  22 Oct 11 GKY Removing unneeded UnFlesh call from StubbyScanThread appears to significantly speed opening of FM/2
 
 ***********************************************************************/
 
@@ -254,14 +255,11 @@ VOID StubbyScanThread(VOID * arg)
 	       (fRScanVirtual && flags & DRIVE_VIRTUAL)) {
 	    if (!(flags & ((fRScanNoWrite ? 0 : DRIVE_NOTWRITEABLE) ||
 			   (fRScanSlow ? 0 : DRIVE_SLOW)))) {
-	      UnFlesh(StubbyScan->hwndCnr, StubbyScan->pci);
 	      Flesh(StubbyScan->hwndCnr, StubbyScan->pci);
 	    }
 	  }
 	  else {
 	    Stubby(StubbyScan->hwndCnr, StubbyScan->pci);
-	    //if (!ok)
-	     // FixedVolume--;
 	  }
 	}
 	WinDestroyMsgQueue(hmq);
@@ -1693,17 +1691,14 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	  // Hard drive or current drive
 	  ULONG flags = driveflags[iDrvNum];	// Speed up
 	  if (~flags & DRIVE_INVALID &&
-	      ~flags & DRIVE_NOPRESCAN &&
-	      (!fNoRemovableScan || ~flags & DRIVE_REMOVABLE))
-	  {
-	    if (xbeginthread(StubbyScanThread,
+              ~flags & DRIVE_NOPRESCAN && (!fNoRemovableScan || ~flags & DRIVE_REMOVABLE)) {
+            // DbgMsg(pszSrcFile, __LINE__, "Begin Thread %s", pci->pszFileName);
+            if (xbeginthread(StubbyScanThread,
 			     65536,
 			     stubbyScan,
-			     pszSrcFile,
-			     __LINE__) == -1)
-	    {
-	      xfree(stubbyScan, pszSrcFile, __LINE__);
-	    }
+			     pszSrcFile, __LINE__) == -1)
+              xfree(stubbyScan, pszSrcFile, __LINE__);
+
 	  } // if drive needs to be scanned
 	}
 	else {
