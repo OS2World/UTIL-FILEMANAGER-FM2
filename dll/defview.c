@@ -101,12 +101,46 @@ BOOL ShowMultimedia(CHAR * filename)
     return played;
   }
   else {
-    if (DosQueryProcAddr(MMIOModHandle,
-			 0,
-			 "mmioIdentifyFile", (PFN *) &pMMIOIdentifyFile)) {
-      DosFreeModule(MMIOModHandle);
-      no_mmos2 = TRUE;
-      return played;
+    ULONG cmp;
+    CHAR cmps[5];
+
+    p = strrchr(filename, '.');
+    if (p) {
+      cmps[0] = '.';
+      cmps[1] = toupper(p[1]);
+      cmps[2] = toupper(p[2]);
+      cmps[3] = toupper(p[3]);
+      if (p[4]) {
+        cmps[4] = toupper(p[4]);
+        cmps[5] = 0;
+      }
+      else
+        cmps[4] = 0;
+  
+      cmp = *(ULONG *) cmps;
+      if (cmp == *(ULONG *) PCSZ_DOTBMP  || cmp == *(ULONG *) PCSZ_DOTJPEG ||
+          cmp == *(ULONG *) PCSZ_DOTMP3  || cmp == *(ULONG *) PCSZ_DOTJPG  ||
+          cmp == *(ULONG *) PCSZ_DOTMPEG || cmp == *(ULONG *) PCSZ_DOTFLAC ||
+          cmp == *(ULONG *) ".TIF" || cmp == *(ULONG *) ".PCX" ||
+          cmp == *(ULONG *) ".TGA" || cmp == *(ULONG *) ".MOV" ||
+          cmp == *(ULONG *) ".PNG" || cmp == *(ULONG *) ".AVI" ||
+          cmp == *(ULONG *) ".OGG" || cmp == *(ULONG *) ".MID" ||
+          cmp == *(ULONG *) ".PCD" || cmp == *(ULONG *) ".FLC" ||
+          cmp == *(ULONG *) ".GIF" || cmp == *(ULONG *) ".FLA" ||
+          cmp == *(ULONG *) ".IFF" || cmp == *(ULONG *) ".SND" ||
+          cmp == *(ULONG *) "._AU" || cmp == *(ULONG *) ".AIF" ||
+          cmp == *(ULONG *) ".VID" || cmp == *(ULONG *) ".WAV" ||
+          cmp == *(ULONG *) "._IM" || cmp == *(ULONG *) ".RDI" ||
+          cmp == *(ULONG *) PCSZ_DOTMPG)  {
+        if (DosQueryProcAddr(MMIOModHandle, 0,
+                             "mmioIdentifyFile", (PFN *) &pMMIOIdentifyFile)) {
+          DosFreeModule(MMIOModHandle);
+          no_mmos2 = TRUE;
+          return played;
+        }
+      }
+      else
+        return played;
     }
   }
   memset(&mmFormatInfo, 0, sizeof(MMFORMATINFO));
@@ -125,10 +159,10 @@ BOOL ShowMultimedia(CHAR * filename)
               !stricmp(p, PCSZ_DOTMPG) || !stricmp(p, PCSZ_DOTMPEG))) {
     if (mmFormatInfo.ulMediaType == MMIO_MEDIATYPE_IMAGE &&
 	(mmFormatInfo.ulFlags & MMIO_CANREADTRANSLATED)) {
-      if (!stricmp(p, PCSZ_DOTJPG) || !stricmp(p, PCSZ_DOTJPEG))
+      //if (!stricmp(p, PCSZ_DOTJPG) || !stricmp(p, PCSZ_DOTJPEG))
         OpenObject(filename, Default, hwnd);  //Image fails to display these
-      else       // is an image that can be translated
-        RunFM2Util(PCSZ_IMAGEEXE, filename);
+     // else       // is an image that can be translated
+      //  RunFM2Util(PCSZ_IMAGEEXE, filename); // 29 Oct 11 GKY Image.exe doesn't handle multilayer bitmaps or jpgs
       played = TRUE;
     }
     else if (mmFormatInfo.ulMediaType != MMIO_MEDIATYPE_IMAGE) {
@@ -277,9 +311,9 @@ VOID DefaultView(HWND hwnd, HWND hwndFrame, HWND hwndParent, SWP * swp,
         }
         if (stricmp(p, ".INI") || !StartIniEditor(hwndParent, filename, 4)) {
           if (stricmp(p, PCSZ_DOTHLP) || !ViewHelp(filename)) {
-            if (!fCheckMM || !ShowMultimedia(filename)) {
-            ViewIt:
-              if (TestBinary(filename)) {
+          ViewIt:
+            if (TestBinary(filename)) {
+              if (!fCheckMM || !ShowMultimedia(filename)) {
                 if (*binview) {
                   dummy[0] = filename;
                   dummy[1] = NULL;
@@ -297,25 +331,26 @@ VOID DefaultView(HWND hwnd, HWND hwndFrame, HWND hwndParent, SWP * swp,
                 else
                   StartMLEEditor(hwndParent, 5, filename, hwndFrame);
               }
-              else {
-                if (*viewer) {
-                  dummy[0] = filename;
-                  dummy[1] = NULL;
-                  ExecOnList(hwnd,
-                             viewer,
-                             WINDOWED | SEPARATE |
-                             ((fViewChild) ? CHILD : 0), NULL, NULL, dummy, NULL,
-                             pszSrcFile, __LINE__);
-                }
-                else if (fUseNewViewer) {
-                  if (fExternalViewer || strcmp(realappname, FM3Str))
-                    hwndParent = HWND_DESKTOP;
-                  StartViewer(hwndParent, 5, filename, hwndFrame);
-                }
-                else
-                  StartMLEEditor(hwndParent, 5, filename, hwndFrame);
+            }
+            else {
+              if (*viewer) {
+                dummy[0] = filename;
+                dummy[1] = NULL;
+                ExecOnList(hwnd,
+                           viewer,
+                           WINDOWED | SEPARATE |
+                           ((fViewChild) ? CHILD : 0), NULL, NULL, dummy, NULL,
+                           pszSrcFile, __LINE__);
               }
-	    }
+              else if (fUseNewViewer) {
+                if (fExternalViewer || strcmp(realappname, FM3Str))
+                  hwndParent = HWND_DESKTOP;
+                StartViewer(hwndParent, 5, filename, hwndFrame);
+              }
+              else
+                StartMLEEditor(hwndParent, 5, filename, hwndFrame);
+            }
+	    //}
 	  }
 	}
       }
