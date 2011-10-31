@@ -350,12 +350,17 @@ static HPOINTER IDFile(PSZ p)
   CHAR cmps[5];
 
   p = strrchr(p, '.');
-  if (p && !p[5]) {
+  if (p) {
     cmps[0] = '.';
     cmps[1] = toupper(p[1]);
     cmps[2] = toupper(p[2]);
     cmps[3] = toupper(p[3]);
-    cmps[4] = toupper(p[4]);
+    if (p[4]) {
+      cmps[4] = toupper(p[4]);
+      cmps[5] = 0;
+    }
+    else
+      cmps[4] = 0;
 
     cmp = *(ULONG *) cmps;
 
@@ -368,7 +373,8 @@ static HPOINTER IDFile(PSZ p)
 	     cmp == *(ULONG *) ".ZOO" || cmp == *(ULONG *) ".RAR" ||
 	     cmp == *(ULONG *) ".TAR" || cmp == *(ULONG *) ".TGZ" ||
 	     cmp == *(ULONG *) ".GZ"  || cmp == *(ULONG *) ".Z"   ||
-	     cmp == *(ULONG *) ".CAB" || cmp == *(ULONG *) ".BZ2")
+             cmp == *(ULONG *) ".CAB" || cmp == *(ULONG *) ".BZ2" ||
+             cmp == *(ULONG *) ".WPI")
       hptr = hptrArc;
     else if (cmp == *(ULONG *) PCSZ_DOTBMP  ||
 	     cmp == *(ULONG *) PCSZ_DOTICO  ||
