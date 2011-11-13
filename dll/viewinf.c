@@ -21,6 +21,7 @@
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  12 Nov 11 GKY Fixed HelpViewer's failure to open help files and subsequent failure with files with spaces.
 
 ***********************************************************************/
 
