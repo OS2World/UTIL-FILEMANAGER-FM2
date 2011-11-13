@@ -47,6 +47,7 @@
                 Mostly cast CHAR CONSTANT * as CHAR *.
   20 Nov 10 GKY Check that pTmpDir IsValid and recreate if not found; Fixes hangs caused
                 by temp file creation failures.
+  12 Nov 11 GKY Fixed extract failure caused by spaces in the arc file name.
 
 ***********************************************************************/
 
@@ -475,15 +476,18 @@ VOID Action(VOID * args)
 	      case IDM_EXTRACT:
 		{
 		  EXTRDATA ex;
-		  BOOL maskspaces = FALSE;
+                  BOOL maskspaces = FALSE;
+                  CHAR arcname[CCHMAXPATH];
 
 		  memset(&ex, 0, sizeof(EXTRDATA));
 		  ex.info = find_type(wk->li->list[x], NULL);
 		  if (!ex.info || (!ex.info->extract && !ex.info->exwdirs))
 		    break;
-		  ex.size = sizeof(EXTRDATA);
-		  ex.arcname = wk->li->list[x];
-		  strcpy(ex.masks, "*");
+                  ex.size = sizeof(EXTRDATA);
+                  BldQuotedFileName(arcname, wk->li->list[x]);
+                  ex.arcname = arcname;
+                  if (!*ex.masks)
+                    strcpy(ex.masks, "*");
 		  strcpy(ex.extractdir, wk->li->targetpath);
 		  if (!WinDlgBox(HWND_DESKTOP,
 				 wk->hwndFrame,
