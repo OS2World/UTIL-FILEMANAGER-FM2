@@ -566,11 +566,14 @@ MRESULT EXPENTRY ViewInfProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             }
             p++;
             bstrip(p);
-            if (!*p)
+            if (!*p) {
               if (!fAlertBeepOff)
                 DosBeep(50, 100);
-            else
+            }
+            else {
+              // DbgMsg(pszSrcFile, __LINE__, "Help file %s", p);
               ViewHelp(p);
+            }
             break;
           }
           BldFullPathName(filename, pFM2SaveDirectory, "FM2VINF.CMD");

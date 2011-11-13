@@ -69,6 +69,7 @@
                 including the option to use walk directories to select path
   26 Aug 11 GKY Add a low mem version of xDosAlloc* wrappers; move error checking into all the
                 xDosAlloc* wrappers.
+  12 Nov 11 GKY Fixed HelpViewer's failure to open help files and subsequent failure with files with spaces.
 
 ***********************************************************************/
 
@@ -1094,7 +1095,7 @@ BOOL ViewHelp(PCSZ filename)
     fclose(fp);
     ret = runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, pszSrcFile, __LINE__,
 		  NULL, NULL,
-		  "VIEW.EXE \"%s\"",
+		  "VIEW.EXE %s",
 		  BldQuotedFileName(szQuotedFileName, filename));
   }
 
