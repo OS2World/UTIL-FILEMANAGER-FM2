@@ -191,25 +191,28 @@ BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent)
 			       CM_QUERYRECORD,
 			       MPFROMP(pciParent),
 			       MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
-  if (pciL && (INT) pciL != -1 && *pciL->pszFileName)
-    return FALSE; 
-  dcd = INSTDATA(hwndCnr);
-  if (dcd && dcd->size != sizeof(DIRCNRDATA))
-    dcd = NULL;
-  if (driveflags[toupper(*pciParent->pszFileName) - 'A'] &
-      DRIVE_INCLUDEFILES)
-    includefiles = TRUE;
-    ProcessDirectory(hwndCnr,
-                     pciParent,
-                     pciParent->pszFileName,
-                     includefiles,	// filestoo
-                     TRUE,		// recurse
-                     TRUE,		// partial
-                     NULL,		// stop flag
-                     dcd,
-                     NULL,		// total files
-                     NULL);		// total bytes
-  driveflags[*pciParent->pszFileName - 'A'] |= DRIVE_RSCANNED;
+  if (!pciL || !*pciL->pszFileName) {
+    if (pciL && (INT) pciL != -1)
+      RemoveCnrItems(hwndCnr, pciL, 1, CMA_FREE);
+    dcd = INSTDATA(hwndCnr);
+    if (dcd && dcd->size != sizeof(DIRCNRDATA))
+      dcd = NULL;
+    if (driveflags[toupper(*pciParent->pszFileName) - 'A'] &
+        DRIVE_INCLUDEFILES)
+      includefiles = TRUE;
+      ProcessDirectory(hwndCnr,
+                       pciParent,
+                       pciParent->pszFileName,
+                       includefiles,	// filestoo
+                       TRUE,		// recurse
+                       TRUE,		// partial
+                       NULL,		// stop flag
+                       dcd,
+                       NULL,		// total files
+                       NULL);		// total bytes
+    //}
+  }
+    driveflags[*pciParent->pszFileName - 'A'] |= DRIVE_RSCANNED;
   return TRUE;
 }
 
