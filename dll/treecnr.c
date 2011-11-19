@@ -3125,6 +3125,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     EmptyCnr(hwnd);
     if (apphead) {
       APPNOTIFY *info, *next;
+
       info = apphead;
       while (info) {
 	next = info->next;
@@ -3139,10 +3140,10 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break; // WM_DESTROY
   } // switch
   if (dcd && dcd->oldproc){
-      return dcd->oldproc(hwnd, msg, mp1, mp2);
+    return dcd->oldproc(hwnd, msg, mp1, mp2);
   }
   else
-      return PFNWPCnr(hwnd, msg, mp1, mp2);
+    return PFNWPCnr(hwnd, msg, mp1, mp2);
 }
 
 HWND StartTreeCnr(HWND hwndParent, ULONG flags)
