@@ -256,7 +256,10 @@ VOID StubbyScanThread(VOID * arg)
 	    if (!(flags & ((fRScanNoWrite ? 0 : DRIVE_NOTWRITEABLE) ||
 			   (fRScanSlow ? 0 : DRIVE_SLOW)))) {
 	      Flesh(StubbyScan->hwndCnr, StubbyScan->pci);
-	    }
+            }
+            else {
+              Stubby(StubbyScan->hwndCnr, StubbyScan->pci);
+            }
 	  }
 	  else {
 	    Stubby(StubbyScan->hwndCnr, StubbyScan->pci);
@@ -276,15 +279,8 @@ VOID StubbyScanThread(VOID * arg)
     DosPostEventSem(hevTreeCnrScanComplete);
     if (fInitialDriveScan && fSwitchTree && hwndTree && fSaveState && pszFocusDir) {
        // Keep drive tree in sync with directory container
-      if (hwndMain) {
-	//if (TopWindow(hwndMain, (HWND) 0) == dcd->hwndFrame)
-	  if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszFocusDir), MPVOID))
-	    free(pszFocusDir);
-      }
-      else {
-	if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszFocusDir), MPVOID))
-	  free(pszFocusDir);
-      }
+      if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszFocusDir), MPVOID))
+        free(pszFocusDir);
     }
     ProcessDirCount = 0;
     FixedVolume = 0;
@@ -295,53 +291,6 @@ VOID StubbyScanThread(VOID * arg)
 #  endif
 
 }
-
-#if 0
-VOID ProcessDirectoryThread(VOID * arg)
-{
-  PROCESSDIR *ProcessDir;
-  HAB thab;
-  HMQ hmq = (HMQ) 0;
-
-
-  DosError(FERR_DISABLEHARDERR);
-
-# ifdef FORTIFY
-  Fortify_EnterScope();
-#  endif
-
-  ProcessDir = (PROCESSDIR *)arg;
-  if (ProcessDir && ProcessDir->pciParent && ProcessDir->pciParent->pszFileName &&
-      ProcessDir->hwndCnr) {
-    thab = WinInitialize(0);
-    if (thab) {
-      hmq = WinCreateMsgQueue(thab, 0);
-      if (hmq) {
-	IncrThreadUsage();
-	priority_normal();
-	ProcessDirectory(ProcessDir->hwndCnr,
-			 ProcessDir->pciParent,
-			 ProcessDir->szDirBase,
-			 ProcessDir->filestoo,
-			 ProcessDir->recurse,
-			 ProcessDir->partial,
-			 ProcessDir->stopflag,
-			 ProcessDir->dcd,		// Optional
-			 ProcessDir->pulTotalFiles,	// Optional
-			 ProcessDir->pullTotalBytes);	// Optional
-	WinDestroyMsgQueue(hmq);
-      }
-      DecrThreadUsage();
-      WinTerminate(thab);
-    }
-    free(ProcessDir);
-  } // if ProcessDir
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-#  endif
-
-}
-# endif
 
 static HPOINTER IDFile(PSZ p)
 {

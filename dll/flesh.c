@@ -191,9 +191,10 @@ BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent)
 			       CM_QUERYRECORD,
 			       MPFROMP(pciParent),
 			       MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
-  if (!pciL || !*pciL->pszFileName) {
-    if (pciL && (INT) pciL != -1)
-      RemoveCnrItems(hwndCnr, pciL, 1, CMA_FREE);
+  if (pciL && (INT) pciL != -1 &&* pciL->pszFileName) //{
+    UnFlesh( hwndCnr, pciParent);
+    //if (pciL && (INT) pciL != -1)
+    //  RemoveCnrItems(hwndCnr, pciL, 1, CMA_FREE);
     dcd = INSTDATA(hwndCnr);
     if (dcd && dcd->size != sizeof(DIRCNRDATA))
       dcd = NULL;
@@ -238,10 +239,12 @@ BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent)
 		       NULL,		// stop flag
 		       dcd,
 		       NULL,		// total files
-		       NULL);		// total bytes
-    //}
-  }
-  driveflags[*pciParent->pszFileName - 'A'] |= DRIVE_RSCANNED;
+                       NULL);		// total bytes
+#if 0
+    }
+#endif
+    driveflags[*pciParent->pszFileName - 'A'] |= DRIVE_RSCANNED;
+  //}
   return TRUE;
 }
 
