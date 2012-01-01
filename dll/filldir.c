@@ -1198,7 +1198,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
     }
 
     // 13 Oct 09 SHL fixme to be saymsg if ERROR_NOT_READY and first try on volume
-    if (rc && rc != ERROR_NO_MORE_FILES) {
+    if (rc && rc != ERROR_NO_MORE_FILES && (fDontSuggestAgain || !fInitialDriveScan)) {
       Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 		GetPString(IDS_CANTFINDDIRTEXT), pszFileSpec);
     }
