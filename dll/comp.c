@@ -642,6 +642,7 @@ static VOID ActionCnrThread(VOID *args)
 		pciD->latime = pciS->latime;
 		pciD->crdate = pciS->crdate;
 		pciD->crtime = pciS->crtime;
+                pciD->pszFmtFileSize = pciS->pszFmtFileSize;
 		pciD->cbFile = pciS->cbFile;
 		pciD->easize = pciS->easize;
 
@@ -753,7 +754,8 @@ static VOID ActionCnrThread(VOID *args)
 		pciD->ladate = pciS->ladate;
 		pciD->latime = pciS->latime;
 		pciD->crdate = pciS->crdate;
-		pciD->crtime = pciS->crtime;
+                pciD->crtime = pciS->crtime;
+                pciD->pszFmtFileSize = pciS->pszFmtFileSize;
 		pciD->cbFile = pciS->cbFile;
 		pciD->easize = pciS->easize;
 
@@ -1626,7 +1628,7 @@ static VOID FillCnrsThread(VOID *args)
 		      if (p) {
 			p++;
 			// 27 Sep 07 SHL fixme to do ULONGLONG conversion
-			fb4.cbFile = atol(p);
+			fb4.cbFile = atoll(p);
 			p = strchr(p, ',');
 			if (p) {
 			  p++;
