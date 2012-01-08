@@ -4,7 +4,7 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2008 Steven H.Levine
+  Copyright (c) 2003, 2012 Steven H.Levine
 
   Default file viewer
 
@@ -27,6 +27,8 @@
   12 Dec 09 GKY Remove code that opened files to check if they were media types
                 It was redundant.
   12 Dec 09 GKY Pass .WPI files to PM for default handling.
+  02 Jan 12 GKY Completely rework ShowMultimedia to only test and try to open files with known multimedia extensions
+                This fixes some traps in GBM.DLL and PMCTLS.DLL; mmioIdentifyFile appears to pretty much be broken.
 
 ***********************************************************************/
 
@@ -142,6 +144,8 @@ BOOL ShowMultimedia(CHAR * filename)
       else
         return played;
     }
+    else
+        return played;
   }
   memset(&mmFormatInfo, 0, sizeof(MMFORMATINFO));
   mmFormatInfo.ulStructLen = sizeof(MMFORMATINFO);
@@ -149,10 +153,8 @@ BOOL ShowMultimedia(CHAR * filename)
 	                 &fccStorageSystem, 0L,
 	                 MMIO_FORCE_IDENTIFY_FF);
   DosFreeModule(MMIOModHandle);
-  p = strrchr(filename, '.');
-  if (!p)
-    p = ".";
-  /* if identified and not FOURCC_DOS  MPEGs are misidentified as DOS*/
+
+  // if identified and not FOURCC_DOS  MPEGs are misidentified as DOS
   //DbgMsg(pszSrcFile, __LINE__, "FOUCC %x %s %i", mmFormatInfo.fccIOProc,
   //       mmFormatInfo.szDefaultFormatExt, mmFormatInfo.ulMediaType);
   if (!rc && (mmFormatInfo.fccIOProc != FOURCC_DOS ||
@@ -166,7 +168,7 @@ BOOL ShowMultimedia(CHAR * filename)
       played = TRUE;
     }
     else if (mmFormatInfo.ulMediaType != MMIO_MEDIATYPE_IMAGE) {
-	/* is a multimedia file (WAV, MID, AVI, etc.) */
+	// is a multimedia file (WAV, MID, AVI, etc.)
       if (!stricmp(p, PCSZ_DOTOGG) || !stricmp(p, PCSZ_DOTMP3) || !stricmp(p, PCSZ_DOTFLAC))
         OpenObject(filename, Default, hwnd);  //FM2Play fails to play these
       else
