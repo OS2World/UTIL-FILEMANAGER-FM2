@@ -4,6 +4,16 @@
  �       See end of document for contact info           �
  읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
 
+FM/2 3.20 mainly addresses things that were annoying me. The only new item
+is a new date type for ARCHIVER.BB2 which allows for the viewing of .tar.gz
+archives directly using Tar 1.15 or higher. You will need to either replace
+your ARCHIVER.BB2 with ARCHIVER.TMP from the package or replace/add Entry #10 
+(tar.gz) from the .TMP file to your existing ARCHIVER.BB2. We don't do this 
+automatically to avoid breaking any custom changes you may have made. We updated 
+some of the help information, fixed several rare traps and little things like 
+the failure to create a list file if it didn't already exist. See the history 
+file for more details. Please let us know if you find a defect.  
+
 FM/2 3.19.1 This is a bug fix release. Most of these have existed for a 
 very long time but were only discovered recently. Included is a fixed
 FM/2 utilities wpi file. None of the utilities have been updated. The

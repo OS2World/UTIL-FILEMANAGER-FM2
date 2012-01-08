@@ -1,5 +1,27 @@
 New stuff at the top.  This list is not necessarily complete.
 
+3.20
+ o Identified mmioIdentifyFile's failure to correctly identify some files as the root cause of
+   a trap in GBM.DLL. ShowMultiMedia now only checks files with known multimedia extensions.
+   This will minimize but not complete prevent the problem. Ticket 402 (Gregg)
+ o Add suggested drive flags for use with Netdrive drives to help file. Ticket 171 (Gregg)
+ o Clarify ARCHIVER.BB2 date types and add a new one to fix displaying of .tar.gz files for Tar 1.15 and higher.
+   (Requires installation of ARCHIVER.TMP -> ARCHIVER.BB2) Ticket 473, 474 (Gregg)
+ o Stop loading EA.EXE's resources in high memory. This caused a trap on some machines. Ticket 470 (Gregg)
+ o Fixed behavior of the duplicate hotkey warning dialog in "Commands". Ticket 476 (Gregg)
+ o Fixed the failure of FM/2 to create a list file if it didn't already exist. Ticket 477 (Gregg)
+ o Fixed missing file size after copy in compare directories. Ticket 479 (Gregg)
+ o Extract called from the popup menu would fail if the archive file name contained a space. Ticket 480
+   (Gregg)
+ o Selecting "View" in the View Help Files dialog failed to open the selected file. Ticket 481 (Gregg) 
+ o Fixed command line quoting. Ticket 475 (Gregg)
+ o The thread notes window now reopens on startup if it was open at shutdown. Ticket 482 (Gregg)
+ o Fixed a trap on drag in compare directory dialog. Ticket 483 (Gregg)
+ o Fix missing icons on archive and multimedia files. Ticket 484 (Gregg)
+ o FM/2 only opens either the scan error or select dialog on a drive scan error not both. Ticket 485
+   (Gregg)
+ o Code cleanup to try to increase drive scan speed. (Gregg)  
+
 3.19.1
  o This is a bug fix release. Most of these have existed for a very long time but were only
    discovered recently.
@@ -16,7 +38,7 @@ New stuff at the top.  This list is not necessarily complete.
    the utilities have been updated. Ticket 460 (John)
  o Fixed CMD file that installs unzip V6 support to avoid a warpin hang. Ticket 459 (John)
  o Associations were not being saved when an association was moved to the top or bottom of the
-   list. Ticket 466 (Gregg)
+   list. Ticket 466 (Gregg)    
 
 3.19
  o Added the option to open the directory container of an item in the collector. Ticket 362 (Gregg)
