@@ -107,6 +107,7 @@
   06 Aug 11 GKY Fixed failure to initalize pFM2SaveDirectory if TEMP and TMP were not present
                 or invalid
   22 Oct 11 GKY Thread notes dialog now reopens on startup if it was open on shutdown.
+  08 Jan 12 GKY Add support for changing PresParams in the notify status window
 
 ***********************************************************************/
 
@@ -270,6 +271,7 @@ PCSZ PCSZ_COLLECTOR   = "Collector";
 PCSZ PCSZ_DIRCNR      = "DirCnr";
 PCSZ PCSZ_DIRCMP      = "DirCmp";
 PCSZ PCSZ_DIRSIZES    = "DirSizes";
+PCSZ PCSZ_NOTIFYWND   = "NotifyWnd";
 PCSZ PCSZ_TOOLBAR     = "ToolBar";
 PCSZ PCSZ_TREECNR     = "TreeCnr";
 PCSZ PCSZ_SHUTDOWNSTATE    =  "FM2Shutdown";

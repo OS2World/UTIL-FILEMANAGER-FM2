@@ -27,6 +27,7 @@
   20 Nov 10 GKY Rework scanning code to remove redundant scans, prevent double directory
                 entries in the tree container, fix related semaphore performance using
                 combination of event and mutex semaphores
+  08 Jan 12 GKY Add support for changing PresParams in the notify status window
 
 ***********************************************************************/
 
@@ -62,6 +63,7 @@ extern PCSZ PCSZ_COLLECTOR;
 extern PCSZ PCSZ_DIRCNR;
 extern PCSZ PCSZ_DIRCMP;
 extern PCSZ PCSZ_DIRSIZES;
+extern PCSZ PCSZ_NOTIFYWND;
 extern PCSZ PCSZ_TOOLBAR;
 extern PCSZ PCSZ_TREECNR;
 extern PCSZ PCSZ_SHUTDOWNSTATE;

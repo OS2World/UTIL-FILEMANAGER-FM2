@@ -19,7 +19,8 @@
   07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
   13 Jul 09 SHL Sync with renames
   16 Jul 09 SHL Stop leaking hptrIcon
-  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  17 Jan 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  08 Jan 12 GKY Add support for changing PresParams in the notify status window
 
 ***********************************************************************/
 
@@ -83,15 +84,6 @@ MRESULT EXPENTRY NotifyWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinDestroyWindow(hwnd);
       }
       else {
-
-	RGB2 rgb2F, rgb2;
-
-	memset(&rgb2F, 0, sizeof(RGB2));
-	rgb2F.bRed = (BYTE)65;
-	rgb2.bRed = rgb2.bGreen = rgb2.bBlue = (BYTE)255;
-	rgb2.fcOptions = 0;
-	//fixme to allow user to change presparams 1-10-09 GKY
-	SetPresParams(hwnd, &rgb2, &rgb2F, &rgb2, FNT_8HELVETICA);
 	if (hwndMain) {
 	  if (hwndStatus)
 	    WinShowWindow(hwndStatus, FALSE);
@@ -106,6 +98,7 @@ MRESULT EXPENTRY NotifyWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_SETUP:
     WinSetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_ZORDER | SWP_SHOW);
     WinInvalidateRect(hwnd, NULL, FALSE);
+    RestorePresParams(hwnd, PCSZ_NOTIFYWND);
     return 0;
 
   case WM_SETFOCUS:
@@ -118,6 +111,10 @@ MRESULT EXPENTRY NotifyWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSetFocus(HWND_DESKTOP, (HWND) mp1);
     PostMsg(hwnd, UM_SETUP, MPVOID, MPVOID);
     return 0;
+
+  case WM_PRESPARAMCHANGED:
+    PresParamChanged(hwnd, PCSZ_NOTIFYWND, mp1, mp2);
+    break;
 
   case WM_PAINT:
     {
