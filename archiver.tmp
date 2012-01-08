@@ -55,7 +55,7 @@
 ;have to modify this file.  All archivers are OS/2 (or FAPI) versions.
 ;DOS archivers may work with FM/2, but it'll be up to you to set them up.
 
-;Supported date types:
+;Supported date input types:
 ;--------------------
 ;                       No date in data         0
 ;02-31-98  23:55:32     mm-dd-yy hh:mm:ss       1
@@ -63,7 +63,7 @@
 ;31 Feb 98  11:55p      dd Mmm yy hh:mmA        3
 ;98-02-31 23:55:32      yy-mm-dd hh:mm:ss       4
 ;31-02-98  23:55        dd-mm-yy hh:mm          5
-;Aug 21 23:55 2011      mm-dd-yyyy hh:mm:ss     6 Fixes tar.gz date/time formatting when using tar 1..15+
+;Aug 21 23:55 2011      mm-dd-yyyy hh:mm:ss     6 Fixes tar.gz date/time formatting when using tar 1.15+
 
 ; Dash (-) and slash (/) separators are both supported.
 ; Both 2 digit and 4 digit years are supported.

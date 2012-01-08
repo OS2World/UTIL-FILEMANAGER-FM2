@@ -5,9 +5,10 @@
 .* fm/2 help - Configuration dialogs usage
 .*
 .* Copyright (c) 1993-98 M. Kimes
-.* Copyright (c) 2002, 2009 Steven H.Levine
+.* Copyright (c) 2002, 2012 Steven H.Levine
 .*
 .* 29 Apr 09 SHL Update formatting
+.* 08 Jan 12 GKY Updated date formatting for ARCHIVER.BB2
 .*
 .***********************************************************************
 .*
@@ -349,7 +350,8 @@ the line of an archive listing is the date/time string. If this
 isn't available or if you don't care about it, you can enter a -1 to
 disable detection of this field entirely. You can optionally follow this
 number with a comma and another number that indicates the type of the
-date from any of the formats in the following list&colon.
+date from any of the formats in the following list&colon. These are the input
+formats. All displayed dates are formatted based on your system locale settings.
 .br
 :xmp.
  0 = Other (or no date/time if numdateflds is 0)
@@ -358,6 +360,7 @@ date from any of the formats in the following list&colon.
  3 = 8 Feb 96  11&colon.55p   dd Mmm yy hh&colon.mmA
  4 = 96-02-08  23&colon.55&colon.32 yy-mm-dd hh&colon.mm&colon.ss
  5 = 31-02-98  23&colon.55    dd-mm-yy hh&colon.mm
+ 6 = Aug 21 23&colon.55 2011  mm-dd-yyyy hh&colon.mm&colon.ss  (Fixes tar.gz date/time formatting when using tar 1.15+)
 :exmp.
 :p.
 Dash (-) and slash (/) separators are both supported.
@@ -445,7 +448,7 @@ This listing "parsed" into FM/2 archiver details fields&colon.
 :h4 res=100130 name=PANEL_ARCBB2.ARCHIVER.BB2 Structure
 :i1 id=aboutArcBB2.ArchiverBB2 Structure
 :p.
-ARCHIVER.BB2 is a text file and can be viewd or edited with any text editor. 
+ARCHIVER.BB2 is a text file and can be viewed or edited with any text editor. 
 It contains are three types of lines&colon.
 :ol compact.
 :li.The first line in the file is the number of lines per archiver definition 
@@ -486,7 +489,7 @@ It allows modifications to the file format to be transparent to older programs.
 :li.file date/time, specified by two comma-separated numbers&colon.
 :ol compact.
 :li.position (0-based, -1 = not available)
-:li.type code&colon.
+:li.date input type code&colon.
 :dl compact.
 :dt.0:dd.No date in the data
 :dt.1:dd.mm-dd-yy hh&colon.mm&colon.ss    (e.g. 02-31-98  23&colon.55&colon.32)
@@ -494,6 +497,8 @@ It allows modifications to the file format to be transparent to older programs.
 :dt.3:dd.dd Mmm yy hh&colon.mmA     (e.g. 31 Feb 98  11&colon.55p)
 :dt.4:dd.yy-mm-dd hh&colon.mm&colon.ss    (e.g. 98-02-31 23&colon.55&colon.32)
 :dt.5:dd.dd-mm-yy hh&colon.mm       (e.g. 31-02-98  23&colon.55)
+:dt.6:dd.mm-dd-yyyy hh&colon.mm&colon.ss  (e.g. Aug 21 23&colon.55 2011 Fixes tar.gz date/time formatting 
+when using tar 1.15+)
 :edl.
 :eol.
 :li.number of elements/fields in dates (e.g. "03 June 92" would be 3)

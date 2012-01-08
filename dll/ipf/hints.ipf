@@ -5,10 +5,11 @@
 .* fm/2 help - Hints
 .*
 .* Copyright (c) 1993-98 M. Kimes
-.* Copyright (c) 2002-2011 Steven H.Levine
+.* Copyright (c) 2002-2012 Steven H.Levine
 .*
-.* 26 Jun 11 GKY Removed Resource.ipf which was out dated and no longer relevent.
-.* 09 Oct 11 GKY Fixed line length to eliminate the need for horizntal scrolling
+.* 26 Jun 11 GKY Removed Resource.ipf which was out dated and no longer relevant.
+.* 09 Oct 11 GKY Fixed line length to eliminate the need for horizontal scrolling.
+.* 08 Jan 12 GKY Added drive flag tips for Netdrive drives.
 .*
 .***********************************************************************
 .*
@@ -177,7 +178,7 @@ and requests. You can tweak the drive's flags to alleviate some of
 this.
 :p.
 Problem with details view refreshing -- top items come up blank. This
-is one of those never-fixed OS/2 bugs. Try :hp1.unchecking:ehp1. the
+is one of those never-fixed OS/2 bugs. Try :hp1.un-checking:ehp1. the
 Immediate updates toggle in the Settings notebook. This usually works
 around this bug.
 :p.
@@ -213,7 +214,7 @@ Trouble starting FM/2:  "Resource not found."  Probably mismatched DLL
 and EXE files -- re-extract FM/2 from the distribution archive, being
 particularly sure to overwrite :hp1.all:ehp1. old DLL and EXE files.
 :p.
-FM/2 crashes when attempting to view a file:  Uncheck :link reftype=hd
+FM/2 crashes when attempting to view a file:  Un-check :link reftype=hd
 res=92200."Check for multimedia w/ MMPM/2":elink. -- see explanation
 there.
 
@@ -244,6 +245,15 @@ probably want to set up a :link reftype=hd res=90700.Command:elink.
 for the command line to save time. With a Command, you can even
 execute a command line using an accelerator key -- can't beat that
 for speed.
+
+:h2 res=100135 id='PANEL_NETDRIVE'.
+Netdrive drive flag suggestions
+:p.The Netdrive file system can slow FM/2 down to a crawl and even lock FM/2. This is particularly true of the FTP
+plugin but other plugin can also cause it. We suggest the drive flags shown below be used for any Netdrive's drive.
+that display this behavior. 
+.br
+.br
+:artwork name='bitmaps\NDflags.bmp' align=center.
 
 .im bonusp.ipf
 

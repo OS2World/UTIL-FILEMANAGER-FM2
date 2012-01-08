@@ -5,12 +5,13 @@
 .* fm/2 help - Troubleshooting
 .*
 .* Copyright (c) 1993-98 M. Kimes
-.* Copyright (c) 2002-2011 Steven H.Levine
+.* Copyright (c) 2002-2012 Steven H.Levine
 .*
 .* 06 Apr 07 GKY Added drag limit information
 .* 24 Jun 07 GKY Added change from VAC to open Watcom notes and Global issue with 4OS2.
 .* 27 Dec 09 GKY Added information regarding use of the xworkplace trachcan with FM/2
 .* 09 Oct 11 GKY Added note about GBM.dll related trap.
+.* 08 Jan 12 GKY Updated GBM.DLL note.
 .*
 .***********************************************************************
 .*
@@ -78,8 +79,10 @@ deleting to free up drive space you must either empty the trashcan or use
 :hp6.Permanent Delete:ehp6. which deletes the files directly bypassing the trashcan.
 :p. &endash. Under some circumstances a trap may occur in GBM.dll when attempting to view a file.
 This appears to be a random occurrence. It occurs when attempting to view a binary file or a file 
-FM2 thinks is binary. It appears it only happens if you use FM2's internal view for binary files.
-To solve the problem you should update GBM.dll to version 1.73 or higher (Available on Hobbes . 
-HTTP&colon.//hobbes.nmsu.edu/h-search.php?key=GBM&amp.pushbutton=Search)
-If that is not a workable solution designating a "Binary Viewer" on the Viewers page of the settings 
-notebook appears to suppress the problem.
+FM2 thinks is binary. This appears to be a problem with mmioIdentifyFile misidentifying these as
+MultiMedia files. I have only had it happens if I use FM2's internal view for binary files.
+I have updated "ShowMultiMedia" which should reduce the likelihood of it happening. If you
+continue to have the problem turn "ShowMultiMedia" off in the settings notebook. If this is unacceptable
+updating GBM.dll to version 1.73 or higher (Available on Hobbes HTTP&colon.//hobbes.nmsu.edu/h-search.php?key=
+GBM&amp.pushbutton=Search) also helps. Designating a "Binary Viewer" on the Viewers page of the settings 
+notebook appears to suppress the problem too.
