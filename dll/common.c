@@ -180,11 +180,11 @@ MRESULT EXPENTRY CommonTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       rc = PFNWPStatic(hwnd, msg, mp1, mp2);
       switch (WinQueryWindowUShort(hwnd, QWS_ID))
-      case DIR_SORT:
-      case DIR_VIEW:
-      case DIR_FILTER:
-      //fixme to allow user to change presparams 1-10-09 GKY
-      SetPresParams(hwnd, &RGBGREY, &RGBBLACK, &RGBBLACK, FNT_8HELVETICA);
+    case DIR_SORT:
+    case DIR_VIEW:
+    case DIR_FILTER:
+        //fixme to allow user to change presparams 1-10-09 GKY
+        SetPresParams(hwnd, &RGBGREY, &RGBBLACK, &RGBBLACK, FNT_8HELVETICA);
       return rc;
     }
   }

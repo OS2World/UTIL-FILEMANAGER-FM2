@@ -6,7 +6,7 @@
   Compare directories
 
   Copyright (c) 1993-02 M. Kimes
-  Copyright (c) 2003, 2010 Steven H. Levine
+  Copyright (c) 2003, 2012 Steven H. Levine
 
   16 Oct 02 MK Baseline
   04 Nov 03 SHL Force window refresh after subdir toggle
@@ -76,6 +76,7 @@
   23 Oct 10 GKY Add ForwardslashToBackslash function to streamline code
   29 May 11 SHL Rework >65K records logic - prior fix was not quite right
   12 Jun 11 GKY Added SleepIfNeeded in the container fill loop
+  02 Jan 12 GKY Added pszFmtFileSize to container info to fix loss of file sizes on move and copy.
 
 ***********************************************************************/
 
@@ -1628,7 +1629,7 @@ static VOID FillCnrsThread(VOID *args)
 		      if (p) {
 			p++;
 			// 27 Sep 07 SHL fixme to do ULONGLONG conversion
-			fb4.cbFile = atoll(p);
+			fb4.cbFile = atol(p);
 			p = strchr(p, ',');
 			if (p) {
 			  p++;

@@ -210,10 +210,10 @@ BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent)
                        dcd,
                        NULL,		// total files
                        NULL);		// total bytes
-    //}
-  }
     driveflags[*pciParent->pszFileName - 'A'] |= DRIVE_RSCANNED;
-  return TRUE;
+    return TRUE;
+  }
+  return FALSE;
 }
 
 BOOL UnFlesh(HWND hwndCnr, PCNRITEM pciParent)
