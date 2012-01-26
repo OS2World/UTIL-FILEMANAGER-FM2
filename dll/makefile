@@ -2,7 +2,7 @@
 # $Id$
 
 # Copyright (c) 1993-98 M. Kimes
-# Copyright (c) 2002, 2009 Steven H. Levine
+# Copyright (c) 2002, 2012 Steven H. Levine
 
 # 22 May 03 SHL Correct icon dependencies
 # 12 May 07 SHL Drop obsolete macros
@@ -42,13 +42,15 @@
 # 04 Jul 11 GKY Make xqs files an explicit target so they will be rebuild if lost somehow.
 # 04 Jul 11 GKY Add eFTE backup files (*~) to clean target
 # 13 Aug 11 GKY Build xqs and sym files as part of dll and all targets
+# 25 Jan 12 SHL Allow NOHIGHMEM set from enviroment
 
-# Environment: see makefile_pre.mk
+# Environment: see makefile_pre.mk and makefile_post.mk
 
 # DEBUG - debug build if defined, release build if not defined
 # WARNALL - add more warnings if defined, standard warnings if not defined
 # FORTIFY - enable FORTIFY heap checking if defined, omit FORITY support if not defined
 # USE_RC - use rc.exe if defined, use wrc.exe if not defined
+# NOHIGHMEM - support high memory use (i.e exehdir /highmem)
 
 BASE = fm3dll
 BASERES = fm3res
@@ -87,6 +89,13 @@ WARNALL = $(%WARNALL)		# use value from environment
 
 !ifdef %FORTIFY			# if defined in environment
 FORTIFY = $(%FORTIFY)		# use value from environment
+!endif
+
+# Keep this code in sync with makefile_post.mk
+!ifndef NOHIGHMEM
+!ifdef %NOHIGHMEM
+NOHIGHMEM=$(%NOHIGHMEM)
+!endif
 !endif
 
 SYMS = $(BASE).sym $(BASERES).sym $(BASE).xqs $(BASERES).xqs # targets for building SYM files
@@ -200,10 +209,12 @@ all: &
      $(BASE).dll &
      $(BASERES).res &
      $(BASERES).dll &
+!ifndef NOHIGHMEM
      loadhigh &
+!endif
      $(SYMS) &
      ipf\fm3.hlp
-     
+
 syms: $(SYMS) .symbolic
 
 $(BASE).dll $(BASE).lib $(BASE).map: $(OBJS) $(BASE).def $(BASE).lrf
@@ -263,18 +274,18 @@ $(BASERES).lrf: $(__MAKEFILES__)
 $(BASE).sym: $(BASE).map .explicit
    @echo Processing: $?
    -perl ..\debugtools\mapsymw.pl $?
-   
+
 $(BASE).xqs: $(BASE).map .explicit
    @echo Processing: $?
-   -mapxqs $?   
+   -mapxqs $?
 
 $(BASERES).sym: $(BASERES).map .explicit
    @echo Processing: $?
    -perl ..\debugtools\mapsymw.pl $?
-   
+
 $(BASERES).xqs: $(BASERES).map .explicit
    @echo Processing: $?
-   -mapxqs $?   
+   -mapxqs $?
 
 !else # MAKERES defined
 
@@ -313,9 +324,11 @@ lxlite: $(BASE).dll $(BASERES).dll .symbolic
   @for %f in ($(BASE).dll $(BASERES).dll) do !lxlite /x- /b- %f
 !endif
 
+!ifndef NOHIGHMEM
 # Run for each dependent
 loadhigh: $(BASE).dll $(BASERES).dll .symbolic
   @for %f in ($(BASE).dll $(BASERES).dll) do !exehdr /hi %f
+!endif
 
 cleanobj: .symbolic
   -del *.obj
@@ -330,7 +343,7 @@ clean: .symbolic
   -del *.map
   -del *.obj
   -del *.res
-  -del *.sym 
+  -del *.sym
   -del *.xqs
   -del *~
-  
+

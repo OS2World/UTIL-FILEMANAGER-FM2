@@ -1,7 +1,7 @@
 # makefile_post.mk - common makefile suffix settings for all makefiles
 # $Id$
 
-# Copyright (c) 2002, 2009 Steven H. Levine
+# Copyright (c) 2002, 2012 Steven H. Levine
 
 # 16 Aug 05 SHL Clean up
 # 16 Apr 06 SHL Add lxlite target
@@ -15,12 +15,20 @@
 # 21 Jun 11 GKY Add exceptq .xqs support
 # 21 Jun 11 GKY Make high memory builds the default resources only for exes
 # 04 Jul 11 GKY Make xqs files an explicit target so they will be rebuild if lost somehow.
+# 25 Jan 12 SHL Renamae LOW -> NOHIGHMEM and allow set from enviroment
 
 !ifndef MAKERES
 
 # Build executable
 # Common parameters go in .lrf
 # Executable specific paramters go in .def
+# Put 32-bit data in high memoryt unless overridden
+
+!ifndef NOHIGHMEM
+!ifdef %NOHIGHMEM
+NOHIGHMEM=$(%NOHIGHMEM)
+!endif
+!endif
 
 $(BASE).exe: $(BASE).lrf $(BASE).obj $(BASE).res $(BASE).def .explicit
   @echo Linking $(BASE).exe
@@ -29,11 +37,12 @@ $(BASE).exe: $(BASE).lrf $(BASE).obj $(BASE).res $(BASE).def .explicit
   @echo Attaching resources to $@
   @echo.
   $(RC) $(RCFLAGS2) $(BASE).res $@
-!ifndef LOW
-  !exehdr /hi:3 $@
+!ifndef NOHIGHMEM
+  !exehdr /highmem:3 $@
 !endif
 
-LOW =
+# 2012-01-25 SHL fixme to be gone - does not undefine
+# NOHIGHMEM =
 
 $(BASE).lrf: $(__MAKEFILES__) .explicit
    @%write $^@ $(LFLAGS)
@@ -48,7 +57,7 @@ $(BASE).xqs: $(BASE).map .explicit
 
 $(BASE).sym: $(BASE).map .explicit
    @echo Processing: $?
-   -perl debugtools\mapsymw.pl $?   
+   -perl debugtools\mapsymw.pl $?
 
 !else
 

@@ -2,7 +2,7 @@
 # $Id$
 
 # Copyright (c) 1993-98 M. Kimes
-# Copyright (c) 2002, 2011 Steven H. Levine
+# Copyright (c) 2002, 2012 Steven H. Levine
 
 # 03 Jan 08 SHL Switch to wrc.exe default; support USE_RC from environment
 # 23 Jan 08 JBS Add support for building SYM files (Ticket 226)
@@ -10,10 +10,10 @@
 # 22 Jul 08 SHL Pass FORTIFY to subordinate makefiles
 # 06 Oct 08 SHL Pass DEBUG in CFLAGS; clean up USE_RC usage
 # 18 Nov 08 JBS Ticket 297: Various build improvements/corrections
-# 12 Jul 09 GKY Allow FM/2 to load in high memory call exehdr /hi
 # 13 Apr 10 SHL Drop HIMEM support
 # 21 Jun 11 GKY Add exceptq .xqs support
-# 2011-07-01 SHL sort map
+# 07 Jan 11 SHL sort map
+# 25 Jan 12 SHL Comments
 
 # Environment: see dll\makefile
 
@@ -38,11 +38,11 @@ RC = wrc -q
 !endif
 
 # Keep this code in sync with dll\makefile
-!ifdef DEBUG                  	# if defined on wmake command line
+!ifdef DEBUG			# if defined on wmake command line
 DEBUG_OPT = DEBUG=$(DEBUG)	# set in case needed by sub-make
 !else
-!ifdef %DEBUG                  	# if defined in environment
-DEBUG = $(%DEBUG)              	# use value from environment
+!ifdef %DEBUG			# if defined in environment
+DEBUG = $(%DEBUG)		# use value from environment
 DEBUG_OPT = DEBUG=$(DEBUG)	# set in case needed by sub-make
 !endif
 !endif
@@ -54,13 +54,13 @@ WARNALL = $(%WARNALL)		# use value from environment
 !ifdef FORTIFY				# if defined on wmake command line
 FORTIFY_OPT = FORTIFY=$(FORTIFY)	# set in case needed by sub-make
 !else
-!ifdef %FORTIFY                 	# if defined in environment
-FORTIFY = $(%FORTIFY)           	# use value from environment
+!ifdef %FORTIFY				# if defined in environment
+FORTIFY = $(%FORTIFY)			# use value from environment
 FORTIFY_OPT = FORTIFY=$(FORTIFY)	# set in case needed by sub-make
 !endif
 !endif
 
-SYMS = $(BASE).sym              #set a target for building SYM files
+SYMS = $(BASE).sym			# target for building SYM files
 
 # Some flags are order dependent - see OpenWatcom docs
 # -bc		console app
@@ -93,7 +93,7 @@ SYMS = $(BASE).sym              #set a target for building SYM files
 # -wcd=309	unprototyped function called indirectly
 
 # We always compile with debug info to avoid needing a full rebuild just to debug
-CFLAGS = -bt=os2 -mf -bm -d2 -olirs   -s -j -wx -zfp -zgp -zp4 -zq -hd
+CFLAGS = -bt=os2 -mf -bm -d2 -olirs -s -j -wx -zfp -zgp -zp4 -zq -hd
 
 !ifdef WARNALL
 CFLAGS += -wce=118 -wce=130 -wce=303 -wce=307 -wce=308 -wce=309
