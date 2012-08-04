@@ -6,7 +6,7 @@
   Tree containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2010 Steven H. Levine
+  Copyright (c) 2001-2012 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   11 Jun 03 SHL Add JFS and FAT32 support
@@ -86,6 +86,7 @@
   20 Nov 10 GKY Rework scanning code to remove redundant scans, prevent double directory
                 entries in the tree container, fix related semaphore performance using
                 combination of event and mutex semaphores
+  04 Aug 12 GKY Fix trap reported by Ben
 
 ***********************************************************************/
 
@@ -772,7 +773,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		 MPFROMP(&cnri), MPFROMLONG(sizeof(CNRINFO)));
       if (cnri.cRecords) {
 	sprintf(s, GetPString(IDS_NUMDRIVESTEXT), cnri.cRecords);
-        if (pci && (INT) pci != -1 && *pci->pszFileName) { //fixme if can reproduce trap on *pci->psazFileName check invalid address
+        if (pci && (INT) pci != -1 && pci->pszFileName) { //fixme? will try checking pci->pszFileName instead of the pointer
 	  if (!(driveflags[toupper(*pci->pszFileName) - 'A'] &
 		DRIVE_REMOVABLE) ||
 	      driveserial[toupper(*pci->pszFileName) - 'A'] != -1) {
