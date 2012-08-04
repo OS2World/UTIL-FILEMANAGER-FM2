@@ -6,7 +6,7 @@
   Flesh
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2010 Steven H. Levine
+  Copyright (c) 2005-2012 Steven H. Levine
 
   24 May 05 SHL Rework Win_Error usage
   25 May 05 SHL Rework for ProcessDirectory
@@ -29,7 +29,8 @@
                 miniapp; FM3Str should be used for setting only relavent to FM/2 or that
                 aren't user settable; realappname should be used for setting applicable to
                 one or more miniapp but not to FM/2
-  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  17 Jan 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  04 Aug 12 GKY Fix trap on close during drive scan
 
 ***********************************************************************/
 
@@ -197,20 +198,20 @@ BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent)
     dcd = INSTDATA(hwndCnr);
     if (dcd && dcd->size != sizeof(DIRCNRDATA))
       dcd = NULL;
-    if (driveflags[toupper(*pciParent->pszFileName) - 'A'] &
-        DRIVE_INCLUDEFILES)
+    if (driveflags[toupper(*pciParent->pszFileName) - 'A'] & DRIVE_INCLUDEFILES)
       includefiles = TRUE;
-      ProcessDirectory(hwndCnr,
-                       pciParent,
-                       pciParent->pszFileName,
-                       includefiles,	// filestoo
-                       TRUE,		// recurse
-                       TRUE,		// partial
-                       NULL,		// stop flag
-                       dcd,
-                       NULL,		// total files
-                       NULL);		// total bytes
-    driveflags[*pciParent->pszFileName - 'A'] |= DRIVE_RSCANNED;
+    ProcessDirectory(hwndCnr,
+                     pciParent,
+                     pciParent->pszFileName,
+                     includefiles,	// filestoo
+                     TRUE,		// recurse
+                     TRUE,		// partial
+                     NULL,		// stop flag
+                     dcd,
+                     NULL,		// total files
+                     NULL);		// total bytes
+    if (pciParent && pciParent->pszFileName && !(driveflags[toupper(*pciParent->pszFileName) - 'A'] & DRIVE_RSCANNED))
+      driveflags[toupper(*pciParent->pszFileName) - 'A'] |= DRIVE_RSCANNED;
     return TRUE;
   }
   return FALSE;
