@@ -110,6 +110,7 @@
   23 Oct 10 GKY Changes to populate and utilize a HELPTABLE for context specific help
   03 Oct 11 SHL Add needTile to ensure containers opened on command line render correctly
   03 Oct 11 SHL Minor code cleanup
+  05 Aug 12 GKY Make the Target Directory (DriveBar) a drop target.
 
 ***********************************************************************/
 
@@ -1813,6 +1814,8 @@ static MRESULT EXPENTRY CommandLineProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
 MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
+    static BOOL emphasized = FALSE;
+
   switch (msg) {
   case WM_CREATE:
     PostMsg(hwnd, UM_SETUP, MPVOID, MPVOID);
@@ -1849,6 +1852,196 @@ MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_CLICKED3:
     PostMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_SETTARGET, 0), MPVOID);
     return 0;
+
+  case DM_DRAGOVER:
+    if (!emphasized) {
+      emphasized = TRUE;
+      DrawTargetEmphasis(hwnd, emphasized);
+    }
+    if (AcceptOneDrop(hwnd, mp1, mp2))
+      return MRFROM2SHORT(DOR_DROP, DO_MOVE);
+    return MRFROM2SHORT(DOR_NEVERDROP, 0);
+
+  case DM_DRAGLEAVE:
+    if (emphasized) {
+      emphasized = FALSE;
+      DrawTargetEmphasis(hwnd, emphasized);
+    }
+    break;
+
+  case DM_DROPHELP:
+    if (mp1) {
+
+      CNRDRAGINFO cnd;
+      ULONG numitems;
+      USHORT usOperation;
+  
+      cnd.pDragInfo = (PDRAGINFO) mp1;
+      if (!DrgAccessDraginfo((PDRAGINFO) cnd.pDragInfo)) {
+        Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+                  PCSZ_DRGACCESSDRAGINFO);
+        return 0;
+      }
+      numitems = DrgQueryDragitemCount((PDRAGINFO) cnd.pDragInfo);
+      usOperation = cnd.pDragInfo->usOperation;
+      if (usOperation == DO_DEFAULT)
+        usOperation = fCopyDefault ? DO_COPY : DO_MOVE;
+      saymsg(MB_ENTER | MB_ICONASTERISK,
+             hwnd,
+             GetPString(IDS_DROPHELPHDRTEXT),
+             GetPString(IDS_DROPHELPTEXT),
+             numitems,
+             &"s"[numitems == 1L],
+             NullStr,
+             NullStr,
+             targetdir,
+             " ",
+             GetPString((usOperation == DO_MOVE) ?
+                        IDS_MOVETEXT :
+                        (usOperation == DO_LINK) ?
+                        IDS_LINKTEXT : IDS_COPYTEXT));
+    }
+    return 0;
+
+
+  case DM_DROP:
+    if (targetdir) {
+      CNRDRAGINFO cnd;
+      LISTINFO *li;
+      ULONG action = UM_ACTION;
+
+      if (emphasized) {
+	emphasized = FALSE;
+	DrawTargetEmphasis(hwnd, emphasized);
+      }
+      memset(&cnd, 0, sizeof(cnd));
+      cnd.pDragInfo = (PDRAGINFO) mp1;
+      cnd.pRecord = NULL;
+      li = DoFileDrop(hwnd,
+		      NULL,
+		      TRUE, MPFROM2SHORT(TREE_CNR, CN_DROP), MPFROMP(&cnd));
+      CheckPmDrgLimit(cnd.pDragInfo);
+      if (li) {
+	strcpy(li->targetpath, targetdir);
+	strcat(li->targetpath, PCSZ_BACKSLASH);
+	if (li->list && li->list[0] && IsRoot(li->list[0]))
+	  li->type = DO_LINK;
+	else if (fDragndropDlg && (!*li->arcname || !li->info)) {
+
+	  CHECKLIST cl;
+
+	  memset(&cl, 0, sizeof(cl));
+	  cl.size = sizeof(cl);
+	  cl.flags = li->type;
+	  cl.list = li->list;
+	  cl.cmd = li->type;
+	  cl.prompt = li->targetpath;
+	  li->type = WinDlgBox(HWND_DESKTOP,
+			       hwndMain,
+			       DropListProc,
+			       FM3ModHandle, DND_FRAME, MPFROMP(&cl));
+	  if (li->type == DID_ERROR)
+		  Win_Error(DND_FRAME, HWND_DESKTOP, pszSrcFile, __LINE__,
+			    GetPString(IDS_DRAGDROPDIALOGTEXT));
+	  if (!li->type) {
+	    FreeListInfo(li);
+	    return 0;
+	  }
+	  li->list = cl.list;
+	  if (!li->list || !li->list[0]) {
+	    FreeListInfo(li);
+	    return 0;
+	  }
+	}
+	else {
+	    FreeListInfo(li);
+	    return 0;
+	  }
+	}
+	switch (li->type) {
+	case DND_LAUNCH:
+	  strcat(li->targetpath, " %a");
+	  ExecOnList(hwndMain,
+		     li->targetpath, PROMPT | WINDOWED, NULL, NULL, li->list, NULL,
+		     pszSrcFile, __LINE__);
+	  FreeList(li->list);
+	  li->list = NULL;
+	  break;
+	case DO_LINK:
+	  if (fLinkSetsIcon) {
+	    li->type = IDM_SETICON;
+	    action = UM_MASSACTION;
+	  }
+	  else
+	    li->type = IDM_COMPARE;
+	  break;
+	case DND_EXTRACT:
+	  if (*li->targetpath && !IsFile(li->targetpath))
+	    li->type = IDM_EXTRACT;
+	  break;
+	case DND_MOVE:
+	  li->type = IDM_MOVE;
+	  if (*li->targetpath && IsFile(li->targetpath) == 1) {
+	    action = UM_MASSACTION;
+	    li->type = IDM_ARCHIVEM;
+	  }
+	  break;
+	case DND_WILDMOVE:
+	  li->type = IDM_WILDMOVE;
+	  if (*li->targetpath && IsFile(li->targetpath) == 1) {
+	    action = UM_MASSACTION;
+	    li->type = IDM_ARCHIVEM;
+	  }
+	  break;
+	case DND_OBJECT:
+	  li->type = IDM_OBJECT;
+	  action = UM_MASSACTION;
+	  break;
+	case DND_SHADOW:
+	  li->type = IDM_SHADOW;
+	  action = UM_MASSACTION;
+	  break;
+	case DND_COMPARE:
+	  li->type = IDM_COMPARE;
+	  break;
+	case DND_SETICON:
+	  action = UM_MASSACTION;
+	  li->type = IDM_SETICON;
+	  break;
+	case DND_COPY:
+	  li->type = IDM_COPY;
+	  if (*li->targetpath && IsFile(li->targetpath) == 1) {
+	    action = UM_MASSACTION;
+	    li->type = IDM_ARCHIVE;
+	  }
+	  break;
+	case DND_WILDCOPY:
+	  li->type = IDM_WILDCOPY;
+	  if (*li->targetpath && IsFile(li->targetpath) == 1) {
+	    action = UM_MASSACTION;
+	    li->type = IDM_ARCHIVE;
+	  }
+	  break;
+	default:
+	  if (*li->arcname && li->info) {
+	    action = UM_MASSACTION;
+	    li->type = (li->type == DO_MOVE) ? IDM_FAKEEXTRACTM :
+	      IDM_FAKEEXTRACT;
+	  }
+	  else if (*li->targetpath && IsFile(li->targetpath) == 1) {
+	    action = UM_MASSACTION;
+	    li->type = (li->type == DO_MOVE) ? IDM_ARCHIVEM : IDM_ARCHIVE;
+	  }
+	  else
+	    li->type = (li->type == DO_MOVE) ? IDM_MOVE : IDM_COPY;
+	  break;
+	}
+	if (!li->list || !li->list[0])
+	  FreeListInfo(li);
+	else
+	  WinSendMsg(hwndTree, UM_ACTION, MPFROMP(li), MPFROMLONG(action));
+      }
+      break;
 
   case WM_CHAR:
     shiftstate = (SHORT1FROMMP(mp1) & (KC_SHIFT | KC_ALT | KC_CTRL));
