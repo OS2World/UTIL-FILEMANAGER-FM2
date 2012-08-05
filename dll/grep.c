@@ -40,6 +40,7 @@
                 SHL's single loop fix.
   05 Aug 12 GKY Replace SleepIfNeeded with IdleIfNeeded to improve IU response during long searches; it
                 will switch between normal and idle priority and back.
+  05 Aug 12 GKY Always sort "Find Dups" by filename in the collector.
 
 ***********************************************************************/
 
@@ -75,6 +76,8 @@
 #include "misc.h"			// PostMsg
 #include "fortify.h"
 #include "init.h"                       // Golbal semaphore
+#include "sortcnr.h"			// SortCollectorCnr
+#include "collect.h"
 
 static VOID DoAllSubdirs(GREP *grep,
                          CHAR *searchPath,
@@ -424,8 +427,13 @@ VOID GrepThread(VOID *arg)
           !*grep.stopflag)
       {
         FillDupes(&grep, &itdSleep, &itdReport);
+        CollectorsortFlags = 0;
+        CollectorsortFlags |= SORT_FILENAME;
+        WinSendMsg(grep.hwndFiles, CM_SORTRECORD, MPFROMP(SortCollectorCnr),
+                   MPFROMLONG(CollectorsortFlags));
+        SaySort(WinWindowFromID(WinQueryWindow(grep.hwndFiles, QW_PARENT),
+				DIR_SORT), CollectorsortFlags, FALSE);
       }
-
       if (!PostMsg(grep.hwndFiles, UM_CONTAINER_FILLED, MPVOID, MPVOID))        // tell window we're done
         WinSendMsg(grep.hwndFiles, UM_CONTAINER_FILLED, MPVOID, MPVOID);
       WinDestroyMsgQueue(ghmq);
