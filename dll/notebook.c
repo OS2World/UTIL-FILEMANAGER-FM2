@@ -61,6 +61,8 @@
                 CONSTANT * as CHAR *.
   24 OCT 10 GKY Fixed spurious error message when labels in tree are changed with a
                 "not ready" drive selected
+  04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
+                for delete of readonly files
 
 ***********************************************************************/
 
@@ -187,6 +189,7 @@ BOOL fUserListSwitches;
 BOOL fVTreeOpensWPS;
 BOOL fVerify;
 BOOL fViewChild;
+BOOL fWarnReadOnly;
 HINI fmprof;
 ULONG fwsAnimate;
 HWND hwndHelp;
@@ -1550,6 +1553,7 @@ MRESULT EXPENTRY CfgGDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinCheckButton(hwnd, CFGG_DEFAULTDELETEPERM, fDefaultDeletePerm);
     WinCheckButton(hwnd, CFGG_ERRORBEEPOFF, fErrorBeepOff);
     WinCheckButton(hwnd, CFGG_ALERTBEEPOFF, fAlertBeepOff);
+    WinCheckButton(hwnd, CFGG_WARNREADONLY, fWarnReadOnly);
     {
       long th = fNoFinger ? 2 : (fNoDead ? 1 : 0);
       WinCheckButton(hwnd, CFGG_NODEAD, th);
@@ -1674,7 +1678,10 @@ MRESULT EXPENTRY CfgGDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                         &fAlertBeepOff, sizeof(BOOL));
     fErrorBeepOff = WinQueryButtonCheckstate(hwnd, CFGG_ERRORBEEPOFF);
     PrfWriteProfileData(fmprof, appname, "ErrorBeepOff",
-			&fErrorBeepOff, sizeof(BOOL));
+                        &fErrorBeepOff, sizeof(BOOL));
+    fWarnReadOnly = WinQueryButtonCheckstate(hwnd, CFGG_WARNREADONLY);
+    PrfWriteProfileData(fmprof, appname, "WarnReadOnly",
+			&fWarnReadOnly, sizeof(BOOL));
     {
       WinSendDlgItemMsg(hwnd, CFGG_CMDLNLNGTH, SPBM_QUERYVALUE,
 			MPFROMP(&MaxComLineStrg), MPFROM2SHORT(0, SPBQ_DONOTUPDATE));

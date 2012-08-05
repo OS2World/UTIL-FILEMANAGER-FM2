@@ -15,6 +15,8 @@
   01 Jan 09 GKY Add option to rescan tree container on eject of removable media
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   06 Jun 09 GKY Add option to show file system type or drive label in tree
+  04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
+                for delete of readonly files
 
 ***********************************************************************/
 
@@ -109,6 +111,7 @@ extern BOOL fUserListSwitches;
 extern BOOL fVTreeOpensWPS;
 extern BOOL fVerify;
 extern BOOL fViewChild;
+extern BOOL fWarnReadOnly;
 extern HINI fmprof;
 extern ULONG fwsAnimate;
 extern HWND hwndHelp;

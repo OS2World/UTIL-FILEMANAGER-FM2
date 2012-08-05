@@ -10,6 +10,10 @@
 
   05 Sep 08 JBS Ticket 187: Refactor FM3DLL.H
   14 Sep 09 SHL Drop experimental code
+  04 Aug 12 GKY Changes to use Unlock to unlock files if Unlock.exe is in path both from menu/toolbar and as part of
+                copy, move and delete operations
+  04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
+                for delete of readonly files
 
 ***********************************************************************/
 
@@ -29,6 +33,7 @@ typedef struct {
   BOOL overold;
   BOOL overnew;
   BOOL overwrite;
+  BOOL noreadonlywarn;
 }
 MOVEIT;
 
@@ -47,6 +52,7 @@ WORKER;
 
 // Data declarations
 extern FILE *LogFileHandle;
+extern BOOL fUnlock;
 
 VOID Action(VOID * args);
 VOID MassAction(VOID * args);

@@ -6,7 +6,7 @@
   Dialog item definesions
 
   Copyright (c) 1993-02 M. Kimes
-  Copyright (c) 2002, 2008 Steven H.Levine
+  Copyright (c) 2002-2012 Steven H.Levine
 
   15 Oct 02 MK Baseline
   16 Oct 02 SHL Localize
@@ -37,6 +37,10 @@
                 option to Quick page.
   27 Dec 09 GKY Made command hotkeys user selectable.
   23 Oct 10 GKY Added button to allow opening of a new file's eas from the EA dialog.
+  04 Aug 12 GKY Changes to use Unlock to unlock files if Unlock.exe is in path both from menu/toolbar and as part of
+                copy, move and delete operations
+  04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
+                for delete of readonly files
 
 ***********************************************************************/
 
@@ -429,6 +433,7 @@
 #define REN_OVEROLD										22309
 #define REN_OVERNEW										22310
 #define REN_RENEXIST										22311
+#define REN_NOROWARN										22312
 
 #define FLE_FRAME											22400
 #define FLE_NAME											22401
@@ -664,6 +669,7 @@
 #define CFGG_TRASHCAN                                                                   25217
 #define CFGG_ALERTBEEPOFF                                                               25218
 #define CFGG_ERRORBEEPOFF                                                               25219
+#define CFGG_WARNREADONLY                                                               25220
 
 #define CFGB_FRAME									25250
 #define CFGB_TOOLBARHELP								25251

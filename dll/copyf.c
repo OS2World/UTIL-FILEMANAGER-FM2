@@ -28,6 +28,10 @@
   31 Mar 10 JBS Correct copyf which was creating 8.4, not 8.3, temporary names
   26 Aug 11 GKY Add a low mem version of xDosAlloc* wrappers; move error checking into all the
                 xDosAlloc* wrappers.
+  04 Aug 12 GKY Changes to use Unlock to unlock files if Unlock.exe is in path both from menu/toolbar and as part of copy, move and
+                delete operations
+  04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog for delete of
+                readonly files
 
 ***********************************************************************/
 
@@ -59,6 +63,8 @@
 #include "strips.h"			// bstrip
 #include "fortify.h"
 #include "pathutil.h"			// AddBackslashToPath
+#include "worker.h"
+#include "systemf.h"
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -524,14 +530,17 @@ APIRET docopyf(INT type, CHAR *oldname, CHAR *newname)
 	    wipeallf("%s\\*", dir);
 	  DosError(FERR_DISABLEHARDERR);
 	  if (DosDeleteDir(dir)) {
-	    make_deleteable(dir);
+	    make_deleteable(dir, 0);
 	    DosDeleteDir(dir);
 	  }
 	}
-	else if (IsFile(dir) > 0) {
-	  DosError(FERR_DISABLEHARDERR);
-	  if (DosForceDelete(dir)) {
-	    make_deleteable(dir);
+        else if (IsFile(dir) > 0) {
+          APIRET error;
+
+          DosError(FERR_DISABLEHARDERR);
+          error = DosForceDelete(dir);
+	  if (error) {
+	    make_deleteable(dir, error);
 	    DosForceDelete(dir);
 	  }
 	  if (zaplong) {
@@ -608,7 +617,7 @@ APIRET docopyf(INT type, CHAR *oldname, CHAR *newname)
 	    wipeallf("%s\\*", oldname);
 	    DosError(FERR_DISABLEHARDERR);
 	    if (DosDeleteDir(oldname)) {
-	      make_deleteable(oldname);
+	      make_deleteable(oldname, 0);
 	      DosDeleteDir(oldname);
 	    }
 	  }
@@ -665,18 +674,52 @@ APIRET docopyf(INT type, CHAR *oldname, CHAR *newname)
   return (APIRET)-3;			// bad copy/move type
 }
 
-INT make_deleteable(CHAR * filename)
+INT make_deleteable(CHAR * filename, INT error)
 {
+  APIRET rc;
   INT ret = -1;
+  INT retrn;
   FILESTATUS3 fsi;
 
-  DosError(FERR_DISABLEHARDERR);
-  if (!DosQueryPathInfo(filename, FIL_STANDARD, &fsi, sizeof(fsi))) {
-    fsi.attrFile = 0;
-    DosError(FERR_DISABLEHARDERR);
-    if (!xDosSetPathInfo(filename, FIL_STANDARD, &fsi, sizeof(fsi), 0))
-      ret = 0;
+  if (error ==  ERROR_SHARING_VIOLATION && fUnlock) {
+    retrn = saymsg(MB_YESNO | MB_DEFBUTTON2,
+                 HWND_DESKTOP,
+                 GetPString(IDS_LOCKEDFILEWARNINGTITLE),
+                 GetPString(IDS_LOCKEDFILEWARNING),
+                 filename);
+    if (retrn == MBID_YES) {
+      runemf2(SEPARATE | INVISIBLE | BACKGROUND | WAIT,
+              HWND_DESKTOP, pszSrcFile, __LINE__,
+              NULL, NULL, "%s %s", PCSZ_UNLOCKEXE, filename);
+    }
   }
+  DosError(FERR_DISABLEHARDERR);
+  rc = DosQueryPathInfo(filename, FIL_STANDARD, &fsi, sizeof(fsi));
+  if (!rc) {
+    if (fsi.attrFile & 0x00000001) {
+      if (fWarnReadOnly && error != -1) {
+        retrn = saymsg(MB_YESNO | MB_DEFBUTTON2,
+                       HWND_DESKTOP,
+                       GetPString(IDS_READONLYFILEWARNINGTITLE),
+                       GetPString(IDS_READONLYFILEWARNING),
+                       filename);
+        if (retrn == MBID_YES) {
+          fsi.attrFile = 0;
+          DosError(FERR_DISABLEHARDERR);
+          if (!xDosSetPathInfo(filename, FIL_STANDARD, &fsi, sizeof(fsi), 0))
+            ret = 0;
+        }
+        else
+          ret = 0;
+      }
+      else
+        fsi.attrFile = 0;
+        DosError(FERR_DISABLEHARDERR);
+        if (!xDosSetPathInfo(filename, FIL_STANDARD, &fsi, sizeof(fsi), 0))
+          ret = 0;
+    }
+  }
+
   return ret;
 }
 
@@ -771,16 +814,19 @@ INT wipeallf(CHAR *string, ...)
 	  DosError(FERR_DISABLEHARDERR);
 	  // remove directory
 	  if (DosDeleteDir(ss)) {
-	    make_deleteable(ss);	// Try harder
+	    make_deleteable(ss, 0);	// Try harder
 	    DosError(FERR_DISABLEHARDERR);
 	    DosDeleteDir(ss);
 	  }
 	}
       }
       else {
-	DosError(FERR_DISABLEHARDERR);
-	if (DosForceDelete(ss)) {
-	  make_deleteable(ss);
+        APIRET error;
+
+        DosError(FERR_DISABLEHARDERR);
+        error = DosForceDelete(ss);
+	if (error) {
+	  make_deleteable(ss, error);
 	  DosError(FERR_DISABLEHARDERR);
 	  rc = (INT) DosForceDelete(ss);
 	  if (rc)
@@ -883,15 +929,18 @@ INT unlinkf(CHAR *string)
   if (!strstr(string, ArcTempRoot)) {
     DosError(FERR_DISABLEHARDERR);
     if (DosDelete(string)) {
-      make_deleteable(string);
+      make_deleteable(string, -1);
       DosError(FERR_DISABLEHARDERR);
       return DosDelete(string);
     }
   }
   else {
+    APIRET error;
+
     DosError(FERR_DISABLEHARDERR);
-    if (DosForceDelete(string)) {
-      make_deleteable(string);
+    error = DosForceDelete(string);
+    if (error) {
+      make_deleteable(string, error);
       DosError(FERR_DISABLEHARDERR);
       return DosForceDelete(string);
     }

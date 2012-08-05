@@ -58,6 +58,8 @@
                 including the option to use walk directories to select path
   23 Oct 10 GKY Changes to populate and utilize a HELPTABLE for context specific help.
   21 Nov 10 GKY Check if archiver.bb2 has been changed on disk before editing
+  04 Aug 12 GKY Changes to use Unlock to unlock files if Unlock.exe is in path both from menu/toolbar and as part of
+                copy, move and delete operations
   
 ***********************************************************************/
 
@@ -1269,10 +1271,12 @@ MENU FILE_POPUP
 	 MENUITEM "List in file(s)",IDM_COLLECTFROMFILE
   }
   MENUITEM "",                  -1,             MIS_SEPARATOR
-  MENUITEM "Archive...\tCtrl + A",IDM_ARCHIVE
   MENUITEM "Make ~directory...\tCtrl + M",IDM_MKDIR
+  MENUITEM "",                  -1,             MIS_SEPARATOR
+  MENUITEM "Archive...\tCtrl + A",IDM_ARCHIVE
   MENUITEM "Extract...\tCtrl + x",IDM_EXTRACT
   MENUITEM "UUDecode...\tCtrl + U", IDM_UUDECODE
+  MENUITEM "UnLock file", IDM_UNLOCKFILE
   MENUITEM "",                  -1,                   MIS_SEPARATOR
   SUBMENU "~Delete",            IDM_DELETESUBMENU
   {
@@ -1562,6 +1566,7 @@ MENU COLLECTORFILE_POPUP
   MENUITEM "Archive...\tCtrl + A",  IDM_ARCHIVE
   MENUITEM "Extract...\tCtrl + x",  IDM_EXTRACT
   MENUITEM "UUDecode...\tCtrl + U", IDM_UUDECODE
+  MENUITEM "UnLock file", IDM_UNLOCKFILE
   MENUITEM "",                  -1,                   MIS_SEPARATOR
   SUBMENU "~Delete",            IDM_DELETESUBMENU
   {
@@ -2156,6 +2161,7 @@ MENU SEEALL_FRAME
 	 MENUITEM "Archive selected\tCtrl + A",  IDM_ARCHIVE
 	 MENUITEM "Extract from selected...\tCtrl + x",IDM_EXTRACT
 	 MENUITEM "UUDecode selected...\tCtrl + U",IDM_UUDECODE
+         MENUITEM "UnLock file", IDM_UNLOCKFILE
 	 MENUITEM "Co~llect selected\tCtrl + C", IDM_COLLECT
 	 MENUITEM "Save full path(s) to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
          MENUITEM "Save filename(s) to clip~board\tAlt + [",IDM_SAVETOCLIPFILENAME
@@ -2236,6 +2242,7 @@ MENU SEEALL_POPUP
   MENUITEM "Archive selected...\tCtrl + A",IDM_ARCHIVE
   MENUITEM "Extract from selected...\tCtrl + x",IDM_EXTRACT
   MENUITEM "UUDecode selected...\tCtrl + U",IDM_UUDECODE
+  MENUITEM "UnLock file", IDM_UNLOCKFILE
   MENUITEM "Co~llect selected\tCtrl + C", IDM_COLLECT
   MENUITEM "Save full path(s) to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
   MENUITEM "Save filename(s) to clip~board\tAlt + [",IDM_SAVETOCLIPFILENAME
@@ -3357,7 +3364,11 @@ STRINGTABLE
     IDS_DOSQAPPTYPEFAILEDTEXT             "DosQAppType failed for %s\n called from %s %d."
     IDS_DOSQAPPTYPEFAILEDTEXT2            "The program %s was not found on the PATH or is not an executible file type."
     IDS_DOSQAPPTYPEFAILEDTEXT3            "The drive specified in %s is locked or invalid."
-
+    IDS_LOCKEDFILEWARNING                 "The file %s is locked! Do you wish to unlock it and complete the requested operation"
+    IDS_LOCKEDFILEWARNINGTITLE            "Locked file!"
+    IDS_READONLYFILEWARNING               "The file %s is Read Only! Do you wish continue the requested operation"
+    IDS_READONLYFILEWARNINGTITLE          "Read Only file!"
+    
     // Add strings that need to be combined by GetPString here
     IDS_SUGGEST1TEXT1                     "Based on this scan of your drives, I would like to suggest the following parameters for your FM/2 program object (each letter following the '/' character is a drive that probably should be excluded from viewing by FM/2 (see README), and the '%%*' on the"
     IDS_SUGGEST1TEXT2                     " end enables drag-and-drop to the program object%s):\r\r""%s""\r\rYes: Replace all relevant FM/2 object parameters with this string.\rNo: Parameters are left unchanged.\rCancel: Same as ""No"" plus don't show this message again.\r\r"

@@ -51,6 +51,8 @@
   27 Dec 09 GKY Made command hotkeys user selectable.
   23 Oct 10 GKY Added button to allow opening of a new file's eas from the EA dialog.
   09 Oct 11 GKY Eliminate overlap of check box names; improve readability
+  04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
+                for delete of readonly files
   
 ***********************************************************************/
 
@@ -622,9 +624,11 @@ BEGIN
         LTEXT           "", REN_INFORMATION, 7, 34, 335, 48, DT_WORDBREAK
         PUSHBUTTON      "~Rename existing", REN_RENEXIST, 260, 110, 88, 12
         AUTOCHECKBOX    "Overwrite if target ~older or same", REN_OVEROLD,
-                        30, 20, 158, 10
-        AUTOCHECKBOX    "Overwrite if target ~newer", REN_OVERNEW, 194, 20,
-                        152, 10, WS_GROUP
+                        4, 20, 100, 10
+        AUTOCHECKBOX    "Overwrite if target ~newer", REN_OVERNEW, 110, 20,
+                        80, 10, WS_GROUP
+        AUTOCHECKBOX    "Overwrite if target is readonly (no warning)", REN_NOROWARN, 200, 20,
+                        140, 10, WS_GROUP                
         DEFPUSHBUTTON   "Okay", DID_OK, 4, 4, 40, 14, BS_NOPOINTERFOCUS |
                         WS_GROUP
         AUTOCHECKBOX    "~Don't ask again", REN_DONTASK, 54, 6, 82, 10,
@@ -2778,6 +2782,8 @@ BEGIN
                         10
         LTEXT           "Target directory:", -1, 4, 34, 102, 8
         ENTRYFIELD      "", CFGG_TARGETDIR, 6, 22, 246, 8, ES_MARGIN
+        AUTOCHECKBOX    "~Warn if file is readonly", CFGG_WARNREADONLY, 122, 140, 106,
+                        10
         AUTOCHECKBOX    "~Link drag sets icon", CFGG_LINKSETSICON, 122, 128, 106,
                         10
         AUTOCHECKBOX    "~Verify disk writes (also check individual drive flags)",

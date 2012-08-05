@@ -80,6 +80,8 @@
   20 Nov 10 GKY Rework scanning code to remove redundant scans, prevent double directory
                 entries in the tree container, fix related semaphore performance using
                 combination of event and mutex semaphores
+  04 Aug 12 GKY Changes to use Unlock to unlock files if Unlock.exe is in path both from menu/toolbar and as part of
+                copy, move and delete operations
 
 ***********************************************************************/
 
@@ -1721,6 +1723,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WinEnableMenuItem((HWND) mp2, IDM_EDITBINARY, TRUE);
 	    WinEnableMenuItem((HWND) mp2, IDM_ATTRS, TRUE);
 	  }
+        WinEnableMenuItem((HWND) mp2, IDM_UNLOCKFILE, fUnlock);
 	}
 	break;
 
@@ -1737,7 +1740,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	WinEnableMenuItem((HWND) mp2,
 			  IDM_SELECTCOMPAREMENU,
-			  (CountDirCnrs(dcd->hwndParent) > 1));
+                          (CountDirCnrs(dcd->hwndParent) > 1));
 	break;
 
       case IDM_DETAILSSETUP:
@@ -2619,6 +2622,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case IDM_MCIPLAY:
       case IDM_COLLECTFROMFILE:
       case IDM_UUDECODE:
+      case IDM_UNLOCKFILE:
       case IDM_MERGE:
 	{
 	  LISTINFO *li;

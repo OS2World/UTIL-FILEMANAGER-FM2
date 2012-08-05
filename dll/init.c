@@ -108,6 +108,10 @@
                 or invalid
   22 Oct 11 GKY Thread notes dialog now reopens on startup if it was open on shutdown.
   08 Jan 12 GKY Add support for changing PresParams in the notify status window
+  04 Aug 12 GKY Changes to use Unlock to unlock files if Unlock.exe is in path both from menu/toolbar and as part of
+                copy, move and delete operations
+  04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
+                for delete of readonly files
 
 ***********************************************************************/
 
@@ -266,6 +270,7 @@ PCSZ PCSZ_DFSOS2EXE   = "DFSOS2.EXE";
 PCSZ PCSZ_MINILVMEXE  = "MINILVM.EXE";
 PCSZ PCSZ_FDISKPMEXE  = "FDISKPM.EXE";
 PCSZ PCSZ_LVMEXE      = "LVM.EXE";
+PCSZ PCSZ_UNLOCKEXE   = "UNLOCK.EXE";
 PCSZ PCSZ_ARCCNR      = "ArcCnr";
 PCSZ PCSZ_COLLECTOR   = "Collector";
 PCSZ PCSZ_DIRCNR      = "DirCnr";
@@ -1162,7 +1167,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     fLoadLongnames = fToolbar = fSaveState = fGuessType = fToolbarHelp =
     fAutoAddDirs = fUseNewViewer = fDataToFore = fDataShowDrives = fDataMin =
     fSplitStatus = fDragndropDlg = fQuickArcFind = fKeepCmdLine =
-    fMoreButtons = fDrivebar = fCollapseFirst = fSwitchTree =
+    fMoreButtons = fDrivebar = fCollapseFirst = fSwitchTree = fWarnReadOnly =
     fSwitchTreeExpand = fNoSearch = fCustomFileDlg = fOtherHelp =
     fSaveMiniCmds = fUserComboBox = fFM2Deletes = fConfirmTarget =
     fShowTarget = fDrivebarHelp = fCheckMM = fInitialDriveScan =
@@ -1220,6 +1225,10 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
       fFDisk = TRUE;
     if (!xDosQueryAppType(PCSZ_LVMEXE, &ulAppType))
       fLVM = TRUE;
+
+    //Check for unlock.exe
+    if (!xDosQueryAppType(PCSZ_UNLOCKEXE, &ulAppType))
+      fUnlock = TRUE;
 
     // Check to see if we are running protect only
     if (!xDosQueryAppType(GetCmdSpec(TRUE), &ulAppType)) {
@@ -1492,6 +1501,8 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, appname, "DoubleClickOpens", &fDCOpens, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "LinkSetsIcon", &fLinkSetsIcon, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, appname, "WarnReadOnly", &fWarnReadOnly, &size);
   size = sizeof(INT);
   PrfQueryProfileData(fmprof, appname, "Sort", &sortFlags, &size);
   size = sizeof(INT);

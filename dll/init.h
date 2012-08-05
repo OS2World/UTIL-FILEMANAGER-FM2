@@ -28,6 +28,10 @@
                 entries in the tree container, fix related semaphore performance using
                 combination of event and mutex semaphores
   08 Jan 12 GKY Add support for changing PresParams in the notify status window
+  04 Aug 12 GKY Changes to use Unlock to unlock files if Unlock.exe is in path both from menu/toolbar and as part of
+                copy, move and delete operations
+  04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
+                for delete of readonly files
 
 ***********************************************************************/
 
@@ -58,6 +62,7 @@ extern PCSZ PCSZ_MINILVMEXE;
 extern PCSZ PCSZ_FDISKPMEXE;
 extern PCSZ PCSZ_IMAGEEXE;
 extern PCSZ PCSZ_LVMEXE;
+extern PCSZ PCSZ_UNLOCKEXE;
 extern PCSZ PCSZ_ARCCNR;
 extern PCSZ PCSZ_COLLECTOR;
 extern PCSZ PCSZ_DIRCNR;

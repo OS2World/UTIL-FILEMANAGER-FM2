@@ -1,3 +1,18 @@
+.***********************************************************************
+.*
+.* $Id$
+.*
+.* fm/2 help - Configuration dialogs usage
+.*
+.* Copyright (c) 1993-98 M. Kimes
+.* Copyright (c) 2002-2012 Steven H.Levine
+.*
+.*
+.* 04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
+.*               for delete of readonly files
+.*
+.***********************************************************************
+.*
 :h2 res=91400 name=PANEL_RENAME.Renaming
 :i1 id=aboutRenaming.Renaming
 :artwork name='..\..\bitmaps\rename.bmp' align=center.
@@ -41,8 +56,10 @@ file out of the way, then click &OkayButton. to continue the copy
 operation.
 :p.
 The :hp1.Overwrite if target older or same:ehp1., :hp1. Overwrite if
-target newer:ehp1. and :hp1.Don't ask again:ehp1. checkboxes can be used
-in combination to avoid seeing this screen again for naming conflicts.
+target newer:ehp1. :hp1.Overwrite if target is readonly (no warning):ehp1. and 
+:hp1.Don't ask again:ehp1. checkboxes can be used in combination to avoid seeing 
+this screen again for naming conflicts and to supress to readonly warning dialog
+(it just overwrites the readonly files).
 Files which have existing targets that do not match an overwrite
 characteristic will be automatically skipped. For example, if you don't
 check either of the Overwrite... checkboxes, all existing files will be

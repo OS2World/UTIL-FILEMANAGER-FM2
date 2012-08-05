@@ -19,6 +19,8 @@
 .* 13 Dec 09 GKY Fixed separate paramenters.
 .* 13 Dec 09 GKY Updated Quick page "Default" to match current defaults; added Gregg's way
 .*               option to Quick page. 
+.* 04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
+.*               for delete of readonly files
 .*
 .***********************************************************************
 .*
@@ -654,6 +656,12 @@ the deletion of files (deleting directories or hidden/system files
 always requires confirmation). It is recommended that you leave this
 option on; FM/2 will let you confirm all files on which you're acting
 from one dialog, so it has minimal impact and provides a safety net.
+:p.
+:hp6.Warn if file is readonly:ehp6. If selected a warning dialog will
+appear when you attempt to delete a readonly file or copy/move a file 
+over a readony file. Otherwise the file will be deleted/overwritten which 
+is what FM/2 always did for delete but not for copy/move which failed with 
+an error message.
 :p.
 The :hp6.Verify disk writes:ehp6. toggle turns system-level write
 verification on and off. This is like typing :link reftype=launch

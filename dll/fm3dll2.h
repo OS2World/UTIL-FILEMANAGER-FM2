@@ -32,6 +32,8 @@
   22 Nov 09 GKY Add LVM.EXE to partition submenu
   21 Dec 09 GKY Added 20 new hot keys for commands.
   23 Oct 10 GKY Changes to populate and utilize a HELPTABLE for context specific help
+  04 Aug 12 GKY Changes to use Unlock to unlock files if Unlock.exe is in path both from menu/toolbar and as part of
+                copy, move and delete operations
 
   Align with spaces only - no tabs please
 
@@ -400,6 +402,7 @@
 #define IDM_OPENDIRDETAILS  1167
 #define IDM_OPENDIRTREE     1168
 #define IDM_OPENDIRWINDOW   1169
+#define IDM_UNLOCKFILE      1170
 
 #define IDM_UTILITIESMENU   2000
 #define IDM_INIVIEWER       2001

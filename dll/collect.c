@@ -78,6 +78,8 @@
   29 May 11 SHL Tweak UM_COLLECT to bypass FindCnrRecord when container initially empty
   08 Aug 11 SHL Rework UM_COLLECT to avoid spurious container items free
   13 Aug 11 GKY Have file count and KIBs update at the same time
+  04 Aug 12 GKY Changes to use Unlock to unlock files if Unlock.exe is in path both from menu and as part of copy, move and
+                delete operations
 
 ***********************************************************************/
 
@@ -2345,6 +2347,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_EXTRACT:
       case IDM_MCIPLAY:
       case IDM_UUDECODE:
+      case IDM_UNLOCKFILE:
       case IDM_MERGE:
 	{
 	  LISTINFO *li;

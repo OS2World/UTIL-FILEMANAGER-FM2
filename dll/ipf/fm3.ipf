@@ -11,6 +11,8 @@
 .* 06 Jul 08 GKY ADD FM2Shutdown state info
 .* 01 Sep 08 GKY Change User-defined bmp (renamed) checkbox info to better describe what it does
 .* 29 Apr 09 SHL Start usinging nameits to ensure standard formatting
+.* 04 Aug 12 GKY Changes to use Unlock to unlock files if Unlock.exe is in path both from menu/toolbar and as part of
+.*               copy, move and delete operations
 .*
 .***********************************************************************
 .*
@@ -682,6 +684,7 @@ ID     Command                                              Droppable?
 1152   WPS Move Files/Directories                           Y
 1153   WPS Copy Files/Directories                           Y
 1154   Set Target Directory                                 N
+1170   Unlock Files                                         Y
 2001   View INI Files                                       Y
 2003   Kill Process                                         N
 2004   Undelete Files                                       N

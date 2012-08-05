@@ -41,6 +41,10 @@
                 Added load_inicommand to load the IDs from the ini file.(new error strings)
   27 Dec 09 GKY Added IDS_DUPLICATEHOTKEYTEXT for command.c changes
   21 Nov 10 GKY Check if archiver.bb2 has been changed on disk before editing
+  04 Aug 12 GKY Changes to use Unlock to unlock files if Unlock.exe is in path both from menu/toolbar and as part of
+                copy, move and delete operations
+  04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
+                for delete of readonly files
 
 ***********************************************************************/
 
@@ -1023,6 +1027,10 @@
 #define IDS_DOSQAPPTYPEFAILEDTEXT                            1017
 #define IDS_DOSQAPPTYPEFAILEDTEXT2                           1018
 #define IDS_DOSQAPPTYPEFAILEDTEXT3                           1019
+#define IDS_LOCKEDFILEWARNING                                1020
+#define IDS_LOCKEDFILEWARNINGTITLE                           1021
+#define IDS_READONLYFILEWARNING                              1022
+#define IDS_READONLYFILEWARNINGTITLE                         1023
 
 //The following strings were cut up form the string of the root name (ie IDS_SUGGEST1TEXT)
 //This was done as part of the conversion to a StringTable where strings are limited to 255

@@ -19,6 +19,8 @@
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   23 Oct 10 GKY Add ForwardslashToBackslash function to streamline code
+  04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
+                for delete of readonly files
 
 ***********************************************************************/
 
@@ -86,6 +88,7 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       WinShowWindow(WinWindowFromID(hwnd, REN_OVEROLD), FALSE);
       WinShowWindow(WinWindowFromID(hwnd, REN_OVERNEW), FALSE);
+      WinShowWindow(WinWindowFromID(hwnd, REN_NOROWARN), FALSE);
     }
     break;
 
@@ -309,7 +312,9 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (WinQueryButtonCheckstate(hwnd, REN_OVEROLD))
 	  mv->overold = TRUE;
 	if (WinQueryButtonCheckstate(hwnd, REN_OVERNEW))
-	  mv->overnew = TRUE;
+          mv->overnew = TRUE;
+        if (WinQueryButtonCheckstate(hwnd,REN_NOROWARN))
+          mv->noreadonlywarn = TRUE;
 	*mv->target = 0;
 	WinQueryDlgItemText(hwnd, REN_TARGET, CCHMAXPATH, mv->target);
 	bstrip(mv->target);

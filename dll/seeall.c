@@ -50,6 +50,10 @@
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
   17 Jan 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   01 Dec 10 SHL Ensure FindAllThread thread quits fast when requested
+  04 Aug 12 GKY Changes to use Unlock to unlock files if Unlock.exe is in path both from menu/toolbar and as part of
+                copy, move and delete operations
+  04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
+                for delete of readonly files
 
 ***********************************************************************/
 
@@ -869,7 +873,17 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case IDM_UUDECODE:
 	for (x = 0; list[x]; x++)
 	  UUD(list[x], NULL);
-	break;
+        break;
+
+      case IDM_UNLOCKFILE:
+        for (x = 0; list[x]; x++) {
+          if (IsFile(list[x]) > 0 && fUnlock) {
+            runemf2(SEPARATE | INVISIBLE | BACKGROUND | WAIT,
+                    HWND_DESKTOP, pszSrcFile, __LINE__,
+                    NULL, NULL, "%s %s", PCSZ_UNLOCKEXE, list[x]);
+          }
+        }
+        break;
 
       case IDM_EXTRACT:
 	for (x = 0; list[x]; x++) {
@@ -1076,7 +1090,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		error = DosForceDelete(list[x]);
 	      if (error) {
 		DosError(FERR_DISABLEHARDERR);
-		make_deleteable(list[x]);
+		make_deleteable(list[x], error);
 		if (SHORT1FROMMP(mp1) == IDM_DELETE)
 		  error = DosDelete(list[x]);
 		else
@@ -3386,6 +3400,8 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinEnableMenuItem(pAD->hwndPopup, IDM_EAS, (rc == 0 &&
 						    pAD->selected != 0));
 	WinEnableMenuItem(pAD->hwndPopup, IDM_UUDECODE, (rc == 0 &&
+                                                         pAD->selected != 0));
+        WinEnableMenuItem(pAD->hwndPopup, IDM_UNLOCKFILE, (rc == 0 && fUnlock &&
 							 pAD->selected != 0));
 	WinEnableMenuItem(pAD->hwndPopup, IDM_EXTRACT, (rc == 0 &&
 							pAD->selected != 0));
@@ -3861,7 +3877,9 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinEnableMenuItem((HWND) mp2, IDM_EAS,
 			    (rc == 0 && pAD->selected != 0));
 	  WinEnableMenuItem((HWND) mp2, IDM_UUDECODE,
-			    (rc == 0 && pAD->selected != 0));
+                            (rc == 0 && pAD->selected != 0));
+          WinEnableMenuItem((HWND) mp2, IDM_UNLOCKFILE,
+			    (rc == 0 && fUnlock && pAD->selected != 0));
 	  WinEnableMenuItem((HWND) mp2, IDM_EXTRACT,
 			    (rc == 0 && pAD->selected != 0));
 	  WinEnableMenuItem((HWND) mp2, IDM_ARCHIVE,
@@ -4215,6 +4233,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case IDM_ARCHIVE:
     case IDM_EXTRACT:
     case IDM_UUDECODE:
+    case IDM_UNLOCKFILE:
     case IDM_SHADOW:
     case IDM_OBJECT:
     case IDM_OPENSETTINGS:
@@ -4274,7 +4293,8 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	case IDM_OBJECT:
 	case IDM_OPENSETTINGS:
 	case IDM_OPENDEFAULT:
-	case IDM_UUDECODE:
+        case IDM_UUDECODE:
+        case IDM_UNLOCKFILE:
 	  {
 	    CHAR **list = BuildAList(hwnd);
 
@@ -4306,7 +4326,8 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      case IDM_EAS:
 	      case IDM_ARCHIVE:
 	      case IDM_EXTRACT:
-	      case IDM_UUDECODE:
+              case IDM_UUDECODE:
+              case IDM_UNLOCKFILE:
 	      case IDM_OBJECT:
 	      case IDM_SHADOW:
 	      case IDM_OPENSETTINGS:

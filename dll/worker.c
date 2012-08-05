@@ -48,6 +48,10 @@
   20 Nov 10 GKY Check that pTmpDir IsValid and recreate if not found; Fixes hangs caused
                 by temp file creation failures.
   12 Nov 11 GKY Fixed extract failure caused by spaces in the arc file name.
+  04 Aug 12 GKY Changes to use Unlock to unlock files if Unlock.exe is in path both from menu/toolbar and as part of
+                copy, move and delete operations
+  04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
+                for delete of readonly files
 
 ***********************************************************************/
 
@@ -117,6 +121,7 @@
 // Data definitions
 #pragma data_seg(GLOBAL2)
 FILE *LogFileHandle;
+BOOL fUnlock;
 
 #pragma data_seg(DATA2)
 
@@ -221,7 +226,7 @@ VOID Action(VOID * args)
 	  CHAR message[(CCHMAXPATH * 2) + 80], wildname[CCHMAXPATH];
 	  UINT x;
 	  BOOL dontask = FALSE, wildcarding = FALSE, overold =
-	    FALSE, overnew = FALSE, usedtarget;
+	    FALSE, overnew = FALSE, noreadonlywarn = FALSE, usedtarget;
 
 	  WinCancelShutdown(hmq2, TRUE);
 	  IncrThreadUsage();
@@ -454,7 +459,14 @@ VOID Action(VOID * args)
 		    AddNote(message);
 		  }
 		}
-		break;
+                break;
+
+              case IDM_UNLOCKFILE:
+                runemf2(SEPARATE | KEEP | WINDOWED//| INVISIBLE | BACKGROUND
+                        | WAIT,
+                        HWND_DESKTOP, pszSrcFile, __LINE__,
+                        NULL, NULL, "%s %s", PCSZ_UNLOCKEXE, wk->li->list[x]);
+                break;
 
 	      case IDM_VIEWARCHIVE:
 		if (IsFile(wk->li->list[x]) > 0) {
@@ -706,7 +718,8 @@ VOID Action(VOID * args)
 		  {
 		    // Target OK so far
 		    CHAR newname[CCHMAXPATH];
-		    APIRET rc;
+                    APIRET rc;
+                    INT ret;
 		    FILESTATUS4L fs4;
 		    BOOL isnewer;
 		    BOOL existed;
@@ -792,7 +805,9 @@ VOID Action(VOID * args)
 		      if (mv.overold)
 			overold = TRUE;
 		      if (mv.overnew)
-			overnew = TRUE;
+                        overnew = TRUE;
+                      if (mv.noreadonlywarn)
+                        noreadonlywarn = TRUE;
 		      if (wildcarding || wk->li->type == IDM_RENAME) {
 			p = strrchr(mv.target, '\\');
 			if (p && (strchr(p, '*') || strchr(p, '?'))) {
@@ -855,12 +870,22 @@ VOID Action(VOID * args)
 		    if (fRealIdle)
 		      priority_idle();
 
-		    rc = docopyf(type, wk->li->list[x], newname);
+                    rc = docopyf(type, wk->li->list[x], newname);
+                    if (rc == ERROR_ACCESS_DENIED || rc == ERROR_SHARING_VIOLATION) {
+                      if (rc == ERROR_ACCESS_DENIED && noreadonlywarn)
+                        rc = -1;
+                      ret = make_deleteable(newname, rc);
+                      rc = docopyf(type, wk->li->list[x], newname);
+                    }
+                    if (!ret && (rc == ERROR_ACCESS_DENIED || (rc == ERROR_SHARING_VIOLATION && fUnlock)))
+                      rc = NO_ERROR;
+                    //if (fTurnOffReadOnly)
+                    //  make_deleteable(newname, rc);
 		    if (fResetVerify) {
 		      DosSetVerify(fVerify);
 		      fResetVerify = FALSE;
 		    }
-		    priority_normal();
+                    priority_normal();
 		    if (rc) {
 		      if ((rc == ERROR_DISK_FULL ||
 			   rc == ERROR_HANDLE_DISK_FULL) &&
@@ -1714,7 +1739,7 @@ VOID MassAction(VOID * args)
 		  }
 		  if (error) {
 		    DosError(FERR_DISABLEHARDERR);
-		    make_deleteable(wk->li->list[x]);
+		    make_deleteable(wk->li->list[x], error);
 		    if (wk->li->type == IDM_DELETE){
 		      hObjectdest = WinQueryObject("<XWP_TRASHCAN>");
 		      PrfQueryProfileData(HINI_USER,
