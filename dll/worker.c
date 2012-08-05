@@ -462,10 +462,11 @@ VOID Action(VOID * args)
                 break;
 
               case IDM_UNLOCKFILE:
-                runemf2(SEPARATE | KEEP | WINDOWED//| INVISIBLE | BACKGROUND
-                        | WAIT,
-                        HWND_DESKTOP, pszSrcFile, __LINE__,
-                        NULL, NULL, "%s %s", PCSZ_UNLOCKEXE, wk->li->list[x]);
+                if (IsFile(wk->li->list[x]) > 0 && fUnlock) {
+                  runemf2(SEPARATE | INVISIBLE | BACKGROUND | WAIT,
+                          HWND_DESKTOP, pszSrcFile, __LINE__,
+                          NULL, NULL, "%s %s", PCSZ_UNLOCKEXE, wk->li->list[x]);
+                }
                 break;
 
 	      case IDM_VIEWARCHIVE:

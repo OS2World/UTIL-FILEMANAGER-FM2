@@ -936,6 +936,7 @@ ACCELTABLE  DIR_FRAME
   "T",         IDM_SETTARGET,         CONTROL,SHIFT
   "U",         IDM_UUDECODE,          SHIFT,CONTROL
   "u",         IDM_UPDATE,            CONTROL
+  "V",         IDM_UNLOCKFILE,        SHIFT,CONTROL
   "v",         IDM_VIEW,              CONTROL
   "w",         IDM_WALKDIR,           CONTROL
   "x",         IDM_EXTRACT,           CONTROL
@@ -1276,7 +1277,7 @@ MENU FILE_POPUP
   MENUITEM "Archive...\tCtrl + A",IDM_ARCHIVE
   MENUITEM "Extract...\tCtrl + x",IDM_EXTRACT
   MENUITEM "UUDecode...\tCtrl + U", IDM_UUDECODE
-  MENUITEM "UnLock file", IDM_UNLOCKFILE
+  MENUITEM "UnLock file...\tCtrl + V", IDM_UNLOCKFILE
   MENUITEM "",                  -1,                   MIS_SEPARATOR
   SUBMENU "~Delete",            IDM_DELETESUBMENU
   {
@@ -1566,7 +1567,7 @@ MENU COLLECTORFILE_POPUP
   MENUITEM "Archive...\tCtrl + A",  IDM_ARCHIVE
   MENUITEM "Extract...\tCtrl + x",  IDM_EXTRACT
   MENUITEM "UUDecode...\tCtrl + U", IDM_UUDECODE
-  MENUITEM "UnLock file", IDM_UNLOCKFILE
+  MENUITEM "UnLock file...\tCtrl + V", IDM_UNLOCKFILE
   MENUITEM "",                  -1,                   MIS_SEPARATOR
   SUBMENU "~Delete",            IDM_DELETESUBMENU
   {
@@ -1769,6 +1770,7 @@ ACCELTABLE  COLLECTOR_FRAME
   "T",         IDM_SETTARGET,         CONTROL,SHIFT
   "U",         IDM_UUDECODE,          SHIFT,CONTROL
   "u",         IDM_UPDATE,            CONTROL
+  "V",         IDM_UNLOCKFILE,        SHIFT,CONTROL
   "v",         IDM_VIEW,              CONTROL
   "x",         IDM_EXTRACT,           CONTROL
   "z",         IDM_SIZES,             CONTROL
@@ -2161,7 +2163,7 @@ MENU SEEALL_FRAME
 	 MENUITEM "Archive selected\tCtrl + A",  IDM_ARCHIVE
 	 MENUITEM "Extract from selected...\tCtrl + x",IDM_EXTRACT
 	 MENUITEM "UUDecode selected...\tCtrl + U",IDM_UUDECODE
-         MENUITEM "UnLock file", IDM_UNLOCKFILE
+         MENUITEM "UnLock file...\tCtrl + V", IDM_UNLOCKFILE
 	 MENUITEM "Co~llect selected\tCtrl + C", IDM_COLLECT
 	 MENUITEM "Save full path(s) to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
          MENUITEM "Save filename(s) to clip~board\tAlt + [",IDM_SAVETOCLIPFILENAME
@@ -2242,7 +2244,7 @@ MENU SEEALL_POPUP
   MENUITEM "Archive selected...\tCtrl + A",IDM_ARCHIVE
   MENUITEM "Extract from selected...\tCtrl + x",IDM_EXTRACT
   MENUITEM "UUDecode selected...\tCtrl + U",IDM_UUDECODE
-  MENUITEM "UnLock file", IDM_UNLOCKFILE
+  MENUITEM "UnLock file...\tCtrl + V", IDM_UNLOCKFILE
   MENUITEM "Co~llect selected\tCtrl + C", IDM_COLLECT
   MENUITEM "Save full path(s) to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
   MENUITEM "Save filename(s) to clip~board\tAlt + [",IDM_SAVETOCLIPFILENAME
@@ -2297,6 +2299,7 @@ ACCELTABLE SEEALL_FRAME
   "S",         IDM_SAVETOLIST,        SHIFT,CONTROL
   "s",         IDM_SUBJECT,           CONTROL
   "U",         IDM_UUDECODE,          SHIFT,CONTROL
+  "V",         IDM_UNLOCKFILE,        SHIFT,CONTROL
   "x",         IDM_EXTRACT,           CONTROL
   "+",         IDM_DESELECTMASK,      SHIFT,CONTROL
   "=",         IDM_SELECTMASK,        CONTROL
