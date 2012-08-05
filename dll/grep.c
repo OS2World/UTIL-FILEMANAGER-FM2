@@ -38,6 +38,8 @@
   30 May 11 GKY Fixed potential trap caused by passing a nonexistant pci to FillInRecordFromFFB
                 in DoInsertion because pci is limited to 65535 files. (nRecord is a USHORT)
                 SHL's single loop fix.
+  05 Aug 12 GKY Replace SleepIfNeeded with IdleIfNeeded to improve IU response during long searches; it
+                will switch between normal and idle priority and back.
 
 ***********************************************************************/
 
@@ -501,7 +503,7 @@ static VOID DoAllSubdirs(GREP *grep,
     else
       p = searchPath;
     do {                                // Process each directory that matches the mask
-      priority_normal();
+      //priority_normal();
       if (*grep->stopflag)
         break;
       // Skip . and ..
@@ -523,6 +525,7 @@ static VOID DoAllSubdirs(GREP *grep,
           DoMatchingFiles(grep, searchPath, fle, numfls, pitdSleep, pitdReport);
           // 07 Feb 08 SHL
           if (IsITimerExpired(pitdReport)) {
+            priority_normal();
             if (!hwndStatus)
               WinSetWindowText(grep->hwndCurFile, searchPath);
             else {
@@ -531,7 +534,7 @@ static VOID DoAllSubdirs(GREP *grep,
                 sprintf(s, "%s %s", GetPString(IDS_SCANNINGTEXT), searchPath);
                 WinSetWindowText(hwndStatus, s);
               }
-            }
+            };
           }
           DoAllSubdirs(grep, searchPath, TRUE, fle, numfls, pitdSleep, pitdReport);
         }
@@ -541,7 +544,7 @@ static VOID DoAllSubdirs(GREP *grep,
                           &ffb,
                           sizeof(ffb), (PULONG) & ulFindCnt));
     DosFindClose(findHandle);
-    priority_normal();
+    //priority_normal();
   }
   if (p)                                // strip off last directory addition
     *p = 0;
@@ -599,7 +602,7 @@ static INT DoMatchingFiles(GREP *grep,
   if (!rc) {
     do {
       // Process each file that matches the mask
-      priority_normal();
+      //priority_normal();
       pffbFile = pffbArray;
       for (x = 0; x < ulFindCnt; x++) {
         if (*grep->stopflag)
@@ -652,13 +655,14 @@ static INT DoMatchingFiles(GREP *grep,
       } // for
       if (*grep->stopflag)
         break;
-      SleepIfNeeded(pitdSleep, 1);
+      //SleepIfNeeded
+      IdleIfNeeded(pitdSleep, 30);
       ulFindCnt = FilesToGet;
       rc = xDosFindNext(findHandle, pffbArray, ulBufBytes, &ulFindCnt, FIL_QUERYEASIZEL);
     } while (!rc);
 
     DosFindClose(findHandle);
-    priority_normal();
+    //priority_normal();
   } // if
 
   if (rc && rc != ERROR_NO_MORE_FILES) {
