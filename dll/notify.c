@@ -20,7 +20,7 @@
   13 Jul 09 SHL Sync with renames
   16 Jul 09 SHL Stop leaking hptrIcon
   17 Jan 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
-  08 Jan 12 GKY Add support for changing PresParams in the notify status window
+  12 Aug 12 GKY Add support for changing PresParams in the notify status window
 
 ***********************************************************************/
 
@@ -98,7 +98,6 @@ MRESULT EXPENTRY NotifyWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_SETUP:
     WinSetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, SWP_ZORDER | SWP_SHOW);
     WinInvalidateRect(hwnd, NULL, FALSE);
-    RestorePresParams(hwnd, PCSZ_NOTIFYWND);
     return 0;
 
   case WM_SETFOCUS:
@@ -111,10 +110,6 @@ MRESULT EXPENTRY NotifyWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSetFocus(HWND_DESKTOP, (HWND) mp1);
     PostMsg(hwnd, UM_SETUP, MPVOID, MPVOID);
     return 0;
-
-  case WM_PRESPARAMCHANGED:
-    PresParamChanged(hwnd, PCSZ_NOTIFYWND, mp1, mp2);
-    break;
 
   case WM_PAINT:
     {
@@ -301,6 +296,16 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
     }
     hwndNotify = hwnd;
+    {
+      USHORT ids[] = {NOTE_FRAME, NOTE_LISTBOX, 0};
+      UINT x;
+      CHAR s[24];
+  
+      for (x = 0; ids[x]; x++) {
+        sprintf(s, "%s%i", PCSZ_NOTIFYWND,ids[x]);
+        RestorePresParams(WinWindowFromID(hwnd, ids[x]), s);
+      }
+    }
     // Remember showing for restart
     fThreadNotes = TRUE;
     PrfWriteProfileData(fmprof,
@@ -471,6 +476,14 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case WM_DESTROY:
     if (hwndNotify == hwnd) {
+      USHORT ids[] = {NOTE_FRAME, NOTE_LISTBOX, 0};
+      UINT x;
+      CHAR s[24];
+  
+      for (x = 0; ids[x]; x++) {
+        sprintf(s, "%s%i", PCSZ_NOTIFYWND,ids[x]);
+        SavePresParams(WinWindowFromID(hwnd, ids[x]), s);
+      }
       fThreadNotes = FALSE;		// Remember not open
       PrfWriteProfileData(fmprof,
 			  FM3Str, "ThreadNotes", &fThreadNotes, sizeof(BOOL));
