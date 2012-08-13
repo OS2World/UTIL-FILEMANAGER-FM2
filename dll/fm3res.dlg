@@ -53,6 +53,7 @@
   09 Oct 11 GKY Eliminate overlap of check box names; improve readability
   04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
                 for delete of readonly files
+  12 Aug 12 GKY Allow for selection of include subdirectories or a list file on initial startup of compare dirs
   
 ***********************************************************************/
 
@@ -2249,6 +2250,10 @@ BEGIN
         PUSHBUTTON      "Okay", DID_OK, 8, 4, 40, 14, WS_GROUP
         PUSHBUTTON      "~Help", IDM_HELP, 147, 4, 40, 14, BS_NOPOINTERFOCUS
         PUSHBUTTON      "Cancel", DID_CANCEL, 288, 4, 40, 14
+        AUTOCHECKBOX    "~Include subdirs", WALK2_INCLUDESUBDIRS, 60, 4, 60,
+                        8, BS_NOPOINTERFOCUS | WS_GROUP
+        AUTOCHECKBOX    "~Load list file", WALK2_LOADLISTFILE, 199, 4, 60,
+                        8, BS_NOPOINTERFOCUS | WS_GROUP               
     END
 END
 

@@ -36,6 +36,7 @@
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
   06 Oct 09 SHL Ctrl-select selects Walk Dialog listbox entry, but suppresses action
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  12 Aug 12 GKY Allow for selection of include subdirectories or a list file on initial startup of compare dirs
 
 ***********************************************************************/
 
@@ -1435,7 +1436,11 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     FillPathListBox(hwnd,
 		    WinWindowFromID(hwnd, WALK2_DRIVELIST),
 		    WinWindowFromID(hwnd, WALK2_DIRLIST),
-		    wa->szCurrentPath2, FALSE);
+                    wa->szCurrentPath2, FALSE);
+    WinEnableWindow(WinWindowFromID(hwnd, WALK2_INCLUDESUBDIRS), TRUE);
+    WinEnableWindow(WinWindowFromID(hwnd, WALK2_LOADLISTFILE), TRUE);
+    if (wa->includesubdirs)
+      WinCheckButton(hwnd, WALK2_INCLUDESUBDIRS, TRUE);
     if (!PostMsg(hwnd, UM_SETUP4, MPVOID, MPVOID))
       okay = TRUE;
     {
@@ -1507,7 +1512,7 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (sSelect >= 0)
 	WinSendDlgItemMsg(hwnd, SHORT1FROMMP(mp1), LM_QUERYITEMTEXT,
 			  MPFROM2SHORT(sSelect, CCHMAXPATH),
-			  MPFROMP(szBuffer));
+                          MPFROMP(szBuffer));
     }
     switch (SHORT1FROMMP(mp1)) {
     case WALK_DRIVELIST:
@@ -1680,6 +1685,8 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	return 0;
     }
     WinSetDlgItemText(hwnd, WALK2_PATH, wa->szCurrentPath2);
+    wa->includesubdirs = WinQueryButtonCheckstate(hwnd, WALK2_INCLUDESUBDIRS);
+    wa->listfile = WinQueryButtonCheckstate(hwnd, WALK2_LOADLISTFILE);
     switch (SHORT1FROMMP(mp1)) {
     case DID_OK:
       {

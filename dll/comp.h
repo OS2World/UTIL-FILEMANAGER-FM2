@@ -11,6 +11,7 @@
   05 Jan 08 SHL Split from fm3dll.h
   18 Jan 08 SHL Sync with count update mods
   27 Sep 09 SHL Support AND'ed selections
+  12 Aug 12 GKY Allow for selection of include subdirectories or a list file on initial startup of compare dirs
 
 ***********************************************************************/
 
@@ -54,6 +55,7 @@ typedef struct COMPARE
   BOOL filling;				// Set when thread working
   BOOL stop;				// Requests thread stop
   BOOL includesubdirs;
+  BOOL listfile;
   INT action;				// IDM_...
   UINT selleft;				// # selected
   UINT selright;

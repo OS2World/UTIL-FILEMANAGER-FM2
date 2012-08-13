@@ -111,6 +111,7 @@
   03 Oct 11 SHL Add needTile to ensure containers opened on command line render correctly
   03 Oct 11 SHL Minor code cleanup
   05 Aug 12 GKY Make the Target Directory (DriveBar) a drop target.
+  12 Aug 12 GKY Allow for selection of include subdirectories or a list file on initial startup of compare dirs
 
 ***********************************************************************/
 
@@ -4784,7 +4785,9 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (cmp) {
 	    cmp->size = sizeof(COMPARE);
 	    strcpy(cmp->leftdir, wa.szCurrentPath1);
-	    strcpy(cmp->rightdir, wa.szCurrentPath2);
+            strcpy(cmp->rightdir, wa.szCurrentPath2);
+            cmp->listfile = wa.listfile;
+            cmp->includesubdirs = wa.includesubdirs;
 	    cmp->hwndParent = hwnd;
 	    cmp->dcd.hwndParent = hwnd;
 	    WinDlgBox(HWND_DESKTOP,

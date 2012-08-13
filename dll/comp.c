@@ -77,6 +77,9 @@
   29 May 11 SHL Rework >65K records logic - prior fix was not quite right
   12 Jun 11 GKY Added SleepIfNeeded in the container fill loop
   02 Jan 12 GKY Added pszFmtFileSize to container info to fix loss of file sizes on move and copy.
+  12 Aug 12 GKY Add ability to change and save PresParam
+  12 Aug 12 GKY Fix loading of a list file in the right compare container
+  12 Aug 12 GKY Allow for selection of include subdirectories or a list file on initial startup of compare dirs
 
 ***********************************************************************/
 
@@ -1688,7 +1691,9 @@ static VOID FillCnrsThread(VOID *args)
 	    } // while
 	  } // if have rightdir
 	  fclose(fp);
-	}
+        }
+	FillDirList(cmp->rightdir, lenr, cmp->includesubdirs,
+		    &filesr, &cmp->cmp->totalright, &numallocr);
       }	// if snapshot file
 
       if (filesr)
@@ -2219,20 +2224,35 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       SetCnrCols(GetHwndLeft(hwnd), TRUE);
       SetCnrCols(GetHwndRight(hwnd), TRUE);
+      if (cmp->listfile) {
+        CHAR fullname[CCHMAXPATH];
+
+	strcpy(fullname, PCSZ_STARDOTPMD);
+	if (insert_filename(HWND_DESKTOP, fullname, TRUE, FALSE) &&
+	    *fullname && !strchr(fullname, '*') && !strchr(fullname, '?'))
+          strcpy(cmp->rightlist, fullname);
+      }
       WinSendMsg(hwnd, UM_SETUP, MPVOID, MPVOID);
       WinSendMsg(hwnd, UM_SETDIR, MPVOID, MPVOID);
       PostMsg(hwnd, UM_STRETCH, MPVOID, MPVOID);
       {
-	USHORT ids[] = { COMP_LEFTDIR, COMP_RIGHTDIR, COMP_TOTALLEFT,
-			 COMP_TOTALRIGHT, COMP_SELLEFT, COMP_SELRIGHT,
-			 0
-		       };
+        USHORT ids[] = {COMP_FRAME, COMP_LEFTDIR, COMP_RIGHTDIR, COMP_COLLECT,
+                        COMP_VIEW, COMP_NOTE, COMP_TOTALLEFT, COMP_SELLEFT, COMP_TOTALRIGHT,
+                        COMP_SELRIGHT, COMP_CNRMENU, COMP_DIRMENU, COMP_MENU,
+                        COMP_INCLUDESUBDIRS, COMP_SETDIRS, COMP_COPYLEFT, COMP_MOVELEFT,
+                        COMP_DELETELEFT, COMP_COPYRIGHT, COMP_MOVERIGHT, COMP_DELETERIGHT,
+                        COMP_TOTALLEFTHDR, COMP_SELLEFTHDR, COMP_TOTALRIGHTHDR,
+                        COMP_SELRIGHTHDR, COMP_FILTER, COMP_HIDENOTSELECTED, 0};
 	UINT x;
+        CHAR s[24];
+
 	for (x = 0; ids[x]; x++) {
-	  //fixme to allow user to change presparams 1-10-09 GKY
-	  SetPresParams(WinWindowFromID(hwnd, ids[x]),
+          //fixme to allow user to change presparams 1-10-09 GKY
+          sprintf(s, "CompDir%i", ids[x]);
+          RestorePresParams(WinWindowFromID(hwnd, ids[x]), s);
+	  /*SetPresParams(WinWindowFromID(hwnd, ids[x]),
 			&RGBGREY,
-			&RGBBLACK, &RGBBLACK, FNT_8HELVETICA);
+			&RGBBLACK, &RGBBLACK, FNT_8HELVETICA);*/
 	}
       }
       WinStartTimer(WinQueryAnchorBlock(hwnd), hwnd, ID_COMP_TIMER, 500);
@@ -2679,8 +2699,10 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (cmp) {
       COMPARE *forthread;
       CNRINFO cnri;
+      if (cmp->includesubdirs)
+        WinCheckButton(hwnd, COMP_INCLUDESUBDIRS, TRUE);
       cmp->includesubdirs = WinQueryButtonCheckstate(hwnd,
-						     COMP_INCLUDESUBDIRS);
+	  					     COMP_INCLUDESUBDIRS);
       memset(&cnri, 0, sizeof(CNRINFO));
       cnri.cb = sizeof(CNRINFO);
       cnri.pszCnrTitle = cmp->leftdir;
@@ -2718,7 +2740,8 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	else {
 	  WinSetDlgItemText(hwnd, COMP_NOTE,
 			    (CHAR *) GetPString(IDS_COMPHOLDREADDISKTEXT));
-	  SetButtonEnables(cmp, FALSE);
+          SetButtonEnables(cmp, FALSE);
+          cmp->includesubdirs = FALSE;
 	  cmp->selleft = 0;
 	  cmp->selright = 0;
 	}
@@ -3052,7 +3075,9 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	memset(&wa, 0, sizeof(wa));
 	wa.size = sizeof(wa);
 	strcpy(wa.szCurrentPath1, cmp->leftdir);
-	strcpy(wa.szCurrentPath2, cmp->rightdir);
+        strcpy(wa.szCurrentPath2, cmp->rightdir);
+        wa.includesubdirs = WinQueryButtonCheckstate(hwnd,
+	  					     COMP_INCLUDESUBDIRS);
 	if (WinDlgBox(HWND_DESKTOP,
 		      hwnd,
 		      WalkTwoCmpDlgProc,
@@ -3062,8 +3087,21 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    !IsFile(wa.szCurrentPath1) &&
 	    !IsFile(wa.szCurrentPath2)) {
 	  strcpy(cmp->leftdir, wa.szCurrentPath1);
-	  strcpy(cmp->rightdir, wa.szCurrentPath2);
-	  *cmp->rightlist = 0;
+          strcpy(cmp->rightdir, wa.szCurrentPath2);
+          cmp->includesubdirs = wa.includesubdirs;
+          if (!cmp->includesubdirs)
+            WinCheckButton(hwnd, COMP_INCLUDESUBDIRS, FALSE);
+          cmp->listfile = wa.listfile;
+          if (cmp->listfile) {
+            CHAR fullname[CCHMAXPATH];
+    
+            strcpy(fullname, PCSZ_STARDOTPMD);
+            if (insert_filename(HWND_DESKTOP, fullname, TRUE, FALSE) &&
+                *fullname && !strchr(fullname, '*') && !strchr(fullname, '?'))
+              strcpy(cmp->rightlist, fullname);
+          }
+          else
+            *cmp->rightlist = 0;
 	  PostMsg(hwnd, UM_SETUP, MPVOID, MPVOID);
 	  PostMsg(hwnd, UM_SETDIR, MPVOID, MPVOID);
 	}
@@ -3126,10 +3164,23 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       {
 	SWP swp;
 	ULONG size = sizeof(SWP);
-
+        USHORT ids[] = {COMP_FRAME, COMP_LEFTDIR, COMP_RIGHTDIR, COMP_COLLECT,
+                        COMP_VIEW, COMP_NOTE, COMP_TOTALLEFT, COMP_SELLEFT, COMP_TOTALRIGHT,
+                        COMP_SELRIGHT, COMP_CNRMENU, COMP_DIRMENU, COMP_MENU,
+                        COMP_INCLUDESUBDIRS, COMP_SETDIRS, COMP_COPYLEFT, COMP_MOVELEFT,
+                        COMP_DELETELEFT, COMP_COPYRIGHT, COMP_MOVERIGHT, COMP_DELETERIGHT,
+                        COMP_TOTALLEFTHDR, COMP_SELLEFTHDR, COMP_TOTALRIGHTHDR,
+                        COMP_SELRIGHTHDR, COMP_FILTER, COMP_HIDENOTSELECTED, 0};
+        UINT x;
+        CHAR s[24];
 	WinQueryWindowPos(hwnd, &swp);
 	PrfWriteProfileData(fmprof, FM3Str, "CompDir.Position", (PVOID) &swp,
-			    size);
+                            size);
+	for (x = 0; ids[x]; x++) {
+          //fixme to allow user to change presparams 1-10-09 GKY
+          sprintf(s, "CompDir%i", ids[x]);
+          SavePresParams(WinWindowFromID(hwnd, ids[x]), s);
+        }
       }
       WinDismissDlg(hwnd, 0);
       break;

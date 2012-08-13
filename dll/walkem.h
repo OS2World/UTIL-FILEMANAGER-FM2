@@ -9,6 +9,7 @@
   Copyright (c) 2008, 2009 Steven H. Levine
 
   17 Jul 08 SHL Baseline
+  12 Aug 12 GKY Allow for selection of include subdirectories or a list file on initial startup of compare dirs
 
 ***********************************************************************/
 
@@ -25,6 +26,9 @@ typedef struct
   USHORT dummy;
   CHAR szCurrentPath1[CCHMAXPATH];
   CHAR szCurrentPath2[CCHMAXPATH];
+  BOOL includesubdirs;
+  BOOL listfile;
+
 }
 WALK2;
 

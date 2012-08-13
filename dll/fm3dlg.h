@@ -41,6 +41,7 @@
                 copy, move and delete operations
   04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
                 for delete of readonly files
+  12 Aug 12 GKY Allow for selection of include subdirectories or a list file on initial startup of compare dirs
 
 ***********************************************************************/
 
@@ -194,8 +195,10 @@
 
 #define WALK2_FRAME										20850
 #define WALK2_PATH										20851
-#define WALK2_DRIVELIST									20852
-#define WALK2_DIRLIST									20853
+#define WALK2_DRIVELIST									        20852
+#define WALK2_DIRLIST									        20853
+#define WALK2_INCLUDESUBDIRS									20854
+#define WALK2_LOADLISTFILE                                                                      20855
 
 #define AD_FRAME											20900
 #define AD_ID												20901

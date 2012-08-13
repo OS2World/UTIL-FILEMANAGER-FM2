@@ -40,6 +40,7 @@
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   11 Apr 10 GKY Fix drive tree rescan failure and program hang caused by event sem
                 never being posted
+  12 Aug 12 GKY Allow for selection of include subdirectories or a list file on initial startup of compare dirs
 
 ***********************************************************************/
 
@@ -553,6 +554,8 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1,
 	    cmp->size = sizeof(COMPARE);
 	    strcpy(cmp->leftdir, wa.szCurrentPath1);
 	    strcpy(cmp->rightdir, wa.szCurrentPath2);
+            cmp->listfile = wa.listfile;
+            cmp->includesubdirs = wa.includesubdirs;
 	    cmp->hwndParent = hwnd;
 	    cmp->dcd.hwndParent = hwnd;
 	    WinDlgBox(HWND_DESKTOP,
