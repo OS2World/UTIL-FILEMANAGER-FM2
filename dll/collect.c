@@ -6,7 +6,7 @@
   Collector
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2011 Steven H. Levine
+  Copyright (c) 2003, 2012 Steven H. Levine
 
   15 Oct 02 MK Baseline
   10 Jan 04 SHL Avoid -1L byte counts
@@ -80,6 +80,7 @@
   13 Aug 11 GKY Have file count and KIBs update at the same time
   04 Aug 12 GKY Changes to use Unlock to unlock files if Unlock.exe is in path both from menu and as part of copy, move and
                 delete operations
+  05 Sep 12 SHL Correct UM_COLLECTFROMFILE bad list file reporting
 
 ***********************************************************************/
 
@@ -844,13 +845,14 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 #   endif
 
     if (dcd && mp1) {
+      // mp1 is pszFileName, mp2 is unused
       FILESTATUS4L fs4;
       PCNRITEM pci;
       RECORDINSERT ri;
       CHAR fullname[1024], *p;
       FILE *fp;
       ULONG errs = 0;
-      BOOL first = FALSE;
+      BOOL first = TRUE; // 2012-09-05 SHL
       size_t c;
       CHAR *moder = "r";
 
@@ -870,13 +872,14 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 
 	  c = strlen(fullname);
 	  if (c + 1 >= sizeof(fullname))
-	    errs++;
+	    errs++;			// Name too long
 	  else if (!c || (fullname[c - 1] != '\n' && fullname[c - 1] != '\r'))
-	    errs++;
+	    errs++;			// Probably reading a binary file
 	  else {
 	    bstripcr(fullname);
 
 	    if (*fullname == '\"') {
+	      // Strip quotes
 	      memmove(fullname, fullname + 1, strlen(fullname) + 1);
 	      lstrip(fullname);
 	      p = strchr(fullname, '\"');
@@ -885,6 +888,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	      rstrip(fullname);
 	    }
 	    else {
+	      // Strip trailing spaces
 	      p = strchr(fullname, ' ');
 	      if (p)
 		*p = 0;
@@ -897,6 +901,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 			      FALSE,
 			      FALSE,
 			      TRUE)) {
+	      // Already in container
 	      pci = UpdateCnrRecord(dcd->hwndCnr, fullname, FALSE, dcd);
 	      if (Filter((PMINIRECORDCORE) pci, (PVOID) & dcd->mask)) {
 		pci->rc.flRecordAttr &= ~CRA_FILTERED;
@@ -910,7 +915,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 				  FIL_QUERYEASIZEL,
 				  &fs4,
 				  sizeof(fs4))) {
-	      // collect it
+	      // Add to collector containter
 	      pci = WinSendMsg(dcd->hwndCnr,
 			       CM_ALLOCRECORD,
 			       MPFROMLONG(EXTRA_RECORD_BYTES),
@@ -931,7 +936,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	      }
 	    }
 	    else
-	      errs++;
+	      errs++;			// Something wrong with filename or file
 	  }
 	  if (errs > (first ? 0 : 50)) {
 	    /* prevent runaway on bad file */
@@ -941,15 +946,15 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 				(CHAR *)mp1);
 
 	    if (ret == MBID_NO)
-	      break;
+	      break;			// Give up
 	    if (!first)
 	      errs = 0;
 	    else
 	      first = FALSE;
 	  }
-	}				// while not eof
+	}  // while not eof
 	fclose(fp);
-      }
+      } // if file opened
       free(mp1);
     }
 #   ifdef FORTIFY

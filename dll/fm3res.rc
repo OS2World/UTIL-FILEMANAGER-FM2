@@ -6,7 +6,7 @@
   Command resources
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2009 Steven H. Levine
+  Copyright (c) 2003, 2012 Steven H. Levine
 
   08 Feb 03 SHL Enable SYS_FRAME
   17 Feb 07 GKY Add Make direcroy to white space directory container menu
@@ -60,6 +60,7 @@
   21 Nov 10 GKY Check if archiver.bb2 has been changed on disk before editing
   04 Aug 12 GKY Changes to use Unlock to unlock files if Unlock.exe is in path both from menu/toolbar and as part of
                 copy, move and delete operations
+  05 Sep 12 SHL Sync collector menu with docs
   
 ***********************************************************************/
 
@@ -1563,7 +1564,7 @@ MENU COLLECTORFILE_POPUP
 	 MENUITEM "~Do it yourself...\tCtrl + F5",IDM_DOITYOURSELF
   }
   MENUITEM "",                  -1,                   MIS_SEPARATOR
-  MENUITEM "Collect list in file(s)",IDM_COLLECTFROMFILE
+  MENUITEM "Collect from list file(s)",IDM_COLLECTFROMFILE
   MENUITEM "Archive...\tCtrl + A",  IDM_ARCHIVE
   MENUITEM "Extract...\tCtrl + x",  IDM_EXTRACT
   MENUITEM "UUDecode...\tCtrl + U", IDM_UUDECODE
