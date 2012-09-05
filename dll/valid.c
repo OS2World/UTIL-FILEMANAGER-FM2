@@ -472,9 +472,13 @@ BOOL IsFileSame(CHAR * filename1, CHAR * filename2)
 }
 #endif
 
+/**
+ * Check if argument is file or directory
+ * @returns: -1 (error), 0 (is a directory), or 1 (is a file)
+ */
+
 INT IsFile(PCSZ filename)
 {
-  /* returns: -1 (error), 0 (is a directory), or 1 (is a file) */
 
   FILESTATUS3 fsa;
   APIRET ret;

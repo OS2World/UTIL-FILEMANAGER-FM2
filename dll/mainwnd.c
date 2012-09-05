@@ -1876,7 +1876,7 @@ MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       CNRDRAGINFO cnd;
       ULONG numitems;
       USHORT usOperation;
-  
+
       cnd.pDragInfo = (PDRAGINFO) mp1;
       if (!DrgAccessDraginfo((PDRAGINFO) cnd.pDragInfo)) {
         Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
@@ -3166,6 +3166,11 @@ static VOID NextChild(HWND hwndClient, BOOL previous)
 		    0, 0, SWP_ZORDER);
   }
 }
+
+/**
+ * Close child windows
+ * @return TRUE if application data saved otherwise FALSE
+ */
 
 BOOL CloseChildren(HWND hwndClient)
 {

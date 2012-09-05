@@ -1014,6 +1014,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 			      MPFROMP(pciFirst), MPFROMP(&ri))) {
 		DosSleep(10);		// Give GUI time to work
 		WinSetFocus(HWND_DESKTOP, hwndCnr);
+		// Retry
 		if (!WinSendMsg(hwndCnr,
 				CM_INSERTRECORD,
 				MPFROMP(pciFirst), MPFROMP(&ri))) {
@@ -1156,6 +1157,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	    if (!WinSendMsg(hwndCnr, CM_INSERTRECORD,
 			    MPFROMP(pciFirst), MPFROMP(&ri))) {
 	      DosSleep(10);		// Give GUI time to work
+	      // Retry
 	      WinSetFocus(HWND_DESKTOP, hwndCnr);
 	      if (!WinSendMsg(hwndCnr, CM_INSERTRECORD,
 			      MPFROMP(pciFirst), MPFROMP(&ri))) {
