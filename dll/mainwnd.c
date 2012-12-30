@@ -112,6 +112,8 @@
   03 Oct 11 SHL Minor code cleanup
   05 Aug 12 GKY Make the Target Directory (DriveBar) a drop target.
   12 Aug 12 GKY Allow for selection of include subdirectories or a list file on initial startup of compare dirs
+  30 Dec 12 GKY Enhance traget directory drop to give the option of changing the directory or carrying out an
+                operation to the current target; Added an error message for target = None;
 
 ***********************************************************************/
 
