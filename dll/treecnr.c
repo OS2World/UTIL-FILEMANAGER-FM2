@@ -87,6 +87,8 @@
                 entries in the tree container, fix related semaphore performance using
                 combination of event and mutex semaphores
   04 Aug 12 GKY Fix trap reported by Ben
+  30 Dec 12 GKY Changed refresh removable media to query LVM directly to call Rediscover_PRMs (Ticket 472);
+                Also added a tree rescan following volume detach.
 
 ***********************************************************************/
 
@@ -2442,7 +2444,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  info->prev = apptail;
 		}
 		apptail = info;
-	      }
+              }
+              PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
 	    }
 	  }
 	}
@@ -2607,11 +2610,23 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
 
       case IDM_REFRESHREMOVABLES:
-	runemf2(SEPARATE | WINDOWED | BACKGROUND | MINIMIZED | WAIT,
-		HWND_DESKTOP, pszSrcFile, __LINE__, NULL, NULL,
-		"%s %s", PCSZ_LVMEXE, "/RediscoverPRM");
-	PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
-	break;
+        {
+        PFN Rediscover_PRMs;
+        HMODULE hmod = 0;
+        APIRET rc;
+        CHAR objerr[CCHMAXPATH];
+
+        rc = DosLoadModule(objerr, sizeof(objerr), "LVM", &hmod);
+        if (!rc) {
+          rc = DosQueryProcAddr(hmod, 70, NULL, &Rediscover_PRMs);
+          if (!rc)
+	    Rediscover_PRMs(&rc);
+          DosFreeModule(hmod);
+        }
+        if (!rc)
+	  PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
+        break;
+        }
 
       case IDM_SORTNAME:
       case IDM_SORTFILENAME:
