@@ -70,15 +70,9 @@ static PSZ pszSrcFile = __FILE__;
 	:((((c) >= (char) 'N') && ((c) <= (char) 'Z')) || (((c) >= (char) 'n') && ((c) <= (char) 'z')))?\
 	((c) - (char) 0xd):(c)
 
-/*((FAKEROT==0)?(c):(FAKEROT==1)?(!isalpha((c)))?(c):((((c) >= (char) 'A') && \
-	((c) <= (char) 'M')) || (((c) >= (char) 'a') && ((c) <= (char) 'm')))?((c) + (char) 0xd)\
-	:((((c) >= (char) 'N') && ((c) <= (char) 'Z')) || (((c) >= (char) 'n') && ((c) <= (char) 'z')))?\
-	((c) - (char) 0xd):(c):((c) >= (char) '!') ? ((((c) + (char) 47) > (char) '~') ? ((c) - (char) 47) :\
-	((c) + (char) 47)) : (c))*/
-
 LONG MLEgetlinetext(HWND h, LONG l, CHAR * buf, INT maxlen)
 {
-  /* get text of line l from MLE */
+  // get text of line l from MLE
 
   IPT s, e;
 
@@ -89,7 +83,7 @@ LONG MLEgetlinetext(HWND h, LONG l, CHAR * buf, INT maxlen)
 
 LONG MLEdeleteline(HWND h, LONG l)
 {
-  /* delete line l from MLE */
+  // delete line l from MLE
 
   IPT s, e;
 
@@ -100,7 +94,7 @@ LONG MLEdeleteline(HWND h, LONG l)
 
 LONG MLEdeletecurline(HWND h)
 {
-  /* delete current line from MLE */
+  // delete current line from MLE
 
   LONG l;
 
@@ -110,7 +104,7 @@ LONG MLEdeletecurline(HWND h)
 
 LONG MLEdeletetoeol(HWND h)
 {
-  /* delete from cursor pos to end of line */
+  // delete from cursor pos to end of line
 
   IPT s, e;
 
@@ -121,7 +115,7 @@ LONG MLEdeletetoeol(HWND h)
 
 VOID MLEclearall(HWND h)
 {
-  /* remove all text from MLE */
+  // remove all text from MLE
   LONG len;
 
   len = MLEgetlen(h);
@@ -131,7 +125,8 @@ VOID MLEclearall(HWND h)
 
 LONG MLEtextatcursor(HWND h, CHAR * buffer, INT buflen)
 {
-  /* place up to buflen chars of text from cursor pos into buffer
+  /**
+   * place up to buflen chars of text from cursor pos into buffer
    * return # of chars imported
    */
 
@@ -143,7 +138,8 @@ LONG MLEtextatcursor(HWND h, CHAR * buffer, INT buflen)
 
 LONG MLEtextatpos(HWND h, IPT i, CHAR * buffer, INT buflen)
 {
-  /* place up to buflen chars of text from pos i in buffer
+  /**
+   * place up to buflen chars of text from pos i in buffer
    * return # of chars imported
    */
 
@@ -155,14 +151,14 @@ LONG MLEtextatpos(HWND h, IPT i, CHAR * buffer, INT buflen)
 
 LONG MLEsizeofsel(HWND h)
 {
-  /* return length of selected text */
+  // return length of selected text
 
   IPT cursor, anchor, test;
 
   cursor = MLEcurpos(h);
   anchor = MLEancpos(h);
   test = min(cursor, anchor);
-  /* MLE fakes us out; get real length in bytes */
+  // MLE fakes us out; get real length in bytes
   return (LONG) WinSendMsg(h, MLM_QUERYFORMATTEXTLENGTH,
 			   MPFROMLONG(test),
 			   MPFROMLONG((LONG) ((cursor < anchor) ?
@@ -246,7 +242,7 @@ VOID MLEinternet(HWND h, BOOL ftp)
 
 BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
 {
-  /* perform action on text in selection */
+  // perform action on text in selection
 
   register CHAR *p;
   CHAR *sel, *temp = NULL;
@@ -395,7 +391,7 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
     }
     break;
 
-  default:				/* unknown action */
+  default:				// unknown action
 #ifdef __DEBUG_ALLOC__
     _heap_check();
 #endif
@@ -409,11 +405,11 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
     return FALSE;
   }
 
-  /* replace selection with altered text */
+  // replace selection with altered text
   p = sel;
   here = min(curpos, ancpos);
-  MLEclear(h);				/* delete current selection */
-  sellen = oldlen = strlen(sel);	/* actual number of bytes */
+  MLEclear(h);				// delete current selection
+  sellen = oldlen = strlen(sel);	// actual number of bytes
   while (oldlen > 0) {
     sellen = min(oldlen, 32700);
     memcpy(temp, p, sellen);
@@ -427,7 +423,7 @@ BOOL MLEdoblock(HWND h, INT action, CHAR * filename)
     }
     p += sellen;
     oldlen -= sellen;
-    if (oldlen && *p == '\n' /* && *(p - 1) == '\r' */ )
+    if (oldlen && *p == '\n')
       p--;
   }					// while
   WinSendMsg(h, MLM_SETSEL, MPFROMLONG(ancpos), MPFROMLONG(curpos));
@@ -497,7 +493,7 @@ BOOL MLEAutoLoad(HWND h, CHAR * filename)
 
 BOOL MLEHexLoad(HWND h, CHAR * filename)
 {
-  /* insert a file into the current position in the MLE */
+  // insert a file into the current position in the MLE
 
   HAB hab;
   CHAR *buffer = NULL, *hexbuff = NULL;
@@ -549,7 +545,7 @@ BOOL MLEHexLoad(HWND h, CHAR * filename)
 	    *hexbuff = 0;
 	    numimport = CreateHexDump(buffer,
 				      numread, hexbuff, 50000, left, TRUE);
-	    while (len && numimport) {	/* import entire file */
+	    while (len && numimport) {	// import entire file
 	      left += numread;
 	      len -= numread;
 	      if (!WinIsWindow(hab, h) || (vw && vw->killme))
@@ -663,11 +659,11 @@ BOOL MLEinsertfile(HWND h, CHAR * filename)
 	numread = fread(buffer, 1, min(50000, len), fp);
 	if (numread < 1)
 	  ret = FALSE;
-	while (len && numread > 0) {	/* here we go... */
+	while (len && numread > 0) {	// here we go...
 
 	  CHAR s[81];
 
-	  while (numread > 0) {		/* import entire file */
+	  while (numread > 0) {		// import entire file
 	    if (!WinIsWindow(hab, h) || (vw && vw->killme))
 	      break;
 	    if (strlen(buffer) < numread) {
@@ -821,7 +817,8 @@ VOID LoadThread(VOID * arg)
 INT MLEbackgroundload(HWND hwndReport, ULONG msg, HWND h, CHAR * filename,
 		      INT hex)
 {
-  /* load a file into the MLE in the background (via a separate thread)
+  /**
+   * load a file into the MLE in the background (via a separate thread)
    * return _beginthread status
    */
 
@@ -845,7 +842,8 @@ INT MLEbackgroundload(HWND hwndReport, ULONG msg, HWND h, CHAR * filename,
 
 BOOL MLEloadfile(HWND h, CHAR * filename)
 {
-  /* load a file into the MLE, getting rid of whatever was already
+  /**
+   * load a file into the MLE, getting rid of whatever was already
    * there.  Note this returns without erasing existing text if the
    * file to load does not exist
    */
@@ -866,7 +864,8 @@ BOOL MLEloadfile(HWND h, CHAR * filename)
 BOOL MLEexportfile(HWND h, CHAR * filename, INT tabspaces,
 		   BOOL striptraillines, BOOL striptrailspaces)
 {
-  /* save the MLE contents as a file.  Format the output so that
+  /**
+   * save the MLE contents as a file.  Format the output so that
    * the file is CR/LF terminated as presented in the MLE.
    */
 
@@ -878,7 +877,7 @@ BOOL MLEexportfile(HWND h, CHAR * filename, INT tabspaces,
   BOOL fWrap = MLEgetwrap(h);
   CHAR *mode;
 
-  if (!MLEgetlen(h))			/* nothing to save; forget it */
+  if (!MLEgetlen(h))			// nothing to save; forget it
     return TRUE;
 
   MLEsetwrap(h, FALSE);			// Need wrap off to export MLFIE_NOTRANS
@@ -896,7 +895,7 @@ BOOL MLEexportfile(HWND h, CHAR * filename, INT tabspaces,
 	break;
     }
     if (!MLEgetlen(h)) {
-      /* nothing to save; forget it */
+      // nothing to save; forget it
       MLEsetwrap(h, fWrap);		// Restore
       return TRUE;
     }
@@ -988,7 +987,7 @@ BOOL MLEexportfile(HWND h, CHAR * filename, INT tabspaces,
 
 MRESULT EXPENTRY SandRDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-  /* initiate search(/replace)s in edit mode */
+  // initiate search(/replace)s in edit mode
 
   SRCHPTR *vw;
 

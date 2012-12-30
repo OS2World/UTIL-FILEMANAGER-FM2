@@ -3542,7 +3542,7 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		   CM_SETCNRINFO, MPFROMP(&cnri),
 		   MPFROMLONG(CMA_FLWINDOWATTR));
       }
-      /* intentional fallthru */
+      // intentional fallthru
     case CFG9_1X:
       if (SHORT1FROMMP(mp1) == CFG9_1X) {
 	fTileBackwards = FALSE;
@@ -4014,7 +4014,7 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDismissDlg(hwnd, 0);
       break;
 
-    case IDM_HELP:                      /* relay message to appropriate page's window */
+    case IDM_HELP:                      // relay message to appropriate page's window
       ulPageId = (ULONG) WinSendDlgItemMsg(hwnd,
 					 CFG_NOTEBOOK,
 					 BKM_QUERYPAGEID,

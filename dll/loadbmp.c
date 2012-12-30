@@ -95,17 +95,19 @@ HBITMAP LoadBitmapFromFile(CHAR * pszFileName)
     goto ExitLoadBMP;
   }
 
-  /* Read bitmap info header
-     Allocate enough to hold a complete 2.x bitmap array file header
-     fixme to support > 256 colors?
+  /**
+   * Read bitmap info header
+   * Allocate enough to hold a complete 2.x bitmap array file header
+   * fixme to support > 256 colors?
    */
   pbmafh2 =
     xmalloc(sizeof(*pbmafh2) + 256 * sizeof(RGB2), pszSrcFile, __LINE__);
   if (!pbmafh2)
     goto ExitLoadBMP;
-  /* Assign pointers to the file header and bitmap info header etc.
-     Both the 1.x and 2.x structures are assigned to simplify code
-     fixme to clean this up - aliased pointers are evil
+  /**
+   * Assign pointers to the file header and bitmap info header etc.
+   * Both the 1.x and 2.x structures are assigned to simplify code
+   * fixme to clean this up - aliased pointers are evil
    */
   pbmfh2 = &pbmafh2->bfh2;
   pbmih2 = &pbmfh2->bmp2;
@@ -118,8 +120,9 @@ HBITMAP LoadBitmapFromFile(CHAR * pszFileName)
   case BFT_COLORICON:
   case BFT_COLORPOINTER:
     {
-      /* Assume image is a 2.0 image and read as a 2.x header
-         OK for 1.x file - read will not fail unless file is corrupted
+      /**
+       * Assume image is a 2.0 image and read as a 2.x header
+       * OK for 1.x file - read will not fail unless file is corrupted
        */
       rc = fseek(pf, 0, SEEK_SET);
       if (rc) {
@@ -134,12 +137,13 @@ HBITMAP LoadBitmapFromFile(CHAR * pszFileName)
       }
 
       is2x = pbmih2->cbFix > sizeof(BITMAPINFOHEADER);	// 1.x or 2.x bitmap
-      /* We will read the color table later
-         Color table follows header but
-         location depends on the type of the bitmap (old vs new)
-         1.x header is fixed size
-         2.x header is variable sized, so offset must be calculated
-         cbFix contains actual size of BITMAPINFOHEADER2 in file
+      /**
+       * We will read the color table later
+       * Color table follows header but
+       * location depends on the type of the bitmap (old vs new)
+       * 1.x header is fixed size
+       * 2.x header is variable sized, so offset must be calculated
+       *  cbFix contains actual size of BITMAPINFOHEADER2 in file
        */
       ulRGBOffset = is2x ? sizeof(*pbmfh2) - sizeof(*pbmih2) + pbmih2->cbFix :
 	sizeof(BITMAPFILEHEADER);
@@ -148,8 +152,9 @@ HBITMAP LoadBitmapFromFile(CHAR * pszFileName)
 
   case BFT_BITMAPARRAY:
     {
-      /* Now we are dealing with a bitmap array which is a collection of bitmaps
-         Each bitmap has its own file header
+      /**
+       * Now we are dealing with a bitmap array which is a collection of bitmaps
+       * Each bitmap has its own file header
        */
 
       ULONG ulCurOffset;
@@ -162,8 +167,9 @@ HBITMAP LoadBitmapFromFile(CHAR * pszFileName)
       ULONG ulSizeDiffPicked;
       HDC hdc;
 
-      /* Scan the array and chose the bitmap best suited
-         for the current display size and color capacities
+      /**
+       * Scan the array and chose the bitmap best suited
+       * for the current display size and color capacities
        */
       hdc = GpiQueryDevice(hPS);
       if (!hdc) {
@@ -232,8 +238,9 @@ HBITMAP LoadBitmapFromFile(CHAR * pszFileName)
       }
 
       is2x = pbmih2->cbFix > sizeof(BITMAPINFOHEADER);
-      /* As before, we calculate offset in file stream to color table
-         This code must match single bitmap logic
+      /**
+       * As before, we calculate offset in file stream to color table
+       * This code must match single bitmap logic
        */
       ulRGBOffset = ulOffsetPicked;
       ulRGBOffset +=
@@ -256,11 +263,12 @@ HBITMAP LoadBitmapFromFile(CHAR * pszFileName)
 
   // Read color table
   if (is2x) {
-    /* For a 2.0 bitmap, read the color table as is
-       The bitmap info structure is header + color table
-       If we have 24 bits per pel, there is usually no color table, unless
-       pbmih2->cclrUsed or pbmih2->cclrImportant are non zero
-       fixme to test this
+    /**
+     * For a 2.0 bitmap, read the color table as is
+     * The bitmap info structure is header + color table
+     * If we have 24 bits per pel, there is usually no color table, unless
+     * pbmih2->cclrUsed or pbmih2->cclrImportant are non zero
+     *  fixme to test this
      */
     if (pbmih2->cBitCount < 24) {
       ULONG ulRGBBytes;
@@ -283,9 +291,10 @@ HBITMAP LoadBitmapFromFile(CHAR * pszFileName)
     pbmi2 = (PBITMAPINFO2) pbmih2;
   }
   else {
-    /* This is a 1.x format bitmap
-       Since the current standard format is the 2.0
-       convert the header and color table to 2.x format
+    /**
+     * This is a 1.x format bitmap
+     * Since the current standard format is the 2.0
+     * convert the header and color table to 2.x format
      */
     ULONG ul;
     RGB rgb;
@@ -318,8 +327,9 @@ HBITMAP LoadBitmapFromFile(CHAR * pszFileName)
     memset((PCHAR) pbmi2 + 16, 0, sizeof(BITMAPINFOHEADER2) - 16);
   }					// if 1.x
 
-  /* The 2.0 bitmap info structure set up
-     Position to start of the bitmap data
+  /**
+   * The 2.0 bitmap info structure set up
+   * Position to start of the bitmap data
    */
   rc = fseek(pf, pbmfh2->offBits, SEEK_SET);
   if (rc) {
@@ -327,12 +337,13 @@ HBITMAP LoadBitmapFromFile(CHAR * pszFileName)
     goto ExitLoadBMP;
   }
 
-  /* Read the bitmap data
-     The read size is derived using the magic formula
-     Each bitmap scan line is aligned on a doubleword boundary
-     The size of the scan line is the number of pels times the bpp
-     After aligning it, we divide by 4 to get the number of bytes, and
-     multiply by the number of scan lines and the number of pel planes
+  /**
+   * Read the bitmap data
+   * The read size is derived using the magic formula
+   * Each bitmap scan line is aligned on a doubleword boundary
+   * The size of the scan line is the number of pels times the bpp
+   * After aligning it, we divide by 4 to get the number of bytes, and
+   * multiply by the number of scan lines and the number of pel planes
    */
   if (pbmi2->ulCompression)
     ulDataSize = pbmi2->cbImage;

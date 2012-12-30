@@ -145,7 +145,7 @@ ULONG SecsSince1980(FDATE *date, FTIME *time)
   return total;
 }
 
-/*
+/**
  * this function originally from C_ECHO's Snippets -- modified
  * brute force methodology
  */

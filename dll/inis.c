@@ -243,38 +243,38 @@ VOID CopyIniThread(VOID * args)
 	      if (PrfQueryProfileSize(hiniTo,
 				      (PSZ) inirec->app,
 				      NULL, (PULONG) & ulSize) && ulSize) {
-		pDataK = xmalloc(ulSize, pszSrcFile, __LINE__); /* allocate space for keynames */
+		pDataK = xmalloc(ulSize, pszSrcFile, __LINE__); // allocate space for keynames
 		if (pDataK) {
-		  /* get keynames */
+		  // get keynames
 		  if (PrfQueryProfileString(hiniTo,
 					    (PSZ) inirec->app,
 					    NULL, "\0", pDataK, ulSize)) {
 		    pCurrentK = pDataK;
-		    /* step through keynames */
+		    // step through keynames
 		    while (*pCurrentK) {
 		      if (PrfQueryProfileSize(hiniTo, inirec->app,
 					      pCurrentK,
 					      (PULONG)&ulSize) && ulSize) {
 			pData = xmalloc(ulSize, pszSrcFile, __LINE__);
 			if (pData) {
-			  /* get data */
+			  // get data
 			  if (PrfQueryProfileData(hiniTo, inirec->app,
 						  pCurrentK,
 						  pData, (PULONG) & ulSize))
-			    /* write data to new ini file */
+			    // write data to new ini file
 			    PrfWriteProfileData(hiniFrom, ((*inirec->app2) ?
 							inirec->
 							app2 : inirec->app),
 						pCurrentK, pData, ulSize);
-			  free(pData);  /* free data */
+			  free(pData);  // free data
 			}
 		      }
-		      while (*pCurrentK)        /* next keyname */
+		      while (*pCurrentK)        // next keyname
 			pCurrentK++;
 		      pCurrentK++;
 		    }
 		  }
-		  free(pDataK);         /* free keynames */
+		  free(pDataK);         // free keynames
 		}
 	      }
 	    }
@@ -300,17 +300,17 @@ VOID CopyIniThread(VOID * args)
 				      (PULONG) & ulSize) && ulSize) {
 		pData = xmalloc(ulSize, pszSrcFile, __LINE__);
 		if (pData) {
-		  /* get data */
+		  // get data
 		  if (PrfQueryProfileData(hiniTo, inirec->app,
 					  inirec->key,
 					  pData, (PULONG) & ulSize))
-		    /* write data to new ini file */
+		    // write data to new ini file
 		    PrfWriteProfileData(hiniFrom, ((*inirec->app2) ?
 						inirec->app2 : inirec->app),
 					((*inirec->key2) ?
 					 inirec->key2 : inirec->key),
 					pData, ulSize);
-		  free(pData);          /* free data */
+		  free(pData);          // free data
 		}
 	      }
 	    }
@@ -428,24 +428,24 @@ static VOID BackupIniThread(VOID * args)
 	    ulSize = 0;
 	    if (PrfQueryProfileSize(orig, NULL, NULL, (PULONG) & ulSize)
 		&& ulSize) {
-	      pDataA = xmalloc(ulSize, pszSrcFile, __LINE__);   /* allocate space for applnames */
+	      pDataA = xmalloc(ulSize, pszSrcFile, __LINE__);   /// allocate space for applnames
 	      if (pDataA) {
-		/* get applnames */
+		// get applnames
 		if (PrfQueryProfileString
 		    (orig, NULL, NULL, "\0", pDataA, ulSize)) {
 		  pCurrentA = pDataA;
-		  /* step through applnames */
+		  // step through applnames
 		  while (*pCurrentA) {
-		    /* now keynames for this applname */
+		    // now keynames for this applname
 		    if (PrfQueryProfileSize(orig, (PSZ) pCurrentA, NULL,
 					    (PULONG) & ulSize) && ulSize) {
-		      pDataK = xmalloc(ulSize, pszSrcFile, __LINE__);   /* allocate space for keynames */
+		      pDataK = xmalloc(ulSize, pszSrcFile, __LINE__);   // allocate space for keynames
 		      if (pDataK) {
-			/* get keynames */
+			// get keynames
 			if (PrfQueryProfileString(orig, (PSZ) pCurrentA, NULL,
 						  "\0", pDataK, ulSize)) {
 			  pCurrentK = pDataK;
-			  /* step through keynames */
+			  // step through keynames
 			  while (*pCurrentK) {
 			    if (PrfQueryProfileSize(orig, pCurrentA,
 						    pCurrentK,
@@ -453,32 +453,32 @@ static VOID BackupIniThread(VOID * args)
 				ulSize) {
 			      pData = xmalloc(ulSize, pszSrcFile, __LINE__);
 			      if (pData) {
-				/* get data */
+				// get data
 				if (PrfQueryProfileData(orig, pCurrentA,
 							pCurrentK,
 							pData,
 							(PULONG) & ulSize))
-				  /* write data to new ini file */
+				  // write data to new ini file
 				  PrfWriteProfileData(new, pCurrentA,
 						      pCurrentK, pData,
 						      ulSize);
-				free(pData);    /* free data */
+				free(pData);    // free data
 			      }
 			    }
-			    while (*pCurrentK)  /* next keyname */
+			    while (*pCurrentK)  // next keyname
 			      pCurrentK++;
 			    pCurrentK++;
 			  }
 			}
-			free(pDataK);   /* free keynames */
+			free(pDataK);   // free keynames
 		      }
 		    }
-		    while (*pCurrentA)  /* next applname */
+		    while (*pCurrentA)  // next applname
 		      pCurrentA++;
 		    pCurrentA++;
 		  }
 		}
-		free(pDataA);           /* free applnames */
+		free(pDataA);           // free applnames
 	      }
 	    }
 	    CloseProfile(new, FALSE);
@@ -1177,7 +1177,7 @@ MRESULT EXPENTRY SwapIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  break;
 	}
 	CloseProfile(testini, FALSE);
-	/* make copies of new inis */
+	// make copies of new inis
 	*tempuserini = 0;
         *tempsysini = 0;
         if (pTmpDir && !IsValidDir(pTmpDir))
@@ -1216,7 +1216,7 @@ MRESULT EXPENTRY SwapIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    GetPString(IDS_INIPRFRESETFAILEDTEXT));
 	}
 	else {
-	  /* backup old inis */
+	  // backup old inis
 	  strcpy(tempuserini2, olduserini);
 	  p = strrchr(tempuserini2, '\\');
 	  if (!p)
@@ -1259,7 +1259,7 @@ MRESULT EXPENTRY SwapIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WinDismissDlg(hwnd, 1);
 	    break;
 	  }
-	  /* copy new inis to old ini names */
+	  // copy new inis to old ini names
 	  rc = DosCopy(userini, olduserini, DCPY_EXISTING);
 	  if (rc) {
 	    Dos_Error(MB_CANCEL,
@@ -1284,7 +1284,7 @@ MRESULT EXPENTRY SwapIniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WinDismissDlg(hwnd, 1);
 	    break;
 	  }
-	  /* replace temp inis with new permanent inis */
+	  // replace temp inis with new permanent inis
 	  memset(&prfp, 0, sizeof(PRFPROFILE));
 	  prfp.cchUserName = strlen(oldsysini);
 	  prfp.cchSysName = strlen(olduserini);
@@ -1514,7 +1514,7 @@ static ULONG flFrameFlags = FCF_SYSMENU | FCF_SIZEBORDER | FCF_ICON |
 
 HWND StartIniEditor(HWND hwnd, CHAR *fname, INT flags)
 {
-  /*
+  /**
    * create an ini editor window
    * bitmapped flags:
    *  2 = don't position window for non-desktop client
@@ -1698,10 +1698,10 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       else {
 	pDItem = DrgQueryDragitemPtr(pDInfo,0);
-	/* Check valid rendering mechanisms and data */
+	// Check valid rendering mechanisms and data
 	if (DrgVerifyRMF(pDItem, (CHAR *) DRM_OS2FILE, NULL)) {
 	  DrgFreeDraginfo(pDInfo);
-	  return (MRFROM2SHORT(DOR_DROP, DO_LINK));     /* OK to drop */
+	  return (MRFROM2SHORT(DOR_DROP, DO_LINK));     // OK to drop
 	}
 	else if (DrgVerifyRMF(pDItem, (CHAR *) DRM_FM2INIRECORD, (CHAR *) DRF_FM2INI)) {
 	  if (WinQueryWindow(pDInfo->hwndSource, QW_PARENT) !=
@@ -1723,7 +1723,7 @@ MRESULT EXPENTRY IniLBSubProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case DM_DROP:
     {
       PDRAGINFO pDInfo = (PDRAGINFO) mp1;
-      PDRAGITEM pDItem;         /* Pointer to DRAGITEM */
+      PDRAGITEM pDItem;         // Pointer to DRAGITEM
       ULONG numitems, curitem, len;
       USHORT action;
       CHAR szFrom[CCHMAXPATH + 2], szDir[CCHMAXPATH + 1],
@@ -2043,7 +2043,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     return 0;
 
-  case UM_INITIALSIZE:                  /* kludge */
+  case UM_INITIALSIZE:                  // kludge
     inidata = INSTDATA(hwnd);
     if (!inidata)
       Runtime_Error(pszSrcFile, __LINE__, NULL);
@@ -2085,7 +2085,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case UM_LOADFILE:
-    /* load initial file */
+    // load initial file
     inidata = INSTDATA(hwnd);
     if (!inidata)
       Runtime_Error(pszSrcFile, __LINE__, NULL);
@@ -2136,9 +2136,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinQueryWindowRect(hwnd, &rcl);
 	WinFillRect(hps, &rcl, CLR_PALEGRAY);
 	WinEndPaint(hps);
-	/*
-	 * tell status window to paint its box
-	 */
+	// tell status window to paint its box
 	PaintRecessedWindow(WinWindowFromID(hwnd, INI_APPHDR),
 			    (HPS) 0, FALSE, FALSE);
 	PaintRecessedWindow(WinWindowFromID(hwnd, INI_KEYHDR),

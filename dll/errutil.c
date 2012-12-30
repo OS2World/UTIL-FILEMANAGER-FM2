@@ -215,10 +215,8 @@ static VOID formatWinError(PSZ pszBuf, UINT cBufBytes,
 			   PCSZ pszSrcFile, UINT uSrcLineNo,
 			   PCSZ pszFmt, va_list pva)
 {
-  PERRINFO pErrInfoBlk;		/* Pointer to ERRINFO structure filled
-				   by WinGetErrorInfo */
-  PSZ pszOffset;		/* Pointer to current error message returned
-				   by WinGetErrorInfo */
+  PERRINFO pErrInfoBlk;	    // Pointer to ERRINFO structure filled by WinGetErrorInfo
+  PSZ pszOffset;	    // Pointer to current error message returned by WinGetErrorInfo
   PSZ psz;
   HAB hab;
 
@@ -255,13 +253,9 @@ static VOID formatWinError(PSZ pszBuf, UINT cBufBytes,
   else {
     if (!hwndOwner)
       hwndOwner = HWND_DESKTOP;
-    /* Find message offset in array of message offsets
-       Assume 1 message - fixme?
-     */
+    // Find message offset in array of message offsets Assume 1 message - fixme?
     pszOffset = ((PSZ) pErrInfoBlk) + pErrInfoBlk->offaoffszMsg;
-    /* Address error message in array of messages and
-       append error message to source code linenumber
-     */
+    // Address error message in array of messages and append error message to source code linenumber
     psz = pszBuf + strlen(pszBuf);
     sprintf(psz, " #0x%04x \"", ERRORIDERROR(pErrInfoBlk->idError));
     psz += strlen(psz);

@@ -40,7 +40,8 @@ static PSZ pszSrcFile = __FILE__;
 
 static INT index(const CHAR * s, const CHAR c);
 
-/* Get index of char in string
+/**
+ * Get index of char in string
  * @parm s string to search
  * @parm c char to search for
  * @return 0 relative index of c in s or -1
@@ -56,7 +57,8 @@ static INT index(const CHAR * s, const CHAR c)
   return (INT) (p - s);
 }
 
-/* literal()
+/**
+ * literal()
  * Translate a string with \ escape tokens to binary equivalent
  * Translates in place
  *
@@ -102,14 +104,14 @@ UINT literal(PSZ pszBuf)
   if (!pszWork)
     return 0;
 
-  iBuf = 0;                                /* set index to first character */
+  iBuf = 0;                                // set index to first character
   while (pszBuf[iBuf]) {
     switch (pszBuf[iBuf]) {
     case '\\':
       switch (pszBuf[iBuf + 1]) {
-      case 'x':                        /* hexadecimal */
+      case 'x':                        // hexadecimal
 	wchar = 0;
-	iBuf += 2;                        /* get past "\x" */
+	iBuf += 2;                        // get past "\x"
 	if (index(HEX, (CHAR) toupper(pszBuf[iBuf])) != -1) {
 	  iBufSave = iBuf;
 	  while (((wpos = index(HEX, (CHAR) toupper(pszBuf[iBuf]))) != -1) &&
@@ -119,63 +121,63 @@ UINT literal(PSZ pszBuf)
 	  }
 	}
 	else
-	  wchar = 'x';                        /* just an x */
+	  wchar = 'x';                        // just an x
 	iBuf--;
 	*pszOut++ = wchar;
 	break;
 
-      case '\\':                        /* we want a "\" */
+      case '\\':                        // we want a "\"
 	iBuf++;
 	*pszOut++ = '\\';
 	break;
 
-      case 't':                        /* tab CHAR */
+      case 't':                        // tab CHAR
 	iBuf++;
 	*pszOut++ = '\t';
 	break;
 
-      case 'n':                        /* new line */
+      case 'n':                        // new line
 	iBuf++;
 	*pszOut++ = '\n';
 	break;
 
-      case 'r':                        /* carr return */
+      case 'r':                        // carr return
 	iBuf++;
 	*pszOut++ = '\r';
 	break;
 
-      case 'b':                        /* back space */
+      case 'b':                        // back space
 	iBuf++;
 	*pszOut++ = '\b';
 	break;
 
-      case 'f':                        /* formfeed */
+      case 'f':                        // formfeed
 	iBuf++;
 	*pszOut++ = '\x0c';
 	break;
 
-      case 'a':                        /* bell */
+      case 'a':                        // bell
 	iBuf++;
 	*pszOut++ = '\07';
 	break;
 
-      case '\'':                        /* single quote */
+      case '\'':                        // single quote
 	iBuf++;
 	*pszOut++ = '\'';
 	break;
 
-      case '\"':                        /* double quote */
+      case '\"':                        // double quote
 
 	iBuf++;
 	*pszOut++ = '\"';
 	break;
 
-      default:                                /* decimal */
-	iBuf++;                                /* get past "\" */
+      default:                                // decimal
+	iBuf++;                                // get past "\"
 	wchar = 0;
 	if (index(DEC, pszBuf[iBuf]) != -1) {
 	  iBufSave = iBuf;
-	  do {                                /* cvt to binary */
+	  do {                                // cvt to binary
 	    wchar = (CHAR) (wchar * 10 + (pszBuf[iBuf++] - 48));
 	  } while (index(DEC, pszBuf[iBuf]) != -1 && iBuf < iBufSave + 3);
 	  iBuf--;
@@ -193,13 +195,13 @@ UINT literal(PSZ pszBuf)
     }                                        // switch
     iBuf++;
   }                                        // while
-  *pszOut = 0;                                /* Always terminate, even if not string */
+  *pszOut = 0;                                // Always terminate, even if not string
 
-  cBufBytes = pszOut - pszWork;                /* Calc string length excluding terminator */
-  memcpy(pszBuf, pszWork, cBufBytes + 1);        /* Overwrite including terminator */
+  cBufBytes = pszOut - pszWork;                // Calc string length excluding terminator
+  memcpy(pszBuf, pszWork, cBufBytes + 1);        // Overwrite including terminator
   free(pszWork);
 
-  return cBufBytes;                        /* Return string length */
+  return cBufBytes;                        // Return string length
 }
 
 /** Check wildcard match

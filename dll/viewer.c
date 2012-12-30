@@ -77,7 +77,7 @@ HWND StartMLEEditor(HWND hwndClient, INT flags, CHAR * filename,
 		    HWND hwndRestore)
 {
 
-  /*
+  /**
    * create an editor window
    * bitmapped flags:
    *  1 =  readonly
@@ -356,7 +356,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   switch (msg) {
   case WM_CREATE:
-    /* create MLE window */
+    // create MLE window
     if (!WinCreateWindow(hwnd,
 			 WC_MLE,
 			 (PSZ) NULL,
@@ -459,7 +459,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (vw) {
       vw->hab = WinQueryAnchorBlock(hwnd);
       WinSendMsg(hwnd, UM_SETUP2, MPVOID, MPVOID);
-      /* set up initial MLE conditions */
+      // set up initial MLE conditions
       vw->srch.hwndmle = hwndMLE;
       MLEsetcurpos(hwndMLE, 0);
       MLEclearall(hwndMLE);
@@ -608,7 +608,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     return 0;
 
-  case UM_CONTAINER_FILLED:		/* file was loaded */
+  case UM_CONTAINER_FILLED:		// file was loaded
     WinEnableWindow(vw->hwndMenu, TRUE);
     vw->busy = FALSE;
     if (vw->killme) {
@@ -646,7 +646,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case UM_SELECT:
-  case WM_SETFOCUS:			/* sling focus to MLE */
+  case WM_SETFOCUS:			// sling focus to MLE
     if (mp2) {
       if (hwndMain && fAutoView)
 	PostMsg(hwndMain, UM_LOADFILE, MPVOID, MPVOID);
@@ -710,11 +710,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       return 0;
     }
     switch (SHORT1FROMMP(mp1)) {
-      /*
-	 case MLE_PREVIEW:
-	 preview_text(hwndMLE);
-	 break;
-       */
+
     case MLE_VIEWFTP:
       MLEinternet(hwndMLE, TRUE);
       break;
@@ -816,7 +812,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  DosBeep(50, 100);
       }
       else {
-	/* I dunno why I gotta reset the colors... */
+	// I dunno why I gotta reset the colors...
 	BOOL ro;
 	LONG fColor, bColor;
 
@@ -908,7 +904,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    break;
 	}
 	{
-	  /* zero file length instead of unlink (protects EAs from loss) */
+	  // zero file length instead of unlink (protects EAs from loss)
           FILE *fp;
           CHAR *moder = "r+";
 
@@ -951,7 +947,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (temp != MBID_YES)
 	  break;
       }
-      /* intentional fallthru */
+      // intentional fallthru
     case MLE_INSERTFILE:
       if (!MLEgetreadonly(hwndMLE)) {
 
@@ -966,7 +962,6 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (SHORT1FROMMP(mp1) == MLE_INSERTFILE)
 	    MLEinsertfile(hwndMLE, filename);
 	  else {
-//                switch_to(filename);
 	    if (MLEbackgroundload(hwnd,
 				  UM_CONTAINER_FILLED,
 				  hwndMLE, filename, vw->hex) != -1) {
@@ -1116,7 +1111,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       break;
 
-    case MLE_CUTLINE:			/* delete current line */
+    case MLE_CUTLINE:			// delete current line
       if (!MLEgetreadonly(hwndMLE))
 	MLEdeletecurline(hwndMLE);
       break;
@@ -1127,22 +1122,22 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	MLEclear(hwndMLE);
       break;
 
-    case DID_CANCEL:			/* escape */
+    case DID_CANCEL:			// escape
       if (MLEgetreadonly(hwndMLE))
 	PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
       else
 	PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(MLE_DESELECTALL, 0), MPVOID);
       break;
 
-    case MLE_QUIT:			/* outtahere */
+    case MLE_QUIT:			// outtahere
       MLEsetchanged(hwndMLE, FALSE);
       vw->ch = FALSE;
-      /* intentional fallthru */
+      // intentional fallthru
     case MLE_END:
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
       break;
 
-    case MLE_SETFONT:			/* select a new font */
+    case MLE_SETFONT:			// select a new font
       SetMLEFont(hwndMLE, &vw->fattrs, 0);
       PrfWriteProfileData(fmprof,
 			  FM3Str, "MLEFont", &vw->fattrs, sizeof(FATTRS));
@@ -1183,7 +1178,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		   &vw->srch.fInsensitive, TRUE, "MLEInsensitive");
       break;
 
-    case MLE_FINDFIRST:		/* search */
+    case MLE_FINDFIRST:		// search
       if (MLEfindfirst(hwnd, &vw->srch))
 	PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(MLE_FINDNEXT, 0), MPVOID);
       break;
@@ -1201,7 +1196,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       break;
 
-    case MLE_TOGWRAP:			/* toggle wrap mode */
+    case MLE_TOGWRAP:			// toggle wrap mode
       if (vw->hex != 1) {
 	SetMenuCheck(vw->hwndMenu, MLE_TOGWRAP, &vw->fWrap, TRUE, "MLEWrap");
 	MLEsetwrap(hwndMLE, vw->fWrap);
@@ -1230,7 +1225,7 @@ MRESULT EXPENTRY MLEEditorProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     break;
 
-  case WM_CLOSE:			/* outtahere */
+  case WM_CLOSE:			// outtahere
     WinSendMsg(hwnd, WM_SAVEAPPLICATION, MPVOID, MPVOID);
     if (vw) {
       if (vw->busy) {

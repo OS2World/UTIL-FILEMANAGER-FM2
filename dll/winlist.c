@@ -85,16 +85,16 @@ MRESULT EXPENTRY WinListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         ULONG ulSize, ulcEntries;
         register INT i, y;
 
-        /* Get the switch list information */
+        // Get the switch list information
         ulcEntries = WinQuerySwitchList(0, NULL, 0);
         ulSize = sizeof(SWBLOCK) + sizeof(HSWITCH) + (ulcEntries + 4) *
           (LONG) sizeof(SWENTRY);
-        /* Allocate memory for list */
+        // Allocate memory for list
         pswb = xmalloc((unsigned)ulSize, pszSrcFile, __LINE__);
         if (pswb) {
-          /* Put the info in the list */
+          // Put the info in the list
           ulcEntries = WinQuerySwitchList(0, pswb, ulSize - sizeof(SWENTRY));
-          /* do the dirty deed */
+          // do the dirty deed
           y = 0;
           for (i = 0; i < pswb->cswentry; i++) {
             if (pswb->aswentry[i].swctl.uchVisibility == SWL_VISIBLE &&

@@ -371,7 +371,7 @@ VOID free_setups(VOID)
 
 VOID load_udirs(VOID)
 {
-  /* load linked list of user directories from USERDIRS.DAT file */
+  // load linked list of user directories from USERDIRS.DAT file
 
   FILE *fp;
   LINKDIRS *info;
@@ -488,7 +488,7 @@ BOOL add_udir(BOOL userdirs, CHAR *inpath)
 	}
       }
       else {
-	/* if adding manual directory, remove from auto list if present */
+	// if adding manual directory, remove from auto list if present
 	info = ldirhead;
 	temp = NULL;
 	while (info) {
@@ -644,7 +644,7 @@ VOID free_udirs(VOID)
 VOID FillPathListBox(HWND hwnd, HWND hwnddrive, HWND hwnddir, CHAR * pszPath,
 		     BOOL nounwriteable)
 {
-  /*
+  /**
    * this function fills one or two list boxes with drive and directory
    * information showing all available drives and all directories off of
    * the directory represented by path.  This works independently of the
@@ -740,7 +740,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   WALKER *wa;
   CHAR szBuff[CCHMAXPATH + 1], szBuffer[CCHMAXPATH + 1], *p;
   SHORT sSelect;
-  static BOOL okay;		/* avoid combobox selecting as filled */
+  static BOOL okay;		// avoid combobox selecting as filled
   static CHAR lastdir[CCHMAXPATH + 1];
 
   switch (msg) {
@@ -820,7 +820,7 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinSetDlgItemText(hwnd, WALK_PATH, wa->szCurrentPath);
     if (!loadedudirs)
       load_udirs();
-    {					/* fill user list box */
+    {					// fill user list box
       ULONG ulDriveNum, ulDriveMap;
       ULONG ulSearchCount;
       FILEFINDBUF3 findbuf;
@@ -1376,7 +1376,7 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   WALK2 *wa;
   CHAR szBuff[CCHMAXPATH + 1], szBuffer[CCHMAXPATH + 1], *p;
   SHORT sSelect;
-  static BOOL okay;		/* avoid combobox selecting as filled */
+  static BOOL okay;		// avoid combobox selecting as filled
 
   switch (msg) {
   case UM_SETUP2:

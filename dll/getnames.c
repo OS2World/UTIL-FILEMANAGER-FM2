@@ -50,7 +50,7 @@ MRESULT EXPENTRY CustomFileDlg(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_INITDLG:
     if (!loadedudirs)
       load_udirs();
-    {					/* fill user list box */
+    {					// fill user list box
       ULONG ulDriveNum, ulDriveMap;
       ULONG ulSearchCount;
       FILEFINDBUF3L findbuf;
@@ -115,7 +115,7 @@ MRESULT EXPENTRY CustomFileDlg(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case WM_CONTROL:
     switch (SHORT1FROMMP(mp1)) {
-    case 260:				/* drives dropdown list */
+    case 260:				// drives dropdown list
       switch (SHORT2FROMMP(mp1)) {
       case CBN_SHOWLIST:
 	WinSetDlgItemText(hwnd,
@@ -124,7 +124,7 @@ MRESULT EXPENTRY CustomFileDlg(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       break;
 
-    case 258:				/* name entry field */
+    case 258:				// name entry field
       switch (SHORT2FROMMP(mp1)) {
       case EN_SETFOCUS:
 	WinSetDlgItemText(hwnd,
@@ -136,7 +136,7 @@ MRESULT EXPENTRY CustomFileDlg(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       break;
 
-    case 264:				/* dirs listbox */
+    case 264:				// dirs listbox
       switch (SHORT2FROMMP(mp1)) {
       case LN_SETFOCUS:
 	WinSetDlgItemText(hwnd,
@@ -148,7 +148,7 @@ MRESULT EXPENTRY CustomFileDlg(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       break;
 
-    case 266:				/* files listbox */
+    case 266:				// files listbox
       switch (SHORT2FROMMP(mp1)) {
       case LN_SETFOCUS:
 	WinSetDlgItemText(hwnd, FDLG_HELP,
@@ -294,7 +294,7 @@ BOOL insert_filename(HWND hwnd, CHAR * filename, INT loadit, BOOL newok)
   MakeFullName(filename);
   if (!DosQueryPathInfo(filename, FIL_STANDARD, &fsa, sizeof(fsa))) {
     if (fsa.attrFile & FILE_DIRECTORY) {
-      /* device or directory */
+      // device or directory
       saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
 	     hwnd, filename, GetPString(IDS_EXISTSBUTNOTFILETEXT), filename);
       return FALSE;
@@ -379,7 +379,7 @@ BOOL export_filename(HWND hwnd, CHAR * filename, INT overwrite)
     return FALSE;
   MakeFullName(filename);
   if (!DosQueryPathInfo(filename, FIL_STANDARD, &fsa, sizeof(fsa))) {
-    if (fsa.attrFile & FILE_DIRECTORY) {	/* device or directory */
+    if (fsa.attrFile & FILE_DIRECTORY) {	// device or directory
       saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
 	     hwnd, filename, GetPString(IDS_EXISTSBUTNOTFILETEXT), filename);
       return FALSE;

@@ -218,18 +218,6 @@ INT PickCodepage(HWND hwnd)
     HMQ hmq;
     ULONG cps[50], len, x;
 
-/*
-    numcps = WinQueryCpList(WinQueryAnchorBlock(hwnd),50,cps);
-    if(numcps) {
-      for(x = 0;x < numcps;x++) {
-        if(cps[x] == (ULONG)cp) {
-          hmq = WinQueryWindowULong(hwnd,QWL_HMQ);
-          WinSetCp(hmq,cp);
-          break;
-        }
-      }
-    }
-*/
     if (cp == 1004) {
       hmq = WinQueryWindowULong(hwnd, QWL_HMQ);
       WinSetCp(hmq, cp);

@@ -139,31 +139,31 @@ MRESULT EXPENTRY SysInfoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     hptrIcon = WinLoadPointer(HWND_DESKTOP, FM3ModHandle, SYS_FRAME);
     WinDefDlgProc(hwnd, WM_SETICON, MPFROMLONG(hptrIcon), MPVOID);
     {
-      static CHAR *names[] = { "Max. Path Length",	/* 1  */
-	"Max. Text Sessions",	/* 2  */
-	"Max. PM Sessions",	/* 3  */
-	"Max. VDM Sessions",	/* 4  */
-	"Boot Drive",		/* 5  */
-	"Dynamic Priority",	/* 6  */
-	"Max. Wait",		/* 7  */
-	"Min. Timeslice",	/* 8  */
-	"Max. Timeslice",	/* 9  */
-	"Page Size",		/* 10 */
-	"Version Major",	/* 11 */
-	"Version Minor",	/* 12 */
-	"Version Revision",	/* 13 */
-	"Millisecs Up",		/* 14 */
-	"Unixtime Low",		/* 15 */
-	"Unixtime High",	/* 16 */
-	"Physical Memory",	/* 17 */
-	"Resident Memory",	/* 18 */
-	"Total Available Memory",	/* 19 */
-	"Max. Private Memory",	/* 20 */
-	"Max. Shared Memory",	/* 21 */
-	"Timer Interval",	/* 22 */
-	"Max. Path Comp. Length",	/* 23 */
-	"Foreground FS Session ID",	/* 24 */
-	"Foreground Process PID",	/* 25 */
+      static CHAR *names[] = { "Max. Path Length",	// 1
+	"Max. Text Sessions",	  // 2
+	"Max. PM Sessions",	  // 3
+	"Max. VDM Sessions",	  // 4
+	"Boot Drive",		  // 5
+	"Dynamic Priority",	  // 6
+	"Max. Wait",		  // 7
+	"Min. Timeslice",	  // 8
+	"Max. Timeslice",	  // 9
+	"Page Size",		  // 10
+	"Version Major",	  // 11
+	"Version Minor",	  // 12
+	"Version Revision",	  // 13
+	"Millisecs Up",		  // 14
+	"Unixtime Low",		  // 15
+	"Unixtime High",	  // 16
+	"Physical Memory",	  // 17
+	"Resident Memory",	  // 18
+	"Total Available Memory", // 19
+	"Max. Private Memory",	  // 20
+	"Max. Shared Memory",	  // 21
+	"Timer Interval",	  // 22
+	"Max. Path Comp. Length", // 23
+	"Foreground FS Session ID"// 24
+	"Foreground Process PID", // 25
 	NULL
       };
       static CHAR *pnames[] = { "Swap button",

@@ -224,7 +224,7 @@ MRESULT EXPENTRY DirTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  WM_COMMAND, MPFROM2SHORT(IDM_PREVIOUS, 0), mp2);
 	  break;
 	}
-	/* else intentional fallthru */
+	// else intentional fallthru
       case DIR_SELECTED:
       case DIR_VIEW:
       case DIR_SORT:
@@ -255,7 +255,7 @@ MRESULT EXPENTRY DirTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    dcd = WinQueryWindowPtr(WinWindowFromID(WinQueryWindow(hwnd,
 								   QW_PARENT),
 						    DIR_CNR), QWL_USER);
-	    if (id == DIR_SORT) {	/* don't have sort pathname in dirs */
+	    if (id == DIR_SORT) {	// don't have sort pathname in dirs
 	      WinSendMsg(hwndButtonPopup,
 			 MM_DELETEITEM,
 			 MPFROM2SHORT(IDM_SORTNAME, FALSE), MPVOID);
@@ -513,7 +513,7 @@ MRESULT EXPENTRY DirTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case DM_DRAGOVER:
 	if (AcceptOneDrop(hwnd, mp1, mp2))
 	  return MRFROM2SHORT(DOR_DROP, DO_MOVE);
-	return (MRFROM2SHORT(DOR_NODROP, 0));	/* Drop not valid */
+	return (MRFROM2SHORT(DOR_NODROP, 0));	// Drop not valid
       case DM_DROPHELP:
 	DropHelp(mp1, mp2, hwnd, GetPString(IDS_DIRCNRFOLDERDROPHELP));
 	return 0;
@@ -753,11 +753,11 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (GetTidForThread() != 1)
       Fortify_ChangeScope(dcd, -1);
 #     endif
-      /* set unique id */
+      // set unique id
       WinSetWindowUShort(hwnd, QWS_ID, DIROBJ_FRAME + (DIR_FRAME - dcd->id));
       dcd->hwndObject = hwnd;
       if (ParentIsDesktop(hwnd, dcd->hwndParent))
-	DosSleep(100); //05 Aug 07 GKY 250
+	DosSleep(100); 
     }
     else
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
@@ -834,22 +834,17 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_RESCAN:
-    /*
-     * populate container
-     */
+    // populate container
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
     if (dcd) {
-      //DosEnterCritSec(); //GKY 11-29-08
       DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
       if (dcd->stopflag)
 	dcd->stopflag--;
       if (dcd->stopflag) {
 	DosReleaseMutexSem(hmtxFM2Globals);
-	//DosExitCritSec();
 	return 0;
       }
       DosReleaseMutexSem(hmtxFM2Globals);
-      //DosExitCritSec();
       if (mp1) {
 	strcpy(dcd->previous, dcd->directory);
 	strcpy(dcd->directory, (CHAR *)mp1);
@@ -942,7 +937,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    // make found item current (cursored) item
 	    WinSendMsg(dcd->hwndCnr, CM_SETRECORDEMPHASIS, MPFROMP(pci),
 		       MPFROM2SHORT(TRUE, CRA_CURSORED));
-	    /* make sure that record shows in viewport */
+	    // make sure that record shows in viewport
 	    ShowCnrRecord(dcd->hwndCnr, (PMINIRECORDCORE) pci);
 	  }
 	}
@@ -1361,11 +1356,11 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_SETFOCUS:
-    /* put name of our window (directory name) on status line */
+    // put name of our window (directory name) on status line
     if (mp2) {
       // Getting focus
       if (dcd && hwndStatus) {
-	/* put name of our window (directory name) on status line */
+	// put name of our window (directory name) on status line
 	PCNRITEM pci = NULL;
 	if (fAutoView && hwndMain) {
 	  pci = WinSendMsg(hwnd, CM_QUERYRECORDEMPHASIS, MPFROMLONG(CMA_FIRST),
@@ -1549,9 +1544,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_SETUP:
     if (dcd) {
       if (!dcd->hwndObject) {
-	/*
-	 * first time through -- set things up
-	 */
+	// first time through -- set things up
 
 	CNRINFO cnri;
 
@@ -1880,7 +1873,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  StartMLEEditor(dcd->hwndParent, 4, newfile, dcd->hwndFrame);
 		pci = FindCnrRecord(hwnd, newfile, NULL, TRUE, FALSE, TRUE);
 		if (pci && (INT) pci != -1)
-		  /* make sure that record shows in viewport */
+		  // make sure that record shows in viewport
 		  ShowCnrRecord(hwnd, (PMINIRECORDCORE) pci);
 	      }
 	    }
@@ -2839,11 +2832,6 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	break;
 
-/*
-	  case CN_PICKUP:
-	    return PickUp(hwnd,dcd->hwndObject,mp2);
-*/
-
       case CN_CONTEXTMENU:
 	{
 	  PCNRITEM pci = (PCNRITEM) mp2;
@@ -2932,8 +2920,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case CN_DRAGOVER:
 	if (mp2) {
 
-	  PDRAGITEM pDItem;	/* Pointer to DRAGITEM */
-	  PDRAGINFO pDInfo;	/* Pointer to DRAGINFO */
+	  PDRAGITEM pDItem;	// Pointer to DRAGITEM
+	  PDRAGINFO pDInfo;	// Pointer to DRAGINFO
 	  PCNRITEM pci;
 	  USHORT uso;
 
@@ -2948,8 +2936,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	     (driveflags[toupper(*dcd->directory) - 'A'] &
 	      DRIVE_NOTWRITEABLE)) {
 	    DrgFreeDraginfo(pDInfo);
-	    return MRFROM2SHORT(DOR_DROP,	/* Return okay to link */
-				DO_LINK);	/* (compare) only */
+	    return MRFROM2SHORT(DOR_DROP,	// Return okay to link
+				DO_LINK);	// (compare) only
 	  }
 	  if (pci) {
 	    if (pci->rc.flRecordAttr & CRA_SOURCE) {
@@ -2985,7 +2973,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    }
 	  }
 
-	  /* Access DRAGITEM index to DRAGITEM
+          /**
+           * Access DRAGITEM index to DRAGITEM
 	   * Check valid rendering mechanisms and data
 	   */
 	  pDItem = DrgQueryDragitemPtr(pDInfo, 0);
@@ -2998,12 +2987,12 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      return MRFROM2SHORT(DOR_DROP, DO_LINK);
 	    if (toupper(*dcd->directory) < 'C')
 	      return MRFROM2SHORT(DOR_DROP, DO_COPY);
-	    return MRFROM2SHORT(DOR_DROP,	/* Return okay to drop */
+	    return MRFROM2SHORT(DOR_DROP,	// Return okay to drop
 				((fCopyDefault) ? DO_COPY : DO_MOVE));
 	  }
-	  DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO */
+	  DrgFreeDraginfo(pDInfo);	// Free DRAGINFO
 	}
-	return MRFROM2SHORT(DOR_NODROP, 0);	/* Drop not valid */
+	return MRFROM2SHORT(DOR_NODROP, 0);	// Drop not valid
 
       case CN_INITDRAG:
 	{
@@ -3633,14 +3622,14 @@ MRESULT EXPENTRY SearchContainer(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     pci = WinSendMsg(hwnd, CM_SEARCHSTRING, MPFROMP(&srch),
 		     MPFROMLONG(CMA_FIRST));
     if (pci && (INT) pci != -1) {
-      /* Got match make found item current item */
+      // Got match make found item current item
       USHORT attrib = CRA_CURSORED;
       // 29 Mar 09 SHL fixme to clear other object select if not extended select
       if (!stricmp(pci->pszDisplayName, dcd->szCommonName))
 	attrib |= CRA_SELECTED;
       WinSendMsg(hwnd, CM_SETRECORDEMPHASIS, MPFROMP(pci),
 		 MPFROM2SHORT(TRUE, attrib));
-      /* make sure that record shows in viewport */
+      // make sure that record shows in viewport
       ShowCnrRecord(hwnd, (PMINIRECORDCORE) pci);
       return (MRESULT)TRUE;
     }
@@ -3674,7 +3663,8 @@ MRESULT EXPENTRY SearchContainer(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
 		 ULONG flags)
 {
-  /* bitmapped flags:
+  /**
+   * bitmapped flags:
    * 0x00000001 = don't close app when window closes
    * 0x00000002 = no frame controls
    */

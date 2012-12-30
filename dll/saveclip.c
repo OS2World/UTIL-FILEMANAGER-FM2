@@ -852,7 +852,7 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				 FILE_READONLY | FILE_ARCHIVED |
 				 FILE_HIDDEN | FILE_SYSTEM,
 				 &ffb4, sizeof(ffb4), &nm, FIL_QUERYEASIZEL)) {
-		/* load the object's Subject, if required */
+		// load the object's Subject, if required
 		if (ffb4.cbList > 4) {
 		  APIRET rc;
 		  EAOP2 eaop;
@@ -893,7 +893,7 @@ MRESULT EXPENTRY SaveAllListDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		    free(pgealist);
 		  }
 		}
-		/* load the object's longname */
+		// load the object's longname
 		if (ffb4.cbList > 4) {
 		  APIRET rc;
 		  EAOP2 eaop;

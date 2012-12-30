@@ -90,7 +90,7 @@ APIRET MassMkdir(HWND hwndClient, CHAR * dir)
 APIRET SetDir(HWND hwndClient, HWND hwnd, CHAR * dir, INT flags)
 {
 
-  /*
+  /**
    * bitmapped flags:
    * 1 = don't ask to create if non-existent
    */

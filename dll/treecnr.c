@@ -264,8 +264,10 @@ VOID ShowTreeRec(HWND hwndCnr,
 		 BOOL collapsefirst,
 		 BOOL maketop)
 {
-  /* Find a record in tree view, move it so it shows in container and
-     make it the current record */
+    /**
+     * Find a record in tree view, move it so it shows in container and
+     * make it the current record
+     */
 
   PCNRITEM pci, pciToSelect, pciP;
   BOOL quickbail = FALSE;
@@ -340,7 +342,7 @@ VOID ShowTreeRec(HWND hwndCnr,
 			    MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
 	} // while
       }
-      /* expand all parent branches */
+      // expand all parent branches
       pciToSelect = pci;
       for (;;) {
 	pciP = WinSendMsg(hwndCnr,
@@ -357,7 +359,7 @@ VOID ShowTreeRec(HWND hwndCnr,
 	DosSleep(0);			// Let GUI update
       } // for
     }
-    /* make record visible */
+    // make record visible
   MakeTop:
     pciToSelect = pci;
     if (pciToSelect && (INT) pciToSelect != -1) {
@@ -470,7 +472,7 @@ MRESULT EXPENTRY TreeFrameWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
       mr = CommonFrameWndProc(TREE_CNR, hwnd, msg, mp1, mp2);
 
-      /*
+      /**
        * Calculate the position of the client rectangle.
        * Otherwise,  we'll see a lot of redraw when we move the
        * client during WM_FORMATFRAME.
@@ -491,9 +493,7 @@ MRESULT EXPENTRY TreeFrameWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
       sCount = (SHORT) CommonFrameWndProc(TREE_CNR, hwnd, msg, mp1, mp2);
 
-      /*
-       * Reformat the frame to "squeeze" the client
-       */
+      // Reformat the frame to "squeeze" the client
 
       pswp = (PSWP) mp1;
       {
@@ -842,7 +842,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    }
 	  }
 	  else {
-	    /* find root record and strip it */
+	    // find root record and strip it
 	    pci = FindParentRecord(dcd->hwndCnr, pci);
 	    driveserial[toupper(*pci->pszFileName) - 'A'] = -1;
 	    UnFlesh(dcd->hwndCnr, pci);
@@ -856,9 +856,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_RESCAN:
-    /*
-     * populate container
-     */
+    // populate container
     DosWaitEventSem(hevTreeCnrScanComplete, SEM_INDEFINITE_WAIT);
     DosResetEventSem(hevTreeCnrScanComplete, &ulScanPostCnt);
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
@@ -1187,9 +1185,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_RESCAN:
 
     if (dcd && dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
-      /*
-       * put name of our window on status line
-       */
+      // put name of our window on status line
 
       PCNRITEM pci = NULL;
       CHAR str[CCHMAXPATH + 6];
@@ -1261,9 +1257,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     else {
       if (!dcd->hwndObject) {
-	/*
-	 * first time through -- set things up
-	 */
+	// first time through -- set things up
 	CNRINFO cnri;
 
 #	ifdef FORTIFY
@@ -1460,7 +1454,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (!DrgAccessDraginfo(pDInfo)) {
 	    Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
 		      PCSZ_DRGACCESSDRAGINFO);
-	    return (MRFROM2SHORT(DOR_NODROP, 0));	/* Drop not valid */
+	    return (MRFROM2SHORT(DOR_NODROP, 0));	// Drop not valid
 	  }
 	  pci = (PCNRITEM) ((PCNRDRAGINFO) mp2)->pRecord;
 	  if ((INT) pci == -1)
@@ -1502,13 +1496,14 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	    }
 	  }
-	  pDItem = DrgQueryDragitemPtr(pDInfo,	/* Access DRAGITEM */
-				       0);	/* Index to DRAGITEM */
-	  if (DrgVerifyRMF(pDItem,	/* Check valid rendering */
-			   (CHAR *) DRM_OS2FILE,	/* mechanisms and data */
-                           NULL) || DrgVerifyRMF(pDItem, (CHAR *) DRM_FM2ARCMEMBER,
-                                                 (CHAR *) DRF_FM2ARCHIVE)) {	/* formats */
-	    DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO */
+	  pDItem = DrgQueryDragitemPtr(pDInfo,	        // Access DRAGITEM
+				       0);	        // Index to DRAGITEM
+	  if (DrgVerifyRMF(pDItem,	                // Check valid rendering
+			   (CHAR *) DRM_OS2FILE,	// mechanisms and data
+                           NULL) || DrgVerifyRMF(pDItem,
+                                                 (CHAR *) DRM_FM2ARCMEMBER,
+                                                 (CHAR *) DRF_FM2ARCHIVE)) {	// formats
+	    DrgFreeDraginfo(pDInfo);	                // Free DRAGINFO
 	    if (!pci || (INT) pci == -1)
 	      return MRFROM2SHORT(DOR_DROP, DO_MOVE);
 	    if (driveflags[toupper(*pci->pszFileName) - 'A'] &
@@ -1516,12 +1511,12 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      return MRFROM2SHORT(DOR_DROP, DO_LINK);
 	    if (toupper(*pci->pszFileName) < 'C')
 	      return MRFROM2SHORT(DOR_DROP, DO_COPY);
-	    return MRFROM2SHORT(DOR_DROP,	/* Return okay to drop */
+	    return MRFROM2SHORT(DOR_DROP,	        // Return okay to drop
 				((fCopyDefault) ? DO_COPY : DO_MOVE));
 	  }
-	  DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO */
+	  DrgFreeDraginfo(pDInfo);	                // Free DRAGINFO
 	}
-	return MRFROM2SHORT(DOR_NODROP, 0);	/* Drop not valid */
+	return MRFROM2SHORT(DOR_NODROP, 0);	        // Drop not valid
 
       case CN_INITDRAG:
 	{
@@ -2916,7 +2911,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      break;
 	  }
 	}
-	/* else intentional fallthru */
+	// else intentional fallthru
       case IDM_ATTRS:
       case IDM_INFO:
       case IDM_COPY:
@@ -3102,7 +3097,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (dcd)
       dcd->stopflag++;
     if (dcd && dcd->hwndObject) {
-      /* kill object window */
+      // kill object window
       if (WinIsWindow((HAB) 0, dcd->hwndObject)) {
 	if (!PostMsg(dcd->hwndObject, WM_CLOSE, MPVOID, MPVOID))
 	  WinSendMsg(dcd->hwndObject, WM_CLOSE, MPVOID, MPVOID);
@@ -3149,7 +3144,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 {
-  /* bitmapped flags:
+  /**
+   * bitmapped flags:
    * 0x00000001 = don't close app when window closes
    * 0x00000002 = no frame controls
    * 0x00000004 = no close or move button

@@ -50,7 +50,7 @@ HMTX av2Sem;
 
 VOID APIENTRY deinit(ULONG why)
 {
-  /* cleanup before exiting */
+  // cleanup before exiting
 
   DosCloseMutexSem(av2Sem);
   if (DosOpenMutexSem("\\SEM32\\AV2", &av2Sem)) {

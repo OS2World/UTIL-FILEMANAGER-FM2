@@ -86,7 +86,7 @@ ADDEA;
 
 HOLDFEA *CheckEA(HOLDFEA * head, CHAR * eaname)
 {
-  /* return pointer to ea named eaname if found in linked list */
+  // return pointer to ea named eaname if found in linked list
 
   register HOLDFEA *info = NULL;
 
@@ -195,7 +195,7 @@ MRESULT EXPENTRY AddEAProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
               break;
             }
           }
-          /* if we get here, create dummy ea */
+          // if we get here, create dummy ea
           {
             PFEA2LIST pfealist = NULL;
             EAOP2 eaop;
@@ -214,11 +214,11 @@ MRESULT EXPENTRY AddEAProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
               *(USHORT *) eaval = (USHORT) type;
               eaval += sizeof(USHORT);
               if (type == EAT_MVST || type == EAT_MVMT) {
-                *(USHORT *) eaval = (USHORT) 0; /* codepage */
+                *(USHORT *) eaval = (USHORT) 0; // codepage
                 eaval += sizeof(USHORT);
-                *(USHORT *) eaval = (USHORT) 1; /* number */
+                *(USHORT *) eaval = (USHORT) 1; // number
                 eaval += sizeof(USHORT);
-                *(USHORT *) eaval = (USHORT) EAT_ASCII; /* type */
+                *(USHORT *) eaval = (USHORT) EAT_ASCII; // type
                 eaval += sizeof(USHORT);
               }
               *(USHORT *) eaval = (USHORT) 4;
@@ -262,7 +262,7 @@ static VOID HexDumpEA(HWND hwnd, HOLDFEA * info)
 
 VOID HexDump(HWND hwnd, CHAR * value, ULONG cbValue)
 {
-  /* display a hexdump of a binary 'string' in listbox hwnd */
+  // display a hexdump of a binary 'string' in listbox hwnd
 
   CHAR s[132];
   register CHAR *p, *pp, *a;
@@ -1058,7 +1058,7 @@ MRESULT EXPENTRY DisplayEAsProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 PVOID SaveEA(CHAR * filename, HOLDFEA * current, CHAR * newdata,
              BOOL silentfail)
 {
-  /* save an ea to disk */
+  // save an ea to disk
 
   PFEA2LIST pfealist = NULL;
   EAOP2 eaop;
@@ -1153,15 +1153,15 @@ PVOID SaveEA(CHAR * filename, HOLDFEA * current, CHAR * newdata,
         }
       }
       break;
-/*
-   cbList      nextoffset fea cb cbval name.......
-   000000  3C 00 00 00 00 00 00 00 6F 0B 24 00 2E 4B 45 59  <       o$ .KEY
-   ....................    eat   code  num   eat
-   000010  50 48 52 41 53 45 53 00 DF FF 00 00 02 00 FD FF  PHRASES ßÿ   ýÿ
-   len.. phrase1............................ eat
-   000020  0C 00 4B 65 79 20 70 68 72 61 73 65 20 31 FD FF   Key phrase 1ýÿ
-   len.. phrase2......................
-   000030  0A 00 4B 65 79 20 70 68 72 61 73 65               Key phrase
+/**
+ * cbList      nextoffset fea cb cbval name.......
+ * 000000  3C 00 00 00 00 00 00 00 6F 0B 24 00 2E 4B 45 59  <       o$ .KEY
+ * ....................    eat   code  num   eat
+ * 000010  50 48 52 41 53 45 53 00 DF FF 00 00 02 00 FD FF  PHRASES ßÿ   ýÿ
+ * len.. phrase1............................ eat
+ * 000020  0C 00 4B 65 79 20 70 68 72 61 73 65 20 31 FD FF   Key phrase 1ýÿ
+ * len.. phrase2......................
+ * 000030  0A 00 4B 65 79 20 70 68 72 61 73 65               Key phrase
  */
     case EAT_MVMT:
       *(USHORT *) eaval = (USHORT) EAT_MVMT;
@@ -1198,9 +1198,7 @@ PVOID SaveEA(CHAR * filename, HOLDFEA * current, CHAR * newdata,
       }
       break;
     }
-    pfealist->list[0].cbValue = /*(ULONG)*/ (eaval -
-                                         (pfealist->list[0].szName +
-                                          pfealist->list[0].cbName + 1));
+    pfealist->list[0].cbValue = eaval - (pfealist->list[0].szName + pfealist->list[0].cbName + 1);
     eaop.fpGEA2List = (PGEA2LIST) 0;
     eaop.fpFEA2List = pfealist;
     eaop.oError = 0;
@@ -1236,7 +1234,7 @@ PVOID SaveEA(CHAR * filename, HOLDFEA * current, CHAR * newdata,
 
 HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
 {
-  /* load eas from disk into HOLDFEA linked list */
+  // load eas from disk into HOLDFEA linked list
 
   HOLDFEA *head = NULL, *info, *last = NULL;
   FILESTATUS4 fsa4;
@@ -1339,7 +1337,7 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
       DosClose(handle);
   }
   else {
-    /* try it without opening it */
+    // try it without opening it
     if (!DosQueryPathInfo(filename, FIL_QUERYEASIZE, (PVOID) & fsa4,
                           (ULONG) sizeof(fsa4)) &&
         fsa4.cbList > 4)
@@ -1438,12 +1436,12 @@ HOLDFEA *GetFileEAs(CHAR * filename, BOOL ishandle, BOOL silentfail)
 
 VOID Free_FEAList(HOLDFEA * pFEA)
 {
-  /* free a linked list of HOLDFEAs */
+  // free a linked list of HOLDFEAs
 
   register HOLDFEA *next;
 
   while (pFEA) {
-    /* Free linked list */
+    // Free linked list
     next = pFEA->next;
     xfree(pFEA->pfea, pszSrcFile, __LINE__);
     free(pFEA);

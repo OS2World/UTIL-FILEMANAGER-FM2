@@ -1,54 +1,57 @@
+/****************************************************************
 
-/* $Id$ */
-/* fortify.cxx - A fortified memory allocation shell - V2.2 */
- /* vim: tabs 4 */
+  $Id$
 
-/*
- *     This  software  is  not public domain.  All material in
- * this  archive  is (C) Copyright 1995 Simon P.  Bullen.  The
- * software  is  freely distributable, with the condition that
- * no   more   than  a  nominal  fee  is  charged  for  media.
- * Everything  in  this distribution must be kept together, in
- * original, unmodified form.
- *     The software may be modified for your own personal use,
- * but modified files may not be distributed.
- *     The  material  is  provided "as is" without warranty of
- * any  kind.  The author accepts no responsibility for damage
- * caused by this software.
- *     This  software  may not be used in any way by Microsoft
- * Corporation  or  its  subsidiaries, or current employees of
- * Microsoft Corporation or its subsidiaries.
- *     This  software  may  not  be used for the construction,
- * development,  production,  or  testing of weapon systems of
- * any kind.
- *     This  software  may  not  be used for the construction,
- * development,  production,  or  use  of plants/installations
- * which  include  the  processing  of radioactive/fissionable
- * material.
- */
+  fortify.cxx - A fortified memory allocation shell - V2.2
+  vim: tabs 4
 
-/*
- *     If  you use this software at all, I'd love to hear from
- * you.   All  questions,  criticisms, suggestions, praise and
- * postcards are most welcome.
- *
- *            email:    sbullen@cybergraphic.com.au
- *
- *            snail:    Simon P. Bullen
- *                      PO BOX 12138
- *                      A'Beckett St.
- *                      Melbourne 3000
- *                      Australia
- */
 
- /* 06 May 08 SHL Rework scope logic to be MT capable
+  This  software  is  not public domain.  All material in
+  this  archive  is (C) Copyright 1995 Simon P.  Bullen.  The
+  software  is  freely distributable, with the condition that
+  no   more   than  a  nominal  fee  is  charged  for  media.
+  Everything  in  this distribution must be kept together, in
+  original, unmodified form.
+  The software may be modified for your own personal use,
+  but modified files may not be distributed.
+  The  material  is  provided "as is" without warranty of
+  any  kind.  The author accepts no responsibility for damage
+  caused by this software.
+  This  software  may not be used in any way by Microsoft
+  Corporation  or  its  subsidiaries, or current employees of
+  Microsoft Corporation or its subsidiaries.
+  This  software  may  not  be used for the construction,
+  development,  production,  or  testing of weapon systems of
+  any kind.
+  This  software  may  not  be used for the construction,
+  development,  production,  or  use  of plants/installations
+  which  include  the  processing  of radioactive/fissionable
+  material.
+
+
+
+  If  you use this software at all, I'd love to hear from
+  you.   All  questions,  criticisms, suggestions, praise and
+  postcards are most welcome.
+
+           email:    sbullen@cybergraphic.com.au
+
+           snail:    Simon P. Bullen
+                     PO BOX 12138
+                     A'Beckett St.
+                     Melbourne 3000
+                     Australia
+
+
+        06 May 08 SHL Rework scope logic to be MT capable
 	26 May 08 SHL Show TID for leaking scope
 	17 Jul 08 SHL Add Fortify_PresetOwner Fortify_BecomeOwner Fortify_ChangeScope
 	18 Jul 08 SHL Add FORTIFY_VERBOSE_SCOPE_ENTER_EXIT
 	18 Jul 08 SHL Add Fortify_SetScope
 	18 Jul 08 SHL Rename Fortify_ChangeOwner to Fortify_BecomeOwner
 	18 Jul 08 SHL Add reworked Fortify_SetOwner
- */
+
+***************************************************************************************/
 
 #ifdef FORTIFY
 
@@ -61,10 +64,10 @@
 #include <time.h>
 
 
-/* the user's options */
+// the user's options
 #include "ufortify.h"
 
-/* Prototypes and such */
+// Prototypes and such
 #define __FORTIFY_C__			// Suppress malloc replacement etc.
 #include "fortify.h"
 
@@ -80,41 +83,41 @@ unsigned long Get_TID_Ordinal(void);
  value [eax]
 #endif
 
-/*
+/**
  * Round x up to the nearest multiple of n.
  */
 #define ROUND_UP(x, n) ((((x) + (n)-1)/(n))*(n))
 
-/*
+/**
  * struct Header - this structure is used
  * internally by Fortify to manage it's
  * own private lists of memory.
  */
 struct Header
 {
-	unsigned short Checksum;    /* For the integrity of our goodies  */
-	const char    *File;        /* The sourcefile of the allocator   */
-	unsigned long  Line;        /* The sourceline of the allocator   */
+	unsigned short Checksum;    // For the integrity of our goodies  
+	const char    *File;        // The sourcefile of the allocator   
+	unsigned long  Line;        // The sourceline of the allocator   
 #	ifdef FORTIFY_TRACK_DEALLOCATED_MEMORY
-	const char    *FreedFile;   /* The sourcefile of the deallocator */
-	unsigned long  FreedLine;   /* The sourceline of the deallocator */
-	unsigned char  Deallocator; /* The deallocator used              */
+	const char    *FreedFile;   // The sourcefile of the deallocator 
+	unsigned long  FreedLine;   // The sourceline of the deallocator 
+	unsigned char  Deallocator; // The deallocator used              
 #	endif
-	size_t         Size;        /* The size of the malloc'd block    */
-	struct Header *Prev;        /* Previous link                     */
-	struct Header *Next;        /* Next link                         */
-	char          *Label;	/* User's Label (may be null)        */
-	unsigned char  Scope;       /* Scope level of the owner          */
-	unsigned char  Allocator;   /* malloc/realloc/new/etc            */
+	size_t         Size;        // The size of the malloc'd block    
+	struct Header *Prev;        // Previous link                     
+	struct Header *Next;        // Next link                         
+	char          *Label;	    // User's Label (may be null)        
+	unsigned char  Scope;       // Scope level of the owner          
+	unsigned char  Allocator;   // malloc/realloc/new/etc            
 #	ifdef MT_SCOPES
-	unsigned short Owner;       /* TID ordinal of block owner        */
+	unsigned short Owner;       // TID ordinal of block owner        
 #	endif
 };
 
 #define FORTIFY_HEADER_SIZE ROUND_UP(sizeof(struct Header), sizeof(unsigned short))
 
 
-/*
+/**
  * FORTIFY_ALIGNED_BEFORE_SIZE is FORTIFY_BEFORE_SIZE rounded up to the
  * next multiple of FORTIFY_ALIGNMENT. This is so that we can guarantee
  * the alignment of user memory for such systems where this is important
@@ -124,7 +127,7 @@ struct Header
 		   ROUND_UP(FORTIFY_HEADER_SIZE + FORTIFY_BEFORE_SIZE, FORTIFY_ALIGNMENT) \
 		   - FORTIFY_HEADER_SIZE)
 
-/*
+/**
  * FORTIFY_OVERHEAD is the total overhead added by Fortify to each
  * memory block.
  */
@@ -133,11 +136,7 @@ struct Header
 			 + FORTIFY_AFTER_SIZE)
 
 
-/*
- *
- * Static Function Prototypes
- *
- */
+// Static Function Prototypes
 static int  st_CheckBlock(struct Header *h, const char *file, unsigned long line);
 static int  st_CheckFortification (unsigned char *ptr, unsigned char value, size_t size);
 static void st_SetFortification   (unsigned char *ptr, unsigned char value, size_t size);
@@ -159,22 +158,18 @@ static void st_OutputDeleteTrace();
 
 #ifdef FORTIFY_VERBOSE_WARN_WHEN_DISCARDING_DEALLOCATED_MEMORY
 static const char *st_DeallocatedMemoryBlockString(struct Header *h);
-#endif /* FORTIFY_WARN_WHEN_DISCARDING_DEALLOCATED_MEMORY */
+#endif // FORTIFY_WARN_WHEN_DISCARDING_DEALLOCATED_MEMORY
 
-#endif /* FORTIFY_VERBOSE_WARN_WHEN_DISCARDING_DEALLOCATED_MEMORY */
+#endif // FORTIFY_VERBOSE_WARN_WHEN_DISCARDING_DEALLOCATED_MEMORY
 static int  st_IsOnDeallocatedList(struct Header *h);
 static int st_PurgeDeallocatedBlocks(unsigned long Bytes, const char *file, unsigned long line);
 static int st_PurgeDeallocatedScope(unsigned char Scope, const char *file, unsigned long line);
 static int st_CheckDeallocatedBlock(struct Header *h, const char *file, unsigned long line);
 static void st_FreeDeallocatedBlock(struct Header *h, const char *file, unsigned long line);
-#endif /* FORTIFY_TRACK_DEALLOCATED_MEMORY */
+#endif // FORTIFY_TRACK_DEALLOCATED_MEMORY
 
 
-/*
- *
- * Static variables
- *
- */
+// Static variables
 static struct Header *st_AllocatedHead;
 static int  st_AllocateFailRate;
 static char st_Buffer[256];
@@ -197,9 +192,9 @@ int FORTIFY_STORAGE                 gbl_FortifyMagic = 0;	// 28 Jan 08 SHL
 static const    char *st_DeleteFile[FORTIFY_DELETE_STACK_SIZE];
 static unsigned long  st_DeleteLine[FORTIFY_DELETE_STACK_SIZE];
 static unsigned long  st_DeleteStackTop;
-#endif /* __cplusplus */
+#endif // __cplusplus
 
-/* statistics */
+// statistics
 static unsigned long  st_MaxBlocks        = 0;
 static unsigned long  st_MaxAllocation    = 0;
 static unsigned long  st_CurBlocks        = 0;
@@ -216,7 +211,7 @@ static unsigned long  st_TotalDeallocated = 0;
 #endif
 
 
-/* allocators */
+// allocators
 static const char *st_AllocatorName[] =
 {
 	"malloc()",
@@ -227,7 +222,7 @@ static const char *st_AllocatorName[] =
 	"new[]"
 };
 
-/* deallocators */
+// deallocators
 static const char *st_DeallocatorName[] =
 {
 	"nobody",
@@ -253,7 +248,7 @@ static const unsigned char st_ValidDeallocator[] =
 };
 
 
-/*
+/**
  * Fortify_Allocate() - allocate a block of fortified memory
  */
 void *FORTIFY_STORAGE
@@ -267,16 +262,14 @@ Fortify_Allocate(size_t size, unsigned char allocator, const char *file, unsigne
 	unsigned ordinal;
 #endif
 
-	/*
-	 * If Fortify has been disabled, then it's easy
-	 */
+	// If Fortify has been disabled, then it's easy
 	if(st_Disabled)
 	{
 #		ifdef FORTIFY_FAIL_ON_ZERO_MALLOC
 		if(size == 0 && (allocator == Fortify_Allocator_new
 				  || allocator == Fortify_Allocator_array_new))
 		{
-			/*
+			/**
 			 * A new of zero bytes must succeed, but a malloc of
 			 * zero bytes probably won't
 			 */
@@ -305,7 +298,8 @@ Fortify_Allocate(size_t size, unsigned char allocator, const char *file, unsigne
 		}
 	}
 
-	/* Check to see if this allocation will
+        /**
+         * Check to see if this allocation will
 	 * push us over the artificial limit
 	 */
 	if(st_CurAllocation + size > st_AllocationLimit)
@@ -329,7 +323,7 @@ Fortify_Allocate(size_t size, unsigned char allocator, const char *file, unsigne
 				st_AllocatorName[allocator], file, line);
 		st_Output(st_Buffer);
 	}
-#endif /* FORTIFY_WARN_ON_ZERO_MALLOC */
+#endif // FORTIFY_WARN_ON_ZERO_MALLOC
 
 #ifdef FORTIFY_FAIL_ON_ZERO_MALLOC
 	if(size == 0 && (allocator == Fortify_Allocator_malloc ||
@@ -340,13 +334,13 @@ Fortify_Allocate(size_t size, unsigned char allocator, const char *file, unsigne
 		sprintf(st_Buffer, "\nFortify: A \"%s\" of %lu bytes failed at %s.%lu\n",
 				st_AllocatorName[allocator], (unsigned long)size, file, line);
 		st_Output(st_Buffer);
-#endif /* FORTIFY_WARN_ON_ALLOCATE_FAIL */
+#endif // FORTIFY_WARN_ON_ALLOCATE_FAIL
 		return 0;
 	}
-#endif /* FORTIFY_FAIL_ON_ZERO_MALLOC */
+#endif // FORTIFY_FAIL_ON_ZERO_MALLOC
 
 #ifdef FORTIFY_WARN_ON_SIZE_T_OVERFLOW
-	/*
+	/**
 	 * Ensure the size of the memory block
 	 * plus the overhead isn't bigger than
 	 * size_t (that'd be a drag)
@@ -369,7 +363,7 @@ Fortify_Allocate(size_t size, unsigned char allocator, const char *file, unsigne
 	another_try = 1;
 	do
 	{
-		/*
+		/**
 		 * malloc the memory, including the space
 		 * for the header and fortification buffers
 		 */
@@ -379,7 +373,7 @@ Fortify_Allocate(size_t size, unsigned char allocator, const char *file, unsigne
 						  + FORTIFY_AFTER_SIZE );
 
 #		ifdef FORTIFY_TRACK_DEALLOCATED_MEMORY
-		/*
+		/**
 		 * If we're tracking deallocated memory, then
 		 * we can free some of it, rather than let
 		 * this malloc fail
@@ -388,7 +382,7 @@ Fortify_Allocate(size_t size, unsigned char allocator, const char *file, unsigne
 		{
 			another_try = st_PurgeDeallocatedBlocks(size, file, line);
 		}
-#		endif /* FORTIFY_TRACK_DEALLOCATED_MEMORY */
+#		endif // FORTIFY_TRACK_DEALLOCATED_MEMORY
 
 	}
 	while(!ptr && another_try);
@@ -403,20 +397,18 @@ Fortify_Allocate(size_t size, unsigned char allocator, const char *file, unsigne
 		return(0);
 	}
 
-	/*
-	 * Begin Critical Region
-	 */
+	// Begin Critical Region
 	FORTIFY_LOCK();
 
 
-	/*
+	/**
 	 * Make the head's prev pointer point to us
 	 * ('cos we're about to become the head)
 	 */
 	if(st_AllocatedHead)
 	{
 		st_CheckBlock(st_AllocatedHead, file, line);
-		/* what should we do if this fails? (apart from panic) */
+		// what should we do if this fails? (apart from panic)
 
 		st_AllocatedHead->Prev = (struct Header *)ptr;
 		st_MakeHeaderValid(st_AllocatedHead);
@@ -426,9 +418,7 @@ Fortify_Allocate(size_t size, unsigned char allocator, const char *file, unsigne
 	ordinal = Get_TID_Ordinal();
 #   endif
 
-	/*
-	 * Initialize and validate the header
-	 */
+	// Initialize and validate the header
 	h = (struct Header *)ptr;
 	h->Size      = size;
 	h->File      = file;
@@ -447,35 +437,27 @@ Fortify_Allocate(size_t size, unsigned char allocator, const char *file, unsigne
 	h->FreedFile = 0;
 	h->FreedLine = 0;
 	h->Deallocator = Fortify_Deallocator_nobody;
-#endif /* FORTIFY_TRACK_DEALLOCATED_MEMORY */
+#endif // FORTIFY_TRACK_DEALLOCATED_MEMORY
 	st_MakeHeaderValid(h);
 	st_AllocatedHead = h;
 
-	/*
-	 * Initialize the fortifications
-	 */
+	// Initialize the fortifications
 	st_SetFortification(ptr + FORTIFY_HEADER_SIZE,
 			 FORTIFY_BEFORE_VALUE, FORTIFY_ALIGNED_BEFORE_SIZE);
 	st_SetFortification(ptr + FORTIFY_HEADER_SIZE + FORTIFY_ALIGNED_BEFORE_SIZE + size,
 			 FORTIFY_AFTER_VALUE, FORTIFY_AFTER_SIZE);
 
 #	ifdef FORTIFY_FILL_ON_ALLOCATE
-	/*
-	 * Fill the actual user memory
-	 */
+	// Fill the actual user memory
 	st_SetFortification(ptr + FORTIFY_HEADER_SIZE + FORTIFY_ALIGNED_BEFORE_SIZE,
 						FORTIFY_FILL_ON_ALLOCATE_VALUE, size);
 #	endif
 
-	/*
-	 * End Critical Region
-	 */
+	// End Critical Region
 	FORTIFY_UNLOCK();
 
 
-	/*
-	 * update the statistics
-	 */
+	// update the statistics
 	st_TotalAllocation += size;
 	st_Allocations++;
 	st_CurBlocks++;
@@ -485,7 +467,7 @@ Fortify_Allocate(size_t size, unsigned char allocator, const char *file, unsigne
 	if(st_CurAllocation > st_MaxAllocation)
 		st_MaxAllocation = st_CurAllocation;
 
-	/*
+	/**
 	 * We return the address of the user's memory, not the start of the block,
 	 * which points to our magic cookies
 	 */
@@ -494,7 +476,7 @@ Fortify_Allocate(size_t size, unsigned char allocator, const char *file, unsigne
 
 
 
-/*
+/**
  * Fortify_Deallocate() - Free a block of memory allocated with Fortify_Allocate()
  */
 void FORTIFY_STORAGE
@@ -515,17 +497,15 @@ Fortify_Deallocate(void *uptr, unsigned char deallocator, const char *file, unsi
 	Fortify_CheckAllMemory(file, line);
 #	endif
 
-	/*
-	 * If Fortify has been disabled, then it's easy
-	 * (well, almost)
-	 */
+	// If Fortify has been disabled, then it's easy	* (well, almost)
 	if(st_Disabled)
 	{
-		/* there is a possibility that this memory
-		 * block was allocated when Fortify was
-		 * enabled, so we must check the Allocated
-		 * list before we free it.
-		 */
+          /**
+           *there is a possibility that this memory
+	   * block was allocated when Fortify was
+           * enabled, so we must check the Allocated
+           * list before we free it.
+           */
 		if(!st_IsOnAllocatedList(h))
 		{
 			free(uptr);
@@ -533,35 +513,28 @@ Fortify_Deallocate(void *uptr, unsigned char deallocator, const char *file, unsi
 		}
 		else
 		{
-			/* the block was allocated by Fortify, so we
-			 * gotta free it differently.
-			 */
-			/*
-			 * Begin critical region
-			 */
-			FORTIFY_LOCK();
+                  /**
+                   * the block was allocated by Fortify, so we
+                   * gotta free it differently.
+                   */
+                  // Begin critical region
+                  FORTIFY_LOCK();
 
-			/*
-			 * Remove the block from the list
-			 */
-			if(h->Prev)
-				h->Prev->Next = h->Next;
-			else
-				st_AllocatedHead = h->Next;
+                  // Remove the block from the list
+                  if(h->Prev)
+                          h->Prev->Next = h->Next;
+                  else
+                          st_AllocatedHead = h->Next;
 
-			if(h->Next)
-				h->Next->Prev = h->Prev;
+                  if(h->Next)
+                          h->Next->Prev = h->Prev;
 
-			/*
-			 * End Critical Region
-			 */
-			FORTIFY_UNLOCK();
+                  // End Critical Region
+                  FORTIFY_UNLOCK();
 
-			/*
-			 * actually free the memory
-			 */
-			free(ptr);
-			return;
+                  // actually free the memory
+                  free(ptr);
+                  return;
 		}
 	}
 
@@ -583,7 +556,7 @@ Fortify_Deallocate(void *uptr, unsigned char deallocator, const char *file, unsi
 			st_OutputDeleteTrace();
 			return;
 		}
-#		endif /* FORTIFY_TRACK_DEALLOCATED_MEMORY */
+#		endif // FORTIFY_TRACK_DEALLOCATED_MEMORY
 
 #		ifdef FORTIFY_NO_PERCENT_P
 		sprintf(st_Buffer, "\nFortify: Possible \"%s\" twice of (0x%08lx) was detected at %s.%lu\n",
@@ -596,9 +569,9 @@ Fortify_Deallocate(void *uptr, unsigned char deallocator, const char *file, unsi
 		st_OutputDeleteTrace();
 		return;
 	}
-#	endif /* FORTIFY_PARANOID_DEALLOCATE */
+#	endif // FORTIFY_PARANOID_DEALLOCATE
 
-	/*
+	/**
 	 * Make sure the block is okay before we free it.
 	 * If it's not okay, don't free it - it might not
 	 * be a real memory block. Or worse still, someone
@@ -611,7 +584,7 @@ Fortify_Deallocate(void *uptr, unsigned char deallocator, const char *file, unsi
 	}
 
 #	ifdef FORTIFY_TRACK_DEALLOCATED_MEMORY
-	/*
+	/**
 	 * Make sure the block hasn't been freed already
 	 * (we can get to here if FORTIFY_PARANOID_DEALLOCATE
 	 * is off, but FORTIFY_TRACK_DEALLOCATED_MEMORY
@@ -630,9 +603,9 @@ Fortify_Deallocate(void *uptr, unsigned char deallocator, const char *file, unsi
 		st_OutputDeleteTrace();
 		return;
 	}
-#	endif /* FORTIFY_TRACK_DEALLOCATED_MEMORY */
+#	endif // FORTIFY_TRACK_DEALLOCATED_MEMORY
 
-	/*
+	/**
 	 * Make sure the block is being freed with a valid
 	 * deallocator. If not, complain. (but free it anyway)
 	 */
@@ -647,14 +620,10 @@ Fortify_Deallocate(void *uptr, unsigned char deallocator, const char *file, unsi
 		st_OutputDeleteTrace();
 	}
 
-	/*
-	 * Begin critical region
-	 */
+	// Begin critical region
 	FORTIFY_LOCK();
 
-	/*
-	 * Remove the block from the list
-	 */
+	// Remove the block from the list
 	if(h->Prev)
 	{
 		if(!st_CheckBlock(h->Prev, file, line))
@@ -683,14 +652,10 @@ Fortify_Deallocate(void *uptr, unsigned char deallocator, const char *file, unsi
 		st_MakeHeaderValid(h->Next);
 	}
 
-	/*
-	 * End Critical Region
-	 */
+	// End Critical Region
 	FORTIFY_UNLOCK();
 
-	/*
-	 * update the statistics
-	 */
+	// update the statistics
 	st_Frees++;
 	st_CurBlocks--;
 	st_CurAllocation -= h->Size;
@@ -703,28 +668,22 @@ Fortify_Deallocate(void *uptr, unsigned char deallocator, const char *file, unsi
 	if(st_Scope > 0)
 #endif
 	{
-		/*
+		/**
 		 * Don't _actually_ free the memory block, just yet.
 		 * Place it onto the deallocated list, instead, so
 		 * we can check later to see if it's been written to.
 		 */
 #		ifdef FORTIFY_FILL_ON_DEALLOCATE
-		/*
-		 * Nuke out all user memory that is about to be freed
-		 */
+		// Nuke out all user memory that is about to be freed
 		st_SetFortification(ptr + FORTIFY_HEADER_SIZE + FORTIFY_ALIGNED_BEFORE_SIZE,
 						FORTIFY_FILL_ON_DEALLOCATE_VALUE,
 					  h->Size);
-#		endif /* FORTIFY_FILL_ON_DEALLOCATE */
+#		endif // FORTIFY_FILL_ON_DEALLOCATE
 
-		/*
-		 * Begin critical region
-		 */
+		// Begin critical region
 		FORTIFY_LOCK();
 
-		/*
-		 * Place the block on the deallocated list
-		 */
+		// Place the block on the deallocated list
 		if(st_DeallocatedHead)
 		{
 			st_DeallocatedHead->Prev = (struct Header *)ptr;
@@ -746,48 +705,38 @@ Fortify_Deallocate(void *uptr, unsigned char deallocator, const char *file, unsi
 		st_TotalDeallocated += h->Size;
 
 #		ifdef FORTIFY_DEALLOCATED_MEMORY_LIMIT
-		/*
-		 * If we've got too much on the deallocated list; free some
-		 */
+		// If we've got too much on the deallocated list; free some
 		if(st_TotalDeallocated > FORTIFY_DEALLOCATED_MEMORY_LIMIT)
 		{
 			 st_PurgeDeallocatedBlocks(st_TotalDeallocated - FORTIFY_DEALLOCATED_MEMORY_LIMIT, file, line);
 		}
 #		endif
 
-		/*
-		 * End critical region
-		 */
+		// End critical region
 		FORTIFY_UNLOCK();
 	}
 	else
-#	endif /* FORTIFY_TRACK_DEALLOCATED_MEMORY */
+#	endif // FORTIFY_TRACK_DEALLOCATED_MEMORY
 	{
-		/*
-		 * Free the User Label
-		 */
+		// Free the User Label
 		if(h->Label)
 		{
 			free(h->Label);
 		}
 
 #		ifdef FORTIFY_FILL_ON_DEALLOCATE
-		/*
-		 * Nuke out all memory that is about to be freed, including the header
-		 */
+		// Nuke out all memory that is about to be freed, including the header
 		st_SetFortification(ptr, FORTIFY_FILL_ON_DEALLOCATE_VALUE,
 					  FORTIFY_HEADER_SIZE + FORTIFY_ALIGNED_BEFORE_SIZE + h->Size + FORTIFY_AFTER_SIZE);
-#		endif /* FORTIFY_FILL_ON_DEALLOCATE */
+#		endif // FORTIFY_FILL_ON_DEALLOCATE
 
-		/*
-		 * And do the actual free
-		 */
+		// And do the actual free
 		free(ptr);
 	}
 }
 
 
-/*
+/**
  * Fortify_LabelPointer() - Labels the memory block
  * with a string provided by the user. This function
  * takes a copy of the passed in string.
@@ -803,28 +752,28 @@ Fortify_LabelPointer(void *uptr, const char *label, const char *file, unsigned l
 				  - FORTIFY_HEADER_SIZE - FORTIFY_ALIGNED_BEFORE_SIZE;
 		struct Header *h = (struct Header *)ptr;
 
-		/* make sure the pointer is okay */
+		// make sure the pointer is okay
 		Fortify_CheckPointer(uptr, file, line);
 
-		/* free the previous label */
+		// free the previous label
 		if(h->Label)
 		{
 			free(h->Label);
 		}
 
-		/* make sure the label is sensible */
+		// make sure the label is sensible
 		assert(label);
 
-		/* copy it in */
+		// copy it in
 		h->Label = (char*)malloc(strlen(label)+1);
 		strcpy(h->Label, label);
 
-		/* update the checksum */
+		// update the checksum
 		st_MakeHeaderValid(h);
 	}
 }
 
-/*
+/**
  * Fortify_CheckPointer() - Returns true if the uptr
  * points to a valid piece of Fortify_Allocated()'d
  * memory. The memory must be on the allocated list,
@@ -882,7 +831,7 @@ Fortify_CheckPointer(void *uptr, const char *file, unsigned long line)
 	return r;
 }
 
-/*
+/**
  * Fortify_SetOutputFunc(Fortify_OutputFuncPtr Output) -
  * Sets the function used to output all error and
  * diagnostic messages. The output function  takes
@@ -900,7 +849,7 @@ Fortify_SetOutputFunc(Fortify_OutputFuncPtr Output)
 	return(Old);
 }
 
-/*
+/**
  * Fortify_SetAllocateFailRate(int Percent) -
  * Fortify_Allocate() will "fail" this Percent of
  * the time, even if the memory is available.
@@ -919,7 +868,7 @@ Fortify_SetAllocateFailRate(int Percent)
 }
 
 
-/*
+/**
  * Fortify_CheckAllMemory() - Checks the fortifications
  * of all memory on the allocated list. And, if
  * FORTIFY_DEALLOCATED_MEMORY is enabled, all the
@@ -938,9 +887,7 @@ Fortify_CheckAllMemory(const char *file, unsigned long line)
 
 	FORTIFY_LOCK();
 
-	/*
-	 * Check the allocated memory
-	 */
+	// Check the allocated memory
 	while(curr)
 	{
 		if(!st_CheckBlock(curr, file, line))
@@ -949,9 +896,7 @@ Fortify_CheckAllMemory(const char *file, unsigned long line)
 		curr = curr->Next;
 	}
 
-	/*
-	 * Check the deallocated memory while you're at it
-	 */
+	// Check the deallocated memory while you're at it
 #	ifdef FORTIFY_TRACK_DEALLOCATED_MEMORY
 	curr = st_DeallocatedHead;
 	while(curr)
@@ -963,7 +908,7 @@ Fortify_CheckAllMemory(const char *file, unsigned long line)
 	}
 #	endif
 
-	/*
+	/**
 	 * If we know where we are, and everything is cool,
 	 * remember that. It might be important.
 	 */
@@ -978,7 +923,7 @@ Fortify_CheckAllMemory(const char *file, unsigned long line)
 }
 
 
-/*
+/**
  * Fortify_EnterScope() - enters a new Fortify scope
  * level. Returns the new scope level.
  */
@@ -1018,7 +963,8 @@ Fortify_EnterScope(const char *file, unsigned long line)
 #endif
 }
 
-/* Fortify_LeaveScope - leaves a Fortify scope level,
+/**
+ * Fortify_LeaveScope - leaves a Fortify scope level,
  * also prints a memory dump of all non-freed memory
  * that was allocated during the scope being exited.
  * Does nothing and returns 0 if Fortify is disabled.
@@ -1108,7 +1054,7 @@ Fortify_LeaveScope(const char *file, unsigned long line)
 #   endif
 
 #	ifdef FORTIFY_TRACK_DEALLOCATED_MEMORY
-	/*
+	/**
 	 * Quietly free all the deallocated memory
 	 * that was allocated in this scope that
 	 * we are still tracking
@@ -1119,7 +1065,7 @@ Fortify_LeaveScope(const char *file, unsigned long line)
 #	else
 	st_PurgeDeallocatedScope( st_Scope, file, line );
 #	endif
-#	endif /* FORTIFY_TRACK_DEALLOCATED_MEMORY */
+#	endif // FORTIFY_TRACK_DEALLOCATED_MEMORY
 
 	FORTIFY_UNLOCK();
 #	ifdef MT_SCOPES
@@ -1129,7 +1075,7 @@ Fortify_LeaveScope(const char *file, unsigned long line)
 #	endif
 }
 
-/*
+/**
  * Fortify_ListAllMemory() - Outputs the entire
  * list of currently allocated memory. For each block
  * is output it's Address, Size, and the SourceFile and
@@ -1179,7 +1125,7 @@ Fortify_ListAllMemory(const char *file, unsigned long line)
 	return(count);
 }
 
-/*
+/**
  * Fortify_DumpAllMemory() - Outputs the entire list of
  * currently allocated memory. For each allocated block
  * is output it's Address, Size, the SourceFile and Line
@@ -1217,7 +1163,8 @@ Fortify_DumpAllMemory(const char *file, unsigned long line)
 	return(count);
 }
 
-/* Fortify_OutputStatistics() - displays statistics
+/**
+ * Fortify_OutputStatistics() - displays statistics
  * about the maximum amount of memory that was
  * allocated at any one time.
  */
@@ -1251,7 +1198,8 @@ Fortify_OutputStatistics(const char *file, unsigned long line)
 	}
 }
 
-/* Fortify_GetCurrentAllocation() - returns the number of
+/**
+ * Fortify_GetCurrentAllocation() - returns the number of
  * bytes currently allocated.
  */
 unsigned long FORTIFY_STORAGE
@@ -1263,7 +1211,8 @@ Fortify_GetCurrentAllocation(const char *file, unsigned long line)
 	return st_CurAllocation;
 }
 
-/* Fortify_SetAllocationLimit() - set a limit on the total
+/**
+ * Fortify_SetAllocationLimit() - set a limit on the total
  * amount of memory allowed for this application.
  */
 void FORTIFY_STORAGE
@@ -1272,7 +1221,7 @@ Fortify_SetAllocationLimit(unsigned long NewLimit, const char *file, unsigned lo
 	st_AllocationLimit = NewLimit;
 }
 
-/*
+/**
  * Fortify_Disable() - Run time method of disabling Fortify.
  * Useful if you need to turn off Fortify without recompiling
  * everything. Not as effective as compiling out, of course.
@@ -1288,16 +1237,16 @@ void FORTIFY_STORAGE
 Fortify_Disable(const char *file, unsigned long line)
 {
 #	ifdef FORTIFY_TRACK_DEALLOCATED_MEMORY
-	/* free all deallocated memory we might be tracking */
+	// free all deallocated memory we might be tracking
 	st_PurgeDeallocatedScope( 0, file, line );
-#	endif /* FORTIFY_TRACK_DEALLOCATED_MEMORY */
+#	endif // FORTIFY_TRACK_DEALLOCATED_MEMORY
 
 	st_Disabled = 1;
 }
 
 
 
-/*
+/**
  * st_CheckBlock - Check a block's header and fortifications.
  * Returns true if the block is happy.
  */
@@ -1363,7 +1312,7 @@ st_CheckBlock(struct Header *h, const char *file, unsigned long line)
 
 #ifdef FORTIFY_TRACK_DEALLOCATED_MEMORY
 
-/*
+/**
  * st_CheckDeallocatedBlock - Check a deallocated block's header and fortifications.
  * Returns true if the block is happy.
  */
@@ -1449,17 +1398,17 @@ st_CheckDeallocatedBlock(struct Header *h, const char *file, unsigned long line)
 #		ifdef FORTIFY_FILL_ON_CORRUPTION
 		st_SetFortification(ptr + FORTIFY_HEADER_SIZE + FORTIFY_ALIGNED_BEFORE_SIZE,
 							FORTIFY_FILL_ON_DEALLOCATE_VALUE, h->Size);
-#		endif /* FORTIFY_FILL_ON_CORRUPTION */
+#		endif // FORTIFY_FILL_ON_CORRUPTION
 		result = 0;
 	}
-#endif /* FORTIFY_FILL_ON_DEALLOCATE */
+#endif // FORTIFY_FILL_ON_DEALLOCATE
 	return result;
  }
 
-#endif /* FORTIFY_TRACK_DEALLOCATED_MEMORY */
+#endif // FORTIFY_TRACK_DEALLOCATED_MEMORY
 
 
-/*
+/**
  * st_CheckFortification - Checks if the _size_
  * bytes from _ptr_ are all set to _value_
  * Returns true if all is happy.
@@ -1474,7 +1423,7 @@ st_CheckFortification(unsigned char *ptr, unsigned char value, size_t size)
 	return(1);
 }
 
-/*
+/**
  * st_SetFortification - Set the _size_ bytes from _ptr_ to _value_.
  */
 static void
@@ -1483,7 +1432,7 @@ st_SetFortification(unsigned char *ptr, unsigned char value, size_t size)
 	memset(ptr, value, size);
 }
 
-/*
+/**
  * st_OutputFortification - Output the corrupted section of the fortification
  */
 static void
@@ -1497,9 +1446,7 @@ st_OutputFortification(unsigned char *ptr, unsigned char value, size_t size)
 
 	while(offset < size)
 	{
-		/*
-		 * Skip 3 or more 'correct' lines
-		 */
+		// Skip 3 or more 'correct' lines
 		if((size - offset) < 3 * 16)
 			advance = size - offset;
 		else
@@ -1541,7 +1488,7 @@ st_OutputFortification(unsigned char *ptr, unsigned char value, size_t size)
 	st_Output("\n");
 }
 
-/*
+/**
  * st_HexDump - output a nice hex dump of "size" bytes, starting at "ptr" + "offset"
  */
 static void
@@ -1607,7 +1554,7 @@ st_HexDump(unsigned char *ptr, size_t offset, size_t size, int title)
 	}
 }
 
-/*
+/**
  * st_IsHeaderValid - Returns true if the
  * supplied pointer does indeed point to a
  * real Header
@@ -1618,7 +1565,7 @@ st_IsHeaderValid(struct Header *h)
 	return(st_ChecksumHeader(h) == FORTIFY_CHECKSUM_VALUE);
 }
 
-/*
+/**
  * st_MakeHeaderValid - Updates the checksum
  * to make the header valid
  */
@@ -1629,7 +1576,7 @@ st_MakeHeaderValid(struct Header *h)
 	h->Checksum = (unsigned short)(FORTIFY_CHECKSUM_VALUE - st_ChecksumHeader(h));
 }
 
-/*
+/**
  * st_ChecksumHeader - Calculate (and return)
  * the checksum of the header. (Including the
  * Checksum field itself. If all is well, the
@@ -1650,7 +1597,7 @@ st_ChecksumHeader(struct Header *h)
 	return(checksum);
 }
 
-/*
+/**
  * st_IsOnAllocatedList - Examines the allocated
  * list to see if the given header is on it.
  */
@@ -1672,7 +1619,8 @@ st_IsOnAllocatedList(struct Header *h)
 }
 
 #ifdef FORTIFY_TRACK_DEALLOCATED_MEMORY
-/*
+
+/**
  * st_IsOnDeallocatedList - Examines the deallocated
  * list to see if the given header is on it.
  */
@@ -1693,7 +1641,7 @@ st_IsOnDeallocatedList(struct Header *h)
 	return(0);
 }
 
-/*
+/**
  * st_PurgeDeallocatedBlocks - free at least "Bytes"
  * worth of deallocated memory, starting at the
  * oldest deallocated block.
@@ -1709,7 +1657,7 @@ st_PurgeDeallocatedBlocks(unsigned long Bytes, const char *file, unsigned long l
 	sprintf(st_Buffer, "\nFortify: Warning - Discarding deallocated memory at %s.%lu\n",
 			file, line);
 	st_Output(st_Buffer);
-#	endif /* FORTIFY_WARN_WHEN_DISCARDING_DEALLOCATED_MEMORY */
+#	endif // FORTIFY_WARN_WHEN_DISCARDING_DEALLOCATED_MEMORY
 
 	while(st_DeallocatedTail && FreedBytes < Bytes)
 	{
@@ -1721,15 +1669,15 @@ st_PurgeDeallocatedBlocks(unsigned long Bytes, const char *file, unsigned long l
 		sprintf(st_Buffer, "                %s\n",
 				st_DeallocatedMemoryBlockString(st_DeallocatedTail));
 		st_Output(st_Buffer);
-#		endif /* FORTIFY_VERBOSE_WARN_WHEN_DISCARDING_DEALLOCATED_MEMORY */
-#		endif /* FORTIFY_WARN_WHEN_DISCARDING_DEALLOCATED_MEMORY */
+#		endif // FORTIFY_VERBOSE_WARN_WHEN_DISCARDING_DEALLOCATED_MEMORY
+#		endif // FORTIFY_WARN_WHEN_DISCARDING_DEALLOCATED_MEMORY
 		st_FreeDeallocatedBlock(st_DeallocatedTail, file, line);
 	}
 
 	return FreedBlocks != 0;
 }
 
-/*
+/**
  * st_PurgeDeallocatedScope - free all deallocated
  * memory blocks that were allocated within "Scope"
  */
@@ -1762,7 +1710,7 @@ st_PurgeDeallocatedScope(unsigned char Scope, const char *file, unsigned long li
 	return FreedBlocks != 0;
 }
 
-/*
+/**
  * st_FreeDeallocatedBlock - actually remove
  * a deallocated block from the deallocated
  * list, and actually free it's memory.
@@ -1772,9 +1720,7 @@ st_FreeDeallocatedBlock(struct Header *h, const char *file, unsigned long line)
 {
 	st_CheckDeallocatedBlock( h, file, line );
 
-   /*
-	* Begin Critical region
-	*/
+   // Begin Critical region
 	FORTIFY_LOCK();
 
 	st_TotalDeallocated -= h->Size;
@@ -1803,34 +1749,26 @@ st_FreeDeallocatedBlock(struct Header *h, const char *file, unsigned long line)
 		st_MakeHeaderValid(h->Next);
 	}
 
-	/*
-	 * Free the label
-	 */
+	// Free the label
 	if(h->Label)
 	{
 		free(h->Label);
 	}
 
-	/*
-	 * Nuke out all memory that is about to be freed, including the header
-	 */
+	// Nuke out all memory that is about to be freed, including the header
 	st_SetFortification((unsigned char*)h, FORTIFY_FILL_ON_DEALLOCATE_VALUE,
 			FORTIFY_HEADER_SIZE + FORTIFY_ALIGNED_BEFORE_SIZE + h->Size + FORTIFY_AFTER_SIZE);
 
-	/*
-	 * And do the actual free
-	 */
+	// And do the actual free
 	free(h);
 
-	/*
-	 * End critical region
-	 */
+	// End critical region
 	FORTIFY_UNLOCK();
 }
 
-#endif /* FORTIFY_TRACK_DEALLOCATED_MEMORY */
+#endif // FORTIFY_TRACK_DEALLOCATED_MEMORY
 
-/*
+/**
  * st_OutputMemory - Hex and ascii dump the
  * user memory of a block.
  */
@@ -1842,7 +1780,7 @@ st_OutputMemory(struct Header *h)
 }
 
 
-/*
+/**
  * st_OutputHeader - Output the header
  */
 static void
@@ -1907,7 +1845,7 @@ st_OutputHeader(struct Header *h)
 	st_Output(st_Buffer);
 }
 
-/*
+/**
  * st_OutputLastVerifiedPoint - output the last
  * known point where everything was hoopy.
  */
@@ -1920,7 +1858,7 @@ st_OutputLastVerifiedPoint()
 	st_Output(st_Buffer);
 }
 
-/*
+/**
  * st_MemoryBlockString - constructs a string that
  * desribes a memory block. (pointer,size,allocator,label)
  */
@@ -1960,7 +1898,8 @@ st_MemoryBlockString(struct Header *h)
 #ifdef FORTIFY_TRACK_DEALLOCATED_MEMORY
 #ifdef FORTIFY_WARN_WHEN_DISCARDING_DEALLOCATED_MEMORY
 #ifdef FORTIFY_VERBOSE_WARN_WHEN_DISCARDING_DEALLOCATED_MEMORY
-/*
+
+/**
  * st_DeallocatedMemoryBlockString - constructs
  * a string that desribes a deallocated memory
  * block. (pointer,size,allocator,deallocator)
@@ -1994,12 +1933,12 @@ st_DeallocatedMemoryBlockString(struct Header *h)
 
 	return st_BlockString;
 }
-#endif /* FORTIFY_VERBOSE_WARN_WHEN_DISCARDING_DEALLOCATED_MEMORY */
-#endif /* FORTIFY_WARN_WHEN_DISCARDING_DEALLOCATED_MEMORY */
-#endif /* FORTIFY_TRACK_DEALLOCATED_MEMORY */
+#endif // FORTIFY_VERBOSE_WARN_WHEN_DISCARDING_DEALLOCATED_MEMORY
+#endif // FORTIFY_WARN_WHEN_DISCARDING_DEALLOCATED_MEMORY
+#endif // FORTIFY_TRACK_DEALLOCATED_MEMORY
 
 
-/*
+/**
  * st_DefaultOutput - the default output function
  */
 static void
@@ -2009,7 +1948,7 @@ st_DefaultOutput(const char *String)
 	fflush(stdout);
 }
 
-/*
+/**
  * Fortify_malloc - Fortify's replacement malloc()
  */
 void *FORTIFY_STORAGE
@@ -2018,7 +1957,7 @@ Fortify_malloc(size_t size, const char *file, unsigned long line)
 	return Fortify_Allocate(size, Fortify_Allocator_malloc, file, line);
 }
 
-/*
+/**
  * Fortify_realloc - Fortify's replacement realloc()
  */
 void * FORTIFY_STORAGE			// 28 Jan 08 SHL
@@ -2028,10 +1967,7 @@ Fortify_realloc(void *uptr, size_t new_size, const char *file, unsigned long lin
 	struct Header *h = (struct Header *)ptr;
 	void *new_ptr;
 
-	/*
-	 * If Fortify is disabled, we gotta do this a little
-	 * differently.
-	 */
+	// If Fortify is disabled, we gotta do this a little differently.
 	if(!st_Disabled)
 	{
 		if(!uptr)
@@ -2083,9 +2019,7 @@ Fortify_realloc(void *uptr, size_t new_size, const char *file, unsigned long lin
 	}
 	else
 	{
-		/*
-		 * If the old block was fortified, we can't use normal realloc.
-		 */
+		// If the old block was fortified, we can't use normal realloc.
 		if(st_IsOnAllocatedList(h))
 		{
 			new_ptr = Fortify_Allocate(new_size, Fortify_Allocator_realloc, file, line);
@@ -2100,14 +2034,14 @@ Fortify_realloc(void *uptr, size_t new_size, const char *file, unsigned long lin
 			Fortify_Deallocate(uptr, Fortify_Deallocator_realloc, file, line);
 			return(new_ptr);
 		}
-		else /* easy */
+		else // easy
 		{
 			return realloc(uptr, new_size);
 		}
 	}
 }
 
-/*
+/**
  * Fortify_calloc - Fortify's replacement calloc
  */
 void *
@@ -2128,20 +2062,20 @@ Fortify_calloc(size_t num, size_t size, const char *file, unsigned long line)
 	}
 }
 
-/*
+/**
  * Fortify_free - Fortify's replacement free
  */
 void FORTIFY_STORAGE			// 28 Jan 08 SHL
 Fortify_free(void *uptr, const char *file, unsigned long line)
 {
-	/* it is defined to be safe to free(0) */
+	// it is defined to be safe to free(0)
 	if(uptr == 0)
 		return;
 
 	Fortify_Deallocate(uptr, Fortify_Deallocator_free, file, line);
 }
 
-/*
+/**
  * Fortify_strdup - Fortify's replacement strdup. Since strdup isn't
  * ANSI, it is only provided if FORTIFY_STRDUP is defined.
  */
@@ -2164,7 +2098,7 @@ Fortify_strdup(const char *oldStr, const char *file, unsigned long line)
 		return strdup(oldStr);
 	}
 }
-#endif /* FORTIFY_STRDUP */
+#endif // FORTIFY_STRDUP
 
 static void
 st_OutputDeleteTrace()
@@ -2187,7 +2121,7 @@ st_OutputDeleteTrace()
 
 #ifdef __cplusplus
 
-/*
+/**
  * st_NewHandler() - there is no easy way to get
  * the new handler function. And isn't it great
  * how the new handler doesn't take a parameter
@@ -2197,18 +2131,16 @@ st_OutputDeleteTrace()
 Fortify_NewHandlerFunc
 st_NewHandler()
 {
-	/* get the current handler */
+	// get the current handler
 	Fortify_NewHandlerFunc handler = set_new_handler(0);
 
-	/* and set it back (since we cant
-	 * get it without changing it)
-	 */
+	// and set it back (since we cant get it without changing it)
 	set_new_handler(handler);
 
 	return handler;
 }
 
-/*
+/**
  * operator new - Fortify's replacement new,
  * without source-code information.
  */
@@ -2229,7 +2161,7 @@ operator new(size_t size)
 	return p;
 }
 
-/*
+/**
  * operator new - Fortify's replacement new,
  * with source-code information
  */
@@ -2251,7 +2183,7 @@ operator new(size_t size, const char *file, int line)
 
 #ifdef FORTIFY_PROVIDE_ARRAY_NEW
 
-/*
+/**
  * operator new[], without source-code info
  */
 void *FORTIFY_STORAGE
@@ -2271,7 +2203,7 @@ operator new[](size_t size)
 	return p;
 }
 
-/*
+/**
  * operator new[], with source-code info
  */
 void *FORTIFY_STORAGE
@@ -2290,9 +2222,9 @@ operator new[](size_t size, const char *file, unsigned long line)
 	return p;
 }
 
-#endif /* FORTIFY_PROVIDE_ARRAY_NEW */
+#endif // FORTIFY_PROVIDE_ARRAY_NEW
 
-/*
+/**
  * Fortify_PreDelete - C++ does not allow overloading
  * of delete, so the delete macro calls Fortify_PreDelete
  * with the source-code info, and then calls delete.
@@ -2302,7 +2234,7 @@ Fortify_PreDelete(const char *file, int line)
 {
 	FORTIFY_LOCK();
 
-	/*
+	/**
 	 * Push the source code info for the delete onto the delete stack
 	 * (if we have enough room, of course)
 	 */
@@ -2315,7 +2247,7 @@ Fortify_PreDelete(const char *file, int line)
 	st_DeleteStackTop++;
 }
 
-/*
+/**
  * Fortify_PostDelete() - Pop the delete source-code info
  * off the source stack.
  */
@@ -2327,7 +2259,7 @@ Fortify_PostDelete()
 	FORTIFY_UNLOCK();
 }
 
-/*
+/**
  * operator delete - fortify's replacement delete
  */
 void FORTIFY_STORAGE
@@ -2336,15 +2268,11 @@ operator delete(void *uptr)
 	const char *file;
 	unsigned long line;
 
-	 /*
-	  * It is defined to be harmless to delete 0
-	  */
+	// It is defined to be harmless to delete 0
 	if(uptr == 0)
 		return;
 
-	/*
-	 * find the source-code info
-	 */
+	// find the source-code info
 	if(st_DeleteStackTop)
 	{
 		if(st_DeleteStackTop < FORTIFY_DELETE_STACK_SIZE)
@@ -2369,7 +2297,7 @@ operator delete(void *uptr)
 
 #ifdef FORTIFY_PROVIDE_ARRAY_DELETE
 
-/*
+/**
  * operator delete[] - fortify's replacement delete[]
  */
 void FORTIFY_STORAGE
@@ -2378,15 +2306,11 @@ operator delete[](void *uptr)
 	const char *file;
 	unsigned long line;
 
-	 /*
-	  * It is defined to be harmless to delete 0
-	  */
+	// It is defined to be harmless to delete 0
 	if(uptr == 0)
 		return;
 
-	/*
-	 * find the source-code info
-	 */
+	// find the source-code info
 	if(st_DeleteStackTop)
 	{
 		if(st_DeleteStackTop < FORTIFY_DELETE_STACK_SIZE)
@@ -2409,10 +2333,11 @@ operator delete[](void *uptr)
 	Fortify_Deallocate(uptr, Fortify_Deallocator_array_delete, file, line);
 }
 
-#endif /* FORTIFY_PROVIDE_ARRAY_DELETE */
+#endif // FORTIFY_PROVIDE_ARRAY_DELETE
 
 #ifdef FORTIFY_AUTOMATIC_LOG_FILE
-/* Automatic log file stuff!
+/**
+ * Automatic log file stuff!
  *
  * AutoLogFile class. There can only ever be ONE of these
  * instantiated! It is a static class, which means that
@@ -2481,9 +2406,9 @@ char *Fortify_AutoLogFile::term_string = "Program Termination";
 
 static Fortify_AutoLogFile Abracadabra;
 
-#endif /* FORTIFY_AUTOMATIC_LOG_FILE */
+#endif // FORTIFY_AUTOMATIC_LOG_FILE
 
-#endif /* __cplusplus */
+#endif // __cplusplus
 
 #ifdef MT_SCOPES
 
@@ -2598,4 +2523,4 @@ void Fortify_SetScope(void *pBlock, unsigned char scope)
 
 #endif // MT_SCOPES
 
-#endif /* FORTIFY */
+#endif // FORTIFY

@@ -1,6 +1,8 @@
+/***********************************************************
 
-/* excputil.c - exception handlers
-   $Id$
+  $Id$
+
+  exception handlers
 
   Copyright (c) 2008 Steven H. Levine
 
@@ -9,7 +11,7 @@
 
   06 Dec 08 SHL Baseline (Ticket #26)
 
-*/
+************************************************************/
 
 #include <stdio.h>			// fprintf
 #include <string.h>			// strcpy

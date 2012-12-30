@@ -80,7 +80,7 @@ static BOOL loadedres = FALSE;
 
 VOID load_resources(VOID)
 {
-  /* load linked list of resources from RESOURCE.DAT file */
+  // load linked list of resources from RESOURCE.DAT file
 
   FILE *fp;
   LINKRES *info, *last = NULL;
@@ -119,7 +119,7 @@ VOID load_resources(VOID)
 
 VOID save_resources(VOID)
 {
-  /* save linked list of resources to RESOURCE.DAT file */
+  // save linked list of resources to RESOURCE.DAT file
 
   LINKRES *info;
   FILE *fp;
@@ -363,10 +363,11 @@ MRESULT EXPENTRY RemapDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     GetRidOfIt:
       while (info) {
 	if (info->happ == (HAPP) mp1) {
-/* Note:  if this next line is removed, FM/2 will start the attach/detach
- * request again, once for each request, to see if it might succeed and to
- * ensure the request is seen by the user in case interaction is required.
- */
+          /**
+           * Note:  if this next line is removed, FM/2 will start the attach/detach
+           * request again, once for each request, to see if it might succeed and to
+           * ensure the request is seen by the user in case interaction is required.
+           */
 	  info->failedonce = TRUE;
 	  hwndList = WinWindowFromID(hwnd,
 				     (info->attach) ?

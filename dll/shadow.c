@@ -152,7 +152,7 @@ HOBJECT CreateShadowObject(CHAR * objtitle, CHAR * location, CHAR * path,
     sprintf(s,
 	    "SHADOWID=%s%s%s",
 	    (path) ? path : NullStr, (path) ? PCSZ_BACKSLASH : NullStr, objtitle);
-    {					/* find an icon for it if possible */
+    {					// find an icon for it if possible
       CHAR *p, temp[CCHMAXPATH + 1];
 
       BldFullPathName(temp, path, objtitle);
@@ -261,7 +261,9 @@ VOID MakeShadows(HWND hwnd, CHAR ** list, ULONG Shadows, CHAR * cnr,
 	  *szBuffer = 0;
 	if ((fsa.attrFile & FILE_DIRECTORY) || Shadows)
 	  CreateShadowObject(p, (obj) ? szBuffer : NULL, szDir, 0, cnr);
-	else if (!(apt & (FAPPTYP_NOTWINDOWCOMPAT | FAPPTYP_WINDOWCOMPAT | FAPPTYP_WINDOWAPI | FAPPTYP_BOUND | FAPPTYP_DOS | FAPPTYP_WINDOWSREAL | FAPPTYP_WINDOWSPROT | 0x1000)))	/* not an executable app? */
+        else if (!(apt & (FAPPTYP_NOTWINDOWCOMPAT | FAPPTYP_WINDOWCOMPAT | FAPPTYP_WINDOWAPI |
+                          FAPPTYP_BOUND | FAPPTYP_DOS | FAPPTYP_WINDOWSREAL |
+                          FAPPTYP_WINDOWSPROT | 0x1000)))	// not an executable app?
 	  CreateDataObject(p, (obj) ? szBuffer : NULL, szDir, cnr);
 	else
 	  CreateProgramObject(p, (obj) ? szBuffer : NULL, szDir, cnr);
@@ -281,7 +283,7 @@ VOID OpenObject(CHAR *filename, PCSZ type, HWND hwnd)
   if ((*filename == '<' &&
        filename[strlen(filename) - 1] == '>') || IsFile(filename) != -1) {
     hWPSObject = WinQueryObject(filename);
-    if (hWPSObject != NULLHANDLE) {	/* got something; try to to open it */
+    if (hWPSObject != NULLHANDLE) {	// got something; try to to open it
 
       CHAR s[CCHMAXPATH];
       HWND hwndDesktop;

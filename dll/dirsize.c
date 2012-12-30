@@ -181,7 +181,7 @@ static BOOL ProcessDir(HWND hwndCnr,
   if (!rc)
     DosFindClose(hdir);
 
-  /*
+  /**
    * the "|| strlen(pszFileName) < 4 below works around an OS/2 bug
    * that prevents FAT root directories from being found when
    * requesting EASIZE.  sheesh.

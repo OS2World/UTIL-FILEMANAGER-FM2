@@ -117,7 +117,7 @@
 #include "fortify.h"
 #include "info.h"                       // driveflags
 
-#define CONTAINER_COLUMNS       13	/* Number of columns in details view */
+#define CONTAINER_COLUMNS       13	// Number of columns in details view
 #define MS_POPUP          0x00000010L
 
 // Data definitions
@@ -301,7 +301,7 @@ void BoxWindow(HWND hwnd, HPS hps, LONG color)
 
 void PaintSTextWindow(HWND hwnd, HPS hps)
 {
-  /*
+  /**
    * paint a text window such that the rightmost part of the text is
    * always visible even if the text length exceeds the length of the
    * window -- otherwise, paint the window so that it is left-justified
@@ -363,7 +363,7 @@ void PaintSTextWindow(HWND hwnd, HPS hps)
 
 VOID PaintRecessedWindow(HWND hwnd, HPS hps, BOOL outtie, BOOL dbl)
 {
-  /*
+  /**
    * paint a recessed box around the window
    * two pixels width required around window for painting...
    */
@@ -946,7 +946,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (strchr(szData, '?') ||
 	      strchr(szData, '*') || IsRoot(pci->pszFileName))
 	    return (MRESULT) FALSE;
-	  /* If the text changed, rename the file system object. */
+	  // If the text changed, rename the file system object.
 	  chop_at_crnl(szData);
 	  bstrip(szData);
 	  if (!IsFullName(szData))
@@ -968,8 +968,8 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    if (strcmp(szData, testname)) {
               if (stricmp(szData, testname) && IsFile(testname) != -1) {
                 if (!fAlertBeepOff)
-		  DosBeep(50, 100);       /* exists; disallow */
-		return (MRESULT) FALSE;
+		  DosBeep(50, 100);       
+		return (MRESULT) FALSE;    // exists; disallow
 	      }
 	      if (fVerify && (driveflags[toupper(*szData) - 'A'] & DRIVE_WRITEVERIFYOFF ||
 			      driveflags[toupper(*testname) - 'A'] & DRIVE_WRITEVERIFYOFF)) {
@@ -1295,7 +1295,7 @@ VOID SetSortChecks(HWND hwndMenu, INT sortflags)
 
 VOID FcloseFile(FILE * fp)
 {
-  /* for use by apps that don't use the DLLs runtime library */
+  // for use by apps that don't use the DLLs runtime library
   fclose(fp);
 }
 
@@ -1683,7 +1683,7 @@ PMINIRECORDCORE CurrentRecord(HWND hwndCnr)
     pmi = (PMINIRECORDCORE) WinSendMsg(hwndCnr, CM_QUERYRECORDEMPHASIS,
 				       MPFROMLONG(CMA_FIRST),
 				       MPFROMSHORT(attrib));
-    if ((!pmi || (INT) pmi == -1) && attrib == CRA_SELECTED)    /* punt */
+    if ((!pmi || (INT) pmi == -1) && attrib == CRA_SELECTED)    // punt
       attrib = CRA_CURSORED;
     else
       break;
@@ -1898,7 +1898,7 @@ VOID PortholeInit(HWND hwndNew, MPARAM mp1, MPARAM mp2)
 
 HWND CheckMenu(HWND hwnd, HWND * hwndMenu, USHORT id)
 {
-  /* load and adjust menus as required */
+  // load and adjust menus as required
   if (!*hwndMenu || !WinIsWindow((HAB) 0, *hwndMenu)) {
     *hwndMenu = WinLoadMenu(HWND_DESKTOP, FM3ModHandle, id);
     CopyPresParams(*hwndMenu, hwnd);
@@ -2300,7 +2300,7 @@ void Broadcast(HAB hab, HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 void SetupWinList(HWND hwndMenu, HWND hwndTop, HWND hwndFrame)
 {
-  /*
+  /**
    * add switchlist entries to end of pulldown menu
    */
 
@@ -2310,7 +2310,7 @@ void SetupWinList(HWND hwndMenu, HWND hwndTop, HWND hwndFrame)
   sItemCount = (SHORT) WinSendMsg(hwndMenu,
 				  MM_QUERYITEMCOUNT, MPVOID, MPVOID);
 
-  /* clean out old additions */
+  // clean out old additions
   while ((SHORT) WinSendMsg(hwndMenu,
 			    MM_DELETEITEM,
 			    MPFROM2SHORT(IDM_SWITCHSTART + x++,
@@ -2330,7 +2330,7 @@ void SetupWinList(HWND hwndMenu, HWND hwndTop, HWND hwndFrame)
     HENUM henum;
     HWND hwndChild;
 
-    /* add children of the main FM/2 client */
+    // add children of the main FM/2 client
     henum = WinBeginEnumWindows(hwndTop);
     memset(&mi, 0, sizeof(mi));
     while ((hwndChild = WinGetNextWindow(henum)) != NULLHANDLE) {
@@ -2354,7 +2354,7 @@ void SetupWinList(HWND hwndMenu, HWND hwndTop, HWND hwndFrame)
     WinEndEnumWindows(henum);
   }
 
-  /* add external FM/2 windows */
+  // add external FM/2 windows
   {
     PSWBLOCK pswb;
     ULONG ulSize, ulcEntries;
@@ -2362,17 +2362,17 @@ void SetupWinList(HWND hwndMenu, HWND hwndTop, HWND hwndFrame)
     register INT i;
 
     hwndTopFrame = hwndTop ? WinQueryWindow(hwndTop, QW_PARENT) : (HWND)0;
-    /* Get the switch list information */
+    // Get the switch list information
     x = 0;
     ulcEntries = WinQuerySwitchList(0, NULL, 0);
     ulSize = sizeof(SWBLOCK) + sizeof(HSWITCH) + (ulcEntries + 4L) *
       (LONG) sizeof(SWENTRY);
-    /* Allocate memory for list */
+    // Allocate memory for list
     pswb = xmalloc(ulSize, pszSrcFile, __LINE__);
     if (pswb) {
-      /* Put the info in the list */
+      // Put the info in the list
       ulcEntries = WinQuerySwitchList(0, pswb, ulSize - sizeof(SWENTRY));
-      /* do the dirty deed */
+      // do the dirty deed
       memset(&mi, 0, sizeof(mi));
       for (i = 0; i < pswb->cswentry; i++) {
 	if (pswb->aswentry[i].swctl.uchVisibility == SWL_VISIBLE &&
@@ -2419,9 +2419,7 @@ BOOL SwitchCommand(HWND hwndMenu, USHORT cmd)
   BOOL ret = FALSE;
 
   if (hwndMain && hwndMenu && cmd >= IDM_WINDOWSTART && cmd < IDM_SWITCHSTART) {
-    /*
-     * select a child window (of client)
-     */
+    // select a child window (of client)
 
     MENUITEM mi;
     HWND hwndSubMenu = (HWND) 0, hwndChild;

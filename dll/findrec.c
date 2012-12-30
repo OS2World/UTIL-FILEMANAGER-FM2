@@ -55,18 +55,18 @@ PCNRITEM FindCnrRecord(HWND hwndCnr, CHAR *filename, PCNRITEM pciParent,
   srch.pszSearch = (PSZ) file;
   srch.fsPrefix = FALSE;
   srch.fsCaseSensitive = FALSE;
-  srch.usView = CV_TREE;		/* | CV_EXACTMATCH; */
+  srch.usView = CV_TREE;		
   if (!pciParent)
     pciParent = (PCNRITEM) CMA_FIRST;
   pci = WinSendMsg(hwndCnr,
 		   CM_SEARCHSTRING, MPFROMP(&srch), MPFROMP(pciParent));
   while (pci && (INT) pci != -1) {
     if (!noenv || (pci->flags & (RECFLAGS_ENV | RECFLAGS_UNDERENV)) == 0) {
-      if (!partmatch) {			/* full name must match full name */
+      if (!partmatch) {			// full name must match full name
 	if (!stricmp(pci->pszFileName, filename))
-	  return pci;			/* success */
+	  return pci;			// success
       }
-      else {				/* only root name must match */
+      else {				// only root name must match
 	if (strlen(pci->pszFileName) > 3) {
 	  p = strrchr(pci->pszFileName, '\\');
 	  if (!p) {
@@ -82,13 +82,13 @@ PCNRITEM FindCnrRecord(HWND hwndCnr, CHAR *filename, PCNRITEM pciParent,
 	else
 	  p = pci->pszFileName;
 	if (!stricmp(p, file))
-	  return pci;			/* success */
+	  return pci;			// success
       }
     }
     pci = WinSendMsg(hwndCnr, CM_SEARCHSTRING, MPFROMP(&srch), MPFROMP(pci));
   }
 
-  return NULL;				/* failure */
+  return NULL;				// failure
 }
 
 PCNRITEM FindParentRecord(HWND hwndCnr, PCNRITEM pciC)

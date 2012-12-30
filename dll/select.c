@@ -742,77 +742,8 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 	      Cnrs[z].ss[x].largest = FALSE;
 	    cmp = TestCDates(&bsres->pci->date, &bsres->pci->time,
 			     &Cnrs[z].ss[x].pci->date, &Cnrs[z].ss[x].pci->time);
-	      /*(Cnrs[z].ss[x].pci->date.year >
-	       bsres->pci->date.year) ? TRUE : (Cnrs[z].ss[x].pci->date.year <
-						bsres->pci->date.
-						year) ? FALSE : (Cnrs[z].
-								 ss[x].pci->
-								 date.month >
-								 bsres->pci->
-								 date.
-								 month) ? TRUE
-	      : (Cnrs[z].ss[x].pci->date.month <
-		 bsres->pci->date.month) ? FALSE : (Cnrs[z].ss[x].pci->date.
-						    day >
-						    bsres->pci->date.
-						    day) ? TRUE : (Cnrs[z].
-								   ss[x].pci->
-								   date.day <
-								   bsres->
-								   pci->date.
-								   day) ?
-	      FALSE : (Cnrs[z].ss[x].pci->time.hours >
-		       bsres->pci->time.hours) ? TRUE : (Cnrs[z].ss[x].pci->
-							 time.hours <
-							 bsres->pci->time.
-							 hours) ? FALSE
-	      : (Cnrs[z].ss[x].pci->time.minutes >
-		 bsres->pci->time.minutes) ? TRUE : (Cnrs[z].ss[x].pci->time.
-						     minutes <
-						     bsres->pci->time.
-						     minutes) ? FALSE
-	      : (Cnrs[z].ss[x].pci->time.seconds >
-		 bsres->pci->time.seconds) ? TRUE : (Cnrs[z].ss[x].pci->time.
-						     seconds <
-						     bsres->pci->time.
-						     seconds) ? FALSE : FALSE;*/
 	    if (cmp != 1)
 	      Cnrs[z].ss[x].newest = FALSE;
-	    /*cmp =
-	      (Cnrs[z].ss[x].pci->date.year <
-	       bsres->pci->date.year) ? TRUE : (Cnrs[z].ss[x].pci->date.year >
-						bsres->pci->date.
-						year) ? FALSE : (Cnrs[z].
-								 ss[x].pci->
-								 date.month <
-								 bsres->pci->
-								 date.
-								 month) ? TRUE
-	      : (Cnrs[z].ss[x].pci->date.month >
-		 bsres->pci->date.month) ? FALSE : (Cnrs[z].ss[x].pci->date.
-						    day <
-						    bsres->pci->date.
-						    day) ? TRUE : (Cnrs[z].
-								   ss[x].pci->
-								   date.day >
-								   bsres->
-								   pci->date.
-								   day) ?
-	      FALSE : (Cnrs[z].ss[x].pci->time.hours <
-		       bsres->pci->time.hours) ? TRUE : (Cnrs[z].ss[x].pci->
-							 time.hours >
-							 bsres->pci->time.
-							 hours) ? FALSE
-	      : (Cnrs[z].ss[x].pci->time.minutes <
-		 bsres->pci->time.minutes) ? TRUE : (Cnrs[z].ss[x].pci->time.
-						     minutes >
-						     bsres->pci->time.
-						     minutes) ? FALSE
-	      : (Cnrs[z].ss[x].pci->time.seconds <
-		 bsres->pci->time.seconds) ? TRUE : (Cnrs[z].ss[x].pci->time.
-						     seconds >
-						     bsres->pci->time.
-						     seconds) ? FALSE : FALSE;*/
 	    if (cmp != -1)
 	      Cnrs[z].ss[x].oldest = FALSE;
 	    cmp = 0;

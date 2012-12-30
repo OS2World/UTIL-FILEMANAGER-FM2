@@ -91,7 +91,7 @@ BOOL fVerifyOffChecked[26];
 
 APIRET MakeFullName(char *pszFileName)
 {
-  /* pszFileName must be CCHMAXPATH long minimum! */
+  // pszFileName must be CCHMAXPATH long minimum!
 
   char szPathName[CCHMAXPATH];
   APIRET rc;
@@ -116,9 +116,9 @@ char *RootName(char *filename)
     pp = strrchr(filename, '/');
     p = (p) ? (pp) ? (p > pp) ? p : pp : p : pp;
   }
-  if (!p)				/* name is itself a root */
+  if (!p)				// name is itself a root
     p = filename;
-  else					/* skip past backslash */
+  else					// skip past backslash
     p++;
   return p;
 }
@@ -219,7 +219,7 @@ int TestCDates(CDATE *datevar1, CTIME *timevar1,
 
 BOOL IsNewer(char *file1, char *file2)
 {
-  /* return TRUE if file2 is newer than file1 */
+  // return TRUE if file2 is newer than file1
 
   return (TestFDates(file1, file2, NULL, NULL, NULL, NULL) > 0);
 }
@@ -318,7 +318,7 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
   rc = DosQueryFSAttach(szPath, 0, FSAIL_QUERYNAME,
 			(PFSQBUFFER2) pvBuffer, &clBufferSize);
   if (rc) {
-    /* can't get any info at all */
+    // can't get any info at all
     DosFreeMem(pvBuffer);
     DosError(FERR_DISABLEHARDERR);
     return -1;				// Say failed
@@ -410,12 +410,12 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
   clDataBytes = sizeof(NonRemovable);
   NonRemovable = 1;			// Preset as non removable
   DosError(FERR_DISABLEHARDERR);
-  rc = DosDevIOCtl(hDev, IOCTL_DISK, DSK_BLOCKREMOVABLE, &parmPkt.Cmd,	/* Address of the command-specific argument list. */
-		   sizeof(parmPkt.Cmd),	/* Length, in bytes, of pParams. */
-		   &clParmBytes,	/* Pointer to the length of parameters. */
-		   &NonRemovable,	/* Address of the data area. */
-		   sizeof(NonRemovable),	/* Length, in bytes, of pData. */
-		   &clDataBytes);	/* Pointer to the length of data. */
+  rc = DosDevIOCtl(hDev, IOCTL_DISK, DSK_BLOCKREMOVABLE, &parmPkt.Cmd, // Address of the command-specific argument list.
+		   sizeof(parmPkt.Cmd),	// Length, in bytes, of pParams.
+		   &clParmBytes,	// Pointer to the length of parameters.
+		   &NonRemovable,	// Address of the data area.
+		   sizeof(NonRemovable),// Length, in bytes, of pData.
+		   &clDataBytes);	// Pointer to the length of data.
 
   if (!rc && NonRemovable) {
     // Could be USB so check BPB flags
@@ -423,12 +423,12 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
     clDataBytes = sizeof(dataPkt);
     memset(&dataPkt, 0xff, sizeof(dataPkt));
     DosError(FERR_DISABLEHARDERR);
-    rc = DosDevIOCtl(hDev, IOCTL_DISK, DSK_GETDEVICEPARAMS, &parmPkt.Cmd,	/* Address of the command-specific argument list. */
-		     sizeof(parmPkt.Cmd),	/* Length, in bytes, of pParams. */
-		     &clParmBytes,	/* Pointer to the length of parameters. */
-		     &dataPkt,		/* Address of the data area. */
-		     sizeof(dataPkt),	/* Length, in bytes, of pData. */
-		     &clDataBytes);	/* Pointer to the length of data. */
+    rc = DosDevIOCtl(hDev, IOCTL_DISK, DSK_GETDEVICEPARAMS, &parmPkt.Cmd,// Address of the command-specific argument list.
+		     sizeof(parmPkt.Cmd),	// Length, in bytes, of pParams.
+		     &clParmBytes,	        // Pointer to the length of parameters.
+		     &dataPkt,		        // Address of the data area.
+		     sizeof(dataPkt),	        // Length, in bytes, of pData.
+		     &clDataBytes);	        // Pointer to the length of data.
 
     if (!rc && (dataPkt.bpb.fsDeviceAttr & BPB_REMOVABLE_MEDIA))
       NonRemovable = 0;
@@ -447,7 +447,7 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
 #if 0	// JBS	11 Sep 08
 BOOL IsFileSame(CHAR * filename1, CHAR * filename2)
 {
-  /* returns: -1 (error), 0 (is a directory), or 1 (is a file) */
+  // returns: -1 (error), 0 (is a directory), or 1 (is a file)
 
   FILESTATUS3L fsa1, fsa2;
   APIRET ret;
@@ -491,7 +491,7 @@ INT IsFile(PCSZ filename)
     else if (IsValidDrive(*filename) && IsRoot(filename))
       return 0;
   }
-  return -1;				/* error; doesn't exist or can't read or null filename */
+  return -1;				// error; doesn't exist or can't read or null filename
 }
 
 BOOL IsFullName(CHAR * filename)
@@ -1079,7 +1079,7 @@ VOID GetDesktopName(CHAR * objectpath, ULONG size)
   }
   *objectpath = 0;
   if (OS2ver[0] > 20 || (OS2ver[0] == 20 && OS2ver[1] >= 30)) {
-    /*
+    /**
      * if running under warp, we can get the desktop name
      * this way...
      */

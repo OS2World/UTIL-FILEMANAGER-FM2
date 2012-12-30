@@ -1568,9 +1568,6 @@ static VOID FillCnrsThread(VOID *args)
 
 	memset(&fb4, 0, sizeof(fb4));
 	fp = xfopen(cmp->rightlist, moder, pszSrcFile, __LINE__, FALSE);
-	/*if (!fp)
-	  Runtime_Error(pszSrcFile, __LINE__, "can not open %s (%d)",
-			cmp->rightlist, errno);*/
 	if (fp) {
 	  while (!feof(fp)) {
 	    // First get name of directory
@@ -2136,20 +2133,19 @@ static VOID SetButtonEnables(COMPARE* cmp, BOOL fEnable)
   HWND hwndRight = GetHwndRight(hwnd);
 
   if (!fEnable) {
-    /* Disable before */
+    // Disable before
     WinEnableWindowUpdate(hwndLeft, fEnable);
     WinEnableWindowUpdate(hwndRight, fEnable);
   }
   WinEnableWindow(hwndLeft, fEnable);
   WinEnableWindow(hwndRight, fEnable);
   if (fEnable) {
-    /* Enable after */
+    // Enable after
     WinEnableWindowUpdate(hwndLeft, fEnable);
     WinEnableWindowUpdate(hwndRight, fEnable);
   }
 
   WinEnableWindow(WinWindowFromID(hwnd, DID_OK), fEnable);
-  // WinEnableWindow(WinWindowFromID(hwnd, DID_CANCEL), fEnable);
   WinEnableWindow(WinWindowFromID(hwnd, COMP_COLLECT), fEnable);
   WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTBOTH), fEnable);
   WinEnableWindow(WinWindowFromID(hwnd, IDM_SELECTONE), fEnable);
@@ -2247,12 +2243,8 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
         CHAR s[24];
 
 	for (x = 0; ids[x]; x++) {
-          //fixme to allow user to change presparams 1-10-09 GKY
           sprintf(s, "CompDir%i", ids[x]);
           RestorePresParams(WinWindowFromID(hwnd, ids[x]), s);
-	  /*SetPresParams(WinWindowFromID(hwnd, ids[x]),
-			&RGBGREY,
-			&RGBBLACK, &RGBBLACK, FNT_8HELVETICA);*/
 	}
       }
       WinStartTimer(WinQueryAnchorBlock(hwnd), hwnd, ID_COMP_TIMER, 500);

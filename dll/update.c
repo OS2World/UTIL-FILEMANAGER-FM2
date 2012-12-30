@@ -72,7 +72,8 @@ HPOINTER SelectDriveIcon(PCNRITEM pci)
 		return pci->rc.hptrIcon;
 }
 
-/* Update/add CNRITEM record for filename
+/**
+ * Update/add CNRITEM record for filename
  * Deletes existing CNRITEM if file has disappeared
  * @returns pci pointer to CNRITEM record or NULL if not found or if stale CNRITEM deleted
  */
@@ -91,7 +92,7 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR *filename, BOOL partial,
     return (PCNRITEM) NULL;
   if (IsFullName(filename)) {
     if (driveflags[toupper(*filename) - 'A'] & DRIVE_NOTWRITEABLE)
-      /* ignore non-writeable drives */
+      // ignore non-writeable drives
       return (PCNRITEM) NULL;
   }
   status = xDosFindFirst(filename,
@@ -101,15 +102,10 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR *filename, BOOL partial,
 			 FILE_HIDDEN | FILE_SYSTEM,
 			 &ffb, sizeof(ffb), &nm, FIL_QUERYEASIZEL);
   if (!status) {
-    /* file exists */
+    // file exists
     DosFindClose(hDir);
     if (!dcd)
       dcd = INSTDATA(hwndCnr);
-/*
-    if(dcd->type == TREE_FRAME &&
-       !(ffb.attrFile & FILE_DIRECTORY))
-      return (PCNRITEM)NULL;
-*/
     if (dcd->type == ARC_FRAME)
       return (PCNRITEM) NULL;
     if (*dcd->directory) {
@@ -166,7 +162,7 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR *filename, BOOL partial,
 		     CM_SETRECORDEMPHASIS,
 		     MPFROMP(pci), MPFROM2SHORT(TRUE, oldemphasis));
       }
-      else				/* existed, unchanged, do nothing but return */
+      else				// existed, unchanged, do nothing but return
 	return pci;
     }
     else {
@@ -206,7 +202,7 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR *filename, BOOL partial,
       }
       else if (ffb.attrFile & FILE_DIRECTORY) {
 
-	/* check all parts and insert as required */
+	// check all parts and insert as required
 	CHAR *p, temp;
 	PCNRITEM pciParent = NULL, pciT;
 
@@ -358,7 +354,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
     for (x = 0; filename[x] && x < howmany; x++) {
       if (IsFullName(filename[x])) {
 	if (driveflags[toupper(*filename[x]) - 'A'] & DRIVE_NOTWRITEABLE)
-	  /* ignore non-writeable drives */
+	  // ignore non-writeable drives
 	  continue;
       }
       hDir = HDIR_CREATE;
@@ -369,10 +365,8 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 			     FILE_HIDDEN | FILE_SYSTEM,
 			     &ffb, sizeof(ffb), &nm, FIL_QUERYEASIZEL);
       if (!status) {
-	/* file exists */
+	// file exists
 	DosFindClose(hDir);
-	//      if(dcd->type == TREE_FRAME && !(ffb.attrFile & FILE_DIRECTORY))
-	//        continue;
 	if (dcd->type == DIR_FRAME && *dcd->directory) {
 
 	  CHAR *p, temp;
@@ -397,7 +391,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 			    filename[x],
 			    (PCNRITEM) NULL, partial, FALSE, TRUE);
 	if (pci) {
-	  /* update record? */
+	  // update record?
 	  if ((!fForceUpper && !fForceLower &&
 	       strcmp(pci->pszFileName, filename[x])) ||
 	      pci->cbFile != ffb.cbFile || pci->attrFile != ffb.attrFile ||
@@ -414,7 +408,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 	      pci->latime.seconds != ffb.ftimeLastAccess.twosecs * 2 ||
 	      pci->latime.minutes != ffb.ftimeLastAccess.minutes ||
 	      pci->latime.hours != ffb.ftimeLastAccess.hours) {
-	    /* changed; update */
+	    // changed; update
 	    pciList[numlist++] = pci;
 	    *ffb.achName = 0;
 	    ffb.cchName = 0;
@@ -429,7 +423,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 	  }
 	}
 	else {
-	  /* add record */
+	  // add record
 	  if (dcd->type == DIR_FRAME) {
 	    RECORDINSERT ri;
 	    ULONGLONG ullTotalBytes;
@@ -469,7 +463,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 	    }
 	  }
 	  else if (ffb.attrFile & FILE_DIRECTORY) {
-	    /* check all parts and insert as required */
+	    // check all parts and insert as required
 	    CHAR *p, temp;
 	    PCNRITEM pciParent = NULL, pciT;
 
@@ -576,7 +570,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 				    FALSE,
 				    TRUE)) != NULL &&
 	       (INT) pci != -1 && !IsRoot(pci->pszFileName)) {
-	/* file doesn't exist; delete record */
+	// file doesn't exist; delete record
 	if (pci->rc.flRecordAttr & CRA_SELECTED)
 	  WinSendMsg(hwndCnr,
 		     CM_SETRECORDEMPHASIS,

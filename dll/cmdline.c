@@ -466,7 +466,7 @@ MRESULT EXPENTRY CmdLineDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	WinSetDlgItemText(hwnd,	EXEC_WARNING2, (CHAR *) GetPString(IDS_NOTDIRECTEXETEXT));
       }
-      else if (apptype) {		/* acceptable */
+      else if (apptype) {		// acceptable
 
 	CHAR s[257];
 
@@ -728,21 +728,6 @@ MRESULT EXPENTRY CmdLineDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       ex = INSTDATA(hwnd);
       WinQueryDlgItemText(hwnd, EXEC_CL, 1000, ex->commandline);
       ex->flags = CheckExecutibleFlags(hwnd, 2);
-      /*ex->flags = 0;
-      if (WinQueryButtonCheckstate(hwnd, EXEC_MINIMIZED))
-	ex->flags |= MINIMIZED;
-      if (WinQueryButtonCheckstate(hwnd, EXEC_MAXIMIZED))
-	ex->flags |= MAXIMIZED;
-      if (WinQueryButtonCheckstate(hwnd, EXEC_FULLSCREEN))
-	ex->flags |= FULLSCREEN;
-      else
-	ex->flags |= WINDOWED;
-      if (WinQueryButtonCheckstate(hwnd, EXEC_INVISIBLE))
-	ex->flags |= INVISIBLE;
-      if (WinQueryButtonCheckstate(hwnd, EXEC_KEEP))
-	ex->flags |= SEPARATEKEEP;
-      else
-	ex->flags |= SEPARATE;*/
       strset(ex->environment, 0);
       WinQueryDlgItemText(hwnd, EXEC_ENVIRON, 1000, ex->environment);
       if (add_cmdline(ex->commandline, TRUE) && fSaveBigCmds)

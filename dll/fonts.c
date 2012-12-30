@@ -33,7 +33,7 @@
 #pragma data_seg(DATA1)
 
 
-/*
+/**
  *   Convert vector font size using point size and fAttrs structure and
  *   return it in that structure.
  */
@@ -47,9 +47,9 @@ VOID ConvertVectorFontSize(FIXED fxPointSize, PFATTRS pfattrs)
   LONG lyFontResolution;
   SIZEF sizef;
 
-  hps = WinGetScreenPS(HWND_DESKTOP);   /* Screen presentation space */
+  hps = WinGetScreenPS(HWND_DESKTOP);   // Screen presentation space
 
-  /*
+  /**
    *   Query device context for the screen and then query
    *   the resolution of the device for the device context.
    */
@@ -58,7 +58,7 @@ VOID ConvertVectorFontSize(FIXED fxPointSize, PFATTRS pfattrs)
   DevQueryCaps(hDC, CAPS_HORIZONTAL_FONT_RES, (LONG) 1, &lxFontResolution);
   DevQueryCaps(hDC, CAPS_VERTICAL_FONT_RES, (LONG) 1, &lyFontResolution);
 
-  /*
+  /**
    *   Calculate the size of the character box, based on the
    *   point size selected and the resolution of the device.
    *   The size parameters are of type FIXED, NOT int.
@@ -72,7 +72,7 @@ VOID ConvertVectorFontSize(FIXED fxPointSize, PFATTRS pfattrs)
   pfattrs->lAveCharWidth = MAKELONG(HIUSHORT(sizef.cx), 0);
   WinReleasePS(hps);
 
-}                                       /* end ConvertVectorPointSize() */
+}                                       // end ConvertVectorPointSize()
 
 VOID SetPresParamFromFattrs(HWND hwnd, FATTRS * fattrs,
 			    SHORT sNominalPointSize, FIXED fxPointSize)
@@ -119,10 +119,8 @@ VOID SetFont(HWND hwnd)
   FONTDLG fontdlg;
   HPS hps;
   FONTMETRICS fm;
-  CHAR szFamily[CCHMAXPATH],
-    *szTitle = GetPString(IDS_SETFONTTITLETEXT), *szPreview;
+  CHAR szFamily[CCHMAXPATH], *szTitle = GetPString(IDS_SETFONTTITLETEXT), *szPreview;
 
-  //DosEnterCritSec(); //GKY 11-30-08
   DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
   szPreview = GetPString(IDS_BLURB1TEXT + counter++);
   if (strcmp(szPreview, "0") == 0) {
@@ -130,8 +128,7 @@ VOID SetFont(HWND hwnd)
     szPreview = GetPString(IDS_BLURB1TEXT + counter++);
   }
   DosReleaseMutexSem(hmtxFM2Globals);
-  //DosExitCritSec();
-  memset(&fontdlg, 0, sizeof(fontdlg)); /* initialize all fields */
+  memset(&fontdlg, 0, sizeof(fontdlg)); // initialize all fields
   hps = WinGetPS(hwnd);
   GpiQueryFontMetrics(hps, sizeof(FONTMETRICS), &fm);
   WinReleasePS(hps);
@@ -167,7 +164,8 @@ VOID SetFont(HWND hwnd)
 FATTRS *SetMLEFont(HWND hwndMLE, FATTRS * fattrs, ULONG flags)
 {
 
-  /* Flags:
+  /**
+   * Flags:
    *
    * 1 = Don't assume MLE (no MLM_* messages, use fattrs only
    * 2 = Fixed width fonts only
@@ -182,19 +180,16 @@ FATTRS *SetMLEFont(HWND hwndMLE, FATTRS * fattrs, ULONG flags)
   FONTMETRICS fontMetrics;
   CHAR szFamily[CCHMAXPATH];
   PCSZ pcszPreview;
-  static FIXED fxPointSize = 0; /* keep track of this for vector fonts */
+  static FIXED fxPointSize = 0; // keep track of this for vector fonts
 
   if ((flags & 1) && !fattrs)
     return fattrs;
-  //DosEnterCritSec(); //GKY 11-30-08
   DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
   // 12 Jan 09 SHL fixme to do multiple previews or rename to IDS_BLURBTEXT
   pcszPreview = GetPString(IDS_BLURB1TEXT);
   DosReleaseMutexSem(hmtxFM2Globals);
-  memset(&fontDlg, 0, sizeof(fontDlg)); /* initialize all fields */
-  /*
-   * Get the current font attributes
-   */
+  memset(&fontDlg, 0, sizeof(fontDlg)); // initialize all fields
+  // Get the current font attributes
   hps = WinGetPS(hwndMLE);
   if (!(flags & 1))
     WinSendMsg(hwndMLE, MLM_QUERYFONT,
@@ -202,8 +197,7 @@ FATTRS *SetMLEFont(HWND hwndMLE, FATTRS * fattrs, ULONG flags)
   else
     memcpy(&fontDlg.fAttrs, fattrs, sizeof(FATTRS));
 
-  /* create system default font */
-
+  // create system default font
   GpiCreateLogFont(hps, (PSTR8) fontDlg.fAttrs.szFacename, 1,
 		   &(fontDlg.fAttrs));
   GpiSetCharSet(hps, 1);
@@ -212,21 +206,19 @@ FATTRS *SetMLEFont(HWND hwndMLE, FATTRS * fattrs, ULONG flags)
   GpiDeleteSetId(hps, 1);
   WinReleasePS(hps);
 
-  /*
-   * Initialize the FONTDLG structure with the current font
-   */
-  fontDlg.cbSize = sizeof(FONTDLG);     /* sizeof(FONTDLG) */
-  fontDlg.hpsScreen = WinGetScreenPS(HWND_DESKTOP);     /* Screen presentation space */
-  fontDlg.hpsPrinter = NULLHANDLE;      /* Printer presentation space */
+  // Initialize the FONTDLG structure with the current font
+  fontDlg.cbSize = sizeof(FONTDLG);
+  fontDlg.hpsScreen = WinGetScreenPS(HWND_DESKTOP);     // Screen presentation space
+  fontDlg.hpsPrinter = NULLHANDLE;                      // Printer presentation space
 
   fontDlg.pszTitle = (PSZ)GetPString(IDS_SETVIEWERFONTTITLETEXT);
   fontDlg.pszPreview = (PSZ)pcszPreview;
-  fontDlg.pszPtSizeList = NULL;         /* Application provided size list  */
-  fontDlg.pfnDlgProc = NULL;            /* Dialog subclass procedure       */
-  strcpy(szFamily, fontMetrics.szFamilyname);   /* Family name of font        */
-  fontDlg.pszFamilyname = szFamily;     /* point to Family name of font    */
-  fontDlg.fxPointSize = fxPointSize;    /* Point size the user selected    */
-  fontDlg.fl = FNTS_CENTER |            /* FNTS_* flags - dialog styles    */
+  fontDlg.pszPtSizeList = NULL;                         // Application provided size list
+  fontDlg.pfnDlgProc = NULL;                            // Dialog subclass procedure
+  strcpy(szFamily, fontMetrics.szFamilyname);           // Family name of font        
+  fontDlg.pszFamilyname = szFamily;                     // point to Family name of font
+  fontDlg.fxPointSize = fxPointSize;                    // Point size the user selected
+  fontDlg.fl = FNTS_CENTER |                            // FNTS_* flags - dialog styles
     FNTS_INITFROMFATTRS;
   if (flags & 2)
     fontDlg.fl |= FNTS_FIXEDWIDTHONLY;
@@ -236,40 +228,37 @@ FATTRS *SetMLEFont(HWND hwndMLE, FATTRS * fattrs, ULONG flags)
     fontDlg.fl |= FNTS_BITMAPONLY;
   else if (flags & 16)
     fontDlg.fl |= FNTS_VECTORONLY;
-  fontDlg.flFlags = 0;                  /* FNTF_* state flags              */
-  /* Font type option bits           */
+  fontDlg.flFlags = 0;                  // FNTF_* state flags
+  // Font type option bits
   fontDlg.flType = (LONG) fontMetrics.fsType;
-  fontDlg.flTypeMask = 0;               /* Mask of which font types to use */
-  fontDlg.flStyle = 0;                  /* The selected style bits         */
-  fontDlg.flStyleMask = 0;              /* Mask of which style bits to use */
-  fontDlg.clrFore = CLR_NEUTRAL;        /* Selected foreground color       */
-  fontDlg.clrBack = CLR_BACKGROUND;     /* Selected background color       */
-  fontDlg.ulUser = 0;                   /* Blank field for application     */
-  fontDlg.lReturn = 0;                  /* Return Value of the Dialog      */
-  fontDlg.lEmHeight = 0;                /* Em height of the current font   */
-  fontDlg.lXHeight = 0;                 /* X height of the current font    */
-  fontDlg.lExternalLeading = 0;         /* External Leading of font        */
-  /* Nominal Point Size of font      */
+  fontDlg.flTypeMask = 0;               // Mask of which font types to use 
+  fontDlg.flStyle = 0;                  // The selected style bits         
+  fontDlg.flStyleMask = 0;              // Mask of which style bits to use 
+  fontDlg.clrFore = CLR_NEUTRAL;        // Selected foreground color       
+  fontDlg.clrBack = CLR_BACKGROUND;     // Selected background color       
+  fontDlg.ulUser = 0;                   // Blank field for application     
+  fontDlg.lReturn = 0;                  // Return Value of the Dialog      
+  fontDlg.lEmHeight = 0;                // Em height of the current font   
+  fontDlg.lXHeight = 0;                 // X height of the current font    
+  fontDlg.lExternalLeading = 0;         // External Leading of font        
+  // Nominal Point Size of font
   fontDlg.sNominalPointSize = fontMetrics.sNominalPointSize;
-  fontDlg.usWeight = fontMetrics.usWeightClass; /* The boldness of the font */
-  fontDlg.usWidth = fontMetrics.usWidthClass;   /* The width of the font     */
-  fontDlg.x = 0;                        /* X coordinate of the dialog      */
-  fontDlg.y = 0;                        /* Y coordinate of the dialog      */
-//   fontDlg.usDlgId      = IDD_FONT;       /* ID of a custom dialog template  */
-  fontDlg.usFamilyBufLen = sizeof(szFamily);    /*Length of family name buffer */
+  fontDlg.usWeight = fontMetrics.usWeightClass; // The boldness of the font
+  fontDlg.usWidth = fontMetrics.usWidthClass;   // The width of the font
+  fontDlg.x = 0;                                // X coordinate of the dialog
+  fontDlg.y = 0;                                // Y coordinate of the dialog
+  fontDlg.usFamilyBufLen = sizeof(szFamily);    // Length of family name buffer
 
-  /*
-   *   Bring up the standard Font Dialog
-   */
+  // Bring up the standard Font Dialog
 
   if (!WinFontDlg(HWND_DESKTOP, hwndMLE, &fontDlg)
       || fontDlg.lReturn != DID_OK) {
     WinReleasePS(fontDlg.hpsScreen);
     return NULL;
   }
-  fxPointSize = fontDlg.fxPointSize;    /* save point size for next dialog */
+  fxPointSize = fontDlg.fxPointSize;    // save point size for next dialog
 
-  /*
+  /**
    *   If outline font, calculate the maxbaselineext and
    *   avecharwidth for the point size selected
    */
@@ -284,7 +273,7 @@ FATTRS *SetMLEFont(HWND hwndMLE, FATTRS * fattrs, ULONG flags)
     memcpy(fattrs, &fontDlg.fAttrs, sizeof(FATTRS));
   return fattrs;
 
-}                                       /* End of SetMLEFont() */
+}                                       // End of SetMLEFont()
 
 #pragma alloc_text(FONTS,ConvertVectorFontSize,SetFont,SetMLEFont)
 #pragma alloc_text(FONTS,SetPresParamFromFattrs)

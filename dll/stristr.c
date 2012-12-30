@@ -19,12 +19,9 @@
 
 #include "stristr.h"
 
-// static CHAR *strnistr(register CHAR * t, CHAR * s, LONG len);
-
 CHAR *stristr(const register CHAR * t, const CHAR * s)
-// CHAR *stristr(register CHAR * t, CHAR * s)
 {
-  /* case-insensitive strstr() */
+  // case-insensitive strstr()
 
   const register CHAR *t1, *s1;
 
@@ -49,7 +46,7 @@ CHAR *stristr(const register CHAR * t, const CHAR * s)
 #if 0	// JBS	11 Sep 08
 CHAR *strnistr(register CHAR * t, CHAR * s, LONG len)
 {
-  /* case-insensitive strnstr() */
+  // case-insensitive strnstr()
 
   register CHAR *s1;
   register LONG len2;
@@ -75,8 +72,6 @@ CHAR *strnistr(register CHAR * t, CHAR * s, LONG len)
 
 CHAR *strnstr(register CHAR * t, CHAR * s, LONG len)
 {
-  /* strnstr() */
-
   register CHAR *s1;
   register LONG len2;
 

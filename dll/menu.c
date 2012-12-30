@@ -113,7 +113,7 @@ BOOL AddToMenu(CHAR * filename, HWND hwndMenu)
 	    else if (!stricmp(tokens[0], "SEPARATOR"))
 	      info->type = SEPARATOR;
 	    else {
-	      /* error! */
+	      // error!
 	      xfree(info->text, pszSrcFile, __LINE__);
 	      free(info);
 	      info = NULL;

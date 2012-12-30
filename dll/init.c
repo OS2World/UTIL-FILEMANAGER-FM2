@@ -303,6 +303,7 @@ CHAR HomePath[CCHMAXPATH];
 PCSZ LONGNAME             = ".LONGNAME";
 CHAR *NullStr             = "";
 PCSZ PCSZ_CM_ALLOCRECORD  = "CM_ALLOCRECORD";
+PCSZ PCSZ_QUERYCNRINFO    = "CM_QUERYCNRINFO";
 PCSZ PCSZ_DOSCREATEMUTEXSEM =  "DosCreateMutexSem";
 PCSZ PCSZ_DOSCREATEEVENTSEM =  "DosCreateEventSem";
 PCSZ PCSZ_DOSDUPHANDLE    =  "DosDupHandle";
@@ -542,7 +543,7 @@ unsigned APIENTRY LibMain(unsigned hModule,
 
 VOID APIENTRY DeInitFM3DLL(ULONG why)
 {
-  /* cleanup */
+  // cleanup
   static CHAR s[CCHMAXPATH];
   CHAR *enddir, szTempFile[CCHMAXPATH];
   HDIR search_handle;
@@ -638,7 +639,7 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
 
 BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 {
-  /*
+  /**
    * this function should be called by any application using this DLL right
    * after setting up a message queue
    */
@@ -713,10 +714,10 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   if (!*profile)
     strcpy(profile, PCSZ_FM3DOTINI);
   mypid = getpid();
-  /* give default appname if none set by caller */
+  // give default appname if none set by caller
   if (!*appname)
     strcpy(appname, FM3Str);
-  /* save appname; may be reset below */
+  // save appname; may be reset below
   strcpy(realappname, appname);
   if (!strcmp(appname, FM3Str))
     DosSetMaxFH(100);
@@ -843,7 +844,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 
   priority_bumped();
 
-  /* _heapmin() is done in a separate thread -- start it */
+  // _heapmin() is done in a separate thread -- start it
   if (xbeginthread(HeapThread,
 		   32768,
 		   MPVOID,
@@ -852,14 +853,14 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     return FALSE;
   }
 
-  /* timer messages are sent from a separate thread -- start it */
+  // timer messages are sent from a separate thread -- start it
   if (!StartTimer()) {
     Runtime_Error(pszSrcFile, __LINE__,
 		  GetPString(IDS_COULDNTSTARTTHREADTEXT));
     return FALSE;
   }
 
-  /* Are we the workplace shell? */
+  // Are we the workplace shell?
   env = getenv("WORKPLACE_PROCESS");
   fWorkPlace = env != NULL &&
 	       (stricmp(env, "YES") == 0 || atoi(env) == 1);
@@ -956,15 +957,11 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   if (!fSeparateParms && !fSeparateParmsApp)
     strcpy(appname, FM3Str);
 
-  /* start help */
+  // start help
   memset(&hini, 0, sizeof(HELPINIT));
   hini.cb = sizeof(HELPINIT);
-  // hini.ulReturnCode = 0;
-  // hini.pszTutorialName = NULL;
   hini.phtHelpTable = (PHELPTABLE) MAKELONG(ID_HELPTABLE, 0xffff);
   hini.hmodAccelActionBarModule = (HMODULE) 0;
-  // hini.idAccelTable = 0;
-  // hini.idActionBar = 0;
   hini.pszHelpWindowTitle = (PSZ)GetPString(IDS_FM2HELPTITLETEXT);
   hini.hmodHelpTableModule = FM3ModHandle;
   hini.fShowPanelId = CMIC_HIDE_PANEL_ID;
@@ -1014,7 +1011,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     return FALSE;
   }
 
-  /* register window classes we use */
+  // register window classes we use
   WinRegisterClass(hab,
 		   (CHAR *) WC_MAINWND,
 		   MainWndProc,
@@ -1615,7 +1612,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 
   LoadDetailsSwitches(PCSZ_DIRCNR, &dsDirCnrDefault, FALSE);
 
-  /* load pointers and icons we use */
+  // load pointers and icons we use
   hptrArrow = WinQuerySysPointer(HWND_DESKTOP, SPTR_ARROW, FALSE);
   hptrBusy = WinQuerySysPointer(HWND_DESKTOP, SPTR_WAIT, FALSE);
   hptrNS = WinQuerySysPointer(HWND_DESKTOP, SPTR_SIZENS, FALSE);
@@ -1764,8 +1761,8 @@ BOOL CheckFileHeader(CHAR *filespec, CHAR *signature, LONG offset)
       }
     }
   }
-  DosClose(handle);                     /* Either way, we're done for now */
-  return ret;                           /* Return TRUE if matched */
+  DosClose(handle);                     // Either way, we're done for now
+  return ret;                           // Return TRUE if matched
 }
 
 int CheckVersion(int vermajor, int verminor)

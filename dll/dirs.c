@@ -52,7 +52,7 @@ APIRET save_dir(CHAR * curdir)
 
   *curdir = 0;
   ret = DosQCurDisk(&curdrive, &drivemap);
-  curdirlen = CCHMAXPATH - 4;           /* NOTE!!!!!!!!! */
+  curdirlen = CCHMAXPATH - 4;           // NOTE!!!!!!!!!
   ret += DosQCurDir(curdrive, (PBYTE)&curdir[3], &curdirlen);
   *curdir = (CHAR) ('@' + (INT) curdrive);
   curdir[1] = ':';

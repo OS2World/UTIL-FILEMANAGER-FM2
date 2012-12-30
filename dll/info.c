@@ -382,7 +382,7 @@ typedef struct {
   HWND lasthwndMenu;
 } ICONSTUF;
 
-/*
+/**
  * subclass routine to allow changing a program's icon
  */
 

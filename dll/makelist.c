@@ -43,7 +43,7 @@ static PSZ pszSrcFile = __FILE__;
 
 VOID SortList(LISTINFO *li)
 {
-  /* bubble-sort entries by size, descending */
+  // bubble-sort entries by size, descending
 
   UINT x;
   CHAR *s;

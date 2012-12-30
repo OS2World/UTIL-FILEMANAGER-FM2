@@ -202,7 +202,7 @@ VOID DefaultViewKeys(HWND hwnd, HWND hwndFrame, HWND hwndParent,
 VOID DefaultView(HWND hwnd, HWND hwndFrame, HWND hwndParent, SWP * swp,
 		 ULONG flags, CHAR * filename)
 {
-  /*
+  /**
    * bitmapped flags:
    * ---------------
    * 1  = View directly
@@ -227,20 +227,20 @@ VOID DefaultView(HWND hwnd, HWND hwndFrame, HWND hwndParent, SWP * swp,
     }
   }
 
-  if (flags & 1)			/* directly view the file */
+  if (flags & 1)			// directly view the file
     goto ViewIt;
 
-  if (flags & 2) {			/* open default WPS view of file */
+  if (flags & 2) {			// open default WPS view of file
     OpenObject(filename, Default, hwnd);
     return;
   }
 
-  if (flags & 4) {			/* open WPS settings notebook for file */
+  if (flags & 4) {			// open WPS settings notebook for file
     OpenObject(filename, Settings, hwnd);
     return;
   }
 
-  if ((flags & 16) || !IsFile(filename)) {	/* open info for directories */
+  if ((flags & 16) || !IsFile(filename)) {	// open info for directories
 
     char fullname[CCHMAXPATH];
 
@@ -266,7 +266,7 @@ VOID DefaultView(HWND hwnd, HWND hwndFrame, HWND hwndParent, SWP * swp,
     return;
   }
 
-  if (flags & 8) {			/* edit file */
+  if (flags & 8) {			// edit file
 
     ULONG type = IDM_EDITTEXT;
 
@@ -281,7 +281,7 @@ VOID DefaultView(HWND hwnd, HWND hwndFrame, HWND hwndParent, SWP * swp,
 	           pszSrcFile, __LINE__);
 	break;
       }
-      /* else intentional fallthru */
+      // else intentional fallthru
     case IDM_EDITTEXT:
       if (*editor)
 	ExecOnList((HWND) 0, editor, WINDOWED | SEPARATE, NULL, NULL, dummy, NULL,

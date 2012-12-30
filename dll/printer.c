@@ -82,7 +82,7 @@ BOOL PrinterReady(CHAR * printdevname)
   ULONG datalen = 1, parmlen = 1, htype, flagword;
   CHAR *modea = "a+";
 
-  if (!fWorkPlace)			/* assume spooler is active */
+  if (!fWorkPlace)			// assume spooler is active
     return TRUE;
   DosError(FERR_DISABLEHARDERR);
   printhandle = xfopen(printdevname, modea, pszSrcFile, __LINE__, FALSE);
@@ -103,7 +103,7 @@ BOOL PrinterReady(CHAR * printdevname)
       return FALSE;
     }
     fclose(printhandle);
-    if (data & 32)			/* bit 5 is out of paper */
+    if (data & 32)			// bit 5 is out of paper
       return FALSE;
     return TRUE;
   }

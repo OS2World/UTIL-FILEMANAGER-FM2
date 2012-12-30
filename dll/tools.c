@@ -763,7 +763,7 @@ MRESULT EXPENTRY AddToolProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	else
 	  istext = FALSE;
 	tool = INSTDATA(hwnd);
-	if (tool) {			/* just editing strings... */
+	if (tool) {			// just editing strings...
 	  istext = ((tool->flags & T_TEXT) != 0);
 	  xfree(tool->help, pszSrcFile, __LINE__);
 	  tool->help = NULL;

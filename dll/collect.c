@@ -227,7 +227,7 @@ MRESULT EXPENTRY CollectorTextProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		CopyPresParams(hwndButtonPopup, hwnd);
 	      }
 
-	      /* don't have tree view in collector */
+	      // don't have tree view in collector
 	      WinSendMsg(hwndButtonPopup,
 			 MM_DELETEITEM,
 			 MPFROM2SHORT(IDM_TREEVIEW, FALSE), MPVOID);
@@ -596,7 +596,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 #     ifdef FORTIFY
       Fortify_BecomeOwner(dcd);
 #     endif
-      /* set unique id */
+      // set unique id
       WinSetWindowUShort(hwnd,
 			 QWS_ID,
 			 COLLECTOROBJ_FRAME + (COLLECTOR_FRAME - dcd->id));
@@ -695,8 +695,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	  ulRecsAtStart = cnri.cRecords;
 	}
 	else {
-	  Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
-		    "CM_QUERYCNRINFO" /* PCSZ_QUERYCNRINFO fixme */);
+	  Win_Error(hwnd, hwnd, pszSrcFile, __LINE__, PCSZ_QUERYCNRINFO);
 	  ulRecsAtStart = 0;
 	}
 
@@ -939,7 +938,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	      errs++;			// Something wrong with filename or file
 	  }
 	  if (errs > (first ? 0 : 50)) {
-	    /* prevent runaway on bad file */
+	    // prevent runaway on bad file
 	    APIRET ret = saymsg(MB_YESNO, dcd->hwndCnr,
 				GetPString(IDS_COLLECTNOLISTHDRTEXT),
 				GetPString(IDS_COLLECTNOLISTTEXT),
@@ -1244,12 +1243,12 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	if (pci && (INT) pci != -1) {
 	  USHORT attrib = CRA_CURSORED;
 
-	  /* make found item current item */
+	  // make found item current item
 	  if (!stricmp(pci->pszFileName, dcd->szCommonName))
 	    attrib |= CRA_SELECTED;
 	  WinSendMsg(hwnd, CM_SETRECORDEMPHASIS, MPFROMP(pci),
 		     MPFROM2SHORT(TRUE, attrib));
-	  /* make sure that record shows in viewport */
+	  // make sure that record shows in viewport
 	  ShowCnrRecord(hwnd, (PMINIRECORDCORE) pci);
 	  return (MRESULT) TRUE;
 	}
@@ -1332,9 +1331,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
     return 0;
 
   case WM_SETFOCUS:
-    /*
-     * put name of our window on status line
-     */
+    // put name of our window on status line
     if (dcd && hwndStatus && mp2) {
       PCNRITEM pci = NULL;
 
@@ -1502,7 +1499,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
   case UM_SETUP:
     if (dcd) {
       if (!dcd->hwndObject) {
-	/* first time through -- set things up */
+	// first time through -- set things up
 
 	CNRINFO cnri;
 
@@ -1551,7 +1548,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	SetCnrCols(hwnd, FALSE);
 	AdjustCnrColsForPref(hwnd, NULL, &dcd->ds, FALSE);
 
-	/* fix splitbar for collector container */
+	// fix splitbar for collector container
 	cnri.xVertSplitbar = DIR_SPLITBAR_OFFSET - 32;
 	size = sizeof(LONG);
 	PrfQueryProfileData(fmprof, appname, "CollectorCnrSplitBar",
@@ -2545,16 +2542,16 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
 	  // fixme to know why needed
 	  pDInfo = ((PCNRDRAGINFO) mp2)->pDragInfo;
-	  DrgAccessDraginfo(pDInfo);	/* Access DRAGINFO */
-	  DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO */
+	  DrgAccessDraginfo(pDInfo);	// Access DRAGINFO
+	  DrgFreeDraginfo(pDInfo);	// Free DRAGINFO
 	}
 	return 0;
 
       case CN_DRAGAFTER:
       case CN_DRAGOVER:
 	if (mp2) {
-	  PDRAGITEM pDItem;		/* Pointer to DRAGITEM */
-	  PDRAGINFO pDInfo;		/* Pointer to DRAGINFO */
+	  PDRAGITEM pDItem;		// Pointer to DRAGITEM
+	  PDRAGINFO pDInfo;		// Pointer to DRAGINFO
 	  PCNRITEM pci;
 	  USHORT uso;
 
@@ -2565,7 +2562,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  if (!DrgAccessDraginfo(pDInfo)) {
 	    Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
 		      PCSZ_DRGACCESSDRAGINFO);
-	    return (MRFROM2SHORT(DOR_NODROP, 0));	/* Drop not valid */
+	    return (MRFROM2SHORT(DOR_NODROP, 0));	// Drop not valid
 	  }
 	  if (pci) {
 	    if (pci->rc.flRecordAttr & CRA_SOURCE) {
@@ -2599,28 +2596,28 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      }
 	    }
 	  }
-	  pDItem = DrgQueryDragitemPtr(pDInfo,	/* Access DRAGITEM */
-				       0);	/* Index to DRAGITEM */
-	  if (DrgVerifyRMF(pDItem,	/* Check valid rendering */
-			   (CHAR *) DRM_OS2FILE,	/* mechanisms and data */
+	  pDItem = DrgQueryDragitemPtr(pDInfo,	   // Access DRAGITEM
+				       0);	   // Index to DRAGITEM
+	  if (DrgVerifyRMF(pDItem,	           // Check valid rendering
+			   (CHAR *) DRM_OS2FILE,   // mechanisms and data
 			   NULL)) {
-	    DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO */
+	    DrgFreeDraginfo(pDInfo);	           // Free DRAGINFO
 	    if (pci) {
 	      if (driveflags[toupper(*pci->pszFileName) - 'A'] &
 		  DRIVE_NOTWRITEABLE)
 		return MRFROM2SHORT(DOR_DROP, DO_LINK);
 	      if (toupper(*pci->pszFileName) < 'C')
 		return MRFROM2SHORT(DOR_DROP, DO_COPY);
-	      return MRFROM2SHORT(DOR_DROP,	/* Return okay to drop */
+	      return MRFROM2SHORT(DOR_DROP,	       // Return okay to drop
 				  ((fCopyDefault) ? DO_COPY : DO_MOVE));
 	    }
 	    else
-	      return MRFROM2SHORT(DOR_DROP,	/* Return okay to drop */
+	      return MRFROM2SHORT(DOR_DROP,	       // Return okay to drop
 				  DO_COPY);
 	  }
-	  DrgFreeDraginfo(pDInfo);	/* Free DRAGINFO */
+	  DrgFreeDraginfo(pDInfo);	              // Free DRAGINFO
 	}
-	return (MRFROM2SHORT(DOR_NODROP, 0));	/* Drop not valid */
+	return (MRFROM2SHORT(DOR_NODROP, 0));	      // Drop not valid
 
       case CN_INITDRAG:
 	if (mp2) {

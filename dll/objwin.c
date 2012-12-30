@@ -91,7 +91,7 @@ VOID MakeObjWin(VOID * args)
 	Fortify_EnterScope();
 #	endif
 	WinSetWindowPtr(ObjectHwnd, QWL_USER, args);
-	/* initially populate container */
+	// initially populate container
 	// 18 Jul 08 SHL fixme to know if this really kills WM_CREATE
 	WinSendMsg(ObjectHwnd, UM_SETUP, MPVOID, MPVOID);
 	PostMsg(ObjectHwnd, UM_RESCAN, MPVOID, MPVOID);

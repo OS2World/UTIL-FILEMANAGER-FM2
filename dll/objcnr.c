@@ -160,7 +160,7 @@ static VOID ProcessDir(HWND hwndCnr,
   if (hptr)
     pciP->rc.hptrIcon = hptr;
 
-  if (!pciP->rc.hptrIcon || pciP->rc.hptrIcon == hptrFile)      /* OS/2 bug bug bug bug */
+  if (!pciP->rc.hptrIcon || pciP->rc.hptrIcon == hptrFile)      // OS/2 bug bug bug bug
     pciP->rc.hptrIcon = hptrDir;
 
   memset(&ri, 0, sizeof(RECORDINSERT));

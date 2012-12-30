@@ -530,10 +530,12 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
 
   pci->hwndCnr = hwndCnr;
 
-  /* note that we cheat below, and accept the full pathname in pszDirectory
-     if !*pffb->achName.  This speeds up and simplifies processing elsewhere
-     (like in update.c)
+  /**
+   * note that we cheat below, and accept the full pathname in pszDirectory
+   * if !*pffb->achName.  This speeds up and simplifies processing elsewhere
+   * (like in update.c)
    */
+
   if (!*pffb->achName) {
     pci->pszFileName = xstrdup(pszDirectory, pszSrcFile, __LINE__);
   }
@@ -877,7 +879,8 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		      ULONG *pulTotalFiles,		// Optional
 		      PULONGLONG pullTotalBytes)	// Optional
 {
-  /* put all the directories (and files if filestoo is TRUE) from a
+  /**
+   * put all the directories (and files if filestoo is TRUE) from a
    * directory into the container.  recurse through subdirectories if
    * recurse is TRUE.
    */
@@ -946,7 +949,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
     if (!rc) {
       InitITimer(&itdSleep, 500);
       do {
-	/*
+	/**
 	 * remove . and .. from list if present
 	 * also counter file system bugs that sometimes
 	 * allows normal files to slip through when
@@ -1050,11 +1053,6 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		ullTotalBytes += papffbSelected[x]->cbFile;	// 15 Sep 09 SHL
 	      }
 	      cAffbTotal += ulSelCnt;
-	      // 15 Sep 09 SHL allow timed updates to see
-	      /*if (dcd) {
-		dcd->totalfiles += ulSelCnt;
-		dcd->ullTotalBytes += ullTotalBytes;
-	      } */  //30 May 11 GKY caused counter to increment twice
 	    }
 	    else {
 	      saymsg(MB_ENTER,

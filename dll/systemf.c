@@ -158,7 +158,7 @@ BOOL ShowSession(HWND hwnd, PID pid)
 int ExecOnList(HWND hwnd, PSZ command, int flags, PSZ tpath,  PSZ environment,
 	       PSZ *list, PCSZ prompt, PCSZ pszCallingFile, UINT uiLineNumber)
 {
-  /* executes the command once for all files in list */
+  // executes the command once for all files in list
 
   CHAR path[CCHMAXPATH], *commandline, modpath[CCHMAXPATH], listfile[CCHMAXPATH],
        *p, *pp, drive, *file, *ext, *dot;
@@ -251,7 +251,7 @@ int ExecOnList(HWND hwnd, PSZ command, int flags, PSZ tpath,  PSZ environment,
   while (*p) {
     if (*p == '%') {
       switch (*(p + 1)) {
-      case '!':                 /* write list to file, add filename */
+      case '!':                 // write list to file, add filename
 	if (list) {
 	  if (!*listfile) {
 	    FILE *fp;
@@ -278,7 +278,7 @@ int ExecOnList(HWND hwnd, PSZ command, int flags, PSZ tpath,  PSZ environment,
 	p += 2;
 	break;
 
-      case 'c':                 /* add name of command processor */
+      case 'c':                 // add name of command processor
 	{
 	  char *env = GetCmdSpec(FALSE);
 
@@ -299,7 +299,7 @@ int ExecOnList(HWND hwnd, PSZ command, int flags, PSZ tpath,  PSZ environment,
 	}
 	break;
 
-      case 't':                 /* add Target directory */
+      case 't':                 // add Target directory
 	if (needs_quoting(targetdir) && !strchr(targetdir, '\"')) {
 	  *pp = '\"';
 	  pp++;
@@ -316,7 +316,7 @@ int ExecOnList(HWND hwnd, PSZ command, int flags, PSZ tpath,  PSZ environment,
 	}
 	break;
 
-      case '$':                 /* add drive letter */
+      case '$':                 // add drive letter
 	if (drive)
 	  *pp = drive;
 	else {
@@ -329,7 +329,7 @@ int ExecOnList(HWND hwnd, PSZ command, int flags, PSZ tpath,  PSZ environment,
 	p += 2;
 	break;
 
-      case 'U':                 /* add path of first list component */
+      case 'U':                 // add path of first list component
       case 'u':
 	if (*modpath) {
 	  if (needs_quoting(modpath) && !strchr(modpath, '\"')) {
@@ -381,7 +381,7 @@ int ExecOnList(HWND hwnd, PSZ command, int flags, PSZ tpath,  PSZ environment,
 	p += 2;
 	break;
 
-      case 'P':                 /* add path of execution */
+      case 'P':                 // add path of execution
       case 'p':
 	if (*path) {
 	  if (needs_quoting(path) && !strchr(path, '\"')) {
@@ -671,7 +671,7 @@ BreakOut:
     else
       strcpy(ex.environment, environment);
     if (flags & PROMPT) {
-      /* allow editing command line */
+      // allow editing command line
       ex.flags = (flags & (~PROMPT));
       ex.commandline = commandline;
       strcpy(ex.path, path);
@@ -686,7 +686,6 @@ BreakOut:
     }
     else
       ex.flags = flags;
-    //ex.flags &= (~PROMPT);  redundant GKY 1-9-10
     //DbgMsg(pszSrcFile, __LINE__, "Inserted %s", environment);
     ret = runemf2(ex.flags, hwnd, pszCallingFile, uiLineNumber, path,
 		   *ex.environment ? ex.environment : NULL,
@@ -705,7 +704,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	    char *formatstring,...)
 {
   /** example:
-
+   *
    * status = runemf2(SEPARATE | WINDOWED,
    *                  hwnd, pszCallingFile, __LINE__,
    *                  NullStr,
@@ -717,8 +716,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
    * use (HWND)0 for hwnd if window handle not handy.
    * pszCallingFile and __LINE__ are used to determine caller for easier error tracking
    */
-
-  /**
+   /**
    * type bitmapped flag -- see systemf.h
    */
 
@@ -803,7 +801,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 
   if (*pszPgm) {
     if (*pszPgm == '<' && strchr(pszPgm, '>')) {
-      /* is a workplace object */
+      // is a workplace object
       HOBJECT hWPSObject;
       char temp;
 
@@ -819,7 +817,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
       else
 	pszArgs = NULL;
       *p = 0;
-      /* Find the handle of the WPS object */
+      // Find the handle of the WPS object
       hWPSObject = WinQueryObject(pszPgm);
       *p = temp;
       if (hWPSObject != NULLHANDLE) {
@@ -872,7 +870,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
       }
       else
 	p = pszPgm;
-      p[strlen(p) + 1] = 0;             /* double-terminate args */
+      p[strlen(p) + 1] = 0;             // double-terminate args
       if (*pszPgm) {
 	if (!strchr(pszPgm, '\\') &&
 	    !strchr(pszPgm, ':') &&
@@ -1114,7 +1112,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	    type &= ~WINDOWED;
 	    type |= FULLSCREEN;
 	  }
-	  else                          /* ? */
+	  else                          // ?
 	    ulAppType = SSF_TYPE_WINDOWABLEVIO;
 	}
 	else if (ulAppType == FAPPTYP_WINDOWAPI)

@@ -180,7 +180,7 @@ static MRESULT EXPENTRY MainFrameWndProc2(HWND hwnd, ULONG msg, MPARAM mp1,
       mr = (oldproc) ? oldproc(hwnd, msg, mp1, mp2) :
 	PFNWPFrame(hwnd, msg, mp1, mp2);
 
-      /*
+      /**
        * Calculate the position of the client rectangle.
        * Otherwise, we'll see a lot of redraw when we move the
        * client during WM_FORMATFRAME.
@@ -240,7 +240,7 @@ static MRESULT EXPENTRY MainFrameWndProc2(HWND hwnd, ULONG msg, MPARAM mp1,
       sCount = (SHORT) ((oldproc) ? oldproc(hwnd, msg, mp1, mp2) :
 			PFNWPFrame(hwnd, msg, mp1, mp2));
       soldCount = sCount;
-      /*
+      /**
        * Reformat the frame to "squeeze" the client
        * and make room for status window sibling beneath
        * and toolbar above (if toolbar's on) and userlists
@@ -818,9 +818,7 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
       SWP swp;
       PFNWP oldproc;
 
-      /*
-       * create frame children (not client children, frame children)
-       */
+      // create frame children (not client children, frame children)
       DosSleep(1);
       WinQueryWindowPos(WinQueryWindow(hwnd, QW_PARENT), &swp);
       oldproc = WinSubclassWindow(WinQueryWindow(hwnd, QW_PARENT),
@@ -1281,7 +1279,7 @@ MRESULT EXPENTRY MainWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       else
 	return 0;
     }
-    /* intentional fallthru */
+    // intentional fallthru
   case WM_SIZE:
     pd = WinQueryWindowPtr(hwnd, QWL_USER + 4);
     if (mp1 && mp2 && pd && pd->hwndDir1 && pd->hwndDir2) {

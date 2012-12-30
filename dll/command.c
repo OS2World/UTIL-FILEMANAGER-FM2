@@ -377,13 +377,6 @@ VOID load_commands(VOID)
   CHAR *moder = "r";
   ULONG size;
 
-
-  /*size = sizeof(BOOL) * 300;
-  PrfQueryProfileData(fmprof, FM3Str, "COMMANDS.UsedCommandIDs", &UsedCommandIDs,
-                      &size);
-  size = sizeof(BOOL) * 40;
-  PrfQueryProfileData(fmprof, FM3Str, "COMMANDS.UsedHotKeyIDs", &UsedHotKeyIDs,
-                      &size);*/    // No need to use profile just count them GKY 02 JUL 11
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "COMMANDS.LoadCommandsFromINI",
                       &fLoadCommandsFromINI, &size);
@@ -403,7 +396,7 @@ VOID load_commands(VOID)
           if (!*title || *title == ';')
             continue;
           if (!xfgets_bstripcr(pszCmdLine, MaxComLineStrg, fp, pszSrcFile, __LINE__))
-            break;				/* error! */
+            break;				// error!
           if (!xfgets_bstripcr(flags, sizeof(flags), fp, pszSrcFile, __LINE__))
             break;
           flags[34] = 0;
@@ -738,10 +731,10 @@ LINKCMDS *add_command(COMMAND *addme, BOOL fDontCheckHotKey)
     free(info);
     return NULL;
   }
-  if (!cmdhead)				/* only item in list */
+  if (!cmdhead)				// only item in list
     cmdhead = cmdtail = info;
   else {
-    /* place at tail */
+    // place at tail
     cmdtail->next = info;
     info->prev = cmdtail;
     cmdtail = info;

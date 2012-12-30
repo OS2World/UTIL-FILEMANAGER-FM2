@@ -88,7 +88,7 @@ CHAR *first_path(CHAR * path, CHAR * ret)
   if (p) {
     *p = 0;
     p++;
-    if (*ret == '.') {			/* skip initial "cur dir" */
+    if (*ret == '.') {			// skip initial "cur dir"
       pp = strchr(p, ';');
       if (pp)
 	*pp = 0;

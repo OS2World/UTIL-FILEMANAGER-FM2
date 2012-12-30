@@ -19,7 +19,7 @@
 
 ***********************************************************************/
 
-/*
+/**
  * COMMAFMT.C
  * Adapted from public domain code by Bob Stout
  *

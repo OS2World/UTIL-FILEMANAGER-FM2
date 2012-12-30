@@ -452,10 +452,6 @@ static CHAR **BuildAList(HWND hwnd)
 	    e = p = ad->lines[x];
 	    while (*e != '\r' && *e != '\n' && e < ad->text + ad->textsize)
 	      e++;
-	    /* fixme to be gone?
-	       if((*e == '\r' || *e == '\n') && e > p)
-	       e--;
-	    */
 	    width = e - p;
 	  }
 	  else {
@@ -1326,7 +1322,7 @@ static VOID ReLineThread(VOID * args)
 		    cursored = firstline = ad->numlines + 1;
 		    whereiam = NULL;
 		  }
-		  /* assign ad->lines[ad->numlines] */
+		  // assign ad->lines[ad->numlines]
 		  if (ad->numlines + 1 > ad->numalloc) {
 
 		    CHAR **temp;
@@ -1342,7 +1338,7 @@ static VOID ReLineThread(VOID * args)
 		  ad->lines[ad->numlines] = p;
 		  ad->numlines++;
 		  if (ad->numlines == numlines) {
-		    /* display first page */
+		    // display first page
 		    register INT x;
 
 		    for (x = 0; x < ad->numlines; x++) {
@@ -1569,7 +1565,7 @@ MRESULT EXPENTRY ViewFrameWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
       mr = oldproc(hwnd, msg, mp1, mp2);
 
-      /*
+      /**
        * Calculate the position of the client rectangle.
        * Otherwise,  we'll see a lot of redraw when we move the
        * client during WM_FORMATFRAME.
@@ -1597,7 +1593,7 @@ MRESULT EXPENTRY ViewFrameWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       sCount = (SHORT) oldproc(hwnd, msg, mp1, mp2);
       soldCount = sCount;
 
-      /*
+      /**
        * Reformat the frame to "squeeze" the client
        * and make room for status window sibling beneath
        */

@@ -612,7 +612,7 @@ VOID Action(VOID * args)
 		  !(fsa.attrFile & FILE_DIRECTORY))
 		    break;
 		}
-		/* else intentional fallthru */
+		// else intentional fallthru
 	      case IDM_OPENDEFAULT:
 	      case IDM_OPENSETTINGS:
 		{
@@ -855,7 +855,7 @@ VOID Action(VOID * args)
 		      fResetVerify = TRUE;
 		    }
 		    if (plen) {
-		      /* make directory/ies, if required */
+		      // make directory/ies, if required
 
 		      CHAR dirpart[CCHMAXPATH];
 
@@ -1058,7 +1058,7 @@ VOID Action(VOID * args)
 			    wk->li->type == IDM_WPSCOPY ?
 			      GetPString(IDS_WPSCOPYTEXT) :
 			      GetPString(IDS_RENAMETEXT),
-		      &"s"[x == 1],		/* s or nul */
+		      &"s"[x == 1],		// s or nul
 		      (wk->li->type == IDM_MOVE ||
 		       wk->li->type == IDM_COPY ||
 		       wk->li->type == IDM_WPSMOVE ||
@@ -1156,7 +1156,7 @@ VOID MassAction(VOID * args)
 	    {
 	      break;
 	    }
-	    /* else intentional fallthru */
+	    // else intentional fallthru
 	  case IDM_UPDATE:
 	    Broadcast(hab2,
 		      wk->hwndCnr,
@@ -1220,7 +1220,7 @@ VOID MassAction(VOID * args)
 		}
 	      }
 	    }
-	    /* intentional fallthru */
+	    // intentional fallthru
 	  case IDM_FAKEEXTRACT:
 	  case IDM_FAKEEXTRACTM:
 	    if (wk->li->type == IDM_MCIPLAY ||
@@ -1339,9 +1339,6 @@ VOID MassAction(VOID * args)
 	      else {
 		if (*wk->li->targetpath && !IsFile(wk->li->targetpath))
 		  AddBackslashToPath(wk->li->targetpath);
-		  //if (wk->li->targetpath[strlen(wk->li->targetpath) - 1] !=
-		  //    '\\')
-		  //  strcat(wk->li->targetpath, "\\");
 		ad.namecanchange = 1;
 	      }
 	      strcpy(ad.arcname, wk->li->targetpath);
@@ -1354,7 +1351,7 @@ VOID MassAction(VOID * args)
 			       SBoxDlgProc,
 			       FM3ModHandle,
 			       ASEL_FRAME, (PVOID) & ad.info) || !ad.info) {
-		  break;		/* we blew it */
+		  break;		// we blew it
 		}
 	      }
 	      else
@@ -1368,11 +1365,9 @@ VOID MassAction(VOID * args)
 	      if (!*wk->li->targetpath && *wk->directory) {
 		strcpy(ad.arcname, wk->directory);
 		AddBackslashToPath(ad.arcname);
-		//if (ad.arcname[strlen(ad.arcname) - 1] != '\\')
-		//  strcat(ad.arcname, "\\");
 	      }
 	      if (!WinDlgBox(HWND_DESKTOP, wk->hwndFrame, ArchiveDlgProc, FM3ModHandle,
-			     ARCH_FRAME, (PVOID) & ad) || !*ad.arcname || !*ad.command)	/* we blew it */
+			     ARCH_FRAME, (PVOID) & ad) || !*ad.arcname || !*ad.command)	// we blew it
 		break;
 	      // Provide extension so containers work
 	      pch = strrchr(ad.arcname, '\\');
@@ -1384,7 +1379,7 @@ VOID MassAction(VOID * args)
 		strcat(ad.arcname, ".");
 		strcat(ad.arcname, ad.info->ext);
 	      }
-	      /* build the sucker */
+	      // build the sucker
 	      strcpy(szBuffer, ad.command);
 	      strcat(szBuffer, " ");
 	      BldQuotedFileName(szBuffer + strlen(szBuffer), ad.arcname);
@@ -1435,7 +1430,7 @@ VOID MassAction(VOID * args)
 	    }
 	    else
 	      wk->li->type = IDM_VIEWBINARY;
-	    /* intentional fallthru */
+	    // intentional fallthru
 	  case IDM_VIEWBINARY:
 	    if (*binview) {
 	      ExecOnList((HWND) 0,
@@ -1444,7 +1439,7 @@ VOID MassAction(VOID * args)
 			 pszSrcFile, __LINE__);
 	      break;
 	    }
-	    /* else intentional fallthru */
+	    // else intentional fallthru
 	  case IDM_VIEWTEXT:
 	  SkipViewing:
 	    if (*viewer)
@@ -1481,7 +1476,7 @@ VOID MassAction(VOID * args)
 	    }
 	    else
 	      wk->li->type = IDM_EDITBINARY;
-	    /* intentional fallthru */
+	    // intentional fallthru
 	  case IDM_EDITBINARY:
 	    if (*bined) {
 	      ExecOnList((HWND) 0,
@@ -1490,7 +1485,7 @@ VOID MassAction(VOID * args)
 			 pszSrcFile, __LINE__);
 	      break;
 	    }
-	    /* else intentional fallthru */
+	    // else intentional fallthru
 	  case IDM_EDITTEXT:
 	  SkipEditing:
 	    if (*editor)

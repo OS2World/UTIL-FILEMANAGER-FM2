@@ -261,16 +261,12 @@ static MRESULT EXPENTRY MainObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
   case UM_SETUP3:
   case UM_SETUP4:
   case UM_SETUP5:
-    /*
-     * feed setup messages to main window
-     */
+    // feed setup messages to main window
     PostMsg(hwndMain, msg, mp1, mp2);
     return 0;
 
   case UM_SETUP6:
-    /*
-     * handle bubble help requests from drive bar buttons
-     */
+    // handle bubble help requests from drive bar buttons
     {
       char dv[3], d;
       HWND hwndB = (HWND) mp1;
@@ -364,9 +360,7 @@ static MRESULT EXPENTRY MainObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
     return 0;
 
   case UM_NOTIFY:
-    /*
-     * bring up notify messages for various windows
-     */
+    // bring up notify messages for various windows
     if (mp1)
       return MRFROMLONG(DoNotify((char *)mp1));
     return 0;
@@ -599,11 +593,11 @@ static VOID ResizeTools(HWND hwnd)
   noattrib = attrib;
   noattrib &= (~(SWP_SHOW | SWP_ZORDER));
   noattrib |= SWP_HIDE;
-  /* count tools */
+  // count tools
   tool = toolhead;
   for (numtools = 0L; tool; numtools++)
     tool = tool->next;
-  /* allocate swp array for WinSetMultWindowPos */
+  // allocate swp array for WinSetMultWindowPos
   swp = xmallocz(sizeof(SWP) * (numtools + 2), pszSrcFile, __LINE__);
   if (swp) {
     for (x = 0; x < numtools + 2L; x++) {
@@ -994,13 +988,13 @@ VOID MakeBubble(HWND hwnd, BOOL above, PCSZ help)
 
     hwndActive = WinQueryActiveWindow(HWND_DESKTOP);
     if (hwndActive) {
-      /* don't bring up help if window isn't active */
+      // don't bring up help if window isn't active
       if (!WinIsChild(hwnd, hwndActive))
 	return;
     }
     hwndActive = WinQueryFocus(HWND_DESKTOP);
     if (WinQueryClassName(hwndActive, sizeof(ucClassname), ucClassname)) {
-      /* don't bring up help if a menu is active */
+      // don't bring up help if a menu is active
       if (!strcmp(ucClassname, "#4"))
 	return;
     }
@@ -1342,8 +1336,8 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		   MPFROM2SHORT(HELP_TOOLBAR, 0), MPFROMSHORT(HM_RESOURCEID));
       break;
 
-    case IDM_HIDEANYTOOL:               /* hide any tool */
-    case IDM_HIDETOOL:                  /* hide tool */
+    case IDM_HIDEANYTOOL:               // hide any tool
+    case IDM_HIDETOOL:                  // hide tool
       if (SHORT1FROMMP(mp1) == IDM_HIDETOOL)
 	id = WinQueryWindowUShort(hwnd, QWS_ID);
       else
@@ -1359,7 +1353,7 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       break;
 
-    case IDM_SHOWTOOLS:                 /* show all tools */
+    case IDM_SHOWTOOLS:                 // show all tools
       tool = toolhead;
       while (tool) {
 	tool->flags &= (~T_INVISIBLE);
@@ -1368,8 +1362,8 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       save_tools(NULL);
       break;
 
-    case IDM_DELETEANYTOOL:             /* delete any button */
-    case IDM_DELETETOOL:                /* delete button */
+    case IDM_DELETEANYTOOL:             // delete any button
+    case IDM_DELETETOOL:                // delete button
       if (SHORT1FROMMP(mp1) == IDM_DELETETOOL)
 	id = WinQueryWindowUShort(hwnd, QWS_ID);
       else
@@ -1381,8 +1375,8 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		MPFROM2SHORT(id, 0), MPVOID);
       return 0;
 
-    case IDM_EDITANYTOOL:               /* edit any button */
-    case IDM_EDITTOOL:                  /* edit button */
+    case IDM_EDITANYTOOL:               // edit any button
+    case IDM_EDITTOOL:                  // edit button
       if (SHORT1FROMMP(mp1) == IDM_EDITTOOL)
 	id = WinQueryWindowUShort(hwnd, QWS_ID);
       else
@@ -1403,7 +1397,7 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       break;
 
-    case IDM_ADDTOOL:                   /* add tool */
+    case IDM_ADDTOOL:                   // add tool
       id = (USHORT) WinDlgBox(HWND_DESKTOP, hwnd, AddToolProc, FM3ModHandle,
 			      ADDBTN_FRAME, MPVOID);
       if (id && id != (USHORT) - 1)
@@ -1414,7 +1408,7 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		   MPFROM2SHORT(id, 0));
       break;
 
-    case IDM_REORDERTOOLS:              /* reorder tools */
+    case IDM_REORDERTOOLS:              // reorder tools
       WinDlgBox(HWND_DESKTOP,
 		hwnd, ReOrderToolsProc, FM3ModHandle, RE_FRAME, MPVOID);
       break;
@@ -1442,12 +1436,10 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case WM_CONTEXTMENU:
-    //DosEnterCritSec(); //GKY 11-29-08
     DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
     if (!hwndMenu)
       hwndMenu = WinLoadMenu(hwnd, FM3ModHandle, ID_BUTTONMENU);
     DosReleaseMutexSem(hmtxFM2Globals);
-    //DosExitCritSec();
     //fixme to allow user to change font 1-10-09 GKY
     SetPresParams(hwndMenu, NULL, NULL, NULL, FNT_10SYSTEMPROPORT);
     if (PopupMenu(hwnd, hwnd, hwndMenu))
@@ -1456,40 +1448,40 @@ MRESULT EXPENTRY ChildButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case DM_DRAGOVER:
     {
-      PDRAGINFO pDInfo;                 /* Pointer to DRAGINFO */
+      PDRAGINFO pDInfo;                 // Pointer to DRAGINFO
 
-      pDInfo = (PDRAGINFO) mp1;         /* Get DRAGINFO pointer */
-      DrgAccessDraginfo(pDInfo);        /* Access DRAGINFO */
+      pDInfo = (PDRAGINFO) mp1;         // Get DRAGINFO pointer
+      DrgAccessDraginfo(pDInfo);        // Access DRAGINFO
       id = WinQueryWindowUShort(hwnd, QWS_ID);
       tool = find_tool(id);
       if (!tool) {
 	DrgFreeDraginfo(pDInfo);
-	return (MRFROM2SHORT(DOR_NEVERDROP, 0));        /* Drop not valid */
+	return (MRFROM2SHORT(DOR_NEVERDROP, 0));        // Drop not valid
       }
       if (!(tool->flags & T_DROPABLE)) {
 	DrgFreeDraginfo(pDInfo);
-	return (MRFROM2SHORT(DOR_NEVERDROP, 0));        /* Drop not valid */
+	return (MRFROM2SHORT(DOR_NEVERDROP, 0));        // Drop not valid
       }
       {
-	PDRAGITEM pDItem;               /* Pointer to DRAGITEM */
+	PDRAGITEM pDItem;               // Pointer to DRAGITEM
 
-	pDItem = DrgQueryDragitemPtr(pDInfo,    /* Access DRAGITEM */
-				     0);        /* Index to DRAGITEM */
-	if (DrgVerifyRMF(pDItem,        /* Check valid rendering */
-			 (CHAR *) DRM_OS2FILE,   /* mechanisms and data */
-			 NULL)) {       /* formats */
+	pDItem = DrgQueryDragitemPtr(pDInfo,    // Access DRAGITEM
+				     0);        // Index to DRAGITEM
+	if (DrgVerifyRMF(pDItem,                // Check valid rendering
+			 (CHAR *) DRM_OS2FILE,  // mechanisms and data
+			 NULL)) {               // formats
 	  if (!(tool->flags & T_EMPHASIZED)) {
 	    tool->flags |= T_EMPHASIZED;
 	    DrawTargetEmphasis(hwnd, ((tool->flags & T_EMPHASIZED) != 0));
 	    DrgFreeDraginfo(pDInfo);
 	  }
-	  return (MRFROM2SHORT(DOR_DROP,        /* Return okay to drop */
-			       DO_MOVE));       /* Move operation valid */
+	  return (MRFROM2SHORT(DOR_DROP,        // Return okay to drop
+			       DO_MOVE));       // Move operation valid
 	}
 	DrgFreeDraginfo(pDInfo);
       }
     }
-    return (MRFROM2SHORT(DOR_NEVERDROP, 0));    /* Drop not valid */
+    return (MRFROM2SHORT(DOR_NEVERDROP, 0));    // Drop not valid
 
   case DM_DROPHELP:
     id = WinQueryWindowUShort(hwnd, QWS_ID);
@@ -2291,11 +2283,6 @@ MRESULT EXPENTRY DriveProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (!rdy || !local)
 	  WinEnableMenuItem(hwndMenu, IDM_CHKDSK, FALSE);
 	}
-	/* fixme to be gone?
-	  if (!rdy || ~driveflags[iDrv] & DRIVE_CDROM) {
-	    WinEnableMenuItem(hwndMenu, IDM_CLOSETRAY, FALSE);
-	  }
-	*/
 	PopupMenu(hwnd, hwnd, hwndMenu);
       }
     }
@@ -2981,7 +2968,7 @@ MRESULT EXPENTRY ToolBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     return 0;
 
-  case UM_SETUP2:  /* Used to load a new a toolbar */
+  case UM_SETUP2:  // Used to load a new a toolbar
     BuildTools(hwnd, TRUE);
     return 0;
 
@@ -3198,7 +3185,7 @@ BOOL CloseChildren(HWND hwndClient)
 
 BOOL CloseDirCnrChildren(HWND hwndClient)
 {
-  /* returns TRUE if a directory container window was told to close */
+  // returns TRUE if a directory container window was told to close
 
   HENUM henum;
   HWND hwndChild, hwndDir, hwndTemp;
@@ -3679,7 +3666,7 @@ VOID GetNextWindowPos(HWND hwndClient, PSWP pswp, ULONG * ulCntR,
     ulNumMinChildren = *ulNumMinChildrenR;
     if (ulCnt == (ULONG) - 1) {
       ulCnt = CountChildren(hwndClient, &ulNumMinChildren);
-      /* return these values to the caller for later use */
+      // return these values to the caller for later use
       *ulCntR = ulCnt;
       *ulNumMinChildrenR = ulNumMinChildren;
     }
@@ -3896,7 +3883,7 @@ VOID TileChildren(HWND hwndClient, BOOL absolute)
 static VOID ResizeChildren(HWND hwndClient, SHORT oldcx, SHORT oldcy,
 			   SHORT newcx, SHORT newcy)
 {
-  /*
+  /**
    * resize all children of the client to maintain their proportional
    * sizes and positions
    */
@@ -4236,7 +4223,7 @@ static MRESULT EXPENTRY MainFrameWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
       mr = oldproc(hwnd, msg, mp1, mp2);
 
-      /*
+      /**
        * Calculate the position of the client rectangle.
        * Otherwise, we'll see a lot of redraw when we move the
        * client during WM_FORMATFRAME.
@@ -4315,7 +4302,7 @@ static MRESULT EXPENTRY MainFrameWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       sCount = (SHORT) oldproc(hwnd, msg, mp1, mp2);
       soldCount = sCount;
 
-      /*
+      /**
        * Reformat the frame to "squeeze" the client
        * and make room for status window sibling beneath
        * and toolbar above (if toolbar's on) and userlists
@@ -5659,9 +5646,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
 
     hwndFrame = WinQueryWindow(hwnd, QW_PARENT);
 
-    /*
-     * create frame children (not client children, frame children)
-     */
+    // create frame children (not client children, frame children)
     DosSleep(1);
     WinQueryWindowPos(hwndFrame, &swp);
     oldproc = WinSubclassWindow(hwndFrame, MainFrameWndProc);
@@ -5931,9 +5916,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
     break;                              // WM_CREATE
 
   case UM_SETUP:
-    /*
-     * start up some initial children
-     */
+    // start up some initial children
     WinShowWindow(WinQueryWindow(hwnd, QW_PARENT), TRUE);
     PostMsg(MainObjectHwnd, UM_SETUP2, mp1, mp2);
     return 0;
@@ -5993,7 +5976,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
     return 0;
 
   case UM_SETUP3:
-    /* start remaining child windows */
+    // start remaining child windows
     if (!fNoSaveState && fSaveState) {
       PCSZ pszStatename = PCSZ_SHUTDOWNSTATE;
       PostMsg(MainObjectHwnd, UM_RESTORE, MPFROMP(pszStatename), MPVOID);
@@ -6189,7 +6172,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
 
     case IDM_WINDOWSMENU:
-      /*
+      /**
        * add child windows of client
        * and switchlist entries to end of pulldown menu
        */
@@ -6640,7 +6623,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_SETDIR:
-    /* mp1 == name of directory to open */
+    // mp1 == name of directory to open
     if (mp1)
       return MRFROMLONG(OpenDirCnr((HWND) 0,
 				   hwndMain,

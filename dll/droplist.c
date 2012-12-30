@@ -51,7 +51,7 @@ static BOOL TwoDrgNames(PDRAGITEM pDItem, CHAR * buffer1, ULONG buflen1,
 
 BOOL CheckPmDrgLimit(PDRAGINFO pDInfo)
 {
-    /*
+    /**
      * Checks for FM2 source window then checks window words
      * for ulItemsToUnHilite and if it is not zero displays a
      * message to the users that not all items are being dragged
@@ -78,7 +78,7 @@ BOOL CheckPmDrgLimit(PDRAGINFO pDInfo)
 BOOL TwoDrgNames(PDRAGITEM pDItem, CHAR * buffer1, ULONG buflen1,
 		 char *buffer2, ULONG buflen2)
 {
-  /*
+  /**
    * Gets archive name from directory field, file name from file field
    * Returns FALSE on error, TRUE on success.
    */
@@ -86,15 +86,15 @@ BOOL TwoDrgNames(PDRAGITEM pDItem, CHAR * buffer1, ULONG buflen1,
   register ULONG len;
   BOOL ret = FALSE;
 
-  if (pDItem && buffer2 && buflen2) {	/* else error calling function */
-    if (buffer1 && buflen1)		/* zero buffers */
+  if (pDItem && buffer2 && buflen2) {	// else error calling function
+    if (buffer1 && buflen1)		// zero buffers
       *buffer1 = 0;
     *buffer2 = 0;
 
     if (buffer1 && buflen1) {
       len = DrgQueryStrName(pDItem->hstrContainerName, buflen1, buffer1);
       buffer1[len] = 0;
-      if (len) {			/* be sure we get full pathname of arc file */
+      if (len) {			// be sure we get full pathname of arc file
 
 	char szTemp[CCHMAXPATH + 2];
 
@@ -104,7 +104,7 @@ BOOL TwoDrgNames(PDRAGITEM pDItem, CHAR * buffer1, ULONG buflen1,
 	  buffer1[buflen1 - 1] = 0;
 	}
       }
-      {					/* be sure that file/directory is accessible */
+      {					// be sure that file/directory is accessible
 	FILESTATUS3 fsa3;
 
 	DosError(FERR_DISABLEHARDERR);
@@ -129,7 +129,7 @@ BOOL TwoDrgNames(PDRAGITEM pDItem, CHAR * buffer1, ULONG buflen1,
 
 BOOL FullDrgName(PDRAGITEM pDItem, CHAR * buffer, ULONG buflen)
 {
-  /*
+  /**
    * Gets full name of file from a dragged item.
    * Returns FALSE on error, TRUE on success.
    */
@@ -139,8 +139,8 @@ BOOL FullDrgName(PDRAGITEM pDItem, CHAR * buffer, ULONG buflen)
   APIRET rc;
   FILESTATUS3 fsa3;
 
-  if (pDItem && buffer && buflen) {	/* else error calling function */
-    *buffer = 0;			/* zero buffer */
+  if (pDItem && buffer && buflen) {	// else error calling function
+    *buffer = 0;			// zero buffer
 
     blen = DrgQueryStrName(pDItem->hstrContainerName, buflen, buffer);
     if(!blen)
@@ -156,7 +156,7 @@ BOOL FullDrgName(PDRAGITEM pDItem, CHAR * buffer, ULONG buflen)
     len = DrgQueryStrName(pDItem->hstrSourceName,
 			  buflen - blen, buffer + blen);
     buffer[blen + len] = 0;
-    {					/* be sure we get full pathname of file/directory */
+    {					// be sure we get full pathname of file/directory
       char szTemp[CCHMAXPATH + 2];
       rc = DosQueryPathInfo(buffer,
 			    FIL_QUERYFULLNAME, szTemp, sizeof(szTemp));
@@ -183,16 +183,16 @@ BOOL FullDrgName(PDRAGITEM pDItem, CHAR * buffer, ULONG buflen)
 
 BOOL GetOneDrop(HWND hwnd, MPARAM mp1, MPARAM mp2, char *buffer, ULONG buflen)
 {
-  PDRAGITEM pDItem;			/* DRAGITEM struct ptr */
-  PDRAGINFO pDInfo;			/* DRAGINFO struct ptr */
+  PDRAGITEM pDItem;			// DRAGITEM struct ptr
+  PDRAGINFO pDInfo;			// DRAGINFO struct ptr
   ULONG numitems;
   register ULONG curitem;
   BOOL ret = FALSE;
 
   if (buffer && buflen)
-    *buffer = 0;			/* zero buffer field */
+    *buffer = 0;			// zero buffer field
 
-  pDInfo = (PDRAGINFO) mp1;		/* Get DRAGINFO pointer */
+  pDInfo = (PDRAGINFO) mp1;		// Get DRAGINFO pointer
   if (pDInfo) {
     if (!DrgAccessDraginfo(pDInfo)) {
       Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
@@ -202,8 +202,8 @@ BOOL GetOneDrop(HWND hwnd, MPARAM mp1, MPARAM mp2, char *buffer, ULONG buflen)
       numitems = DrgQueryDragitemCount(pDInfo);
       pDItem = DrgQueryDragitemPtr(pDInfo,0);
       if (buflen && buffer) {
-	if (DrgVerifyRMF(pDItem,	/* Check valid rendering */
-			 (CHAR *) DRM_OS2FILE,	/* mechanisms and data */
+	if (DrgVerifyRMF(pDItem,	        // Check valid rendering
+			 (CHAR *) DRM_OS2FILE,	// mechanisms and data
 			 NULL) && !(pDItem->fsControl & DC_PREPARE))
 	  ret = FullDrgName(pDItem, buffer, buflen);
       }
@@ -223,11 +223,11 @@ BOOL GetOneDrop(HWND hwnd, MPARAM mp1, MPARAM mp2, char *buffer, ULONG buflen)
 
 BOOL AcceptOneDrop(HWND hwnd, MPARAM mp1, MPARAM mp2)
 {
-  PDRAGITEM pDItem;			/* Pointer to DRAGITEM */
-  PDRAGINFO pDInfo;			/* Pointer to DRAGINFO */
+  PDRAGITEM pDItem;			// Pointer to DRAGITEM
+  PDRAGINFO pDInfo;			// Pointer to DRAGINFO
   BOOL ret = FALSE;
 
-  pDInfo = (PDRAGINFO) mp1;		/* Get DRAGINFO pointer */
+  pDInfo = (PDRAGINFO) mp1;		// Get DRAGINFO pointer
   if (pDInfo) {
     if (!DrgAccessDraginfo(pDInfo)) {
       Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
@@ -236,7 +236,7 @@ BOOL AcceptOneDrop(HWND hwnd, MPARAM mp1, MPARAM mp2)
     else {
       pDItem = DrgQueryDragitemPtr(pDInfo, 0);
 
-      /* Check valid rendering mechanisms and data formats */
+      // Check valid rendering mechanisms and data formats
       if (DrgVerifyRMF(pDItem, (CHAR *) DRM_OS2FILE, NULL))
 	ret = TRUE;
 
@@ -278,7 +278,7 @@ void DropHelp(MPARAM mp1, MPARAM mp2, HWND hwnd, PCSZ text)
 LISTINFO *DoFileDrop(HWND hwndCnr, PCSZ directory, BOOL arcfilesok,
 		     MPARAM mp1, MPARAM mp2)
 {
-  /* builds a list from the dropped files */
+  // builds a list from the dropped files
 
   BOOL isArc = FALSE, arctest = FALSE;
   PDRAGITEM pDItem;
@@ -334,7 +334,7 @@ LISTINFO *DoFileDrop(HWND hwndCnr, PCSZ directory, BOOL arcfilesok,
       break;
     }
 
-    /* ambiguous drop request -- see what's allowed */
+    // ambiguous drop request -- see what's allowed
     if (Operation == DO_DEFAULT || Operation >= DO_UNKNOWN) {
       if (pDItem->fsSupportedOps & DO_COPYABLE)
 	Operation = DO_COPY;
@@ -344,7 +344,7 @@ LISTINFO *DoFileDrop(HWND hwndCnr, PCSZ directory, BOOL arcfilesok,
 	Operation = DO_LINK;
     }
     else {
-      /* ignore object if selected command not allowed for it */
+      // ignore object if selected command not allowed for it
       BOOL ok;
       switch (Operation) {
       case DO_MOVE:

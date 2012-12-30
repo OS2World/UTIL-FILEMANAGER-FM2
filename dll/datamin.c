@@ -416,7 +416,7 @@ MRESULT EXPENTRY DataProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(MINI_FLOAT, 0), MPVOID);
       break;
     }
-    /* else intentional fallthru */
+    // else intentional fallthru
   case WM_CHORD:
   case WM_BUTTON3DBLCLK:
     PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(MINI_SHOW, 0), MPVOID);
@@ -1083,7 +1083,7 @@ static VOID dataminThread(VOID * pv)
 	  *szPath = (CHAR) dskNum + 'A' - 1;
 	  pDM->qfsa_cb = sizeof(FSQBUFFER2) + 256;	// se tDataMin
 	  DosError(FERR_DISABLEHARDERR);
-	  pDM->qfsa_rc = DosQueryFSAttach(szPath, 0,	/* Ordinal */
+	  pDM->qfsa_rc = DosQueryFSAttach(szPath, 0,	// Ordinal
 					  FSAIL_QUERYNAME,
 					  &pDM->fsqb2, &pDM->qfsa_cb);
 	}

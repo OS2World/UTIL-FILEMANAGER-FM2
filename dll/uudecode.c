@@ -46,11 +46,11 @@
 
 static PSZ pszSrcFile = __FILE__;
 
-/* prototypes */
+// prototypes
 static BOOL decode(FILE * in, FILE * out);
 static void outdec(char *p, FILE * f, int n);
 
-/* single character decode */
+// single character decode
 #define DEC(c)  (((c) - ' ') & 077)
 
 int UUD(char *filename, CHAR * dest)
@@ -72,7 +72,7 @@ int UUD(char *filename, CHAR * dest)
     return ret;
   }
 
-  /* search for header line */
+  // search for header line
   for (;;) {
     if (!fgets(buf, sizeof(buf), in)) {
       fclose(in);
@@ -89,7 +89,7 @@ int UUD(char *filename, CHAR * dest)
   sscanf(buf, "begin %o %259s", &mode, dest);
   dest[CCHMAXPATH - 1] = 0;
   {
-    /* place dest in same directory as filename by default... */
+    // place dest in same directory as filename by default...
     char build[CCHMAXPATH], *p;
 
     strcpy(build, filename);
@@ -109,7 +109,7 @@ int UUD(char *filename, CHAR * dest)
     return ret;
   }
 
-  /* create output file */
+  // create output file
   moder = "ab+";
   out = xfsopen(dest, moder, SH_DENYWR, pszSrcFile, __LINE__, TRUE);
   if (!out) {
@@ -131,7 +131,7 @@ int UUD(char *filename, CHAR * dest)
   return ret;
 }
 
-/*
+/**
  * copy from in to out, decoding as you go along.
  */
 static BOOL decode(FILE * in, FILE * out)
@@ -141,7 +141,7 @@ static BOOL decode(FILE * in, FILE * out)
   int n;
 
   for (;;) {
-    /* for each input line */
+    // for each input line
     if (!xfgets(buf, sizeof(buf), in, pszSrcFile, __LINE__))
       return FALSE;
     n = DEC(buf[0]);
@@ -157,7 +157,7 @@ static BOOL decode(FILE * in, FILE * out)
   return TRUE;
 }
 
-/*
+/**
  * output a group of 3 bytes (4 input characters).
  * the input chars are pointed to by p, they are to
  * be output to file f.  n is used to tell us not to

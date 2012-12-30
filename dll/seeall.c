@@ -523,7 +523,8 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    FreeList(list);
 	    break;
 	  }
-	  if (!WinDlgBox(HWND_DESKTOP, hwndFrame, ArchiveDlgProc, FM3ModHandle, ARCH_FRAME, (PVOID) & ad) || !*ad.arcname || !*ad.command) {    /* we blew it */
+          if (!WinDlgBox(HWND_DESKTOP, hwndFrame, ArchiveDlgProc, FM3ModHandle, ARCH_FRAME, (PVOID) & ad) ||
+              !*ad.arcname || !*ad.command) {    // we blew it
 	    FreeList(list);
 	    break;
 	  }
@@ -621,7 +622,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		 GetPString(IDS_NOTWRITENOTARGETTEXT));
 	  goto RetryPath;
 	}
-	/* intentional fallthru */
+	// intentional fallthru
       case IDM_RENAME:
 	{
 	  CHAR newname[CCHMAXPATH];
@@ -755,7 +756,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      fResetVerify = TRUE;
 	    }
 	    if (plen) {
-	      /* make directory/ies, if required */
+	      // make directory/ies, if required
 
 	      CHAR dirpart[CCHMAXPATH];
 
@@ -1438,7 +1439,7 @@ static CHAR **BuildAList(HWND hwnd)
 
 static BOOL Mark(HWND hwnd, INT command, CHAR ** list)
 {
-  /* Marks only unfiltered files */
+  // Marks only unfiltered files
 
   ALLDATA *pAD = WinQueryWindowPtr(hwnd, QWL_USER);
   register ULONG x, y, z;
@@ -1499,7 +1500,7 @@ static BOOL Mark(HWND hwnd, INT command, CHAR ** list)
 
 static BOOL UpdateList(HWND hwnd, CHAR **list)
 {
-  /* Updates files in the list */
+  // Updates files in the list
 
   ALLDATA *ad = WinQueryWindowPtr(hwnd, QWL_USER);
   ULONG x, z;
@@ -2493,7 +2494,7 @@ MRESULT EXPENTRY SeeFrameWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       mr = oldproc(hwnd, msg, mp1, mp2);
 
-      /*
+      /**
        * Calculate the position of the client rectangle.
        * Otherwise,  we'll see a lot of redraw when we move the
        * client during WM_FORMATFRAME.
@@ -2514,7 +2515,7 @@ MRESULT EXPENTRY SeeFrameWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       sCount = (SHORT) oldproc(hwnd, msg, mp1, mp2);
 
-      /*
+      /**
        * Reformat the frame to "squeeze" the client
        * and make room for status window sibling beneath
        */
@@ -3533,7 +3534,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  wascursored = TRUE;
 	  for (x = pAD->topfile - 1; x < pAD->afindexcnt; x++) {
 	    ptl.x = pAD->horzscroll;
-	    if (wascursored) {          /* reestablish normal colors */
+	    if (wascursored) {          // reestablish normal colors
 	      GpiSetColor(pAD->hps,
 			  standardcolors[Colors[COLORS_NORMALFORE]]);
 	      GpiSetBackColor(pAD->hps,

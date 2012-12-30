@@ -25,12 +25,9 @@
 
 ***********************************************************************/
 
-/* offset 107:  title of INF file */
-
 #include <stdlib.h>
 #include <string.h>
 #include <share.h>
-// #include <process.h>                    // _beginthread
 
 #define INCL_DOS
 #define INCL_WIN
