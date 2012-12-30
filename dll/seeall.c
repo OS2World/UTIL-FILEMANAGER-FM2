@@ -3984,7 +3984,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     switch (SHORT1FROMMP(mp1)) {
     case IDM_SETTARGET:
-      SetTargetDir(hwnd, FALSE);
+      SetTargetDir(hwnd, FALSE, NULL);
       break;
 
     case IDM_DUPES:

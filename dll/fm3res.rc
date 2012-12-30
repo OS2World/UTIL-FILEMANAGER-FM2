@@ -61,6 +61,8 @@
   04 Aug 12 GKY Changes to use Unlock to unlock files if Unlock.exe is in path both from menu/toolbar and as part of
                 copy, move and delete operations
   05 Sep 12 SHL Sync collector menu with docs
+  30 Dec 12 GKY Enhance traget directory drop to give the option of changing the directory or carrying out an
+                operation to the current target; Added an error message for target = None;
   
 ***********************************************************************/
 
@@ -3402,6 +3404,8 @@ STRINGTABLE
     IDS_FM2CMDHELPTEXT1                   "Type ""/OPEN path"" to open a new Directory Container.\r\rType ""/CLOSE path"" to close a Directory Container.\r\rType ""/FILTER filter"" to filter a Directory Container.\r\rType ""/KEEP"" or ""/NOKEEP"" to set the type of cmd window (autoclose or not)."
     IDS_FM2CMDHELPTEXT2                   "\r\rType ""/SAVE"" or ""/NOSAVE"" to save (or not) cmd lines between sessions.\r\r[Up arrow] or [down arrow] or [+] button for listbox of previous command lines, then [Delete] to remove one or [Enter] to reuse.\r\rOr type a command to be executed"
     IDS_FM2CMDHELPTEXT3                   " (metastrings like %%a available.)\r\rDouble-click entry field to simulate hitting [Enter].\r\rF5 is the accelerator for this mini-command line."
+    IDS_DROPSETSTARGET                    "Do you wish to use this directory as the new target directory? \nYes sets target\nNo proceeds with drag/drop operation to current target"
+    IDS_NOTARGETSET                       "A target directory has not been set"
   END
 
 

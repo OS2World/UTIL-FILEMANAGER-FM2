@@ -45,6 +45,8 @@
                 copy, move and delete operations
   04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
                 for delete of readonly files
+  30 Dec 12 GKY Enhance traget directory drop to give the option of changing the directory or carrying out an
+                operation to the current target; Added an error message for target = None;
 
 ***********************************************************************/
 
@@ -106,6 +108,8 @@
 #define IDS_NOTPROTECTONLYEXE                                 50
 #define IDS_INIFAILURETEXT                                    51
 #define IDS_DUPLICATEHOTKEYTEXT                               52
+#define IDS_DROPSETSTARGET                                    53
+#define IDS_NOTARGETSET                                       54
 #define IDS_HELPCMDTEXT                                       56
 #define IDS_ZEROBYTETEXT                                      58
 #define IDS_DETACHREQUESTTEXT                                 59

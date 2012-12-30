@@ -1573,7 +1573,7 @@ MRESULT EXPENTRY CfgGDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_SETUP5:
-    SetTargetDir(hwnd, FALSE);
+    SetTargetDir(hwnd, FALSE, NULL);
     WinSetDlgItemText(hwnd, CFGG_TARGETDIR, targetdir);
     return 0;
 
@@ -2199,7 +2199,7 @@ MRESULT EXPENTRY CfgMDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (hwndMain)
 	  PostMsg(WinQueryWindow(hwndMain, QW_PARENT),
 		  WM_UPDATEFRAME, MPFROMLONG(FCF_SIZEBORDER), MPVOID);
-	SetTargetDir(hwnd, TRUE);
+	SetTargetDir(hwnd, TRUE, NULL);
       }
       dummy = WinQueryButtonCheckstate(hwnd, CFGM_SEPARATEPARMS);
       if (dummy != fSeparateParms) {

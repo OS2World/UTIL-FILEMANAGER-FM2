@@ -1823,7 +1823,7 @@ MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       //fixme to allow user to change presparams 1-10-09 GKY
       SetPresParams(hwnd,
 		    &RGBGREY, &rgb, &RGBGREY, FNT_8HELVETICA);
-      SetTargetDir(hwnd, TRUE);
+      SetTargetDir(hwnd, TRUE, NULL);
     }
     return 0;
 
@@ -1898,10 +1898,10 @@ MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 
   case DM_DROP:
-    if (targetdir) {
+    if (targetdir && strlen(targetdir) > 2) {
       CNRDRAGINFO cnd;
       LISTINFO *li;
-      ULONG action = UM_ACTION;
+      ULONG action = UM_ACTION, ret;
 
       if (emphasized) {
 	emphasized = FALSE;
@@ -1915,6 +1915,16 @@ MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      TRUE, MPFROM2SHORT(TREE_CNR, CN_DROP), MPFROMP(&cnd));
       CheckPmDrgLimit(cnd.pDragInfo);
       if (li) {
+        if (!li->list[1] && !IsFile(li->list[0])) {
+          ret = saymsg(MB_YESNO,
+		   HWND_DESKTOP,
+                       NullStr,
+                       GetPString(IDS_DROPSETSTARGET));
+          if (ret == MBID_YES) {
+            SetTargetDir(hwnd, TRUE, li->list[0]);
+            break;
+          }
+        }
 	strcpy(li->targetpath, targetdir);
 	strcat(li->targetpath, PCSZ_BACKSLASH);
 	if (li->list && li->list[0] && IsRoot(li->list[0]))
@@ -2032,9 +2042,31 @@ MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (!li->list || !li->list[0])
 	  FreeListInfo(li);
 	else
-	  WinSendMsg(hwndTree, UM_ACTION, MPFROMP(li), MPFROMLONG(action));
+          WinSendMsg(hwndTree, UM_ACTION, MPFROMP(li), MPFROMLONG(action));
+    }
+    else {
+      CNRDRAGINFO cnd;
+      LISTINFO *li;
+
+      if (emphasized) {
+	emphasized = FALSE;
+	DrawTargetEmphasis(hwnd, emphasized);
       }
-      break;
+      memset(&cnd, 0, sizeof(cnd));
+      cnd.pDragInfo = (PDRAGINFO) mp1;
+      cnd.pRecord = NULL;
+      li = DoFileDrop(hwnd,
+		      NULL,
+		      TRUE, MPFROM2SHORT(TREE_CNR, CN_DROP), MPFROMP(&cnd));
+      CheckPmDrgLimit(cnd.pDragInfo);
+      if (li && !li->list[1] && !IsFile(li->list[0]))
+        SetTargetDir(hwnd, TRUE, li->list[0]);
+      else
+        saymsg(MB_ENTER | MB_ICONASTERISK, hwnd,
+	       GetPString(IDS_WARNINGTEXT),
+	       GetPString(IDS_NOTARGETSET));
+    }
+    break;
 
   case WM_CHAR:
     shiftstate = (SHORT1FROMMP(mp1) & (KC_SHIFT | KC_ALT | KC_CTRL));
@@ -3437,7 +3469,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
   {
     PrfQueryProfileString(fmprof, FM3Str, szKey, NULL, targetdir, sizeof(targetdir));
     PrfWriteProfileString(fmprof, FM3Str, "TargetDir", targetdir);
-    SetTargetDir(NULLHANDLE, TRUE);
+    SetTargetDir(NULLHANDLE, TRUE, NULL);
   }
   size = sizeof(SWP);
   sprintf(szKey, "%sMySizeLastTime", szPrefix);
@@ -4724,7 +4756,7 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case IDM_SETTARGET:
-    SetTargetDir(hwnd, FALSE);
+    SetTargetDir(hwnd, FALSE, NULL);
     break;
 
   case IDM_TOAUTOMLE:

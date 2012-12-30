@@ -1706,7 +1706,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
     if (dcd) {
       switch (SHORT1FROMMP(mp1)) {
       case IDM_SETTARGET:
-	SetTargetDir(hwnd, FALSE);
+        SetTargetDir(hwnd, FALSE, NULL);
 	break;
 
       case IDM_CONTEXTMENU:

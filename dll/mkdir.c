@@ -14,6 +14,9 @@
   25 Dec 08 GKY Add code to allow write verify to be turned off on a per drive basis
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
   23 Oct 10 GKY Add ForwardslashToBackslash function to streamline code
+  30 Dec 12 GKY Enhance traget directory drop to give the option of changing the directory or carrying out an
+                operation to the current target; Added an error message for target=None;
+                Added parameter to SetTargetDir
 
 ***********************************************************************/
 
@@ -223,7 +226,14 @@ Over:
   return FALSE;
 }
 
-void SetTargetDir(HWND hwnd, BOOL justshow)
+/*
+ * SetTargetDir sets or unsets the target directory
+ * either from the walk dialog or a directory dropped
+ * on the drivesback bar which is passed as "newtarget".
+ * justshow allows you to update the target without opening
+ * the walk dialog.
+ */
+void SetTargetDir(HWND hwnd, BOOL justshow, PSZ newtarget)
 {
 
   char temp[CCHMAXPATH + 12];
@@ -249,7 +259,8 @@ void SetTargetDir(HWND hwnd, BOOL justshow)
       }
     }
   }
-
+  if (newtarget && justshow)
+    strcpy(targetdir, newtarget);
   if (hwndBack) {
     if (fShowTarget)
       sprintf(temp,
