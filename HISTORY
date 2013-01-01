@@ -1,5 +1,23 @@
 New stuff at the top.  This list is not necessarily complete.
 
+3.21
+ o Search for duplicates now sorts results by filename. Ticket 8 (Gregg)
+ o Since eCS includes unlock.exe I have added unlock file to the file (directory container context) menu
+   so you can easily unlock a dll or exe file. Delete, copy and move operations open a dialog which allow 
+   you to unlock files as part of these operations. An icon is included if you wish to add unlock to a
+   toolbar button. Ticket 11, 12, 357, 408 (Gregg)
+ o Added information on FM/2 as a WPS replacement to help files; a few additional documentation updates.
+   Ticket 55, 134 (Gregg)
+ o Enhance compare directories to allow inclusion of subdirectories or use of a list file on opening
+   Fixed failure of list file loading Ticket 145, 489 (Gregg)
+ o Added a warning dialog when a delete, copy or move operation which replaces/deletes a read only file.
+   Ticket 319 (Gregg)
+ o The "target directory" is now a drop target for move/copy or conditionally to change the target.
+   Ticket 373 (Gregg)
+ o The user can now change the presentation parameters in "thread notes" and "compare directories"
+   Ticket 443 (Gregg)
+ o Fixed 2 reported traps. Ticket 486, 487 (Gregg)  
+
 3.20
  o Identified mmioIdentifyFile's failure to correctly identify some files as the root cause of
    a trap in GBM.DLL. ShowMultiMedia now only checks files with known multimedia extensions.

@@ -4,17 +4,32 @@
  �       See end of document for contact info           �
  읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
 
+
+FM/2 3.21 has a few enhancement which we hope you will find useful. Since eCS 
+includes unlock.exe I have added unlock file to the file (directory container 
+context) menu so you can easily unlock a dll or exe file. Delete, copy and move 
+operations will open a dialog which allow you to unlock files as part of these 
+operations. An icon is included if you wish to add unlock to a toolbar button.
+(See the help file for the unlock id and instruction on adding a button).
+Search for duplicate files now sorts results by filename. Updated the help file 
+adding information on FM/2 as a WPS replacement. Enhance compare directories to 
+allow inclusion of subdirectories or use of a list file on opening and fixed 
+a list file load failure. Added a warning dialog for a delete, copy or move 
+operation which replaces/deletes a read only file. Finally,the "target 
+directory" is now a drop target for move/copy or conditionally to change the target.
+See the history file for more details. Please let us know if you find a defect.
+
 FM/2 3.20 mainly addresses things that were annoying me. The only new item
 is a new date type for ARCHIVER.BB2 which allows for the viewing of .tar.gz
 archives directly using Tar 1.15 or higher. You will need to either replace
-your ARCHIVER.BB2 with ARCHIVER.TMP from the package or replace/add Entry #10 
-(tar.gz) from the .TMP file to your existing ARCHIVER.BB2. We don't do this 
-automatically to avoid breaking any custom changes you may have made. We updated 
-some of the help information, fixed several rare traps and little things like 
-the failure to create a list file if it didn't already exist. See the history 
-file for more details. Please let us know if you find a defect.  
+your ARCHIVER.BB2 with ARCHIVER.TMP from the package or replace/add Entry #10
+(tar.gz) from the .TMP file to your existing ARCHIVER.BB2. We don't do this
+automatically to avoid breaking any custom changes you may have made. We updated
+some of the help information, fixed several rare traps and little things like
+the failure to create a list file if it didn't already exist. See the history
+file for more details. Please let us know if you find a defect.
 
-FM/2 3.19.1 This is a bug fix release. Most of these have existed for a 
+FM/2 3.19.1 This is a bug fix release. Most of these have existed for a
 very long time but were only discovered recently. Included is a fixed
 FM/2 utilities wpi file. None of the utilities have been updated. The
 fix allows you to install the utilities without having to install FM/2.
@@ -71,7 +86,7 @@ description. The instructions follow:
         UNZIP definitions.(If you have never modified ARCHIVER.BB2 it will
         need to be moved to the very top)
      3) Click on "Close" and then "Yes" to exit and save your changes
-     4) Restart FM/2   
+     4) Restart FM/2
 
 - Selecting the UNZIP v6 definition:
      1) Start FM/2
@@ -225,7 +240,7 @@ your first installation of FM/2, some of these improvements will
 not be available because of the old, pre v3.13 toolbar files. It
 is therefore recommended that you run the following:
 
-	CFGMGR /INSTALL /DEFAULTS /TOOLBARSONLY /UNATTENDED
+        CFGMGR /INSTALL /DEFAULTS /TOOLBARSONLY /UNATTENDED
 
 CFGMGR is a REXX program located in the FM/2 installation directory.
 If run as given above it will copy your existing toolbar files into

@@ -25,7 +25,7 @@
 # 20 Sep 09 SHL Set FM2_VER for v3.17
 
 !ifndef FM2_VER                  # if defined on wmake command, use it
-FM2_VER=-3-20-0                  # default value
+FM2_VER=-3-21-0                  # default value
 !ifdef %FM2_VER                  # if defined via env. var.
 FM2_VER=$(%FM2_VER)              #     use the env. var.
 !endif
