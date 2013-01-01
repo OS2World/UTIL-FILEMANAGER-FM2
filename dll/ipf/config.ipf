@@ -9,6 +9,7 @@
 .*
 .* 29 Apr 09 SHL Update formatting
 .* 08 Jan 12 GKY Updated date formatting for ARCHIVER.BB2
+.* 01 Jan 13 GKY Added information about target directory as a drop target
 .*
 .***********************************************************************
 .*
@@ -123,11 +124,18 @@ See also&colon.
 :i1 id=aboutTargetDir.Set Target directory
 
 You can set a default Target directory with the :hp6.Set Target
-directory:ehp6. command, which FM/2 will use whenever you use the menu
+directory:ehp6. command or on the General page of the settings notebook, 
+which FM/2 will use whenever you use the menu
 or accelerator key commands to move or copy file system objects.
 Otherwise, FM/2 will attempt to intelligently guess what you'd like the
 target directory to be each time based on open Directory Containers or
 the currently selected directory in the Drive Tree.
+:p.
+You can also drag and drop files onto the target directory (at the end of the
+drive bar assuming you have show target selected on the :link reftype=hd res=97000.Monolithic page:elink. 
+in the settings notebook). You can drop a single directory on the target and FM/2 will make it the target
+if you currently don't have one set. If you have one FM/2 will ask if you wish to change the target.
+If you select "no" FM/2 will carry out the operation you request using the current target.
 :p.
 If you have a Target directory already set and wish to clear it,
 select this command, click &CancelButton. at the :link reftype=hd res=91500.Walk

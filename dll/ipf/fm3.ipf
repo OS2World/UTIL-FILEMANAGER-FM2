@@ -5,7 +5,7 @@
 .* fm/2 help
 .*
 .* Copyright (c) 1993-98 M. Kimes
-.* Copyright (c) 2006, 2009 Steven H.Levine
+.* Copyright (c) 2006, 2013 Steven H.Levine
 .*
 .* 24 Sep 06 GKY ADD Change to F1 help
 .* 06 Jul 08 GKY ADD FM2Shutdown state info
@@ -13,6 +13,7 @@
 .* 29 Apr 09 SHL Start usinging nameits to ensure standard formatting
 .* 04 Aug 12 GKY Changes to use Unlock to unlock files if Unlock.exe is in path both from menu/toolbar and as part of
 .*               copy, move and delete operations
+.* 01 Jan 13 GKY Rearrange some sections
 .*
 .***********************************************************************
 .*
@@ -140,6 +141,11 @@ some work done.
 On the other hand, always assume that there's a way to do what you want
 with FM/2 (chances are good that there is), and ask the help window to
 Search for it. If you can't find it there, drop me a line at steve53@earthlink.net
+
+.im install.ipf
+
+.im expert.ipf
+
 :h1 res=90000 name=PANEL_GENERAL.General Help
 :i1 id=aboutGeneral.General Help
 
@@ -321,8 +327,6 @@ layout:elink. sections.
 .im mouse.ipf
 
 .im keys.ipf
-
-.im install.ipf
 
 .im start.ipf
 
@@ -996,8 +1000,6 @@ bottom right corner of the FM/2 window toggles the quicklists on and off.
 .im folder.ipf
 
 .im tutor.ipf
-
-.im expert.ipf
 
 :h1 res=93300 name=PANEL_FILESMENU.Files Menu
 :i1 id=aboutFilesMenu.Files Menu

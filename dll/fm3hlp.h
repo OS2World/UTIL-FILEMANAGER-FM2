@@ -164,3 +164,4 @@
 #define HELP_FIRSTTIME             100125
 #define HELP_ARCHIVERBB2           100130
 #define HELP_NETDRIVE              100135
+#define HELP_WPSREPLACE            100140

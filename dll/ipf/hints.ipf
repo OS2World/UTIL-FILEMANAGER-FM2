@@ -10,6 +10,8 @@
 .* 26 Jun 11 GKY Removed Resource.ipf which was out dated and no longer relevant.
 .* 09 Oct 11 GKY Fixed line length to eliminate the need for horizontal scrolling.
 .* 08 Jan 12 GKY Added drive flag tips for Netdrive drives.
+.* 01 Jan 13 GKY Add section on FM/2 as a workplace shell replacement
+.* 01 Jan 13 GKY Add Netdrive section to the index
 .*
 .***********************************************************************
 .*
@@ -237,7 +239,7 @@ Alternatively, if running FM/2 monolithically, press :color fc=default bc=palegr
 :color fc=default bc=default. to get a
 miniature command line at the bottom of the window. Enter any commands
 you'd like here, including :link reftype=hd
-res=100075.metastrings:elink.. Type /HELP in the command line entry
+res=100075.meta-strings:elink.. Type /HELP in the command line entry
 field for brief information specific to this control.
 :p.
 Note that if you use the same command line time after time you will
@@ -246,8 +248,25 @@ for the command line to save time. With a Command, you can even
 execute a command line using an accelerator key -- can't beat that
 for speed.
 
-:h2 res=100135 id='PANEL_NETDRIVE'.
-Netdrive drive flag suggestions
+:h2 res=100140 name=PANEL_HINTSWPSREPLACE.FM/2 as WPS replacement
+:i1 id=aboutHintswpsreplace.FM/2 as WPS replacement
+:p. FM/2 makes a useful replacement for OS2's workplace shell. It allow for you to manipulate eas and the OS2.ini 
+and OS2SYS.ini without the work place shell running. We recommend you setup commands and a toolbar. These
+should include your favorite ini cleaners ea manipulation tools and basic utilities like pstat and rmview. 
+You will also want to include pmshell so you can just start the WPS when you are ready. It is easy to setup.
+Just add the following line to your config.sys file&colon.
+.br
+.br
+SET RUNWORKPLACE=G&colon.\Fm2\fm3.exe
+.br
+.br
+Remember to REM the following line&colon.
+.br
+.br
+SET RUNWORKPLACE=C&colon.\OS2\PMSHELL.EXE
+
+:h2 res=100135 name=PANEL_NETDRIVE.Netdrive drive flag suggestions
+:i1 id=aboutHintnetdrive.Netdrive drive flag suggestions
 :p.The Netdrive file system can slow FM/2 down to a crawl and even lock FM/2. This is particularly true of the FTP
 plugin but other plugin can also cause it. We suggest the drive flags shown below be used for any Netdrive's drive.
 that display this behavior. 
