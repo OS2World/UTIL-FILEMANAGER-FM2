@@ -54,6 +54,7 @@
   04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
                 for delete of readonly files
   12 Aug 12 GKY Allow for selection of include subdirectories or a list file on initial startup of compare dirs
+  05 Jan 13 GKY Added an indicator (tetbox) that a list (snapshot) file is loaded.
   
 ***********************************************************************/
 
@@ -2267,6 +2268,7 @@ BEGIN
         LTEXT           "Deselect:", -1, 234, 47, 51, 8, NOT WS_GROUP
         LTEXT           "Select:", -1, 5, 47, 42, 8, NOT WS_GROUP
         LTEXT           "", COMP_NOTE, 195, 10, 123, 8, NOT WS_GROUP
+        LTEXT           "", COMP_LISTLOADED, 378, 23, 44, 8, NOT WS_GROUP
         RTEXT           "Total:", COMP_TOTALLEFTHDR, 4, 203, 32, 8,
                         DT_VCENTER | NOT WS_GROUP
         RTEXT           "Selected:", COMP_SELLEFTHDR, 129, 203, 23, 8,

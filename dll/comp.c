@@ -80,6 +80,9 @@
   12 Aug 12 GKY Add ability to change and save PresParam
   12 Aug 12 GKY Fix loading of a list file in the right compare container
   12 Aug 12 GKY Allow for selection of include subdirectories or a list file on initial startup of compare dirs
+  05 Jan 13 GKY Fix snapshot file to actually load and save (with/without subdirectories) properly.
+  05 Jan 13 GKY Toggle of include subdirectories leaves snapshot file loaded.
+  05 Jan 13 GKY Added an indicator (textbox) that a list (snapshot) file is loaded.
 
 ***********************************************************************/
 
@@ -184,8 +187,7 @@ static VOID SnapShot(char *path, FILE *fp, BOOL recurse)
 	do {
 	  strcpy(enddir, pffb->achName);
 	  if (!(pffb->attrFile & FILE_DIRECTORY)) {
-	    CommaFmtULL(szCmmaFmtFileSize,
-			sizeof(szCmmaFmtFileSize), pffb->cbFile, ' ');
+            ulltoa(pffb->cbFile, szCmmaFmtFileSize, 10);
 	    FDateFormat(szDate, pffb->fdateLastWrite);
 	    fprintf(fp,
 		    "\"%s\",%u,%s,%s,%02u%s%02u%s%02u,%lu,%lu,N\n",
@@ -236,7 +238,8 @@ static VOID StartSnapThread(VOID *pargs)
       AddBackslashToPath(sf->dirname);
       fp = xfopen(sf->filename, modew, pszSrcFile, __LINE__, FALSE);
       if (fp) {
-	fprintf(fp, "\"%s\"\n", sf->dirname);
+        fprintf(fp, "\"%s\"\n", sf->dirname);
+        //DbgMsg(pszSrcFile, __LINE__, "recurse %i", sf->recurse);
 	SnapShot(sf->dirname, fp, sf->recurse);
 	fclose(fp);
       }
@@ -1551,24 +1554,25 @@ static VOID FillCnrsThread(VOID *args)
 	qsort(filesl, cmp->cmp->totalleft, sizeof(CHAR *), CompNames);
 
       // Build list of all files in right directory
+      //DbgMsg(pszSrcFile, __LINE__, "list file %s", cmp->rightlist);
       if (!*cmp->rightlist) {
 	if (fForceLower)
 	  strlwr(cmp->rightdir);
 	else if (fForceUpper)
 	  strupr(cmp->rightdir);
 	FillDirList(cmp->rightdir, lenr, cmp->includesubdirs,
-		    &filesr, &cmp->cmp->totalright, &numallocr);
+                    &filesr, &cmp->cmp->totalright, &numallocr);
       }
       else {
 	// Use snapshot file
 	FILE *fp;
 	FILEFINDBUF4L fb4;
 	CHAR str[CCHMAXPATH * 2], *p;
-	CHAR *moder = "r";
+        CHAR *moder = "r";
 
 	memset(&fb4, 0, sizeof(fb4));
 	fp = xfopen(cmp->rightlist, moder, pszSrcFile, __LINE__, FALSE);
-	if (fp) {
+        if (fp) {
 	  while (!feof(fp)) {
 	    // First get name of directory
 	    if (!xfgets_bstripcr(str, sizeof(str), fp, pszSrcFile, __LINE__))
@@ -1598,74 +1602,90 @@ static VOID FillCnrsThread(VOID *args)
 	  } // while !EOF
 
 	  memset(&cnri, 0, sizeof(cnri));
-	  cnri.cb = sizeof(cnri);
+          cnri.cb = sizeof(cnri);
+          WinSetDlgItemText(cmp->hwnd, COMP_LISTLOADED, "List File Loaded");
 	  cnri.pszCnrTitle = cmp->rightdir;
 	  if (!WinSendMsg(hwndRight, CM_SETCNRINFO,
 		     MPFROMP(&cnri), MPFROMLONG(CMA_CNRTITLE))) {
-	    Win_Error(hwndRight, cmp->hwnd, pszSrcFile, __LINE__, "CM_SETCNRINFO");
+            Win_Error(hwndRight, cmp->hwnd, pszSrcFile, __LINE__, "CM_SETCNRINFO");
+            WinSetDlgItemText(cmp->hwnd, COMP_LISTLOADED, "");
 	  }
 
 	  if (*cmp->rightdir) {
 	    lenr = strlen(cmp->rightdir);
 	    if (cmp->rightdir[strlen(cmp->rightdir) - 1] != '\\')
-	      lenr++;
-	    while (!feof(fp)) {
+              lenr++;
+            //DbgMsg(pszSrcFile, __LINE__, "end of file %i", feof(fp));
+            while (!feof(fp)) {
 	      if (!xfgets_bstripcr
-		  (str, sizeof(str), fp, pszSrcFile, __LINE__))
-		break;
+                  (str, sizeof(str), fp, pszSrcFile, __LINE__)) {
+                break;
+              }
 	      p = str;
 	      if (*p == '\"') {
 		p++;
 		if (*p && *p != '\"') {
 		  p = strchr(p, '\"');
-		  if (p) {
+                  if (p) {
 		    *p = 0;
 		    p++;
-		    if (*p == ',') {
+                    if (*p == ',') {
 		      p++;
 		      if (!cmp->includesubdirs && atol(p) > lenr)
 			continue;
 		      p = strchr(p, ',');
-		      if (p) {
+                      if (p) {
 			p++;
-			// 27 Sep 07 SHL fixme to do ULONGLONG conversion
-			fb4.cbFile = atol(p);
+			fb4.cbFile = atoll(p);
 			p = strchr(p, ',');
-			if (p) {
-			  p++;
-			  fb4.fdateLastWrite.year = atol(p) - 1980;
-			  p = strchr(p, '/');
-			  if (p) {
-			    p++;
-			    fb4.fdateLastWrite.month = atol(p);
-			    p = strchr(p, '/');
-			    if (p) {
-			      p++;
-			      fb4.fdateLastWrite.day = atol(p);
+                        if (p) {
+                          p++;
+                          if (ulDateFmt == 2 || ulDateFmt == 3)
+                            fb4.fdateLastWrite.year = atol(p) - 1980;
+                          if (ulDateFmt == 1)
+                            fb4.fdateLastWrite.day = atol(p);
+                          else
+                            fb4.fdateLastWrite.month = atol(p);
+			  p = strchr(p, DateSeparator[0]);
+                          if (p) {
+                            p++;
+                            if (ulDateFmt == 2 || ulDateFmt == 3)
+                              fb4.fdateLastWrite.month = atol(p);
+                            else
+                              fb4.fdateLastWrite.day = atol(p);
+			    p = strchr(p, DateSeparator[0]);
+                            if (p) {
+                              p++;
+                              if (ulDateFmt == 2)
+                                fb4.fdateLastWrite.day = atol(p);
+                              if (ulDateFmt == 3)
+                                fb4.fdateLastWrite.month = atol(p);
+                              else
+                                fb4.fdateLastWrite.year = atol(p) - 1980;
 			      p = strchr(p, ',');
-			      if (p) {
+                              if (p) {
 				p++;
 				fb4.ftimeLastWrite.hours = atol(p);
-				p = strchr(p, ':');
-				if (p) {
+                                p = strchr(p, TimeSeparator[0]);
+                                if (p) {
 				  p++;
 				  fb4.ftimeLastWrite.minutes = atol(p);
-				  p = strchr(p, ':');
-				  if (p) {
+				  p = strchr(p, TimeSeparator[0]);
+                                  if (p) {
 				    p++;
 				    fb4.ftimeLastWrite.twosecs = atol(p);
 				    p = strchr(p, ',');
-				    if (p) {
+                                    if (p) {
 				      p++;
 				      fb4.attrFile = atol(p);
 				      p = strchr(p, ',');
-				      if (p) {
+                                      if (p) {
 					p++;
 					fb4.cbList = atol(p) * 2;
 					if (fForceUpper)
 					  strupr(str + 1);
 					else if (fForceLower)
-					  strlwr(str + 1);
+                                          strlwr(str + 1);
 					if (AddToFileList((str + 1) + lenr,
 							  &fb4,
 							  &filesr,
@@ -1687,14 +1707,12 @@ static VOID FillCnrsThread(VOID *args)
 	      }
 	    } // while
 	  } // if have rightdir
-	  fclose(fp);
+          fclose(fp);
         }
-	FillDirList(cmp->rightdir, lenr, cmp->includesubdirs,
-		    &filesr, &cmp->cmp->totalright, &numallocr);
       }	// if snapshot file
 
       if (filesr)
-	qsort(filesr, cmp->cmp->totalright, sizeof(CHAR *), CompNames);
+        qsort(filesr, cmp->cmp->totalright, sizeof(CHAR *), CompNames);
 
       // We now have two lists of files, both sorted.
       // Count total number of container entries required on each side
@@ -2498,8 +2516,8 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       switch (SHORT2FROMMP(mp1)) {
       case BN_CLICKED:
 	cmp = INSTDATA(hwnd);
-	if (cmp)
-	  *cmp->rightlist = 0;
+	//if (cmp)
+	//  *cmp->rightlist = 0;
 	PostMsg(hwnd, UM_SETUP, MPVOID, MPVOID);
 	PostMsg(hwnd, UM_SETDIR, MPVOID, MPVOID);
 	break;
@@ -2702,7 +2720,8 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			  CA_CONTAINERTITLE | CA_TITLESEPARATOR |
 			  CA_DETAILSVIEWTITLES | CA_OWNERDRAW;
       WinSendDlgItemMsg(hwnd, COMP_LEFTDIR, CM_SETCNRINFO, MPFROMP(&cnri),
-			MPFROMLONG(CMA_CNRTITLE | CMA_FLWINDOWATTR));
+                        MPFROMLONG(CMA_CNRTITLE | CMA_FLWINDOWATTR));
+      WinSetDlgItemText(hwnd, COMP_LISTLOADED, "");
       cnri.pszCnrTitle = cmp->rightdir;
       WinSendDlgItemMsg(hwnd, COMP_RIGHTDIR, CM_SETCNRINFO, MPFROMP(&cnri),
 			MPFROMLONG(CMA_CNRTITLE | CMA_FLWINDOWATTR));
@@ -3045,8 +3064,11 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    if (GetHwndLeft(hwnd) == cmp->hwndCalling)
 	      strcpy(sf->dirname, cmp->leftdir);
 	    else
-	      strcpy(sf->dirname, cmp->rightdir);
-	    sf->recurse = cmp->includesubdirs;
+              strcpy(sf->dirname, cmp->rightdir);
+            cmp->includesubdirs = WinQueryButtonCheckstate(hwnd,
+                                                           COMP_INCLUDESUBDIRS);
+            sf->recurse = cmp->includesubdirs;
+            //DbgMsg(pszSrcFile, __LINE__, "recurse %i %i", sf->recurse, cmp->includesubdirs);
 	    if (xbeginthread(StartSnapThread,
 			     65536,
 			     sf,
