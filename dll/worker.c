@@ -880,8 +880,6 @@ VOID Action(VOID * args)
                     }
                     if (!ret && (rc == ERROR_ACCESS_DENIED || (rc == ERROR_SHARING_VIOLATION && fUnlock)))
                       rc = NO_ERROR;
-                    //if (fTurnOffReadOnly)
-                    //  make_deleteable(newname, rc);
 		    if (fResetVerify) {
 		      DosSetVerify(fVerify);
 		      fResetVerify = FALSE;

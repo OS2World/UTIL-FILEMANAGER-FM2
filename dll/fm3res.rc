@@ -63,6 +63,7 @@
   05 Sep 12 SHL Sync collector menu with docs
   30 Dec 12 GKY Enhance traget directory drop to give the option of changing the directory or carrying out an
                 operation to the current target; Added an error message for target = None;
+  06 Jan 13 GKY Added EA compare option to compare dir Ticket 80
   
 ***********************************************************************/
 
@@ -2634,6 +2635,7 @@ STRINGTABLE
     IDS_SMALLERTEXT                       "Smaller"
     IDS_NEWERTEXT                         "Newer"
     IDS_OLDERTEXT                         "Older"
+    IDS_EASDIFFERTEXT                     "EAs differ"
     IDS_LONGNAMECOLTEXT                   "LName"
     IDS_LADATECOLTEXT                     "LA Date"
     IDS_LATIMECOLTEXT                     "LA Time"
@@ -3406,6 +3408,7 @@ STRINGTABLE
     IDS_FM2CMDHELPTEXT3                   " (metastrings like %%a available.)\r\rDouble-click entry field to simulate hitting [Enter].\r\rF5 is the accelerator for this mini-command line."
     IDS_DROPSETSTARGET                    "Do you wish to use this directory as the new target directory? \nYes sets target\nNo proceeds with drag/drop operation to current target"
     IDS_NOTARGETSET                       "A target directory has not been set"
+    IDS_LEFTRIGHTOUTOFSYNC                "pcil and pcir out of sync"
   END
 
 

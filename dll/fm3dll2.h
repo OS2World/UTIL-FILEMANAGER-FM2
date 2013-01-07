@@ -34,6 +34,7 @@
   23 Oct 10 GKY Changes to populate and utilize a HELPTABLE for context specific help
   04 Aug 12 GKY Changes to use Unlock to unlock files if Unlock.exe is in path both from menu/toolbar and as part of
                 copy, move and delete operations
+  06 Jan 13 GKY Added EA compare option to compare dir Ticket 80
 
   Align with spaces only - no tabs please
 
@@ -666,6 +667,9 @@
 #define IDM_SELECTCOMPAREMENU 10037
 #define IDM_SELECTSAMECONTENT 10038
 #define IDM_UNHIDEALL         10039
+#define IDM_SELECTEAS       10040
+#define IDM_DESELECTEAS     10041
+
 
 // #define PP_MAX    PP_MENUDISABLEBGNDCOLORINDEX       // Unused, 13 Sep 08 JBS
 // #define PP_MAXBUF 384                                // Unused, 13 Sep 08 JBS

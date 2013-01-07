@@ -55,6 +55,8 @@
                 for delete of readonly files
   12 Aug 12 GKY Allow for selection of include subdirectories or a list file on initial startup of compare dirs
   05 Jan 13 GKY Added an indicator (tetbox) that a list (snapshot) file is loaded.
+  06 Jan 13 GKY Added optional confirmation dialogs for delete move and copy to compare dir Ticket 277
+  06 Jan 13 GKY Added EA compare option to compare dir Ticket 80
   
 ***********************************************************************/
 
@@ -2264,10 +2266,10 @@ BEGIN
             FS_DLGBORDER | FS_SIZEBORDER | WS_VISIBLE | NOT WS_SAVEBITS,
             FCF_SYSMENU | FCF_TITLEBAR | FCF_MINBUTTON | FCF_MAXBUTTON
     BEGIN
-        GROUPBOX        "", -1, 189, 7, 137, 17, NOT WS_GROUP
+        GROUPBOX        "", -1, 189, 6, 127, 17, NOT WS_GROUP
         LTEXT           "Deselect:", -1, 234, 47, 51, 8, NOT WS_GROUP
         LTEXT           "Select:", -1, 5, 47, 42, 8, NOT WS_GROUP
-        LTEXT           "", COMP_NOTE, 195, 10, 123, 8, NOT WS_GROUP
+        LTEXT           "", COMP_NOTE, 194, 9, 121, 8, NOT WS_GROUP
         LTEXT           "", COMP_LISTLOADED, 378, 23, 44, 8, NOT WS_GROUP
         RTEXT           "Total:", COMP_TOTALLEFTHDR, 4, 203, 32, 8,
                         DT_VCENTER | NOT WS_GROUP
@@ -2285,7 +2287,7 @@ BEGIN
                         NOT WS_GROUP
         LTEXT           "0", COMP_SELRIGHT, 352, 203, 64, 8, DT_VCENTER |
                         NOT WS_GROUP
-        LTEXT           "Actions:", -1, 4, 23, 44, 8, DT_VCENTER | NOT
+        LTEXT           "Actions:", -1, 4, 23, 30, 8, DT_VCENTER | NOT
                         WS_GROUP
         CONTAINER       COMP_LEFTDIR, 4, 58, 216, 143, CCS_EXTENDSEL |
                         CCS_MULTIPLESEL | CCS_MINIRECORDCORE | WS_GROUP
@@ -2295,47 +2297,51 @@ BEGIN
                         BS_NOPOINTERFOCUS | WS_GROUP
         PUSHBUTTON      "Size/time", IDM_SELECTIDENTICAL, 88, 45, 49, 12,
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "~Both", IDM_SELECTBOTH, 4, 33, 32, 12,
+        PUSHBUTTON      "~Both", IDM_SELECTBOTH, 0, 33, 28, 12,
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "On~e", IDM_SELECTONE, 35, 33, 32, 12,
+        PUSHBUTTON      "On~e", IDM_SELECTONE, 27, 33, 28, 12,
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "~Larger", IDM_SELECTBIGGER, 66, 33, 32, 12,
+        PUSHBUTTON      "~Larger", IDM_SELECTBIGGER, 54, 33, 30, 12,
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "~Smaller", IDM_SELECTSMALLER, 97, 33, 33, 12,
+        PUSHBUTTON      "~Smaller", IDM_SELECTSMALLER, 83, 33, 32, 12,
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "~Older", IDM_SELECTOLDER, 129, 33, 32, 12,
+        PUSHBUTTON      "~Older", IDM_SELECTOLDER, 114, 33, 30, 12,
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "~Newer", IDM_SELECTNEWER, 161, 33, 32, 12,
+        PUSHBUTTON      "~Newer", IDM_SELECTNEWER, 143, 33, 30, 12,
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Invert", IDM_INVERT, 193, 45, 38, 12,
+        PUSHBUTTON      "EAs", IDM_SELECTEAS, 172, 33, 20, 12,
+                        BS_NOPOINTERFOCUS                
+        PUSHBUTTON      "Invert", IDM_INVERT, 195, 45, 34, 12,
                         BS_NOPOINTERFOCUS | WS_GROUP
         PUSHBUTTON      "~All", IDM_DESELECTALL, 387, 45, 32, 12,
                         BS_NOPOINTERFOCUS | WS_GROUP
-        PUSHBUTTON      "Both", IDM_DESELECTBOTH, 231, 33, 32, 12,
+        PUSHBUTTON      "Both", IDM_DESELECTBOTH, 227, 33, 28, 12,
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "One", IDM_DESELECTONE, 262, 33, 32, 12,
+        PUSHBUTTON      "One", IDM_DESELECTONE, 254, 33, 28, 12,
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Lar~ger", IDM_DESELECTBIGGER, 293, 33, 32, 12,
+        PUSHBUTTON      "Lar~ger", IDM_DESELECTBIGGER, 281, 33, 30, 12,
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "S~maller", IDM_DESELECTSMALLER, 324, 33, 33, 12,
+        PUSHBUTTON      "S~maller", IDM_DESELECTSMALLER, 310, 33, 32, 12,
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Ol~der", IDM_DESELECTOLDER, 356, 33, 32, 12,
+        PUSHBUTTON      "Ol~der", IDM_DESELECTOLDER, 342, 33, 30, 12,
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Ne~wer", IDM_DESELECTNEWER, 387, 33, 32, 12,
+        PUSHBUTTON      "Ne~wer", IDM_DESELECTNEWER, 371, 33, 30, 12,
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Copy>", COMP_COPYLEFT, 50, 21, 40, 12,
+        PUSHBUTTON      "EAs", IDM_DESELECTEAS, 400, 33, 20, 12,
+                        BS_NOPOINTERFOCUS
+        PUSHBUTTON      "Copy>", COMP_COPYLEFT, 35, 21, 35, 12,
                         BS_NOPOINTERFOCUS | WS_GROUP
-        PUSHBUTTON      "Move>", COMP_MOVELEFT, 89, 21, 40, 12,
+        PUSHBUTTON      "Move>", COMP_MOVELEFT, 69, 21, 35, 12,
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Delete", COMP_DELETELEFT, 128, 21, 40, 12,
+        PUSHBUTTON      "Delete", COMP_DELETELEFT, 103, 21, 40, 12,
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "~Filter", COMP_FILTER, 192, 22, 40, 12,
+        PUSHBUTTON      "~Filter", COMP_FILTER, 195, 21, 34, 12,
                         BS_NOPOINTERFOCUS | WS_GROUP
-        PUSHBUTTON      "<Copy", COMP_COPYRIGHT, 336, 21, 40, 12,
+        PUSHBUTTON      "<Copy", COMP_COPYRIGHT, 286, 21, 30, 12,
                         BS_NOPOINTERFOCUS | WS_GROUP
-        PUSHBUTTON      "<Move", COMP_MOVERIGHT, 297, 21, 40, 12,
+        PUSHBUTTON      "<Move", COMP_MOVERIGHT, 257, 21, 30, 12,
                         BS_NOPOINTERFOCUS
-        PUSHBUTTON      "Delete", COMP_DELETERIGHT, 258, 21, 40, 12,
+        PUSHBUTTON      "Delete", COMP_DELETERIGHT, 228, 21, 30, 12,
                         BS_NOPOINTERFOCUS
         DEFPUSHBUTTON   "Okay", COLR_BLACK, 0, 6, 40, 14, BS_NOPOINTERFOCUS |
                         WS_GROUP
@@ -2346,9 +2352,11 @@ BEGIN
                         BS_NOPOINTERFOCUS
         PUSHBUTTON      "Cancel", COLR_BLUE, 149, 6, 40, 14,
                         BS_NOPOINTERFOCUS
-        AUTOCHECKBOX    "~Include subdirs", COMP_INCLUDESUBDIRS, 331, 13, 91,
-                        8, BS_NOPOINTERFOCUS | WS_GROUP
-        CONTROL         "~Hide not selected", COMP_HIDENOTSELECTED, 330, 5, 91, 8,
+        AUTOCHECKBOX    "~Confirm Action", COMP_CONFIRMACTION, 320, 23, 50, 8, 
+                        BS_NOPOINTERFOCUS | WS_GROUP
+        AUTOCHECKBOX    "~Include subdirs", COMP_INCLUDESUBDIRS, 320, 15, 91, 8, 
+                        BS_NOPOINTERFOCUS | WS_GROUP
+        CONTROL         "~Hide not selected", COMP_HIDENOTSELECTED, 320, 7, 91, 8,
                         WC_BUTTON, BS_3STATE | BS_NOPOINTERFOCUS | WS_GROUP | WS_VISIBLE
         PUSHBUTTON      "Content", IDM_SELECTSAMECONTENT, 138, 45, 42, 12,
                         BS_NOPOINTERFOCUS

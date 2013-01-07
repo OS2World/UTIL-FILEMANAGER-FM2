@@ -656,8 +656,6 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    if (*path) {
 	      strcpy(newname, path);
 	      AddBackslashToPath(newname);
-	      //if (newname[strlen(newname) - 1] != '\\')
-	      //  strcat(newname, "\\");
 	      if (plen)
 		p = list[x] + plen;
 	      else {

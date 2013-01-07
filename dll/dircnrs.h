@@ -67,6 +67,7 @@ CNRITEM, *PCNRITEM;
 #define CNRITEM_NEWER     0x00040000
 #define CNRITEM_OLDER     0x00080000
 #define CNRITEM_EXISTS    0x00100000	// file exists in both containers
+#define CNRITEM_EASDIFFER 0x00200000    // file EAs are different
 
 #define EXTRA_RECORD_BYTES      (sizeof(CNRITEM) - sizeof(MINIRECORDCORE))
 

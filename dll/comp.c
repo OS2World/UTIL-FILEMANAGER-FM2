@@ -83,6 +83,8 @@
   05 Jan 13 GKY Fix snapshot file to actually load and save (with/without subdirectories) properly.
   05 Jan 13 GKY Toggle of include subdirectories leaves snapshot file loaded.
   05 Jan 13 GKY Added an indicator (textbox) that a list (snapshot) file is loaded.
+  06 Jan 13 GKY Added optional confirmation dialogs for delete move and copy to compare dir Ticket 277
+  06 Jan 13 GKY Added EA compare option to compare dir Ticket 80
 
 ***********************************************************************/
 
@@ -141,6 +143,8 @@
 #include "fortify.h"			// 06 May 08 SHL added
 #include "excputil.h"			// xbeginthread
 #include "info.h"			// driveflags
+#include "worker.h"                     // MOVEIT
+#include "rename.h"                     // RenameProc
 
 typedef struct
 {
@@ -166,9 +170,9 @@ static VOID SnapShot(char *path, FILE *fp, BOOL recurse)
   char *mask, *enddir;
   HDIR hdir = HDIR_CREATE;
   ULONG ulFindCnt;
-  CHAR szCmmaFmtFileSize[81], szDate[DATE_BUF_BYTES];
+  CHAR szDate[DATE_BUF_BYTES];
 
-  // 13 Aug 07 SHL fimxe to use FileToGet
+  // 13 Aug 07 SHL fixme to use FileToGet
   pffb = xmalloc(sizeof(FILEFINDBUF4L), pszSrcFile, __LINE__);
   if (pffb) {
     mask = xmalloc(CCHMAXPATH, pszSrcFile, __LINE__);
@@ -187,13 +191,12 @@ static VOID SnapShot(char *path, FILE *fp, BOOL recurse)
 	do {
 	  strcpy(enddir, pffb->achName);
 	  if (!(pffb->attrFile & FILE_DIRECTORY)) {
-            ulltoa(pffb->cbFile, szCmmaFmtFileSize, 10);
 	    FDateFormat(szDate, pffb->fdateLastWrite);
 	    fprintf(fp,
-		    "\"%s\",%u,%s,%s,%02u%s%02u%s%02u,%lu,%lu,N\n",
+		    "\"%s\",%u,%llu,%s,%02u%s%02u%s%02u,%lu,%lu,N\n",
 		    mask,
 		    enddir - mask,
-		    szCmmaFmtFileSize,
+		    pffb->cbFile,
 		    szDate,
 		    pffb->ftimeLastWrite.hours,
 		    TimeSeparator,
@@ -458,12 +461,42 @@ MRESULT EXPENTRY CFileDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
+int ConfirmAction(HWND hwnd, CHAR *OldName, CHAR *NewName);
 
+/**
+ * ConfirmAction provides an optional confirmation dialog
+ * for move and copy operations.
+ */
+int ConfirmAction(HWND hwnd, CHAR *OldName, CHAR *NewName)
+{
+  MOVEIT mv;
+  int rc;
+
+  memset(&mv, 0, sizeof(MOVEIT));
+  mv.rename = FALSE;
+  mv.source = OldName;
+  mv.compare = TRUE;
+  strcpy(mv.target, NewName);
+  rc = WinDlgBox(HWND_DESKTOP,
+                 hwnd,
+                 RenameProc,
+                 FM3ModHandle, REN_FRAME, (PVOID) & mv);
+  if (!rc)
+    return 1;
+
+  DosSleep(1);
+  if (mv.skip || !*mv.target)
+    return 1;
+  if (mv.dontask)
+    return 2;
+  return 0;
+}
+
+#define  NUM_BUT 4
 /**
  * Action Thread
  * Do requested action on container contents
  */
-
 static VOID ActionCnrThread(VOID *args)
 {
   COMPARE *cmp = (COMPARE *)args;
@@ -474,6 +507,9 @@ static VOID ActionCnrThread(VOID *args)
   CHAR szNewName[CCHMAXPATH], szDirName[CCHMAXPATH], *p;
   APIRET rc;
   ITIMER_DESC itdSleep = { 0 };
+  BOOL fConfirmAction = FALSE;
+  BOOL dontask = FALSE;
+  BOOL enddelete = FALSE;
 
   if (!cmp) {
     Runtime_Error(pszSrcFile, __LINE__, NULL);
@@ -531,8 +567,8 @@ static VOID ActionCnrThread(VOID *args)
       pciS = WinSendMsg(hwndCnrS, CM_QUERYRECORD, MPVOID,
 		       MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
       pciD = WinSendMsg(hwndCnrD, CM_QUERYRECORD, MPVOID,
-			MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
-
+                        MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
+      fConfirmAction =  WinQueryButtonCheckstate(cmp->hwnd, COMP_CONFIRMACTION);
       InitITimer(&itdSleep, 500);	// Sleep every 500 mSec
 
       while (pciS && (INT)pciS != -1 && pciD && (INT)pciD != -1) {
@@ -552,7 +588,44 @@ static VOID ActionCnrThread(VOID *args)
 	{
 	  // Source name not blank
 	  switch (cmp->action) {
-	  case IDM_DELETE:
+          case IDM_DELETE:
+
+            if (fConfirmAction && !dontask) {
+              ULONG   i;
+              CHAR s[CCHMAXPATH + 20];
+              MB2INFO *pmbInfo;      
+              MB2D mb2dBut[NUM_BUT] =   //fixme to use GetPString
+              {
+                { "Yes",                     1, 0},
+                { "Yes don't ask again",     2, 1},
+                { "No",                      3, 2},
+                { "Cancel delete operation", 4, 3}
+              };
+              ULONG   ulInfoSize = (sizeof(MB2INFO) + (sizeof(MB2D) * (NUM_BUT-1)));
+              pmbInfo = malloc (ulInfoSize);
+              if (pmbInfo) {
+                pmbInfo->cb         = ulInfoSize;       
+                pmbInfo->hIcon      = 0;
+                pmbInfo->cButtons   = NUM_BUT;           
+                pmbInfo->flStyle    = MB_MOVEABLE;
+                pmbInfo->hwndNotify = NULLHANDLE;
+                for (i = 0; i < NUM_BUT; i++) {
+                  memcpy( pmbInfo->mb2d+i , mb2dBut+i , sizeof(MB2D));
+                } //fixme to use GetPString
+                sprintf(s, "Do you wish to delete %s", pciS->pszFileName);
+                rc = WinMessageBox2(HWND_DESKTOP, cmp->hwnd,
+                                    s, "Confirm Delete", 1234,
+                                    pmbInfo);
+                free(pmbInfo);
+                if (rc == 2 || rc == 3) {
+                  if (rc == 3)
+                    enddelete = TRUE;
+                  break;
+                }
+                else if (rc == 1)
+                  dontask = TRUE;
+              }
+            }
 	    if (!unlinkf(pciS->pszFileName)) {
 	      WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciS),
 			 MPFROM2SHORT(FALSE, CRA_SELECTED));
@@ -611,6 +684,13 @@ static VOID ActionCnrThread(VOID *args)
 		if (IsFile(szDirName) == -1)
 		  MassMkdir(hwndMain, szDirName);
 	      }
+              if (fConfirmAction && pciS->flags & CNRITEM_EXISTS && !dontask) {
+                rc = ConfirmAction(cmp->hwnd, pciS->pszFileName, szNewName);
+                if (rc == 1)
+                  break;
+                else if (rc == 2)
+                  dontask = TRUE;
+              }
 	      rc = docopyf(MOVE, pciS->pszFileName, szNewName);
 	      if (fResetVerify) {
 		DosSetVerify(fVerify);
@@ -712,8 +792,15 @@ static VOID ActionCnrThread(VOID *args)
 		*p = 0;
 		if (IsFile(szDirName) == -1)
 		  MassMkdir(hwndMain, szDirName);
-	      }
-	      rc = docopyf(COPY, pciS->pszFileName, szNewName);
+              }
+              if (fConfirmAction && pciS->flags & CNRITEM_EXISTS && !dontask) {
+                rc = ConfirmAction(cmp->hwnd, pciS->pszFileName, szNewName);
+                if (rc == 1)
+                  break;
+                else if (rc == 2)
+                  dontask = TRUE;
+              }
+              rc = docopyf(COPY, pciS->pszFileName, szNewName);
 	      if (fResetVerify) {
 		DosSetVerify(fVerify);
 		fResetVerify = FALSE;
@@ -786,7 +873,8 @@ static VOID ActionCnrThread(VOID *args)
 	  } // switch
 
 	} // if have name
-
+        if (enddelete)
+          break;
 	pciS = pciNextS;
 	pciD = pciNextD;
 
@@ -1035,7 +1123,7 @@ Restart:
 
   switch (action) {
   case IDM_SELECTIDENTICAL:
-    // Same Date/size
+    // Same Date/size including EAs
     for (x = 0; x < numS; x++) {
       pciS = pciSa[x];
       if (~pciS->rc.flRecordAttr & CRA_FILTERED) {
@@ -1043,7 +1131,8 @@ Restart:
 		  ~pciS->flags & CNRITEM_SMALLER &&
 		  ~pciS->flags & CNRITEM_LARGER &&
 		  ~pciS->flags & CNRITEM_NEWER &&
-		  ~pciS->flags & CNRITEM_OLDER;
+                  ~pciS->flags & CNRITEM_OLDER &&
+                  ~pciS->flags & CNRITEM_EASDIFFER;
 	CompSelectSetSelects(pciS, pciDa[x], matched, matched, wantAnd);
       }
       SleepIfNeeded(&itdSleep, 0);
@@ -1051,13 +1140,14 @@ Restart:
     break;
 
   case IDM_SELECTSAME:
-    // Same Size
+    // Same Size including EAs
     for (x = 0; x < numS; x++) {
       pciS = pciSa[x];
       if (~pciS->rc.flRecordAttr & CRA_FILTERED) {
 	matched = pciS->flags & CNRITEM_EXISTS &&
 		  ~pciS->flags & CNRITEM_SMALLER &&
-		  ~pciS->flags & CNRITEM_LARGER;
+		  ~pciS->flags & CNRITEM_LARGER &&
+                  ~pciS->flags & CNRITEM_EASDIFFER;
 	CompSelectSetSelects(pciS, pciDa[x], matched, matched, wantAnd);
       }
       SleepIfNeeded(&itdSleep, 0);
@@ -1227,6 +1317,21 @@ Restart:
     } // for
     break;
 
+  case IDM_SELECTEAS:
+    for (x = 0; x < numS; x++) {
+      pciS = pciSa[x];
+      if (~pciS->rc.flRecordAttr & CRA_FILTERED) {
+	pciD = pciDa[x];
+        CompSelectSetSelects(pciS,
+                             pciD,
+                             pciS->flags & CNRITEM_EASDIFFER,
+                             pciD->flags & CNRITEM_EASDIFFER,
+                             wantAnd);
+      }
+      SleepIfNeeded(&itdSleep, 0);
+    } // for
+    break;
+
   case IDM_DESELECTBOTH:
     for (x = 0; x < numS; x++) {
       pciS = pciSa[x];
@@ -1312,6 +1417,22 @@ Restart:
 				   pciD,
 				   pciS->flags & CNRITEM_OLDER,
 				   pciD->flags & CNRITEM_OLDER)) {
+	  fUpdateHideButton = TRUE;
+	}
+      }
+      SleepIfNeeded(&itdSleep, 0);
+    } // for
+    break;
+
+  case IDM_DESELECTEAS:
+    for (x = 0; x < numS; x++) {
+      pciS = pciSa[x];
+      if (~pciS->rc.flRecordAttr & CRA_FILTERED) {
+	pciD = pciDa[x];
+	if (CompSelectClearSelects(pciS,
+				   pciD,
+				   pciS->flags & CNRITEM_EASDIFFER,
+				   pciD->flags & CNRITEM_EASDIFFER)) {
 	  fUpdateHideButton = TRUE;
 	}
       }
@@ -1642,7 +1763,7 @@ static VOID FillCnrsThread(VOID *args)
                           p++;
                           if (ulDateFmt == 2 || ulDateFmt == 3)
                             fb4.fdateLastWrite.year = atol(p) - 1980;
-                          if (ulDateFmt == 1)
+                          else if (ulDateFmt == 1)
                             fb4.fdateLastWrite.day = atol(p);
                           else
                             fb4.fdateLastWrite.month = atol(p);
@@ -1658,7 +1779,7 @@ static VOID FillCnrsThread(VOID *args)
                               p++;
                               if (ulDateFmt == 2)
                                 fb4.fdateLastWrite.day = atol(p);
-                              if (ulDateFmt == 3)
+                              else if (ulDateFmt == 3)
                                 fb4.fdateLastWrite.month = atol(p);
                               else
                                 fb4.fdateLastWrite.year = atol(p) - 1980;
@@ -1777,8 +1898,7 @@ static VOID FillCnrsThread(VOID *args)
 	  // Check alloc needed
 	  if (!pcil || !pcir) {
 	    if (pcil != pcir) {
-	      // 2011-05-29 SHL	fixme to GetPString
-	      Runtime_Error(pszSrcFile, __LINE__, "pcil and pcir out of sync");
+	      Runtime_Error(pszSrcFile, __LINE__, GetPString(IDS_LEFTRIGHTOUTOFSYNC));
 	      cmp->stop = TRUE;
 	      break;
 	    }
@@ -1916,19 +2036,28 @@ static VOID FillCnrsThread(VOID *args)
 	    pch = szBuf;
 	    // Subject field holds status messages
 	    *pch = 0;
-	    if (pcil->cbFile + pcil->easize > pcir->cbFile + pcir->easize) {
+	    if (pcil->cbFile > pcir->cbFile) {
 	      pcil->flags |= CNRITEM_LARGER;
 	      pcir->flags |= CNRITEM_SMALLER;
 	      strcpy(pch, GetPString(IDS_LARGERTEXT));
 	      pch += 6;
 	    }
-	    else if (pcil->cbFile + pcil->easize <
-		     pcir->cbFile + pcir->easize) {
+	    else if (pcil->cbFile < pcir->cbFile) {
 	      pcil->flags |= CNRITEM_SMALLER;
 	      pcir->flags |= CNRITEM_LARGER;
 	      strcpy(pch, GetPString(IDS_SMALLERTEXT));
 	      pch += 7;
-	    }
+            }
+            if (pcil->easize != pcir->easize) {
+              pcil->flags |= CNRITEM_EASDIFFER;
+              pcir->flags |= CNRITEM_EASDIFFER;
+              if (pch != szBuf) {
+		strcpy(pch, ", ");
+		pch += 2;
+	      }
+	      strcpy(pch, GetPString(IDS_EASDIFFERTEXT));
+              pch += 10;
+            }
 	    ret = TestCDates(&pcir->date, &pcir->time,
 			     &pcil->date, &pcil->time);
 	    if (ret == 1) {
@@ -2185,7 +2314,7 @@ static VOID SetButtonEnables(COMPARE* cmp, BOOL fEnable)
   WinEnableWindow(WinWindowFromID(hwnd, COMP_SETDIRS), fEnable);
   WinEnableWindow(WinWindowFromID(hwnd, COMP_DELETELEFT), fEnable);
   WinEnableWindow(WinWindowFromID(hwnd, COMP_FILTER), fEnable);
-  if (!fEnable || !*cmp->rightlist ) {
+  if (!fEnable || !*cmp->rightlist) {
     WinEnableWindow(WinWindowFromID(hwnd, COMP_COPYLEFT), fEnable);
     WinEnableWindow(WinWindowFromID(hwnd, COMP_MOVELEFT), fEnable);
     WinEnableWindow(WinWindowFromID(hwnd, COMP_DELETERIGHT), fEnable);
@@ -2837,7 +2966,6 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSendMsg(GetHwndRight(hwnd), CM_FILTER, MPFROMP(Filter),
 		   MPFROMP(&cmp->dcd.mask));
       }
-      // cmp->dcd.suspendview = 0;	// 12 Jan 08 SHL appears not to be used here
       if (*cmp->dcd.mask.szMask) {
 	sprintf(s,
 		GetPString(IDS_COMPREADYFILTEREDTEXT),
@@ -3065,9 +3193,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      strcpy(sf->dirname, cmp->leftdir);
 	    else
               strcpy(sf->dirname, cmp->rightdir);
-            cmp->includesubdirs = WinQueryButtonCheckstate(hwnd,
-                                                           COMP_INCLUDESUBDIRS);
-            sf->recurse = cmp->includesubdirs;
+            sf->recurse = WinQueryButtonCheckstate(hwnd, COMP_INCLUDESUBDIRS);
             //DbgMsg(pszSrcFile, __LINE__, "recurse %i %i", sf->recurse, cmp->includesubdirs);
 	    if (xbeginthread(StartSnapThread,
 			     65536,
@@ -3191,7 +3317,6 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	PrfWriteProfileData(fmprof, FM3Str, "CompDir.Position", (PVOID) &swp,
                             size);
 	for (x = 0; ids[x]; x++) {
-          //fixme to allow user to change presparams 1-10-09 GKY
           sprintf(s, "CompDir%i", ids[x]);
           SavePresParams(WinWindowFromID(hwnd, ids[x]), s);
         }
@@ -3228,18 +3353,22 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case IDM_SELECTOLDER:
     case IDM_SELECTBIGGER:
     case IDM_SELECTSMALLER:
+    case IDM_SELECTEAS:
     case IDM_DESELECTNEWER:
     case IDM_DESELECTOLDER:
     case IDM_DESELECTBIGGER:
     case IDM_DESELECTSMALLER:
     case IDM_DESELECTONE:
     case IDM_DESELECTBOTH:
+    case IDM_DESELECTEAS:
     case IDM_SELECTBOTH:
     case IDM_SELECTONE:
     case IDM_SELECTSAMECONTENT:
     case IDM_SELECTIDENTICAL:		// Name, size and time
     case IDM_SELECTSAME:		// Name and size
     case IDM_INVERT:
+    
+
       cmp = INSTDATA(hwnd);
       if (!cmp)
 	Runtime_Error(pszSrcFile, __LINE__, NULL);

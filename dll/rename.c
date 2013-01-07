@@ -21,6 +21,7 @@
   23 Oct 10 GKY Add ForwardslashToBackslash function to streamline code
   04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
                 for delete of readonly files
+  06 Jan 13 GKY Added optional confirmation dialogs for delete move and copy to compare dir Ticket 277
 
 ***********************************************************************/
 
@@ -86,6 +87,12 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			  REN_TARGET,
 			  EM_SETSEL, MPFROM2SHORT(sello, selhi), MPVOID);
       }
+      WinShowWindow(WinWindowFromID(hwnd, REN_OVEROLD), FALSE);
+      WinShowWindow(WinWindowFromID(hwnd, REN_OVERNEW), FALSE);
+      WinShowWindow(WinWindowFromID(hwnd, REN_NOROWARN), FALSE);
+    }
+    if (mv->compare) {
+      //WinShowWindow(WinWindowFromID(hwnd, REN_DONTASK), FALSE);
       WinShowWindow(WinWindowFromID(hwnd, REN_OVEROLD), FALSE);
       WinShowWindow(WinWindowFromID(hwnd, REN_OVERNEW), FALSE);
       WinShowWindow(WinWindowFromID(hwnd, REN_NOROWARN), FALSE);

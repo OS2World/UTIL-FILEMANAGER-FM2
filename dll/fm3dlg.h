@@ -43,6 +43,8 @@
                 for delete of readonly files
   12 Aug 12 GKY Allow for selection of include subdirectories or a list file on initial startup of compare dirs
   05 Jan 13 GKY Added an indicator (tetbox) that a list (snapshot) file is loaded.
+  06 Jan 13 GKY Added optional confirmation dialogs for delete move and copy to compare dir Ticket 277
+  06 Jan 13 GKY Added EA compare option to compare dir Ticket 80
 
 ***********************************************************************/
 
@@ -269,6 +271,7 @@
 #define COMP_FILTER									21025
 #define COMP_HIDENOTSELECTED       						        21026
 #define COMP_LISTLOADED                                                                 21027
+#define COMP_CONFIRMACTION                                                              21028
 
 #define EA_FRAME									21100
 #define EA_LISTBOX									21101

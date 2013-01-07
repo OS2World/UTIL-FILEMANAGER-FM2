@@ -14,6 +14,7 @@
                 copy, move and delete operations
   04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
                 for delete of readonly files
+  06 Jan 13 GKY Added optional confirmation dialogs for delete move and copy to compare dir Ticket 277
 
 ***********************************************************************/
 
@@ -34,6 +35,7 @@ typedef struct {
   BOOL overnew;
   BOOL overwrite;
   BOOL noreadonlywarn;
+  BOOL compare;
 }
 MOVEIT;
 
