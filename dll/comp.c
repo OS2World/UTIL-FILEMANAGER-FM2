@@ -172,7 +172,7 @@ static VOID SnapShot(char *path, FILE *fp, BOOL recurse)
   char *mask, *enddir;
   HDIR hdir = HDIR_CREATE;
   ULONG ulFindCnt;
-  CHAR szDate[DATE_BUF_BYTES];
+  //CHAR szDate[DATE_BUF_BYTES];
 
   // 13 Aug 07 SHL fixme to use FileToGet
   pffb = xmalloc(sizeof(FILEFINDBUF4L), pszSrcFile, __LINE__);
@@ -193,17 +193,17 @@ static VOID SnapShot(char *path, FILE *fp, BOOL recurse)
 	do {
 	  strcpy(enddir, pffb->achName);
 	  if (!(pffb->attrFile & FILE_DIRECTORY)) {
-	    FDateFormat(szDate, pffb->fdateLastWrite);
+	    //FDateFormat(szDate, pffb->fdateLastWrite);
 	    fprintf(fp,
-		    "\"%s\",%u,%llu,%s,%02u%s%02u%s%02u,%lu,%lu,N\n",
+                    "\"%s\",%u,%llu,%lu/%lu/%lu,%02u:%02u:%02u,%lu,%lu,N\n",
 		    mask,
 		    enddir - mask,
-		    pffb->cbFile,
-		    szDate,
+                    pffb->cbFile,
+                    pffb->fdateLastWrite.year + 1980,
+                    pffb->fdateLastWrite.month,
+                    pffb->fdateLastWrite.day,
 		    pffb->ftimeLastWrite.hours,
-		    TimeSeparator,
 		    pffb->ftimeLastWrite.minutes,
-		    TimeSeparator,
 		    pffb->ftimeLastWrite.twosecs,
 		    pffb->attrFile,
 		    pffb->cbList > 4 ? pffb->cbList / 2 : 0);
@@ -494,7 +494,6 @@ int ConfirmAction(HWND hwnd, CHAR *OldName, CHAR *NewName)
   return 0;
 }
 
-#define  NUM_BUT 4
 /**
  * Action Thread
  * Do requested action on container contents
@@ -592,42 +591,17 @@ static VOID ActionCnrThread(VOID *args)
 	  switch (cmp->action) {
 	  case IDM_DELETE:
 
-	    if (fConfirmAction && !dontask) {
-	      ULONG   i;
-	      CHAR s[CCHMAXPATH + 20];
-	      MB2INFO *pmbInfo;
-	      MB2D mb2dBut[NUM_BUT] =   //fixme to use GetPString
-	      {
-		{ "Yes",                     1, 0},
-		{ "Yes don't ask again",     2, 1},
-		{ "No",                      3, 2},
-		{ "Cancel delete operation", 4, 3}
-	      };
-	      ULONG   ulInfoSize = (sizeof(MB2INFO) + (sizeof(MB2D) * (NUM_BUT-1)));
-	      pmbInfo = malloc (ulInfoSize);
-	      if (pmbInfo) {
-		pmbInfo->cb         = ulInfoSize;
-		pmbInfo->hIcon      = 0;
-		pmbInfo->cButtons   = NUM_BUT;
-		pmbInfo->flStyle    = MB_MOVEABLE;
-		pmbInfo->hwndNotify = NULLHANDLE;
-		for (i = 0; i < NUM_BUT; i++) {
-		  memcpy( pmbInfo->mb2d+i , mb2dBut+i , sizeof(MB2D));
-		} //fixme to use GetPString
-		sprintf(s, "Do you wish to delete %s", pciS->pszFileName);
-		rc = WinMessageBox2(HWND_DESKTOP, cmp->hwnd,
-		                    s, "Confirm Delete", 1234,
-		                    pmbInfo);
-		free(pmbInfo);
-		if (rc == 2 || rc == 3) {
-		  if (rc == 3)
-		    enddelete = TRUE;
-		  break;
-		}
-		else if (rc == 1)
-		  dontask = TRUE;
-	      }
-	    }
+            if (fConfirmAction && !dontask) {
+              rc = saymsg2(NULL, 0, cmp->hwnd, GetPString(IDS_CONFIRMDELETE), GetPString(IDS_DOYOUWISHTODELETE),
+                           pciS->pszFileName);
+              if (rc == 3 || rc == 4) {        
+                if (rc == 4)
+                  enddelete = TRUE;
+                break;
+              }
+              else if (rc == 2)
+                dontask = TRUE;
+            }
 	    if (!unlinkf(pciS->pszFileName)) {
 	      WinSendMsg(hwndCnrS, CM_SETRECORDEMPHASIS, MPFROMP(pciS),
 			 MPFROM2SHORT(FALSE, CRA_SELECTED));
@@ -649,13 +623,13 @@ static VOID ActionCnrThread(VOID *args)
 		pciS->rc.pszIcon = pciS->pszFileName;
 		pciS->flags = 0;	// Just on one side
 		WinSendMsg(hwndCnrS, CM_INVALIDATERECORD, MPFROMP(&pciS),
-			   MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
-		pciD->flags = 0;	// Just on one side
-		if (pciD->pszSubject != NullStr) {
-		  xfree(pciD->pszSubject, pszSrcFile, __LINE__);
-		  pciD->pszSubject = NullStr;
-		}
-	      }
+                           MPFROM2SHORT(1, CMA_ERASE | CMA_TEXTCHANGED));
+                  pciD->flags = 0;	// Just on one side
+                  if (pciD->pszSubject != NullStr) {
+                    xfree(pciD->pszSubject, pszSrcFile, __LINE__);
+                    pciD->pszSubject = NullStr;
+                  }
+                }
 	      if (hwndCnrS == WinWindowFromID(cmp->hwnd, COMP_LEFTDIR))
 		cmp->cmp->totalleft--;
 	      else
@@ -1700,6 +1674,7 @@ static VOID FillCnrsThread(VOID *args)
 	FILEFINDBUF4L fb4;
 	CHAR str[CCHMAXPATH * 2], *p;
 	CHAR *moder = "r";
+        BOOL fFixedSnap = TRUE;
 
 	memset(&fb4, 0, sizeof(fb4));
 	fp = xfopen(cmp->rightlist, moder, pszSrcFile, __LINE__, FALSE);
@@ -1766,42 +1741,62 @@ static VOID FillCnrsThread(VOID *args)
 			continue;
 		      p = strchr(p, ',');
 		      if (p) {
-			p++;
-			fb4.cbFile = atoll(p);
-			p = strchr(p, ',');
-		        if (p) {
-		          p++;
-		          if (ulDateFmt == 2 || ulDateFmt == 3)
-		            fb4.fdateLastWrite.year = atol(p) - 1980;
-		          else if (ulDateFmt == 1)
-		            fb4.fdateLastWrite.day = atol(p);
-		          else
-		            fb4.fdateLastWrite.month = atol(p);
-			  p = strchr(p, DateSeparator[0]);
-		          if (p) {
-		            p++;
-		            if (ulDateFmt == 2 || ulDateFmt == 3)
-		              fb4.fdateLastWrite.month = atol(p);
-		            else
-		              fb4.fdateLastWrite.day = atol(p);
-			    p = strchr(p, DateSeparator[0]);
-		            if (p) {
-		              p++;
-		              if (ulDateFmt == 2)
-		                fb4.fdateLastWrite.day = atol(p);
-		              else if (ulDateFmt == 3)
-		                fb4.fdateLastWrite.month = atol(p);
-		              else
-		                fb4.fdateLastWrite.year = atol(p) - 1980;
+                        p++;
+                        //DbgMsg(pszSrcFile, __LINE__, "DS %ul comma %ul", strchr(p, '/') ? strchr(p, '/') : strchr(p, DateSeparator[0]),  strchr(p, ','));
+                        if (((strchr(p, '/') ? strchr(p, '/') : strchr(p, DateSeparator[0])) - strchr(p, ',')) > 5) {
+                          CHAR szTemp[30];
+                          CHAR *q;
+                          int i;
+
+                          memset(szTemp, 0, sizeof(szTemp));
+                          i =  (strchr(p, '/') ? strchr(p, '/') : strchr(p, DateSeparator[0])) - 3 - p;
+                          strncpy(&szTemp, p, i);
+                          for (q = szTemp;  q = strchr(szTemp, ',');) {
+                            strcpy(q, q + 1);
+                          }
+                          fb4.cbFile = atoll(szTemp);
+                          fFixedSnap = FALSE;
+
+                        }
+                        else
+                          fb4.cbFile = atoll(p);
+                        if (!strchr(p, '/'))
+                          fFixedSnap = FALSE;
+                        p = (strchr(p, '/') ? strchr(p, '/') : strchr(p, DateSeparator[0])) - 6;
+                        p = strchr(p, ',');
+                        if (p) {
+                          p++;
+                          if (ulDateFmt == 2 || ulDateFmt == 3 || fFixedSnap)
+                            fb4.fdateLastWrite.year = atol(p) - 1980;
+                          else if (ulDateFmt == 1)
+                            fb4.fdateLastWrite.day = atol(p);
+                          else
+                            fb4.fdateLastWrite.month = atol(p);
+                          p = strchr(p, '/') ?  strchr(p, '/') : strchr(p, DateSeparator[0]);
+                          if (p) {
+                            p++;
+                            if (ulDateFmt == 2 || ulDateFmt == 1 || fFixedSnap)
+                              fb4.fdateLastWrite.month = atol(p);
+                            else
+                              fb4.fdateLastWrite.day = atol(p);
+			    p = strchr(p, '/') ?  strchr(p, '/') : strchr(p, DateSeparator[0]);
+                            if (p) {
+                              p++;
+                              if (ulDateFmt == 2 || fFixedSnap)
+                                fb4.fdateLastWrite.day = atol(p);
+                              else if (ulDateFmt == 3)
+                                fb4.fdateLastWrite.month = atol(p);
+                              else
+                                fb4.fdateLastWrite.year = atol(p) - 1980;
 			      p = strchr(p, ',');
 		              if (p) {
 				p++;
 				fb4.ftimeLastWrite.hours = atol(p);
-		                p = strchr(p, TimeSeparator[0]);
-		                if (p) {
+                                p = strchr(p, ':') ?  strchr(p, ':') : strchr(p, TimeSeparator[0]);
+                                if (p) {
 				  p++;
 				  fb4.ftimeLastWrite.minutes = atol(p);
-				  p = strchr(p, TimeSeparator[0]);
+                                  p = strchr(p, ':') ?  strchr(p, ':') : strchr(p, TimeSeparator[0]);
 		                  if (p) {
 				    p++;
 				    fb4.ftimeLastWrite.twosecs = atol(p);
@@ -1838,8 +1833,16 @@ static VOID FillCnrsThread(VOID *args)
 	      }
 	    } // while
 	  } // if have rightdir
-	  fclose(fp);
-	}
+          fclose(fp);
+          if (!filesr)
+            saymsg(MB_OK | MB_ICONASTERISK, HWND_DESKTOP,
+		   GetPString(IDS_WARNINGTEXT),
+		   GetPString(IDS_SNAPSHOTFILEBADFORMAT));
+        }
+        else
+          saymsg(MB_OK | MB_ICONASTERISK, HWND_DESKTOP,
+                 GetPString(IDS_WARNINGTEXT),
+                 GetPString(IDS_SNAPSHOTFILELOADFAILED), cmp->rightlist);
       }	// if snapshot file
 
       if (filesr)
