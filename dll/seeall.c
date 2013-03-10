@@ -54,6 +54,8 @@
                 copy, move and delete operations
   04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
                 for delete of readonly files
+  10 Mar 13 GKY Improvrd readonly check on delete to allow cancel and don't ask again options
+                Added saymsg2 for this purpose
 
 ***********************************************************************/
 
@@ -973,6 +975,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  FILESTATUS3 fsa;
 	  CHAR prompt[CCHMAXPATH * 3];
 	  APIRET error;
+          BOOL ignorereadonly = FALSE;
 
 	  for (x = 0; list[x]; x++) {
 	    if (IsRoot(list[x])) {
@@ -1081,7 +1084,9 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      else
 		DosDeleteDir(list[x]);
 	    }
-	    else {
+            else {
+              INT retrn = 0;
+
 	      DosError(FERR_DISABLEHARDERR);
 	      if (SHORT1FROMMP(mp1) == IDM_DELETE)
 		error = DosDelete(list[x]);
@@ -1089,7 +1094,13 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		error = DosForceDelete(list[x]);
 	      if (error) {
 		DosError(FERR_DISABLEHARDERR);
-		make_deleteable(list[x], error);
+                retrn = make_deleteable(list[x], error, ignorereadonly);
+                if (retrn == 2)
+                  break;
+                if (retrn == 1)
+                  ignorereadonly = TRUE;
+                if (retrn == 3)
+                  continue;
 		if (SHORT1FROMMP(mp1) == IDM_DELETE)
 		  error = DosDelete(list[x]);
 		else

@@ -87,6 +87,9 @@
   06 Jan 13 GKY Added EA compare option to compare dir Ticket 80
   06 Mar 13 SHL ActionCnrThread: need to strdup pszFmtFileSize to avoid aliased pointers
   09 Mar 13 SHL SetButtonEnables: correct enable support for newish buttons
+  10 Mar 13 GKY Improvrd readonly check on delete to allow cancel and don't ask again options
+                Added saymsg2 for this purpose
+  10 Mar 13 GKY Fixes to snapshot file.
 
 ***********************************************************************/
 

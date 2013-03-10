@@ -9,7 +9,7 @@
   Copyright (c) 2003, 2012 Steven H. Levine
 
   08 Feb 03 SHL Enable SYS_FRAME
-  17 Feb 07 GKY Add Make direcroy to white space directory container menu
+  17 Feb 07 GKY Add Make directory to white space directory container menu
   17 Feb 07 GKY Additional drive type icons
   15 Jun 07 SHL Update for OpenWatcom
   05 Jul 07 GKY Fix menu removals for WORKPLACE_PROCESS=YES
@@ -39,7 +39,7 @@
   06 Jul 09 SHL Error message for Refactor .LONGNAME and .SUBJECT EA fetch to FetchCommonEAs
   22 Jul 09 GKY Drivebar enhancements add refresh removable, rescan all drives, drive button
                 loads drive root directory in directory container or expands drive tree
-                and rescans drive in tree container depending on container focus, greyed out
+                and rescans drive in tree container depending on container focus, grayed out
                 inappropriate menu context choices
   12 Sep 09 GKY Add FM3.INI User ini and system ini to submenu for view ini
   15 Sep 09 SHL Update for Thread notes text changes
@@ -61,9 +61,11 @@
   04 Aug 12 GKY Changes to use Unlock to unlock files if Unlock.exe is in path both from menu/toolbar and as part of
                 copy, move and delete operations
   05 Sep 12 SHL Sync collector menu with docs
-  30 Dec 12 GKY Enhance traget directory drop to give the option of changing the directory or carrying out an
+  30 Dec 12 GKY Enhance target directory drop to give the option of changing the directory or carrying out an
                 operation to the current target; Added an error message for target = None;
   06 Jan 13 GKY Added EA compare option to compare dir Ticket 80
+  10 Mar 13 GKY Improvrd readonly check on delete to allow cancel and don't ask again options
+                Added saymsg2 for this purpose
   
 ***********************************************************************/
 
@@ -3376,6 +3378,18 @@ STRINGTABLE
     IDS_LOCKEDFILEWARNINGTITLE            "Locked file!"
     IDS_READONLYFILEWARNING               "The file %s is Read Only! Do you wish continue the requested operation"
     IDS_READONLYFILEWARNINGTITLE          "Read Only file!"
+    IDS_NOTARGETSET                       "A target directory has not been set"
+    IDS_LEFTRIGHTOUTOFSYNC                "pcil and pcir out of sync"
+    IDS_CONFIRMDELETE                     "Confirm Delete" 
+    IDS_DOYOUWISHTODELETE                 "Do you wish to delete %s"
+    IDS_DROPSETSTARGET                    "Do you wish to use this directory as the new target directory? \nYes sets target\nNo proceeds with drag/drop operation to current target"
+    IDS_MB2DYES                           "Yes"               
+    IDS_MB2DYESDONTASK                    "Yes don't ask again"
+    IDS_MB2DNO                            "No"                
+    IDS_MB2DCANCELOP                      "Cancel operation"  
+    IDS_SNAPSHOTFILEBADFORMAT             "The snapshot file lists no files or is not formatted correctly"
+    IDS_SNAPSHOTFILELOADFAILED            "The snapshot file %s failed to load"
+    
     
     // Add strings that need to be combined by GetPString here
     IDS_SUGGEST1TEXT1                     "Based on this scan of your drives, I would like to suggest the following parameters for your FM/2 program object (each letter following the '/' character is a drive that probably should be excluded from viewing by FM/2 (see README), and the '%%*' on the"
@@ -3406,9 +3420,6 @@ STRINGTABLE
     IDS_FM2CMDHELPTEXT1                   "Type ""/OPEN path"" to open a new Directory Container.\r\rType ""/CLOSE path"" to close a Directory Container.\r\rType ""/FILTER filter"" to filter a Directory Container.\r\rType ""/KEEP"" or ""/NOKEEP"" to set the type of cmd window (autoclose or not)."
     IDS_FM2CMDHELPTEXT2                   "\r\rType ""/SAVE"" or ""/NOSAVE"" to save (or not) cmd lines between sessions.\r\r[Up arrow] or [down arrow] or [+] button for listbox of previous command lines, then [Delete] to remove one or [Enter] to reuse.\r\rOr type a command to be executed"
     IDS_FM2CMDHELPTEXT3                   " (metastrings like %%a available.)\r\rDouble-click entry field to simulate hitting [Enter].\r\rF5 is the accelerator for this mini-command line."
-    IDS_DROPSETSTARGET                    "Do you wish to use this directory as the new target directory? \nYes sets target\nNo proceeds with drag/drop operation to current target"
-    IDS_NOTARGETSET                       "A target directory has not been set"
-    IDS_LEFTRIGHTOUTOFSYNC                "pcil and pcir out of sync"
   END
 
 

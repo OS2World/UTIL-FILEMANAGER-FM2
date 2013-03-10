@@ -32,6 +32,7 @@
                 delete operations
   04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog for delete of
                 readonly files
+  10 Mar 13 GKY Improvrd readonly check on delete to allow cancel and don't ask again options
 
 ***********************************************************************/
 
@@ -530,7 +531,7 @@ APIRET docopyf(INT type, CHAR *oldname, CHAR *newname)
 	    wipeallf("%s\\*", dir);
 	  DosError(FERR_DISABLEHARDERR);
 	  if (DosDeleteDir(dir)) {
-	    make_deleteable(dir, 0);
+	    make_deleteable(dir, -1, TRUE);
 	    DosDeleteDir(dir);
 	  }
 	}
@@ -540,7 +541,7 @@ APIRET docopyf(INT type, CHAR *oldname, CHAR *newname)
           DosError(FERR_DISABLEHARDERR);
           error = DosForceDelete(dir);
 	  if (error) {
-	    make_deleteable(dir, error);
+	    make_deleteable(dir, error, FALSE);
 	    DosForceDelete(dir);
 	  }
 	  if (zaplong) {
@@ -617,7 +618,7 @@ APIRET docopyf(INT type, CHAR *oldname, CHAR *newname)
 	    wipeallf("%s\\*", oldname);
 	    DosError(FERR_DISABLEHARDERR);
 	    if (DosDeleteDir(oldname)) {
-	      make_deleteable(oldname, 0);
+	      make_deleteable(oldname, -1, TRUE);
 	      DosDeleteDir(oldname);
 	    }
 	  }
@@ -674,13 +675,45 @@ APIRET docopyf(INT type, CHAR *oldname, CHAR *newname)
   return (APIRET)-3;			// bad copy/move type
 }
 
-INT make_deleteable(CHAR * filename, INT error)
+INT make_deleteable(CHAR * filename, INT error, BOOL Dontcheckreadonly)
 {
   APIRET rc;
   INT ret = -1;
   INT retrn;
   FILESTATUS3 fsi;
 
+  //DbgMsg(pszSrcFile, __LINE__, "error %i ", error);
+  DosError(FERR_DISABLEHARDERR);
+  rc = DosQueryPathInfo(filename, FIL_STANDARD, &fsi, sizeof(fsi));
+  if (!rc) {
+    if (fsi.attrFile & 0x00000001) {
+      if (fWarnReadOnly && !Dontcheckreadonly) {
+        retrn = saymsg2(NULL, 0,
+                       HWND_DESKTOP,
+                       GetPString(IDS_READONLYFILEWARNINGTITLE),
+                       GetPString(IDS_READONLYFILEWARNING),
+                       filename);
+        if (retrn == 3)
+          ret = 3;
+        else if (retrn == 4)
+          ret = 2;
+        else {
+          fsi.attrFile = 0;
+          DosError(FERR_DISABLEHARDERR);
+          if (!xDosSetPathInfo(filename, FIL_STANDARD, &fsi, sizeof(fsi), 0))
+            if (retrn == 1)
+              ret = 0;
+            else
+              ret = 1;
+        }
+      }
+      else
+        fsi.attrFile = 0;
+        DosError(FERR_DISABLEHARDERR);
+        if (!xDosSetPathInfo(filename, FIL_STANDARD, &fsi, sizeof(fsi), 0))
+          ret = 0;
+    }
+  }
   if (error ==  ERROR_SHARING_VIOLATION && fUnlock) {
     retrn = saymsg(MB_YESNO | MB_DEFBUTTON2,
                  HWND_DESKTOP,
@@ -691,32 +724,6 @@ INT make_deleteable(CHAR * filename, INT error)
       runemf2(SEPARATE | INVISIBLE | BACKGROUND | WAIT,
               HWND_DESKTOP, pszSrcFile, __LINE__,
               NULL, NULL, "%s %s", PCSZ_UNLOCKEXE, filename);
-    }
-  }
-  DosError(FERR_DISABLEHARDERR);
-  rc = DosQueryPathInfo(filename, FIL_STANDARD, &fsi, sizeof(fsi));
-  if (!rc) {
-    if (fsi.attrFile & 0x00000001) {
-      if (fWarnReadOnly && error != -1) {
-        retrn = saymsg(MB_YESNO | MB_DEFBUTTON2,
-                       HWND_DESKTOP,
-                       GetPString(IDS_READONLYFILEWARNINGTITLE),
-                       GetPString(IDS_READONLYFILEWARNING),
-                       filename);
-        if (retrn == MBID_YES) {
-          fsi.attrFile = 0;
-          DosError(FERR_DISABLEHARDERR);
-          if (!xDosSetPathInfo(filename, FIL_STANDARD, &fsi, sizeof(fsi), 0))
-            ret = 0;
-        }
-        else
-          ret = 0;
-      }
-      else
-        fsi.attrFile = 0;
-        DosError(FERR_DISABLEHARDERR);
-        if (!xDosSetPathInfo(filename, FIL_STANDARD, &fsi, sizeof(fsi), 0))
-          ret = 0;
     }
   }
 
@@ -736,6 +743,7 @@ INT wipeallf(CHAR *string, ...)
   CHAR s[CCHMAXPATH], mask[257];
   va_list ap;
   INT rc;
+  static BOOL ignorereadonly = FALSE;
 
   va_start(ap, string);
   vsprintf(s, string, ap);
@@ -814,7 +822,7 @@ INT wipeallf(CHAR *string, ...)
 	  DosError(FERR_DISABLEHARDERR);
 	  // remove directory
 	  if (DosDeleteDir(ss)) {
-	    make_deleteable(ss, 0);	// Try harder
+	    make_deleteable(ss, -1, TRUE);	// Try harder
 	    DosError(FERR_DISABLEHARDERR);
 	    DosDeleteDir(ss);
 	  }
@@ -825,8 +833,14 @@ INT wipeallf(CHAR *string, ...)
 
         DosError(FERR_DISABLEHARDERR);
         error = DosForceDelete(ss);
-	if (error) {
-	  make_deleteable(ss, error);
+        if (error) {
+          INT retrn = 0;
+
+          retrn = make_deleteable(ss, error, ignorereadonly);
+          if (retrn == 3)
+            continue;
+          else if (retrn == 1)
+            ignorereadonly = TRUE;
 	  DosError(FERR_DISABLEHARDERR);
 	  rc = (INT) DosForceDelete(ss);
 	  if (rc)
@@ -843,6 +857,7 @@ INT wipeallf(CHAR *string, ...)
   free(f);
   free(ss);
   free(str);
+  ignorereadonly = FALSE;
   return 0;
 }
 
@@ -929,7 +944,7 @@ INT unlinkf(CHAR *string)
   if (!strstr(string, ArcTempRoot)) {
     DosError(FERR_DISABLEHARDERR);
     if (DosDelete(string)) {
-      make_deleteable(string, -1);
+      make_deleteable(string, -1, TRUE);
       DosError(FERR_DISABLEHARDERR);
       return DosDelete(string);
     }
@@ -940,7 +955,7 @@ INT unlinkf(CHAR *string)
     DosError(FERR_DISABLEHARDERR);
     error = DosForceDelete(string);
     if (error) {
-      make_deleteable(string, error);
+      make_deleteable(string, error, FALSE);
       DosError(FERR_DISABLEHARDERR);
       return DosForceDelete(string);
     }

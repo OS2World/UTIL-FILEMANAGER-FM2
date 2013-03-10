@@ -35,12 +35,15 @@
   23 Jul 09 GKY Add low mem buffers for the msg file name so DosGetMessage
 		works in HIMEM builds
   01 Dec 10 SHL Dos_Error - remap API errors code that with odd oso001*.msg messages
+  10 Mar 13 GKY Improvrd readonly check on delete to allow cancel and don't ask again options
+                Added saymsg2 for this purpose
 
 ***********************************************************************/
 
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stdlib.h>
 
 #define INCL_DOS
 #define INCL_WIN
@@ -53,6 +56,7 @@
 #include "fm3str.h"
 #include "notebook.h"			// fErrorBeepOff
 #include "init.h"			// Data declares
+#include "wrappers.h"                   // xmallocz
 
 #pragma data_seg(DATA1)
 
@@ -346,6 +350,57 @@ APIRET saymsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszFmt, ...)
   return showMsg(mb_type, hwnd, pszTitle, szMsg, FALSE);
 
 } // saymsg
+
+APIRET saymsg2(PCSZ pszButtonNames, int DefaultButton, HWND hwnd, PCSZ pszTitle, PCSZ pszFmt, ...)
+{
+  ULONG   i;
+  APIRET  rc;
+  CHAR szMsg[4096];
+  va_list va;
+  MB2INFO *pmbInfo;      
+  MB2D mb2dBut[4];    
+  ULONG   ulInfoSize = (sizeof(MB2INFO) + (sizeof(MB2D) * 3));
+
+  va_start(va, pszFmt);
+  szMsg[sizeof(szMsg) - 1] = 0;
+  vsprintf(szMsg, pszFmt, va);
+  va_end(va);
+
+  if (szMsg[sizeof(szMsg) - 1]) {
+    fprintf(stderr, "Buffer overflow in saymsg2 - need %u bytes\n", strlen(szMsg) + 1);
+    fflush(stderr);
+  }
+
+  memset(mb2dBut, 0, sizeof(MB2D) * 4);
+  //fixme to use GetPString
+  strcpy(mb2dBut[0].achText, /*pszButtonNames[0] ? &pszButtonNames[0] :*/ GetPString(IDS_MB2DYES));
+  strcpy(mb2dBut[1].achText, /*pszButtonNames[1] ? &pszButtonNames[1] :*/ GetPString(IDS_MB2DYESDONTASK));
+  strcpy(mb2dBut[2].achText, /*pszButtonNames[2] ? &pszButtonNames[2] :*/ GetPString(IDS_MB2DNO));
+  strcpy(mb2dBut[3].achText,/* pszButtonNames[3] ? &pszButtonNames[3] :*/ GetPString(IDS_MB2DCANCELOP));
+  mb2dBut[0].idButton = 1;
+  mb2dBut[1].idButton = 2;
+  mb2dBut[2].idButton = 3;
+  mb2dBut[3].idButton = 4;
+  if (DefaultButton)
+    mb2dBut[DefaultButton - 1].flStyle = BS_DEFAULT;
+  pmbInfo = xmallocz(ulInfoSize, pszSrcFile, __LINE__);
+  if (pmbInfo) {
+    pmbInfo->cb         = ulInfoSize;       
+    pmbInfo->hIcon      = 0;
+    pmbInfo->cButtons   = 4;
+    pmbInfo->flStyle    = MB_MOVEABLE;
+    pmbInfo->hwndNotify = NULLHANDLE;
+    for (i = 0; i < 4; i++) {
+      memcpy( pmbInfo->mb2d+i , mb2dBut+i , sizeof(MB2D));
+    } 
+    rc = WinMessageBox2(HWND_DESKTOP, hwnd,
+                        szMsg, pszTitle, 1234,
+                        pmbInfo);
+    free(pmbInfo);
+    return rc;
+  }
+  return MBID_ERROR;
+}
 
 //=== showMsg: display error popup ===
 

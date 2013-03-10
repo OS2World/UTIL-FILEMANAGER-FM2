@@ -47,6 +47,9 @@
                 for delete of readonly files
   30 Dec 12 GKY Enhance traget directory drop to give the option of changing the directory or carrying out an
                 operation to the current target; Added an error message for target = None;
+  10 Mar 13 GKY Improvrd readonly check on delete to allow cancel and don't ask again options
+                Added saymsg2 for this purpose
+  10 Mar 13 GKY Fixes to snapshot file.
 
 ***********************************************************************/
 
@@ -257,6 +260,7 @@
 #define IDS_COMPMOVEFAILEDTEXT                                201
 #define IDS_COMPCOPYFAILEDTEXT                                202
 #define IDS_EASDIFFERTEXT                                     203
+#define IDS_SNAPSHOTFILEBADFORMAT                             204
 #define IDS_LARGERTEXT                                        205
 #define IDS_SMALLERTEXT                                       206
 #define IDS_NEWERTEXT                                         207
@@ -881,6 +885,12 @@
 #define IDS_PLEASEWAITSCANNINGTEXT                            858
 #define IDS_PLEASEWAITCOUNTINGTEXT                            859
 #define IDS_SPARE_860                                         860
+#define IDS_CONFIRMDELETE                                     861
+#define IDS_DOYOUWISHTODELETE                                 862
+#define IDS_MB2DYES                                           863
+#define IDS_MB2DYESDONTASK                                    864
+#define IDS_MB2DNO                                            865
+#define IDS_MB2DCANCELOP                                      866
 
 #define IDS_ARCCNRFILTERMENUHELP                              867
 #define IDS_ARCCNRWALKDIRMENUHELP                             868
@@ -1010,7 +1020,7 @@
 #define IDS_POSTSEMFAILED                                     994
 #define IDS_CANTFINDDRIVETEXT                                 995
 #define IDS_CANTDRAGROOTDIR                                   996
-//#define IDS_DOSQAPPTYPEFAILEDTEXT   moved to 1017           997
+#define IDS_SNAPSHOTFILELOADFAILED                            997
 #define IDS_APPTYPEUNEXPECTEDTEXT                             998
 #define IDS_PATHTODESKTOP                                     999
 #define IDS_DRIVEINFOTITLETEXT                               1000

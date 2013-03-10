@@ -14,6 +14,7 @@
                 copy, move and delete operations
   04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
                 for delete of readonly files
+  10 Mar 13 GKY Improvrd readonly check on delete to allow cancel and don't ask again options
 
 ***********************************************************************/
 
@@ -25,7 +26,7 @@ BOOL AdjustWildcardName(CHAR * oldname, CHAR * newname);
 char *MakeTempName(char *buffer, char *temproot, int type);
 BOOL WriteLongName(CHAR * filename, CHAR * longname);
 APIRET docopyf(INT type, CHAR * oldname, CHAR * newname);
-INT make_deleteable(CHAR * filename, INT error);
+INT make_deleteable(CHAR * filename, INT error, BOOL Dontcheckreadonly);
 INT unlinkf(CHAR * string);
 INT wipeallf(CHAR * string, ...);
 

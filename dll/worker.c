@@ -52,6 +52,8 @@
                 copy, move and delete operations
   04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
                 for delete of readonly files
+  10 Mar 13 GKY Improvrd readonly check on delete to allow cancel and don't ask again options
+                Added saymsg2 for this purpose
 
 ***********************************************************************/
 
@@ -873,12 +875,10 @@ VOID Action(VOID * args)
 
                     rc = docopyf(type, wk->li->list[x], newname);
                     if (rc == ERROR_ACCESS_DENIED || rc == ERROR_SHARING_VIOLATION) {
-                      if (rc == ERROR_ACCESS_DENIED && noreadonlywarn)
-                        rc = -1;
-                      ret = make_deleteable(newname, rc);
+                      ret = make_deleteable(newname, rc, noreadonlywarn);
                       rc = docopyf(type, wk->li->list[x], newname);
                     }
-                    if (!ret && (rc == ERROR_ACCESS_DENIED || (rc == ERROR_SHARING_VIOLATION && fUnlock)))
+                    if (rc == ERROR_ACCESS_DENIED || (rc == ERROR_SHARING_VIOLATION && fUnlock))
                       rc = NO_ERROR;
 		    if (fResetVerify) {
 		      DosSetVerify(fVerify);
@@ -1587,7 +1587,8 @@ VOID MassAction(VOID * args)
 	      APIRET error = 0;
 	      HOBJECT hObjectdest, hObjectofObject;
 	      BYTE G_abSupportedDrives[24] = {0};
-	      ULONG cbSupportedDrives = sizeof(G_abSupportedDrives);
+              ULONG cbSupportedDrives = sizeof(G_abSupportedDrives);
+              BOOL ignorereadonly = FALSE;
 
 	      for (x = 0; wk->li->list[x]; x++) {
 		if (IsRoot(wk->li->list[x])) {
@@ -1731,9 +1732,17 @@ VOID MassAction(VOID * args)
 		  else {
 		    error = DosForceDelete(wk->li->list[x]); ;
 		  }
-		  if (error) {
+                  if (error) {
+                    INT retrn = 0;
+
 		    DosError(FERR_DISABLEHARDERR);
-		    make_deleteable(wk->li->list[x], error);
+                    retrn = make_deleteable(wk->li->list[x], error, ignorereadonly);
+                    if (retrn == 2)
+                      break;
+                    if (retrn == 1)
+                      ignorereadonly = TRUE;
+                    if (retrn == 3)
+                      continue;
 		    if (wk->li->type == IDM_DELETE){
 		      hObjectdest = WinQueryObject("<XWP_TRASHCAN>");
 		      PrfQueryProfileData(HINI_USER,
@@ -1790,7 +1799,7 @@ VOID MassAction(VOID * args)
 			    wk->hwndCnr,
 			    UM_UPDATERECORD,
 			    MPFROMP(wk->li->list[x]), MPVOID);
-		}
+                } ;
 	      } // for
 	    }
 	    if (fVerify)
