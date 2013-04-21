@@ -34,7 +34,9 @@
   12 Jul 09 GKY Remove code to update recursive scan setting which isn't user setable
   22 Jul 09 GKY Check if drives support EAs add driveflag for this
   22 Jul 09 GKY Add LocalHD driveflag
-  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  17 Jan 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  20 Apr 13 GKY Double click on directory in Info listbox opens directory object instead of
+                causing an error message from DefaultView
 
 ***********************************************************************/
 
@@ -622,9 +624,10 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    if (*pfs->szFileName) {
 	      if (SHORT2FROMMP(mp1) == LN_SELECT)
 		WinSendMsg(hwnd, UM_SETDIR, MPVOID, MPVOID);
-	      else
-		DefaultView(hwnd,
-			    (HWND) 0, (HWND) 0, NULL, 32, pfs->szFileName);
+	      else if (IsFile(pfs->szFileName))
+		DefaultView(hwnd,(HWND) 0, (HWND) 0, NULL, 32, pfs->szFileName);
+              else
+                DefaultView(hwnd,(HWND) 0, (HWND) 0, NULL, 2, pfs->szFileName);
 	    }
 	  }
 	}
