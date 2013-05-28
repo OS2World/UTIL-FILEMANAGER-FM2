@@ -66,6 +66,7 @@
   06 Jan 13 GKY Added EA compare option to compare dir Ticket 80
   10 Mar 13 GKY Improvrd readonly check on delete to allow cancel and don't ask again options
                 Added saymsg2 for this purpose
+  28 May 13 SHL Correct typos
   
 ***********************************************************************/
 
@@ -2491,7 +2492,7 @@ STRINGTABLE
     IDS_HIDETEXT                          "Hide"
     IDS_DELETETEXT                        "Delete"
     IDS_EDITTEXT                          "Edit"
-    IDS_NOTPROTECTONLYEXE                 "The file %s is a Dos or Windows executible, however Dos and WinOS2 are not currently activated on this system."
+    IDS_NOTPROTECTONLYEXE                 "The file %s is a Dos or Windows executable, however Dos and WinOS2 are not currently activated on this system."
     IDS_INIFAILURETEXT                    "Check INI header failed will attempt to replace with backup if backup fails or not found will open with new ini"
     IDS_DUPLICATEHOTKEYTEXT               "The hotkey you selected is in use by another command.\n Yes assigns it to this command and sets the other's to None.\n No sets this command to the next unused hotkey.\n Cancel returns you to the dialog to select a different HotKey."
     IDS_HELPCMDTEXT                       "/HELP"
@@ -3372,7 +3373,7 @@ STRINGTABLE
     IDS_PLEASEWAITCOUNTINGTEXT            "Please wait -- counting..."
     IDS_INSUFFICIENTMEMORY                "Insufficient memory or %u items (%u)"
     IDS_DOSQAPPTYPEFAILEDTEXT             "DosQAppType failed for %s\n called from %s %d."
-    IDS_DOSQAPPTYPEFAILEDTEXT2            "The program %s was not found on the PATH or is not an executible file type."
+    IDS_DOSQAPPTYPEFAILEDTEXT2            "The program %s was not found on the PATH or is not an executable file type."
     IDS_DOSQAPPTYPEFAILEDTEXT3            "The drive specified in %s is locked or invalid."
     IDS_LOCKEDFILEWARNING                 "The file %s is locked! Do you wish to unlock it and complete the requested operation"
     IDS_LOCKEDFILEWARNINGTITLE            "Locked file!"
