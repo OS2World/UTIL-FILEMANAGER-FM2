@@ -6,7 +6,7 @@
   Archive containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2010 Steven H. Levine
+  Copyright (c) 2001, 2013 Steven H. Levine
 
   11 Jun 02 SHL Ensure archive name not garbage
   22 May 03 SHL ArcObjWndProc: fix UM_RESCAN now that we understand it
@@ -80,12 +80,13 @@
                 miniapp; FM3Str should be used for setting only relavent to FM/2 or that
                 aren't user settable; realappname should be used for setting applicable to
                 one or more miniapp but not to FM/2
-  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  17 Jan 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   15 Apr 10 JBS Ticket 422: Stop hang when open archive gets deleted or moved
   23 Oct 10 GKY Add ForwardslashToBackslash function to streamline code
   20 Nov 10 GKY Check that pTmpDir IsValid and recreate if not found; Fixes hangs caused
                 by temp file creation failures.
   13 Aug 11 GKY Change to Doxygen comment format
+  30 Jul 13 GKY Changes to allow 7z archiver to work with AV.
 
 ***********************************************************************/
 
@@ -726,13 +727,17 @@ ReTry:
 	  osize = fdate = NullStr;
 	  p = s;
 	  for (fieldnum = 0; fieldnum <= highest; fieldnum++) {
-	    pp = p;
+            pp = p;
 	    while (*pp && (*pp == ' ' || *pp == '\t'))	// skip leading
 	      pp++;
-	    if (!*pp)
-	      break;
+            if (!*pp) {
+              if (fieldnum == info->fnpos && (!strcmp(strupr(info->ext), "7Z") ||
+                                             !strcmp(strupr(info->signature), "7Z")))
+                fname = nsize;// GKY 7-30-13 Work around for missing nsize field for some members of archive
+              break;
+            }
 	    wasquote = FALSE;
-	    p = pp;
+            p = pp;
 	    while (*p && (wasquote ||
 			  ((fieldnum != info->fnpos || !info->nameislast) ?
 			   (*p != ' ' && *p != '\t') : TRUE))) {
@@ -748,13 +753,13 @@ ReTry:
 		  break;
 		}
 	      }
-	      else if (*p)
+              else if (*p) 
 		p++;
-	    }
+            }
 	    if (*p) {
 	      *p = 0;
 	      p++;
-	    }
+            }
 	    if (fieldnum == info->nsizepos)
 	      nsize = pp;
 	    else if (fieldnum == info->osizepos)
@@ -781,7 +786,7 @@ ReTry:
 		}
 	      }
 	    }
-	    else if (fieldnum == info->fnpos) {
+            else if (fieldnum == info->fnpos) {
 	      fname = pp;
 	      if (pp && *pp == '*' && !*(pp + 1))	// workaround for LH.EXE
 		fname = NULL;
@@ -792,7 +797,7 @@ ReTry:
 	      fname = pp;
 	      break;
 	    }
-	  }
+	  } // for fldnum
 	  if (info->nameisnext) {
 	    if (!xfgets_bstripcr
 		(lonename, sizeof(lonename), fp, pszSrcFile, __LINE__))
