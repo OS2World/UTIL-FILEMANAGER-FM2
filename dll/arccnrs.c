@@ -884,7 +884,8 @@ ReTry:
       if (*pStopFlag)
 	numarcfiles = 0;		// Request close
       else if (!numarcfiles || !gotstart
-	       || (!gotend && info->endlist && *info->endlist && (stricmp(info->endlist, NO_END_OF_ARCHIVER_LIST_STRING)))) {
+               || (!gotend && info->endlist && *info->endlist &&
+                   (stricmp(info->endlist, NO_END_OF_ARCHIVER_LIST_STRING)))) {
 	// Oops
 	ARCDUMP ad;
 	CHAR errstr[CCHMAXPATH + 256];
@@ -3597,6 +3598,13 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
   CHAR title[MAXNAMEL + 1] = "AV/2 - ";
   CHAR fullname[CCHMAXPATH + 8], *p, temp;
   static USHORT idinc = 0;
+
+
+  if (!strcmp(strupr(strrchr(arcname, '.') + 1), "LZ")) {
+      saymsg(MB_ENTER | MB_ICONASTERISK, HWND_DESKTOP, GetPString(IDS_LZIPLIMITATION),
+             GetPString(IDS_LZIPNOLIST));
+    return -1;
+  }
 
   if (!idinc)
     idinc = (rand() % 256);

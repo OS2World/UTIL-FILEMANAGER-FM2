@@ -323,7 +323,7 @@ static HPOINTER IDFile(PSZ p)
 	     cmp == *(ULONG *) ".TAR" || cmp == *(ULONG *) ".TGZ" ||
 	     cmp == *(ULONG *) ".GZ"  || cmp == *(ULONG *) ".Z"   ||
              cmp == *(ULONG *) ".CAB" || cmp == *(ULONG *) ".BZ2" ||
-             cmp == *(ULONG *) ".WPI")
+             cmp == *(ULONG *) ".WPI" || cmp == *(ULONG *) ".7Z")
       hptr = hptrArc;
     else if (cmp == *(ULONG *) PCSZ_DOTBMP  ||
 	     cmp == *(ULONG *) PCSZ_DOTICO  ||

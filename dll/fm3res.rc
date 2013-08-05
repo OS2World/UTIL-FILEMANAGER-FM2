@@ -3390,6 +3390,9 @@ STRINGTABLE
     IDS_MB2DCANCELOP                      "Cancel operation"  
     IDS_SNAPSHOTFILEBADFORMAT             "The snapshot file lists no files or is not formatted correctly"
     IDS_SNAPSHOTFILELOADFAILED            "The snapshot file %s failed to load"
+    IDS_LZIPLIMITATION                    "Lzip Limitation"
+    IDS_LZIPNOLIST                        "Lzip doesn't have a list files option"
+           
     
     
     // Add strings that need to be combined by GetPString here

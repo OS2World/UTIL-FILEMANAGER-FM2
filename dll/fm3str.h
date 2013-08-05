@@ -906,7 +906,8 @@
 #define IDS_VERSIONTEXT                                       878
 #define IDS_FM2LITETEXT                                       879
 #define IDS_CHANGECMDLINELENGTHDEFAULT                        880
-#define IDS_NODESMAXTEXT                                      882 //Not used
+#define IDS_LZIPLIMITATION                                    881
+#define IDS_LZIPNOLIST                                        882 
 #define IDS_DECRYPT1TEXT                                      883 //Not used
 #define IDS_DECRYPT2TEXT                                      884 //Not used
 #define IDS_DECRYPT3TEXT                                      885 //Not used

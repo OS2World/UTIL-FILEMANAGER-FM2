@@ -149,7 +149,7 @@ PK\x03\x04
 ; Entry #3 (7z)
 ;
 7z
-7z
+7Z
 0
 7za.exe l
 7za.exe e
@@ -345,8 +345,8 @@ None
 ;
 ; Entry #11 (tar.gz)
 ;
-TAR.GZ (Req. TAR 1.15+ & GZIP)
-tar.gz
+TAR.GZ (Req. TAR 1.20+ & GZIP)
+TAR.GZ
 0
 tar.exe -tzvf
 tar.exe -xzpvf
@@ -363,11 +363,36 @@ None
 None
 2
 -1
-3,6
+3,5
+2
+5,1,0,0
+;
+;
+; Entry #12 (tar.gz)
+;
+TAR.GZ (Req. TAR 1.10-15 & GZIP)
+TAR.GZ
+0
+tar.exe -tzvf
+tar.exe -xzpvf
+tar.exe -xzpvf
+
+tar.exe -rzpf
+tar.exe -rpf
+
+
+
+tar.exe -z --delete -f
+\x1f\x8b
+None
+None
+2
+-1
+3,5
 4
 7,1,0,0
 ;
-; Entry #12 (tar.bz2)
+; Entry #13 (tar.bz2)
 ;
 TAR.BZ2 (Req. TAR 1.15+ & BZIP2)
 tar.bz2
@@ -391,13 +416,13 @@ None
 2
 5,1,0,0
 ;
-; Entry #13 - GZIP (GZ).
+; Entry #14 - GZIP (GZ).
 ;
 GZIP (GZ) (req. GZIP & TAR 1.15+)
 GZ
 0
 gzip.exe -lv
-gzipe.cmd
+gzip.exe -d
 
 gzip.exe -t
 gzip.exe
@@ -415,13 +440,13 @@ None
 2
 5,1,0,0
 ;
-; Entry #14 - GZIP (Z).
+; Entry #15 - GZIP (Z).
 ;
 GZIP (Z)
 Z
 0
 gzip.exe -lv
-gzipe.cmd
+gzip.exe -d
 
 gzip.exe -t
 gzip.exe -9 -s .z
@@ -439,7 +464,31 @@ None
 3
 8,0,0,0
 ;
-; Entry #15 - Unarj 2.30 demo version.
+; Entry #16 (Lzip)
+;
+Lzip
+lz
+0
+lzip.exe
+lzip.EXE -d
+lzip.EXE -d
+lzip.EXE -tvvv
+Lzip.EXE -k
+
+
+Lzip.EXE
+
+
+LZIP
+None
+None
+-1
+-1
+-1,0
+-1
+-1,0,0,0
+;
+; Entry #17 - Unarj 2.30 demo version.
 ; Don't use Unarj 2.41; it's broken.
 ;
 (Un)Arj 2.30 demo
@@ -464,7 +513,7 @@ UNARJ.EXE t
 1
 0,0,0,0
 ;
-; Entry #16 - Arj 2.00 (DOS).
+; Entry #18 - Arj 2.00 (DOS).
 ; Note that other programs that use this control file may not be able to
 ; handle calling a DOS archiver correctly!  FM/2 is the only one that I
 ; know of which can at this time.  This means you may need to keep FM/2's
@@ -492,7 +541,7 @@ ARJ.EXE d -y
 1
 0,0,0,0
 ;
-; Entry #17 (RAR v.3.5)
+; Entry #19 (RAR v.3.5)
 ;
 RAR v.3.5
 RAR
@@ -516,7 +565,7 @@ Rar!\x1a\x07
 2
 0,0,0,1
 ;
-; Entry #18 - RAR/2 v2, provided by Eugene Roshal.
+; Entry #20 - RAR/2 v2, provided by Eugene Roshal.
 ;
 RAR/2 v2
 RAR
@@ -540,7 +589,7 @@ Rar!\x1a\x07
 1
 0,0,0,1
 ;
-; Entry #19 - RAR/2 v.1.53beta OS/2 SFX.
+; Entry #21 - RAR/2 v.1.53beta OS/2 SFX.
 ;
 RAR/2 v.1.53beta OS/2 SFX
 
@@ -564,7 +613,7 @@ Rar!\x1a\x07
 1
 0,0,0,1
 ;
-; Entry #20 - RAR v.1.53 DOS SFX.
+; Entry #22 - RAR v.1.53 DOS SFX.
 ;
 RAR v.1.53 DOS SFX
 
@@ -588,7 +637,7 @@ Rar!\x1a\x07
 1
 0,0,0,1
 ;
-; Entry #21 - RAR v.2.00 SFX.
+; Entry #23 - RAR v.2.00 SFX.
 ;
 RAR v.2.00 SFX
 
@@ -613,7 +662,7 @@ RSFXjr
 0,0,0,1
 ;
 ;
-; Entry #22 - LHarc 2.22.
+; Entry #24 - LHarc 2.22.
 ; Supposedly fixes bugs in earlier versions.
 ; Actually seems to have done so.  Good work, Peter.
 ;
@@ -639,7 +688,7 @@ LH.EXE /o d
 1
 2,1,0,0
 ;
-; Entry #23 - LHarc 2.22 using LH32 executable.
+; Entry #25 - LHarc 2.22 using LH32 executable.
 ;
 LHarc-32 2.22
 LZH
@@ -663,7 +712,7 @@ LH32.EXE /o d
 1
 2,1,0,0
 ;
-; Entry #24 - LHarc 2.22 self-extractors..
+; Entry #26 - LHarc 2.22 self-extractors..
 ;
 LHarc 2.22 SE
 LZH
@@ -687,7 +736,7 @@ LH.EXE /o d
 1
 2,1,0,0
 ;
-; Entry #25 - LHA 2.12 (DOS) self-extractors.
+; Entry #27 - LHA 2.12 (DOS) self-extractors.
 ; LH 2.22 seems to recognize them
 ;
 LHarc 2.12 DOS SE
@@ -712,7 +761,7 @@ LH.EXE /o d
 1
 2,1,0,0
 ;
-; Entry #26 - LHA 2.12 (DOS) self-extractors.
+; Entry #28 - LHA 2.12 (DOS) self-extractors.
 ; LH 2.22 seems to recognize them
 ;
 LHarc 2.12 DOS SE
@@ -737,7 +786,7 @@ $LHarc's SFX
 1
 2,1,0,0
 ;
-; Entry #27 - LHA 2.13L (DOS) self-extractors.
+; Entry #29 - LHA 2.13L (DOS) self-extractors.
 ; LH 2.22 seems to recognize them
 ;
 LHarc 2.13 DOS SE
@@ -762,7 +811,7 @@ LHA's SFX 2.13L (c) Yoshi, 1991\r\n
 1
 2,1,0,0
 ;
-; Entry #28 - LH2 2.11.
+; Entry #30 - LH2 2.11.
 ; NOTE:  sometimes will put a file into an archive more than once, necessitating
 ; deleting both.  EAs not handled well, but at least they're handled.
 ;
@@ -788,7 +837,7 @@ LH.EXE /o d
 1
 2,1,0,0
 ;
-; Entry #29 - ZIP 1.9/UNZIP 5.0 (available in 32-bit versions).
+; Entry #31 - ZIP 1.9/UNZIP 5.0 (available in 32-bit versions).
 ;ZIP/UNZIP should work with PKZIP 2.04 files.  Saves EAs well.  Won't
 ;extract a file stored with path without the path (actually, this seems
 ;to be fixed now.  Maybe.  There are dozens of versions floating around;
@@ -823,7 +872,7 @@ PK\x03\x04
 2
 7,1,0,0
 ;
-; Entry #30 - ZIP 1.9/UNZIP 5.0 using *32 executables.
+; Entry #32 - ZIP 1.9/UNZIP 5.0 using *32 executables.
 ;
 Zip/UnZip-32 1.9/5.0
 ZIP
@@ -847,7 +896,7 @@ PK\x03\x04
 2
 7,1,0,0
 ;
-; Entry #31 - ZIP 1.9/UNZIP 5.0, using the -l listing format.
+; Entry #33 - ZIP 1.9/UNZIP 5.0, using the -l listing format.
 ; (the -v long format can sometimes result in the old length field
 ; being crammed together with the Method field, resulting in an
 ; unparsable format).  Some info, like old length, will be missing,
@@ -875,7 +924,7 @@ PK\x03\x04
 2
 3,1,0,0
 ;
-; Entry #32 - Zoo 2.1.
+; Entry #34 - Zoo 2.1.
 ; NOTE:  Bug in Zoo 2.1 seems to cause files stored with paths to
 ; be extracted with paths even when you don't ask it to do so...
 ;
@@ -903,7 +952,7 @@ ZOO.EXE -delete
 ;
 ;----------------- Older, less used archivers --------------
 ;
-; Entry #33 - ARC 5.12mpl.
+; Entry #35 - ARC 5.12mpl.
 ;
 Arc 5.12mpl
 ARC
@@ -927,7 +976,7 @@ ARC.EXE dwn
 3
 0,0,0,0
 ;
-; Entry #34 - ARC2 (6.0).
+; Entry #36 - ARC2 (6.0).
 ; Note that I don't actually have a copy of this...
 ;
 Arc 6.0
@@ -952,7 +1001,7 @@ ARC.EXE dwn
 3
 0,0,0,0
 ;
-; Entry #35 - ARC2 (6.0) using ARC2 executable.
+; Entry #37 - ARC2 (6.0) using ARC2 executable.
 ;
 Arc 6.0
 ARC
@@ -976,7 +1025,7 @@ ARC2.EXE dwn
 3
 0,0,0,0
 ;
-; Entry #36 (CABExtract 1.0)
+; Entry #38 (CABExtract 1.0)
 ;
 CABExtract 1.0
 CAB
@@ -1000,7 +1049,7 @@ MSCF
 2
 5,1,0,0
 ;
-; Entry #37 (Untgz Ver 0.95)
+; Entry #39 (Untgz Ver 0.95)
 ; Supplied by Gregg Young
 ;
 Untgz Ver 0.95

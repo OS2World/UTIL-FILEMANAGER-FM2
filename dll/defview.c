@@ -301,7 +301,10 @@ VOID DefaultView(HWND hwnd, HWND hwndFrame, HWND hwndParent, SWP * swp,
     hwndArc = StartArcCnr((fExternalArcboxes || !swp ||
 			   strcmp(realappname, FM3Str)) ?
 			  HWND_DESKTOP :
-			  hwndParent, hwndFrame, filename, 4, NULL);
+                          hwndParent, hwndFrame, filename, 4, NULL);
+    if (hwndArc == -1)
+      return;
+
     if (!hwndArc) {
       if (!IsExecutable(filename) || !ExecFile(hwnd, filename)) {
         p = strrchr(filename, '.');
