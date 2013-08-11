@@ -1116,7 +1116,7 @@ VOID GetDesktopName(CHAR * objectpath, ULONG size)
   }
 }
 
-#pragma alloc_text(VALID,CheckDrive,IsRoot,IsFile,IsFullName,needsquoting)
+#pragma alloc_text(VALID,CheckDrive,IsRoot,IsFile,IsFullName,needs_quoting)
 #pragma alloc_text(VALID,IsValidDir,IsValidDrive,MakeValidDir,IsVowel)
 #pragma alloc_text(VALID,IsFileSame,IsNewer,TestFDates,TestCDates,RootName,MakeFullName)
 #pragma alloc_text(VALID,IsExecutable,IsBinary,IsDesktop,ParentIsDesktop)
