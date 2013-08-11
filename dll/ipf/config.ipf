@@ -216,7 +216,7 @@ archiver you are installing. Don't change any of the position, startline, endlin
 information. This will result in a warning not to rewrite archiver.bb2. Ignore the
 warning and rewrite the file. Then exit out and attempt to open an archive of the 
 type you just entered. The Archive List Error dialog will open select Edit archiver info.
-Follow the instructions in the paragraph above to complete the field position,
+Follow the instructions in the paragraph above to complete the field positions,
 startline and endline portions of the archiver info.
 :p.
 FM/2 can't do everything for you. You may still need to refer to your
