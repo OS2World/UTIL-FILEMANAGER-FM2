@@ -4,7 +4,7 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2010 Steven H. Levine
+  Copyright (c) 2004, 2013 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   05 Jun 05 SHL Use QWL_USER
@@ -17,8 +17,10 @@
   29 Nov 08 GKY Add the option of creating a subdirectory from the arcname
                 for the extract path.
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
-  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  17 Jan 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   23 Oct 10 GKY Changes to populate and utilize a HELPTABLE for context specific help
+  11 Aug 13 GKY Fix directory create failure on extract to directory based on archive name
+                if the name needed quoting.
 
 ***********************************************************************/
 

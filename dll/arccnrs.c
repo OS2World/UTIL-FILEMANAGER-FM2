@@ -87,6 +87,9 @@
                 by temp file creation failures.
   13 Aug 11 GKY Change to Doxygen comment format
   30 Jul 13 GKY Changes to allow 7z archiver to work with AV.
+  05 Aug 13 GKY Changes to allow Lzip to work with AV
+  11 Aug 13 GKY Removed code that attempted to use the archive name as the extract directory
+                It was never fully implemented and doesn't make sense for the container.
 
 ***********************************************************************/
 
