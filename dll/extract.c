@@ -152,12 +152,17 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
         strcpy(FileName, arcdata->arcname);
         p = strrchr(FileName, '.');
-        if (p)
+        if (p) {
           *p = 0;
+          if (strchr(FileName, '\"'))
+            memmove(FileName, FileName + 1, strlen(FileName) + 1);
+        }
         else {
           p = FileName + strlen(arcdata->arcname);
           p--;
           *p = 0;
+          if (strchr(FileName, '\"'))
+            memmove(FileName , FileName + 1, strlen(FileName) + 1);
         }
         strcpy(arcdata->extractdir, FileName);
         WinSetDlgItemText(hwnd, EXT_DIRECTORY, arcdata->extractdir);
@@ -295,12 +300,17 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
           strcpy(FileName, arcdata->arcname);
           p = strrchr(FileName, '.');
-          if (p)
-           *p = 0;
+          if (p) {
+            *p = 0;
+            if (strchr(FileName, '\"'))
+            memmove(FileName, FileName + 1, strlen(FileName) + 1);
+          }
           else {
             p = FileName + strlen(arcdata->arcname);
             p--;
             *p = 0;
+            if (strchr(FileName, '\"'))
+            memmove(FileName, FileName + 1, strlen(FileName) + 1);
           }
           strcpy(arcdata->extractdir, FileName);
           WinSetDlgItemText(hwnd, EXT_DIRECTORY, arcdata->extractdir);

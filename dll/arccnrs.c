@@ -2961,7 +2961,8 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_ARCEXTRACT:
 	if (dcd->directory && fFileNameCnrPath &&
 	    stricmp(lastextractpath, dcd->directory)) {
-	  strcpy(lastextractpath, dcd->directory);
+          strcpy(lastextractpath, dcd->directory);
+          //DbgMsg(pszSrcFile, __LINE__, "Extract dir %s", dcd->directory);
 	  SetDir(dcd->hwndParent, hwnd, dcd->directory, 1);
 	}
 	if (dcd->info->extract)
@@ -3675,19 +3676,22 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	  }
 	  else
 	    strcpy(dcd->directory, extractpath);
-	}
-	if (!*dcd->directory && fFileNameCnrPath && dcd->arcname) {
+        }
+        // Removed because it can't be set from inside the container and names with a space
+        // break it. I don't think it makes sense from the container any way GKY 8-10-13
+	/*if (!*dcd->directory && fFileNameCnrPath && dcd->arcname) {
 	  strcpy(fullname, dcd->arcname);
 	  p = strrchr(fullname, '.');
-	  if (p)
-	   *p = 0;
+          if (p) {
+            *p = 0;
+          }
 	  else {
 	    p = fullname + strlen(fullname);
-	    p--;
-	    *p = 0;
+            p--;
+            *p = 0;
 	  }
 	  strcpy(dcd->directory, fullname);
-	}
+	} */
 	if (!*dcd->directory && *lastextractpath) {
 	  //DosEnterCritSec();  //GKY 11-29-08
 	  DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
