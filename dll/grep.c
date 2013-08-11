@@ -362,7 +362,7 @@ VOID GrepThread(VOID *arg)
         numfls++;
       }
 
-      InitITimer(&itdSleep, 500);       // Sleep every 500 mSec
+      InitITimer(&itdSleep, 100);       // Sleep every 100 mSec (was 500)  GKY 8/11/13
       InitITimer(&itdReport, 2000);     // Report every 2 sec
 
       // loop through search masks
