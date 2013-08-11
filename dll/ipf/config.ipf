@@ -11,7 +11,7 @@
 .* 08 Jan 12 GKY Updated date formatting for ARCHIVER.BB2
 .* 01 Jan 13 GKY Added information about target directory as a drop target
 .* 11 Aug 13 GKY Steps for creating a new archive info entry using an exiting
-.*               archive of the new type as a template.
+             archive of the new type as a template.
 .*
 .***********************************************************************
 .*
@@ -215,7 +215,7 @@ signature, signature position and all the commands that a relevant to the
 archiver you are installing. Don't change any of the position, startline, endline
 information. This will result in a warning not to rewrite archiver.bb2. Ignore the
 warning and rewrite the file. Then exit out and attempt to open an archive of the 
-type you just entered. The Archive List Error dialog select Edit archiver info.
+type you just entered. The Archive List Error dialog will open select Edit archiver info.
 Follow the instructions in the paragraph above to complete the field position,
 startline and endline portions of the archiver info.
 :p.
