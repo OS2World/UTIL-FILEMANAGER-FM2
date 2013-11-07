@@ -1373,7 +1373,7 @@ MRESULT EXPENTRY MainWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     CloseChildren(hwnd);
     PostMsg(hwnd, UM_CLOSE, MPVOID, MPVOID);
     DosSleep(1);
-    return 0;
+    return 0;			// Suppress WinDefWindowProc WM_QUIT message generation
 
   case UM_CLOSE:
     WinDestroyWindow(WinQueryWindow(hwnd, QW_PARENT));
