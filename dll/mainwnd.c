@@ -6,7 +6,7 @@
   fm/2 main window
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2011 Steven H. Levine
+  Copyright (c) 2001, 2013 Steven H. Levine
 
   11 Jun 02 SHL Drop obsolete xor code
   16 Oct 02 SHL Handle large partitions
@@ -6637,7 +6637,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSendMsg(hwndTree, WM_CLOSE, MPVOID, MPVOID);
     }
     DosSleep(1);
-    return 0;                           // Hold off WM_QUIT
+    return 0;              	// Suppress WinDefWindowProc WM_QUIT message generation
 
   case UM_CLOSE:
     HideNote();
