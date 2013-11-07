@@ -11,7 +11,7 @@
   05 Jan 08 SHL Move from arccnrs.c and comp.c to here
   06 Jan 08 GKY Add NormalizeCmdLine to check program strings on entry
   29 Feb 08 GKY Changes to enable user settable command line length
-  15 Oct 08 GKY Fix NormalizeCmdLine to check all 5 executible extensions when no extension provided;
+  15 Oct 08 GKY Fix NormalizeCmdLine to check all 5 executable extensions when no extension provided;
 		use searchapath to check for existance of file types not checked by DosQAppType;
                 close DosFind.
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code
@@ -353,7 +353,7 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
 	  pszNewCmdLine = pszCmdLine_;
       }
     }
-    else { // file has a nonstandard extension for executible
+    else { // file has a nonstandard extension for executable
       pszChar = strrchr(szCmdLine, '.');
       while (pszChar && *pszChar !=' ') {
 	pszChar++;
