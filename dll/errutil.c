@@ -6,7 +6,7 @@
   Error reporting
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2010 Steven H. Levine
+  Copyright (c) 2004, 2013 Steven H. Levine
 
   12 Aug 04 SHL Comments
   23 May 05 SHL Move saymsg here
@@ -36,7 +36,8 @@
 		works in HIMEM builds
   01 Dec 10 SHL Dos_Error - remap API errors code that with odd oso001*.msg messages
   10 Mar 13 GKY Improvrd readonly check on delete to allow cancel and don't ask again options
-                Added saymsg2 for this purpose
+		Added saymsg2 for this purpose
+  07 Nov 13 SHL Update comments
 
 ***********************************************************************/
 
@@ -56,7 +57,7 @@
 #include "fm3str.h"
 #include "notebook.h"			// fErrorBeepOff
 #include "init.h"			// Data declares
-#include "wrappers.h"                   // xmallocz
+#include "wrappers.h"			// xmallocz
 
 #pragma data_seg(DATA1)
 
@@ -68,7 +69,10 @@ static VOID formatWinError(PSZ pszBuf, UINT cBufBytes, HWND hwndErr, HWND hwndOw
 
 static APIRET showMsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszMsg, BOOL wantLog);
 
-//=== DbgMsg: output debug message stderr ===
+/**
+ * Format debug message and output to stderr
+ * @note: Local errors also written to stderr
+ */
 
 VOID DbgMsg(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
 {
@@ -117,7 +121,10 @@ VOID DbgMsg(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
 
 } // DbgMsg
 
-//== Dos_Error: report Dos...() error using passed message string ===
+/**
+ * Format Dos...() error and output using showMsg
+ * @note: Local errors written directly to stderr
+ */
 
 // 2010-12-01 SHL fixme for ULONG to be APIRET
 
@@ -297,8 +304,11 @@ ULONG GetMSecTimer(void)
   return msec;
 }
 
-//== Runtime_Error: report runtime library error using passed message string ===
-//If pszFmt is NULL a No Data error message is returned GKY 20 Feb 09 (Replaces Runtime_Error2)
+/**
+ * Format runtime error message and output using showMsg
+ * @note: Local errors written directly to stderr
+ * @note: If pszFmt is NULL a No Data error message is returned GKY 20 Feb 09 (Replaces Runtime_Error2)
+ */
 
 VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
 {
@@ -330,7 +340,10 @@ VOID Runtime_Error(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
 
 } // Runtime_Error
 
-//=== saymsg: report misc error using passed message ===
+/**
+ * Format message and output using showMsg
+ * @note: Local errors written directly to stderr
+ */
 
 APIRET saymsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszFmt, ...)
 {
@@ -351,15 +364,20 @@ APIRET saymsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszFmt, ...)
 
 } // saymsg
 
+/**
+ * Format message with custom buttons and output using showMsg
+ * Local errors written to stderr
+ */
+
 APIRET saymsg2(PCSZ pszButtonNames, int DefaultButton, HWND hwnd, PCSZ pszTitle, PCSZ pszFmt, ...)
 {
-  ULONG   i;
-  APIRET  rc;
+  ULONG i;
+  APIRET rc;
   CHAR szMsg[4096];
   va_list va;
-  MB2INFO *pmbInfo;      
-  MB2D mb2dBut[4];    
-  ULONG   ulInfoSize = (sizeof(MB2INFO) + (sizeof(MB2D) * 3));
+  MB2INFO *pmbInfo;
+  MB2D mb2dBut[4];
+  ULONG ulInfoSize = (sizeof(MB2INFO) + (sizeof(MB2D) * 3));
 
   va_start(va, pszFmt);
   szMsg[sizeof(szMsg) - 1] = 0;
@@ -385,24 +403,27 @@ APIRET saymsg2(PCSZ pszButtonNames, int DefaultButton, HWND hwnd, PCSZ pszTitle,
     mb2dBut[DefaultButton - 1].flStyle = BS_DEFAULT;
   pmbInfo = xmallocz(ulInfoSize, pszSrcFile, __LINE__);
   if (pmbInfo) {
-    pmbInfo->cb         = ulInfoSize;       
+    pmbInfo->cb		= ulInfoSize;
     pmbInfo->hIcon      = 0;
     pmbInfo->cButtons   = 4;
     pmbInfo->flStyle    = MB_MOVEABLE;
     pmbInfo->hwndNotify = NULLHANDLE;
     for (i = 0; i < 4; i++) {
       memcpy( pmbInfo->mb2d+i , mb2dBut+i , sizeof(MB2D));
-    } 
+    }
     rc = WinMessageBox2(HWND_DESKTOP, hwnd,
-                        szMsg, pszTitle, 1234,
-                        pmbInfo);
+			szMsg, pszTitle, 1234,
+			pmbInfo);
     free(pmbInfo);
     return rc;
   }
   return MBID_ERROR;
 }
 
-//=== showMsg: display error popup ===
+/**
+ * Display message in popup message box
+ * Optionally writes formatted message to stderr
+ */
 
 static APIRET showMsg(ULONG mb_type, HWND hwndOwner,
 		      PCSZ pszTitle, PCSZ pszMsg, BOOL wantLog)
@@ -425,7 +446,9 @@ static APIRET showMsg(ULONG mb_type, HWND hwndOwner,
 		       mb_type | MB_MOVEABLE);
 } // showMsg
 
-//== Win_Error: report Win...() error using passed message string ===
+/**
+ * Format Win...() error and output using showMsg
+ */
 
 VOID Win_Error(HWND hwndErr, HWND hwndOwner,
 	       PCSZ pszSrcFile, UINT uSrcLineNo,
@@ -445,8 +468,8 @@ VOID Win_Error(HWND hwndErr, HWND hwndOwner,
 } // Win_Error
 
 /**
-  * Output PM error messsage to stderr
-  * This does to same reporting as Win_Error, but bypasses the
+  * Format PM error messsage and output to stderr
+  * This does the same reporting as Win_Error, but bypasses the
   * message box popup.
   * Use this version when the popup would hang PM.
   */
