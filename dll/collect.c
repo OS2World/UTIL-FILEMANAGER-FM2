@@ -79,8 +79,9 @@
   08 Aug 11 SHL Rework UM_COLLECT to avoid spurious container items free
   13 Aug 11 GKY Have file count and KIBs update at the same time
   04 Aug 12 GKY Changes to use Unlock to unlock files if Unlock.exe is in path both from menu and as part of copy, move and
-                delete operations
+	        delete operations
   05 Sep 12 SHL Correct UM_COLLECTFROMFILE bad list file reporting
+  13 Dec 13 SHL CollectorCnrWndProc IDM_FILTER: avoid exception on missing fileName
 
 ***********************************************************************/
 
@@ -808,8 +809,8 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 			 CM_INSERTRECORD, MPFROMP(pciFirst), MPFROMP(&ri));
 	      // 2011-05-29 SHL fixme to complain on failure
 	      PostMsg(dcd->hwndCnr, UM_RESCAN, MPVOID, MPVOID);
-              ulRecsInserted += ulRecsToInsert;
-              dcd->ullTotalBytes = ullTotalBytes;
+	      ulRecsInserted += ulRecsToInsert;
+	      dcd->ullTotalBytes = ullTotalBytes;
 	      pciFirst = NULL;
 	      ulRecsToInsert = 0;
 	    }
@@ -951,7 +952,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	    else
 	      first = FALSE;
 	  }
-	}  // while not eof
+	} // while not eof
 	fclose(fp);
       } // if file opened
       free(mp1);
@@ -1706,7 +1707,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
     if (dcd) {
       switch (SHORT1FROMMP(mp1)) {
       case IDM_SETTARGET:
-        SetTargetDir(hwnd, FALSE, NULL);
+	SetTargetDir(hwnd, FALSE, NULL);
 	break;
 
       case IDM_CONTEXTMENU:
@@ -2112,8 +2113,9 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
 	  if (!*dcd->mask.szMask) {
 	    empty = TRUE;
+	    // 2013-12-13 SHL Allow nul pszFileName
 	    pci = (PCNRITEM) CurrentRecord(hwnd);
-	    if (pci && !(pci->attrFile & FILE_DIRECTORY)) {
+	    if (pci && pci->pszFileName && ~pci->attrFile & FILE_DIRECTORY) {
 	      p = strrchr(pci->pszFileName, '\\');
 	      if (p) {
 		p++;
