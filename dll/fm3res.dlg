@@ -1165,6 +1165,7 @@ BEGIN
     END
 END
 
+#if 0 // 14 Oct 09 SHL fixme to be gone
 DLGTEMPLATE GREP_FRAME LOADONCALL MOVEABLE DISCARDABLE
 BEGIN
     DIALOG  "FM/2:  Seek & scan files", GREP_FRAME, 12, 6, 292, 224, WS_VISIBLE,
@@ -1240,6 +1241,84 @@ BEGIN
         PUSHBUTTON      "Add", GREP_ADD, 219, 155, 32, 11, BS_NOPOINTERFOCUS
         PUSHBUTTON      "Del", GREP_DELETE, 252, 155, 32, 11,
                         BS_NOPOINTERFOCUS
+    END
+END
+#endif // 14 Oct 09 SHL fixme to be gone
+
+DLGTEMPLATE GREP_FRAME LOADONCALL MOVEABLE DISCARDABLE
+BEGIN
+    DIALOG  "FM/2:  Seek & scan files", GREP_FRAME, 35, -35, 292, 224, 
+            WS_VISIBLE, FCF_TITLEBAR
+    BEGIN
+        LTEXT           "Filemasks:", -1, 34, 158, 53, 8, DT_BOTTOM
+        GROUPBOX        "", -1, 3, 56, 285, 64, NOT WS_GROUP
+        LTEXT           "Search text:", -1, 34, 125, 55, 8, DT_VCENTER | NOT 
+                        WS_GROUP
+        LTEXT           "Larger:", -1, 6, 40, 37, 8, NOT WS_GROUP
+        LTEXT           "Smaller:", -1, 163, 40, 37, 8, NOT WS_GROUP
+        LTEXT           "Newer:", -1, 6, 24, 37, 8, NOT WS_GROUP
+        LTEXT           "Older:", -1, 163, 24, 37, 8, NOT WS_GROUP
+        ENTRYFIELD      "", GREP_MASK, 36, 145, 252, 8, ES_MARGIN | WS_GROUP
+        LISTBOX         GREP_DRIVELIST, 2, 120, 28, 100
+        MLE             "", GREP_SEARCH, 89, 116, 198, 26, MLS_HSCROLL | 
+                        MLS_VSCROLL | MLS_IGNORETAB | WS_GROUP
+        AUTOCHECKBOX    "~Include Subdirs", GREP_RECURSE, 10, 102, 94, 10, 
+                        BS_NOPOINTERFOCUS | WS_GROUP
+        AUTOCHECKBOX    "~Absolute", GREP_ABSOLUTE, 102, 102, 68, 10, 
+                        BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "~Case Sensitive", GREP_CASE, 196, 102, 82, 10, 
+                        BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "~Say files as found", GREP_SAYFILES, 10, 89, 94, 10, 
+                        BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "Search ~Files", GREP_SEARCHFILES, 102, 89, 68, 10, 
+                        BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "Search ~EAs", GREP_SEARCHEAS, 196, 89, 82, 10, 
+                        BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "Find duplicates", GREP_FINDDUPES, 10, 75, 94, 10, 
+                        BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "CRC dupes", GREP_CRCDUPES, 102, 75, 68, 10, 
+                        BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "No size dupes", GREP_NOSIZEDUPES, 196, 75, 82, 10, 
+                        BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "Ignore extensions", GREP_IGNOREEXTDUPES, 10, 63, 94, 
+                        10, BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "I~gnore SVN/CVS metafiles", GREP_IGNORESVN, 102, 
+                        63, 79, 10, BS_NOPOINTERFOCUS
+        ENTRYFIELD      "", GREP_GREATER, 49, 40, 65, 8, ES_MARGIN | 
+                        WS_GROUP
+        PUSHBUTTON      "k", GREP_GK, 117, 39, 13, 11, BS_NOPOINTERFOCUS
+        ENTRYFIELD      "", GREP_LESSER, 206, 40, 65, 8, ES_MARGIN | 
+                        WS_GROUP
+        PUSHBUTTON      "k", GREP_LK, 274, 39, 13, 11, BS_NOPOINTERFOCUS
+        ENTRYFIELD      "", GREP_NEWER, 49, 24, 65, 8, ES_MARGIN | WS_GROUP
+        PUSHBUTTON      "m", GREP_NM, 117, 23, 13, 11, BS_NOPOINTERFOCUS
+        ENTRYFIELD      "", GREP_OLDER, 206, 24, 65, 8, ES_MARGIN | WS_GROUP
+        PUSHBUTTON      "m", GREP_OM, 274, 23, 13, 11, BS_NOPOINTERFOCUS
+        DEFPUSHBUTTON   "Okay", MAIN_FRAME, 4, 4, 40, 14, BS_NOPOINTERFOCUS | 
+                        WS_GROUP
+        PUSHBUTTON      "A~llHDs", GREP_ALLHDS, 48, 4, 40, 14, 
+                        BS_NOPOINTERFOCUS
+        PUSHBUTTON      "LocalHDs", GREP_LOCALHDS, 92, 4, 48, 14, 
+                        BS_NOPOINTERFOCUS
+        PUSHBUTTON      "RemoteHDs", GREP_REMOTEHDS, 143, 4, 58, 14, 
+                        BS_NOPOINTERFOCUS
+        PUSHBUTTON      "~Help", IDM_HELP, 206, 4, 40, 14, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "Cancel", MAIN_STATUS, 250, 4, 40, 14, 
+                        BS_NOPOINTERFOCUS
+        CTEXT           "", GREP_HELP, 38, 212, 246, 8, DT_VCENTER
+                        PRESPARAMS PP_FOREGROUNDCOLOR, 0x00FFFFFFL
+                        PRESPARAMS PP_BACKGROUNDCOLOR, 0x00000080L
+        LISTBOX         GREP_LISTBOX, 34, 168, 254, 41, LS_HORZSCROLL
+        AUTOCHECKBOX    "Append", GREP_APPEND, 91, 156, 58, 10, 
+                        BS_NOPOINTERFOCUS | WS_GROUP
+        PUSHBUTTON      "Env", GREP_ENV, 154, 155, 32, 11, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "Walk", GREP_WALK, 187, 155, 32, 11, 
+                        BS_NOPOINTERFOCUS
+        PUSHBUTTON      "Add", GREP_ADD, 219, 155, 32, 11, BS_NOPOINTERFOCUS
+        PUSHBUTTON      "Del", GREP_DELETE, 252, 155, 32, 11, 
+                        BS_NOPOINTERFOCUS
+        AUTOCHECKBOX    "~Remember search flags", GREP_REMEMBERFLAGS, 195, 
+                        63, 74, 10, BS_NOPOINTERFOCUS
     END
 END
 
@@ -2352,7 +2431,7 @@ BEGIN
                         BS_NOPOINTERFOCUS
         PUSHBUTTON      "Cancel", COLR_BLUE, 149, 6, 40, 14,
                         BS_NOPOINTERFOCUS
-        AUTOCHECKBOX    "~Confirm Action", COMP_CONFIRMACTION, 320, 23, 50, 8, 
+        AUTOCHECKBOX    "~Confirm Action", COMP_CONFIRMACTION, 320, 23, 91, 8, 
                         BS_NOPOINTERFOCUS | WS_GROUP
         AUTOCHECKBOX    "~Include subdirs", COMP_INCLUDESUBDIRS, 320, 15, 91, 8, 
                         BS_NOPOINTERFOCUS | WS_GROUP
