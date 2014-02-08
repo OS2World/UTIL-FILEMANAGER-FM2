@@ -6251,11 +6251,13 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (cmdhead) {
 
       LINKCMDS *info;
+      CHAR s[120];
 
       info = cmdhead;
       while (info) {
+        sprintf(s, "%s    {%i}", info->title, info->ID);
 	WinSendMsg(hwndCmdlist, LM_INSERTITEM,
-		   MPFROM2SHORT(LIT_END, 0), MPFROMP(info->title));
+		   MPFROM2SHORT(LIT_END, 0), MPFROMP(s));
 	info = info->next;
       }
     }
@@ -6583,14 +6585,15 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		CHAR *p;
 
 		WinSendMsg(hwndCmdlist, LM_QUERYITEMTEXT,
-			   MPFROM2SHORT(sSelect, CCHMAXPATH), MPFROMP(s));
+                           MPFROM2SHORT(sSelect, CCHMAXPATH), MPFROMP(s));
 		p = strrchr(s, '}');
 		p = 0;
 		p = strrchr(s, '{');
 		p++;
 		WinPostMsg(hwnd,
 			   WM_COMMAND,
-			   MPFROM2SHORT(atol(p), 0), //IDM_COMMANDSTART + sSelect, 0),
+                           MPFROM2SHORT(atol(p), 0), //fixme GKY this traps in atol the {} probably don't exist
+                           //IDM_COMMANDSTART + sSelect, 0),
 			   MPVOID);
 	      }
 		WinSetWindowText(hwndCmdlist, (CHAR *) GetPString(IDS_COMMANDSTEXT));
