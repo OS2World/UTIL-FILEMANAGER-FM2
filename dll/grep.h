@@ -6,11 +6,12 @@
   Grep support
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2006, 2008 Steven H. Levine
+  Copyright (c) 2006, 2014 Steven H. Levine
 
   04 Nov 06 SHL Renames
   15 Aug 07 SHL Drop obsoletes
   04 Jan 08 SHL Allow standalone usage
+  08 Feb 14 SHL Add ignoreSVN
 
 ***********************************************************************/
 
@@ -47,7 +48,7 @@ DUPES;
 typedef struct
 {
   USHORT size;
-  CHAR tosearch[8192];
+  CHAR fileMasks[8192];			// ; separated
   CHAR fileMask[CCHMAXPATH + 14];
   CHAR curdir[CCHMAXPATH];
   LONG fileCount;
@@ -62,6 +63,7 @@ typedef struct
   BOOL searchFiles;
   BOOL finddupes;
   BOOL CRCdupes;
+  BOOL ignoreSVN;
   BOOL nosizedupes;
   BOOL ignoreextdupes;
   BOOL findifany;

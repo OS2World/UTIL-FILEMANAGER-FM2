@@ -193,7 +193,7 @@ ULONG HandleException(PEXCEPTIONREPORTRECORD pReport,
       DbgMsg(pszSrcFile, __LINE__, "DosQueryProcAddr(MYHANDLER) reported error %u", apiret);
     else {
       // DbgMsg(pszSrcFile, __LINE__, "Invoking exceptq handler at %p", pfn);
-      (*pfn)(pReport,	pReg, pContext,	pv);
+      (*pfn)(pReport, pReg, pContext, pv);
       handled = TRUE;
     }
     DosFreeModule(hmod);

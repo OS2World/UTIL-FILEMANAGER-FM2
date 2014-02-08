@@ -6,7 +6,7 @@
   grep dialog for collector
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2010 Steven H. Levine
+  Copyright (c) 2004, 2014 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   23 May 05 SHL Use QWL_USER
@@ -26,9 +26,10 @@
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   07 Oct 09 SHL Remember last search mask across runs
-  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  17 Jan 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  08 Feb 14 SHL Support svn git hg CVS etc. metadata directory ignore
 
-  fixme for more excess locals to be gone
+  FIXME for more excess locals to be gone
 
 ***********************************************************************/
 
@@ -183,6 +184,105 @@ MRESULT EXPENTRY EnvDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
 
+/**
+ * Add mask to mask list
+ * If mask contains both path an wildcard components if is just appended
+ * If mask contains only wildcard component, path is extracted from last mask in masks
+ * If mask contains only path components, wildcard is extracted from last mask in masks
+ * @param masks is semicolon separated mask string to be updated
+ * @param newMask is mask to append
+ * @note code limits mask length to 8192 to match GrepDlgProc
+ * @returns true if OK
+ */
+
+#if 0 // 2010-09-27 SHL	FIXME to use
+
+static BOOL updateMaskString(CHAR masks[8192], PCSZ newMask)
+{
+  BOOL ok = TRUE;
+  BOOL isPath;
+  BOOL isWild;
+  UINT len;
+  CHAR mask[CCHMAXPATH + 2];		// 2 for semicolons
+  CHAR wildcard[CCHMAXPATH];
+  PSZ p;
+
+  // 2010-09-27 SHL FIXME to be globally available
+  #define CH_QMARK '?'
+  #define CH_STAR '*'
+  #define CH_BACKSLASH '\\'
+  #define CH_SEMICOLON ';'
+  static PCSZ PCSZ_SEMICOLON = ";";	// 2010-09-27 SHL FIXME to be globally available from init.c
+
+  // Extract last mask
+  len = strlen(masks);
+  if (!len)
+    *mask = 0;
+  else {
+    if (len < CCHMAXPATH + 2)
+      strcpy(mask, masks);
+    else {
+      strcpy(mask, masks + len - (CCHMAXPATH + 1));
+      len = strlen(mask);
+    }
+  }
+  if (len) {
+    p = mask + len - 1;
+    if (*p == CH_SEMICOLON)
+      *p = 0;				// Chop trailing
+    p = strrchr(mask, CH_SEMICOLON);	// Find last
+    if (p)
+      memmove(mask, p + 1, strlen(p + 1) + 1);	// Move to front
+  }
+
+  isPath = strchr(newMask, CH_BACKSLASH) != NULL;	// 2010-09-27 SHL FIXME if test too weak
+  // 2010-09-27 SHL FIXME to have function
+  isWild = strchr(newMask, CH_STAR) || strchr(newMask, CH_QMARK);
+
+  // Assume ready to do if both path and wildcard otherwise edit
+
+  if (isPath && !isWild) {
+    // Extract wildcard from old mask
+    p = strrchr(mask, CH_BACKSLASH);
+    if (!p)
+      strcpy(wildcard, mask);
+    else
+      strcpy(wildcard, p + 1);
+    // Append wildcard to path
+    strcpy(mask, newMask);
+    bstrip(mask);
+    len = strlen(mask);
+    if (len && mask[len - 1] != CH_BACKSLASH)
+      strcat(mask, PCSZ_BACKSLASH);
+    strcat(mask, wildcard);
+  }
+  else if (!isPath) {
+    // Use path from old mask
+    len = strlen(mask);
+    p = strrchr(mask, CH_BACKSLASH);
+    if (p)
+      *(p + 1) = 0;
+    else
+      *mask = 0;			// Assume just wilcard
+    // Append new wildcard or filename
+    strcat(mask, newMask);
+    bstrip(mask);
+  }
+
+  if (strlen(masks) + strlen(mask) + 3 > sizeof(masks))
+    Runtime_Error(pszSrcFile, __LINE__, "too big");
+
+  // Append separator
+  if (masks[strlen(masks) - 1] != CH_SEMICOLON)
+    strcat(masks, PCSZ_SEMICOLON);
+  // Append mask to list
+  strcat(masks, mask);
+
+  return ok;
+}
+
+#endif // 2010-09-27 SHL	FIXME to use
+
 MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   HWND hwndCollect;
@@ -199,23 +299,27 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   CHAR s[8192 + 14];
   CHAR *moder = "r";
 
-  // 07 Oct 09 SHL fixme to not be static and save to profile?
-  static CHAR lastmask[8192];
-  static CHAR lasttext[4096];
+  static BOOL fInitDone;		// First time init done
+  // 07 Oct 09 SHL FIXME to not be static
+  // 07 Oct 09 SHL FIXME to save to profile?
+  // GREP_FRAME dialog buffers
+  static CHAR fileMasks[8192];		// ; separated
+  static CHAR searchText[4096];		// Structured
   static BOOL recurse = TRUE;
   static BOOL sensitive;
   static BOOL absolute;
   static BOOL sayfiles;
   static BOOL searchEAs = TRUE;
   static BOOL searchFiles = TRUE;
-  static BOOL changed;
-  static BOOL fInitDone;		// First time init done
   static BOOL findifany = TRUE;
-  static BOOL gRemember;
+  static BOOL rememberSettings;
   static UINT newer = 0;
   static UINT older = 0;
-  static ULONG greater = 0;
-  static ULONG lesser = 0;
+  static ULONG greaterthan = 0;
+  static ULONG lessthan = 0;
+  static BOOL ignoreSVN;
+
+  static BOOL maskListChanged;
   static SHORT sLastMaskSelect = LIT_NONE;
 
   switch (msg) {
@@ -226,7 +330,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     GrepInfo = mp2;
     if (GrepInfo->szGrepPath && IsFile(GrepInfo->szGrepPath) == 0) {
-      BldFullPathName(lastmask, GrepInfo->szGrepPath, "*");	// Directory passed
+      BldFullPathName(fileMasks, GrepInfo->szGrepPath, "*");	// Directory passed
       sLastMaskSelect = LIT_NONE;
       fInitDone = TRUE;
     }
@@ -237,8 +341,8 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       fInitDone = TRUE;
     }
     if (!fInitDone) {
-      lastmask[0] = '*';
-      lastmask[1] = 0;
+      fileMasks[0] = '*';
+      fileMasks[1] = 0;
     }
 
     WinSetWindowULong(hwnd, QWL_USER, *(HWND *) GrepInfo->hwnd);
@@ -259,14 +363,14 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinSendDlgItemMsg(hwnd,
 		      GREP_LESSER,
 		      EM_SETTEXTLIMIT, MPFROM2SHORT(34, 0), MPVOID);
-    WinSetDlgItemText(hwnd, GREP_MASK, lastmask);
+    WinSetDlgItemText(hwnd, GREP_MASK, fileMasks);
     WinSendDlgItemMsg(hwnd,
 		      GREP_MASK, EM_SETSEL, MPFROM2SHORT(0, 8192), MPVOID);
     size = sizeof(BOOL);
     PrfQueryProfileData(fmprof, FM3Str, "RememberFlagsGrep",
-			(PVOID) & gRemember, &size);
-    WinCheckButton(hwnd, GREP_REMEMBERFLAGS, gRemember);
-    if (gRemember) {
+			(PVOID) & rememberSettings, &size);
+    WinCheckButton(hwnd, GREP_REMEMBERFLAGS, rememberSettings);
+    if (rememberSettings) {
       size = sizeof(BOOL);
       PrfQueryProfileData(fmprof, FM3Str, "Grep_Recurse",
 			  (PVOID) & recurse, &size);
@@ -286,16 +390,17 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PrfQueryProfileData(fmprof, FM3Str, "Grep_SearchfEAs",
 			  (PVOID) & searchEAs, &size);
     }
-    if (!gRemember) {
+    if (!rememberSettings) {
       recurse = TRUE;
       sensitive = FALSE;
       absolute = FALSE;
       sayfiles = TRUE;
+      ignoreSVN = TRUE;
       searchEAs = TRUE;
       searchFiles = TRUE;
     }
-    WinSetWindowText(hwndMLE, lasttext);
-    if (*lasttext) {
+    WinSetWindowText(hwndMLE, searchText);
+    if (*searchText) {
       MLEsetcurpos(hwndMLE, 0);
       MLEsetcurposa(hwndMLE, 4096);
       if (!searchEAs)
@@ -308,10 +413,11 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinCheckButton(hwnd, GREP_SEARCHEAS, searchEAs);
     WinCheckButton(hwnd, GREP_SEARCHFILES, searchFiles);
     WinCheckButton(hwnd, GREP_FINDIFANY, findifany);
+    WinCheckButton(hwnd, GREP_IGNORESVN, ignoreSVN);
 
-    sprintf(s, "%lu", greater);
+    sprintf(s, "%lu", greaterthan);
     WinSetDlgItemText(hwnd, GREP_GREATER, s);
-    sprintf(s, "%lu", lesser);
+    sprintf(s, "%lu", lessthan);
     WinSetDlgItemText(hwnd, GREP_LESSER, s);
     sprintf(s, "%u", newer);
     WinSetDlgItemText(hwnd, GREP_NEWER, s);
@@ -341,12 +447,12 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     // 25 Sep 09 SHL Reselect last last used item
     //if (sLastMaskSelect >= 0)
     //  WinSendDlgItemMsg(hwnd, GREP_LISTBOX, LM_SELECTITEM,
-    //    		MPFROMSHORT(sLastMaskSelect), MPFROMSHORT(TRUE));
+    //		MPFROMSHORT(sLastMaskSelect), MPFROMSHORT(TRUE));
 
     FillPathListBox(hwnd,
 		    WinWindowFromID(hwnd, GREP_DRIVELIST),
 		    (HWND) 0, NULL, FALSE);
-    // 25 Sep 09 SHL fixme select drive matching current container?
+    // 25 Sep 09 SHL FIXME select drive matching current container?
     break;
 
   case WM_ADJUSTWINDOWPOS:
@@ -368,10 +474,10 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     switch (SHORT1FROMMP(mp1)) {
     case GREP_REMEMBERFLAGS:
       {
-	BOOL gRemember = WinQueryButtonCheckstate(hwnd, GREP_REMEMBERFLAGS);
+	BOOL rememberSettings = WinQueryButtonCheckstate(hwnd, GREP_REMEMBERFLAGS);
 
 	PrfWriteProfileData(fmprof, FM3Str, "RememberFlagsGrep",
-			    (PVOID) & gRemember, sizeof(BOOL));
+			    (PVOID) & rememberSettings, sizeof(BOOL));
       }
       break;
 
@@ -388,6 +494,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case LN_ENTER:
 	WinQueryDlgItemText(hwnd, GREP_MASK, 8192, s);
 	bstrip(s);
+	// Find last wildcard
 	p = strrchr(s, '\\');
 	if (p)
 	  strcpy(simple, p);
@@ -399,7 +506,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	else
 	  strcpy(simple, "\\*");
 	if (simple[strlen(simple) - 1] == ';')
-	  simple[strlen(simple) - 1] = 0;
+	  simple[strlen(simple) - 1] = 0;	// Chop trailing semi
 	lLen = strlen(simple) + 1;
 	if (strlen(s) > 8192 - lLen) {
 	  Runtime_Error(pszSrcFile, __LINE__, "too big");
@@ -407,6 +514,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  break;
 	}
 
+	// 19 Aug 10 SHL FIXME to honor append
 	sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
 					    GREP_DRIVELIST,
 					    LM_QUERYSELECTION,
@@ -436,7 +544,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	break; // LN_ENTER
       } // switch
-      break;
+      break; //GREP_DRIVELIST
 
     case GREP_LISTBOX:
       switch (SHORT2FROMMP(mp1)) {
@@ -449,11 +557,14 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
       case LN_ENTER:
       case LN_SELECT:
+	// Enter checkbox controls whether or not notice is ignored
+	// If not checked, enter is ignored because select has already been processed
+	// If check, select is ignored and enter is processed
 	if ((SHORT2FROMMP(mp1) == LN_ENTER &&
 	     !WinQueryButtonCheckstate(hwnd, GREP_APPEND)) ||
 	    (SHORT2FROMMP(mp1) == LN_SELECT &&
 	     WinQueryButtonCheckstate(hwnd, GREP_APPEND)))
-	  break;
+	  break;			// Ignore
 	{
 	  sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
 					      GREP_LISTBOX,
@@ -463,11 +574,13 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    sLastMaskSelect = sSelect;
 	    *s = 0;
 	    if (WinQueryButtonCheckstate(hwnd, GREP_APPEND)) {
+	      // Append to existing
 	      WinQueryDlgItemText(hwnd, GREP_MASK, 8192, s);
 	      bstrip(s);
 	      if (*s && strlen(s) < 8190 && s[strlen(s) - 1] != ';')
 		strcat(s, ";");
 	    }
+	    // Append listbox item to mask string
 	    WinSendDlgItemMsg(hwnd,
 			      GREP_LISTBOX,
 			      LM_QUERYITEMTEXT,
@@ -480,7 +593,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	break;
       }
-      break;
+      break; // GREP_LISTBOX
 
     case GREP_MASK:
       if (SHORT2FROMMP(mp1) == EN_KILLFOCUS)
@@ -622,6 +735,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      if (*s) {
 		strcat(s, simple);
 		WinSetDlgItemText(hwnd, GREP_MASK, s);
+		// 19 Aug 10 SHL FIXME to honor append
 		WinSendDlgItemMsg(hwnd,
 				  GREP_MASK,
 				  EM_SETSEL,
@@ -676,7 +790,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    strcat(s, PCSZ_BACKSLASH);
 	  }
 	  rstrip(s);
-	  // 25 Sep 09 SHL fixme to honor append
+	  // 25 Sep 09 SHL FIXME to honor append
 	  if (*s) {
 	    strcat(s, simple);
 	    WinSetDlgItemText(hwnd, GREP_MASK, s);
@@ -705,7 +819,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    GREP_LISTBOX,
 			    LM_INSERTITEM,
 			    MPFROM2SHORT(LIT_SORTASCENDING, 0), MPFROMP(s));
-	  changed = TRUE;
+	  maskListChanged = TRUE;
 	}
       }
       break;
@@ -721,7 +835,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			  LM_DELETEITEM, MPFROM2SHORT(sSelect, 0), MPVOID);
 	if (sSelect >= sLastMaskSelect)
 	  sLastMaskSelect--;
-	changed = TRUE;
+	maskListChanged = TRUE;
       }
       break;
 
@@ -777,9 +891,9 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	ULONG ulDriveMap;
 	INT x;
 	BOOL incl;
-
 	CHAR new[8192];
 
+	// Find first mask
 	*s = 0;
 	WinQueryDlgItemText(hwnd, GREP_MASK, 8192, s);
 	s[8192 - 1] = 0;
@@ -795,6 +909,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  strcpy(s, p + 1);
 	if (!*s)
 	  strcpy(s, "*");
+
 	DosError(FERR_DISABLEHARDERR);
 	DosQCurDisk(&ulDriveNum, &ulDriveMap);
 	*new = 0;
@@ -807,14 +922,14 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		incl = TRUE;
 	      break;
 	    case GREP_LOCALHDS:
+	      // 06 Jun 10 SHL FIXME to work if drive not prescanned
 	      if (!(driveflags[x] &
 		    (DRIVE_REMOVABLE | DRIVE_IGNORE | DRIVE_REMOTE |
 		     DRIVE_VIRTUAL | DRIVE_RAMDISK)))
 		incl = TRUE;
 	      break;
 	    case GREP_REMOTEHDS:
-	      if (!(driveflags[x] &
-		    (DRIVE_REMOVABLE | DRIVE_IGNORE)) &&
+	      if (!(driveflags[x] & (DRIVE_REMOVABLE | DRIVE_IGNORE)) &&
 		  (driveflags[x] & DRIVE_REMOTE))
 		incl = TRUE;
 	      break;
@@ -840,11 +955,11 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (!hwndCollect)
 	Runtime_Error(pszSrcFile, __LINE__, NULL);
       else {
-	// 07 Feb 08 SHL - fixme to malloc and free in thread
+	// 07 Feb 08 SHL - FIXME to malloc and free in thread
 	static GREP g;			// Passed to thread
 	p = xmalloc(8192 + 512, pszSrcFile, __LINE__);
 	if (!p)
-	  break;
+	  break;			// Already complained
 	memset(&g, 0, sizeof(GREP));
 	g.size = sizeof(GREP);
 	recurse = WinQueryButtonCheckstate(hwnd, GREP_RECURSE) != 0;
@@ -854,8 +969,9 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	searchEAs = WinQueryButtonCheckstate(hwnd, GREP_SEARCHEAS) != 0;
 	searchFiles = WinQueryButtonCheckstate(hwnd, GREP_SEARCHFILES) != 0;
 	findifany = WinQueryButtonCheckstate(hwnd, GREP_FINDIFANY) != 0;
-	gRemember = WinQueryButtonCheckstate(hwnd, GREP_REMEMBERFLAGS);
-	if (gRemember) {
+	ignoreSVN = WinQueryButtonCheckstate(hwnd, GREP_IGNORESVN) != 0;
+	rememberSettings = WinQueryButtonCheckstate(hwnd, GREP_REMEMBERFLAGS);
+	if (rememberSettings) {
 	  PrfWriteProfileData(fmprof, FM3Str, "Grep_Recurse",
 			      (PVOID) & recurse, sizeof(BOOL));
 	  PrfWriteProfileData(fmprof, FM3Str, "Grep_Absolute",
@@ -888,17 +1004,17 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    DosBeep(50, 100);
 	  WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, GREP_MASK));
 	  free(p);
-#         ifdef FORTIFY
+#	  ifdef FORTIFY
 	  Fortify_LeaveScope();
-#          endif
+#	   endif
 	  break;
 	}
-	strcpy(g.tosearch, p);
-	strcpy(lastmask, p);
+	strcpy(g.fileMasks, p);
+	strcpy(fileMasks, p);
 	// Parse search strings
 	*p = 0;
 	WinQueryWindowText(hwndMLE, 4096, p);
-	strcpy(lasttext, p);
+	strcpy(searchText, p);
 	{
 	  CHAR *pszFrom;
 	  CHAR *pszTo;
@@ -934,10 +1050,10 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	*p = 0;
 	WinQueryDlgItemText(hwnd, GREP_GREATER, 34, p);
-	greater = atol(p);
+	greaterthan = atol(p);
 	*p = 0;
 	WinQueryDlgItemText(hwnd, GREP_LESSER, 34, p);
-	lesser = atol(p);
+	lessthan = atol(p);
 	*p = 0;
 	WinQueryDlgItemText(hwnd, GREP_NEWER, 34, p);
 	newer = atoi(p);
@@ -971,8 +1087,8 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  g.newerthan = 0;
 	if (!older)
 	  g.olderthan = 0;
-	g.greaterthan = greater;
-	g.lessthan = lesser;
+	g.greaterthan = greaterthan;
+	g.lessthan = lessthan;
 	g.absFlag = absolute;
 	g.caseFlag = sensitive;
 	g.dirFlag = recurse;
@@ -980,12 +1096,32 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	g.searchEAs = searchEAs;
 	g.searchFiles = searchFiles;
 	g.findifany = findifany;
+	g.ignoreSVN = ignoreSVN;
+
 	g.hwndFiles = hwndCollect;
 	g.hwnd = WinQueryWindow(hwndCollect, QW_PARENT);
 	g.hwndCurFile = WinWindowFromID(g.hwnd, DIR_SELECTED);
+
+	// Get settings from collector filter
 	g.attrFile = ((DIRCNRDATA *)INSTDATA(hwndCollect))->mask.attrFile;
 	g.antiattr = ((DIRCNRDATA *)INSTDATA(hwndCollect))->mask.antiattr;
 	g.stopflag = &((DIRCNRDATA *)INSTDATA(hwndCollect))->stopflag;
+
+	if (rememberSettings) {
+	  PrfWriteProfileData(fmprof, FM3Str, "Grep_Recurse",
+			      (PVOID) & recurse, sizeof(BOOL));
+	  PrfWriteProfileData(fmprof, FM3Str, "Grep_Absolute",
+			      (PVOID) & absolute, sizeof(BOOL));
+	  PrfWriteProfileData(fmprof, FM3Str, "Grep_Case",
+			      (PVOID) & sensitive, sizeof(BOOL));
+	  PrfWriteProfileData(fmprof, FM3Str, "Grep_Sayfiles",
+			      (PVOID) & sayfiles, sizeof(BOOL));
+	  PrfWriteProfileData(fmprof, FM3Str, "Grep_Searchfiles",
+			      (PVOID) & searchFiles, sizeof(BOOL));
+	  PrfWriteProfileData(fmprof, FM3Str, "Grep_SearchfEAs",
+			      (PVOID) & searchEAs, sizeof(BOOL));
+	}
+
 	if (xbeginthread(GrepThread,
 			 524280,
 			 &g,
@@ -993,19 +1129,19 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 __LINE__) == -1)
 	{
 	  free(p);
-#         ifdef FORTIFY
+#	  ifdef FORTIFY
 	  Fortify_LeaveScope();
-#          endif
+#	   endif
 	  WinDismissDlg(hwnd, 0);
 	  break;
 	}
-	DosSleep(100); //05 Aug 07 GKY 128
+	DosSleep(100);			//05 Aug 07 GKY 128
 	free(p);
-#       ifdef FORTIFY
+#	ifdef FORTIFY
 	Fortify_LeaveScope();
-#        endif
+#	 endif
       }
-      if (changed) {
+      if (maskListChanged) {
 	// Save modified mask list
 	SHORT x;
 
@@ -1014,8 +1150,8 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					    LM_QUERYITEMCOUNT,
 					    MPVOID, MPVOID);
 	// 07 Oct 09 SHL Rewrite if list empty
-        if (sSelect >= 0) {
-          CHAR *modew = "w";
+	if (sSelect >= 0) {
+	  CHAR *modew = "w";
 
 	  BldFullPathName(s, pFM2SaveDirectory, PCSZ_GREPMASKDAT);
 	  if (CheckDriveSpaceAvail(s, ullDATFileSpaceNeeded, 1) == 2)
