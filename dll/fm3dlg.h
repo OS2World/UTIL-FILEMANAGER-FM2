@@ -134,6 +134,7 @@
 #define GREP_ENV											20332
 #define GREP_APPEND										20333
 #define GREP_REMEMBERFLAGS								20334
+#define GREP_IGNORESVN									20335
 
 #define INFO_FRAME										20400
 #define INFO_FS											20401
