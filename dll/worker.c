@@ -6,7 +6,7 @@
   Worker thread
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2009 Steven H. Levine
+  Copyright (c) 2001, 2014 Steven H. Levine
 
   16 Oct 02 SHL Comments
   18 Oct 02 SHL MassAction:Archive - force extension so file found
@@ -953,11 +953,11 @@ VOID Action(VOID * args)
 				       pszSrcFile,
 				       __LINE__,
 				       "%s %s\"%s\" %s\"%s\" %s.",
-				       move,
-				       GetPString(IDS_OFTEXT),	// Has trailing space
+				       move,			// move, copy, rename etc.
+				       GetPString(IDS_OFTEXT),	// "of " - note trailing space
 				       wk->li->list[x],
-				       GetPString(IDS_TOTEXT),
-				       newname, GetPString(IDS_FAILEDTEXT));
+				       GetPString(IDS_TOTEXT),	// "to "
+				       newname, GetPString(IDS_FAILEDTEXT));	// "failed"
 			if (rc == MBID_CANCEL)
 			  goto Abort;
 		      }
