@@ -3604,10 +3604,12 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
   static USHORT idinc = 0;
 
 
-  if (!strcmp(strupr(strrchr(arcname, '.') + 1), "LZ")) {
+  if (strrchr(arcname, '.')) {
+    if (!strcmp(strupr(strrchr(arcname, '.') + 1), "LZ")) {
       saymsg(MB_ENTER | MB_ICONASTERISK, HWND_DESKTOP, GetPString(IDS_LZIPLIMITATION),
              GetPString(IDS_LZIPNOLIST));
-    return -1;
+      return -1;
+    }
   }
 
   if (!idinc)
