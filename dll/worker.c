@@ -1694,7 +1694,7 @@ VOID MassAction(VOID * args)
 				 FIL_STANDARD,
 				 &fsa, (ULONG) sizeof(FILESTATUS3));
 		if (fsa.attrFile & FILE_DIRECTORY) {
-		  error = (APIRET) wipeallf("%s%s*",
+		  error = (APIRET) wipeallf(FALSE, "%s%s*",
 					    wk->li->list[x],
 					    (*wk->li->list[x] &&
 					     wk->li->

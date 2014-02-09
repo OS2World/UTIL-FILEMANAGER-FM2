@@ -528,7 +528,7 @@ APIRET docopyf(INT type, CHAR *oldname, CHAR *newname)
       else if (!ret && *dir) {
 	if (!IsFile(dir)) {
 	  if (!strchr(dir, '?') && !strchr(dir, '*'))
-	    wipeallf("%s\\*", dir);
+	    wipeallf(FALSE, "%s\\*", dir);
 	  DosError(FERR_DISABLEHARDERR);
 	  if (DosDeleteDir(dir)) {
 	    make_deleteable(dir, -1, TRUE);
@@ -615,7 +615,7 @@ APIRET docopyf(INT type, CHAR *oldname, CHAR *newname)
 	    unlinkf(oldname);		// erase file
 	  else {
 	    // remove directory
-	    wipeallf("%s\\*", oldname);
+	    wipeallf(FALSE, "%s\\*", oldname);
 	    DosError(FERR_DISABLEHARDERR);
 	    if (DosDeleteDir(oldname)) {
 	      make_deleteable(oldname, -1, TRUE);
@@ -734,7 +734,7 @@ INT make_deleteable(CHAR * filename, INT error, BOOL Dontcheckreadonly)
  * unlink everything from directory on down...
  */
 
-INT wipeallf(CHAR *string, ...)
+INT wipeallf(BOOL ignorereadonly, CHAR *string, ...)
 {
   FILEFINDBUF3 *f;
   HDIR search_handle;
@@ -743,7 +743,6 @@ INT wipeallf(CHAR *string, ...)
   CHAR s[CCHMAXPATH], mask[257];
   va_list ap;
   INT rc;
-  static BOOL ignorereadonly = FALSE;
 
   va_start(ap, string);
   vsprintf(s, string, ap);
@@ -818,7 +817,7 @@ INT wipeallf(CHAR *string, ...)
       strcpy(p, f->achName);
       if (f->attrFile & FILE_DIRECTORY) {
 	if (strcmp(f->achName, ".") && strcmp(f->achName, "..")) {
-	  wipeallf("%s/%s", ss, mask);	// recurse to wipe files
+	  wipeallf(FALSE, "%s/%s", ss, mask);	// recurse to wipe files
 	  DosError(FERR_DISABLEHARDERR);
 	  // remove directory
 	  if (DosDeleteDir(ss)) {

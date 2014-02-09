@@ -587,7 +587,7 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
       do {
 	strcpy(enddir, ffb.achName);
 	if (ffb.attrFile & FILE_DIRECTORY) {
-	  wipeallf("%s\\*", s);
+	  wipeallf(FALSE, "%s\\*", s);
 	  DosDeleteDir(s);
 	}
 	else
@@ -627,7 +627,7 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
   BldFullPathName(szTempFile, pTmpDir, PCSZ_FM2PLAYTEMP);
   DosForceDelete(szTempFile);
   if (pTmpDir) {
-    wipeallf("%s\\*", pTmpDir);
+    wipeallf(FALSE, "%s\\*", pTmpDir);
     DosDeleteDir(pTmpDir);
   }
   EndNote();
@@ -788,7 +788,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 	    GetDosPgmName(ul, temp);
 	    if (!strstr(temp, "FM/2") &&
 		!strstr(temp, "AV/2")) {
-	      wipeallf("%s\\*", szTempName);
+	      wipeallf(TRUE, "%s\\*", szTempName);
 	      DosDeleteDir(szTempName);
 	    }
 	  }

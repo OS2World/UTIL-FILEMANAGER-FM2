@@ -1073,7 +1073,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      sprintf(prompt, GetPString(IDS_DELETINGTEXT), list[x]);
 	      WinSetWindowText(WinWindowFromID(hwndFrame, SEEALL_STATUS),
 			       prompt);
-	      error = (APIRET) wipeallf("%s%s*",
+	      error = (APIRET) wipeallf(FALSE, "%s%s*",
 					list[x],
 					(*list[x] &&
 					 list[x][strlen(list[x]) - 1] !=

@@ -3377,7 +3377,7 @@ STRINGTABLE
     IDS_DOSQAPPTYPEFAILEDTEXT3            "The drive specified in %s is locked or invalid."
     IDS_LOCKEDFILEWARNING                 "The file %s is locked! Do you wish to unlock it and complete the requested operation"
     IDS_LOCKEDFILEWARNINGTITLE            "Locked file!"
-    IDS_READONLYFILEWARNING               "The file %s is Read Only! Do you wish continue the requested operation"
+    IDS_READONLYFILEWARNING               "The file %s is Read Only! Do you wish continue the requested operation?"
     IDS_READONLYFILEWARNINGTITLE          "Read Only file!"
     IDS_NOTARGETSET                       "A target directory has not been set"
     IDS_LEFTRIGHTOUTOFSYNC                "pcil and pcir out of sync"

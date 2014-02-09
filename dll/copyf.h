@@ -28,6 +28,6 @@ BOOL WriteLongName(CHAR * filename, CHAR * longname);
 APIRET docopyf(INT type, CHAR * oldname, CHAR * newname);
 INT make_deleteable(CHAR * filename, INT error, BOOL Dontcheckreadonly);
 INT unlinkf(CHAR * string);
-INT wipeallf(CHAR * string, ...);
+INT wipeallf(BOOL ignorereadonly, CHAR * string, ...);
 
 #endif	// COPYF_H
