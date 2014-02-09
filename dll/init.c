@@ -1252,7 +1252,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     * one or more miniapp but not to FM/2
     */
   size = sizeof(BOOL);  
-  PrfQueryProfileData(fmprof, realappname, "AppSeparateSettings", &fAppSeparateSettings, &size);
+  PrfQueryProfileData(fmprof, realappname, "SeparateParms", &fAppSeparateSettings, &size);
   if (!fAppSeparateSettings)
     strcpy(appname, FM3Str);
   else

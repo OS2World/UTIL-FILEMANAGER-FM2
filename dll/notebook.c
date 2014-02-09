@@ -1623,7 +1623,7 @@ MRESULT EXPENTRY CfgGDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       dummy = WinQueryButtonCheckstate(hwnd, CFGG_APPSEPARATESETTINGS);
       if (dummy != fAppSeparateSettings) {
         fAppSeparateSettings =  dummy;
-        PrfWriteProfileData(fmprof, realappname, "AppSeparateSettings",
+        PrfWriteProfileData(fmprof, realappname, "SeparateParms",
 			&fAppSeparateSettings, sizeof(BOOL));
 	WinSendMsg((HWND) WinQueryWindowULong(hwnd, QWL_USER),
                    UM_UNDO, MPVOID, MPVOID);
