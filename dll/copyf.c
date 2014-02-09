@@ -33,6 +33,8 @@
   04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog for delete of
                 readonly files
   10 Mar 13 GKY Improvrd readonly check on delete to allow cancel and don't ask again options
+  09 Feb 14 GKY Modified wipeallf to allow suppression of the readonly warning on delete
+                of temporary files
 
 ***********************************************************************/
 

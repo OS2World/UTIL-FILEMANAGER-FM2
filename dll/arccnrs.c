@@ -90,6 +90,7 @@
   05 Aug 13 GKY Changes to allow Lzip to work with AV
   11 Aug 13 GKY Removed code that attempted to use the archive name as the extract directory
                 It was never fully implemented and doesn't make sense for the container.
+  09 Feb 14 GKY Fix trap on opening a file without an extention
 
 ***********************************************************************/
 

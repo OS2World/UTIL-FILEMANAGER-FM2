@@ -57,12 +57,14 @@
                 one or more miniapp but not to FM/2
   13 Dec 09 GKY Updated Quick page "Default" to match current defaults; added Gregg's way
                 option to Quick page.
-  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR
+  17 Jan 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR
                 CONSTANT * as CHAR *.
-  24 OCT 10 GKY Fixed spurious error message when labels in tree are changed with a
+  24 Oct 10 GKY Fixed spurious error message when labels in tree are changed with a
                 "not ready" drive selected
   04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
                 for delete of readonly files
+  09 Feb 14 GKY Fix separate parameters. Moved to general page renamed separate settings
+                for apps.
 
 ***********************************************************************/
 

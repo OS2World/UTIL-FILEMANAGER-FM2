@@ -114,6 +114,8 @@
                 for delete of readonly files
   09 Feb 14 GKY Fix separate parameters. Moved to general page renamed separate settings
                 for apps.
+  09 Feb 14 GKY Modified wipeallf to allow suppression of the readonly warning on delete
+                of temporary files
 
 ***********************************************************************/
 
