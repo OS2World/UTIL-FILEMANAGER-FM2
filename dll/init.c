@@ -112,6 +112,8 @@
                 copy, move and delete operations
   04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
                 for delete of readonly files
+  09 Feb 14 GKY Fix separate parameters. Moved to general page renamed separate settings
+                for apps.
 
 ***********************************************************************/
 
@@ -658,7 +660,6 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   CHAR temp[CCHMAXPATH];
   CHAR *p;
   ULONG size;
-  BOOL fSeparateParmsApp;
 
   strcpy(dllfile, PCSZ_FM3RES);
   env = getenv(PCSZ_FM3INI);
@@ -947,15 +948,6 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   FillInDriveFlags(NULL);
 
   FindSwapperDat();
-
-  size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "SeparateParms",
-                      &fSeparateParms, &size);
-  size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, appname, "SeparateParms",
-		      &fSeparateParmsApp, &size);
-  if (!fSeparateParms && !fSeparateParmsApp)
-    strcpy(appname, FM3Str);
 
   // start help
   memset(&hini, 0, sizeof(HELPINIT));
@@ -1257,6 +1249,12 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     * aren't user settable; realappname should be used for setting applicable to
     * one or more miniapp but not to FM/2
     */
+  size = sizeof(BOOL);  
+  PrfQueryProfileData(fmprof, realappname, "AppSeparateSettings", &fAppSeparateSettings, &size);
+  if (!fAppSeparateSettings)
+    strcpy(appname, FM3Str);
+  else
+    strcpy(appname, realappname);
   size = sizeof(ULONG);
   PrfQueryProfileData(fmprof, appname, "MaxComLineStrg", &MaxComLineStrg, &size);
   // Give user one chance to reset the default command line length to 1024 (4os2's unexpanded max)

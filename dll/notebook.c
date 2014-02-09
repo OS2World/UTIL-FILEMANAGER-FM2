@@ -168,7 +168,6 @@ BOOL fRScanVirtual;
 BOOL fRScanSlow;
 BOOL fRScanNoWrite;
 BOOL fSaveState;
-BOOL fSeparateParms;
 BOOL fShowDriveOnly;
 BOOL fShowEnv;
 BOOL fShowDriveLabelInTree;
@@ -190,6 +189,7 @@ BOOL fVTreeOpensWPS;
 BOOL fVerify;
 BOOL fViewChild;
 BOOL fWarnReadOnly;
+BOOL fAppSeparateSettings;
 HINI fmprof;
 ULONG fwsAnimate;
 HWND hwndHelp;
@@ -1554,6 +1554,7 @@ MRESULT EXPENTRY CfgGDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinCheckButton(hwnd, CFGG_ERRORBEEPOFF, fErrorBeepOff);
     WinCheckButton(hwnd, CFGG_ALERTBEEPOFF, fAlertBeepOff);
     WinCheckButton(hwnd, CFGG_WARNREADONLY, fWarnReadOnly);
+    WinCheckButton(hwnd, CFGG_APPSEPARATESETTINGS, fAppSeparateSettings);
     {
       long th = fNoFinger ? 2 : (fNoDead ? 1 : 0);
       WinCheckButton(hwnd, CFGG_NODEAD, th);
@@ -1615,6 +1616,20 @@ MRESULT EXPENTRY CfgGDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_CLOSE:
     {
       long test;
+      BOOL dummy;
+
+      dummy = WinQueryButtonCheckstate(hwnd, CFGG_APPSEPARATESETTINGS);
+      if (dummy != fAppSeparateSettings) {
+        fAppSeparateSettings =  dummy;
+        PrfWriteProfileData(fmprof, realappname, "AppSeparateSettings",
+			&fAppSeparateSettings, sizeof(BOOL));
+	WinSendMsg((HWND) WinQueryWindowULong(hwnd, QWL_USER),
+                   UM_UNDO, MPVOID, MPVOID);
+        if (fAppSeparateSettings)
+          strcpy(appname, realappname);
+        else
+          strcpy(appname, FM3Str);
+      }
 
       test = WinQueryButtonCheckstate(hwnd, CFGG_NODEAD);
       fNoDead = (test == 1);
@@ -1681,7 +1696,7 @@ MRESULT EXPENTRY CfgGDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                         &fErrorBeepOff, sizeof(BOOL));
     fWarnReadOnly = WinQueryButtonCheckstate(hwnd, CFGG_WARNREADONLY);
     PrfWriteProfileData(fmprof, appname, "WarnReadOnly",
-			&fWarnReadOnly, sizeof(BOOL));
+                        &fWarnReadOnly, sizeof(BOOL));
     {
       WinSendDlgItemMsg(hwnd, CFGG_CMDLNLNGTH, SPBM_QUERYVALUE,
 			MPFROMP(&MaxComLineStrg), MPFROM2SHORT(0, SPBQ_DONOTUPDATE));
@@ -2031,7 +2046,6 @@ MRESULT EXPENTRY CfgMDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     WinCheckButton(hwnd, CFGM_USERLISTSWITCHES, fUserListSwitches);
     WinCheckButton(hwnd, CFGM_WSANIMATE, (fwsAnimate != 0));
-    WinCheckButton(hwnd, CFGM_SEPARATEPARMS, fSeparateParms);
     WinCheckButton(hwnd, CFGM_BLUELED, fBlueLED);
     WinCheckButton(hwnd, CFGM_SHOWTARGET, fShowTarget);
     WinEnableWindow(WinWindowFromID(hwnd, CFGM_STARTMAX), !(fStartMinimized));
@@ -2200,16 +2214,6 @@ MRESULT EXPENTRY CfgMDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  PostMsg(WinQueryWindow(hwndMain, QW_PARENT),
 		  WM_UPDATEFRAME, MPFROMLONG(FCF_SIZEBORDER), MPVOID);
 	SetTargetDir(hwnd, TRUE, NULL);
-      }
-      dummy = WinQueryButtonCheckstate(hwnd, CFGM_SEPARATEPARMS);
-      if (dummy != fSeparateParms) {
-	fSeparateParms = dummy;
-	PrfWriteProfileData(fmprof,
-			    appname,
-			    "SeparateParms",
-			    (PVOID) & fSeparateParms, sizeof(BOOL));
-	WinSendMsg((HWND) WinQueryWindowULong(hwnd, QWL_USER),
-		   UM_UNDO, MPVOID, MPVOID);
       }
     }
     break;

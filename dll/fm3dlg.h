@@ -45,6 +45,8 @@
   05 Jan 13 GKY Added an indicator (tetbox) that a list (snapshot) file is loaded.
   06 Jan 13 GKY Added optional confirmation dialogs for delete move and copy to compare dir Ticket 277
   06 Jan 13 GKY Added EA compare option to compare dir Ticket 80
+  09 Feb 14 GKY Fix separate parameters. Moved to general page renamed separate settings
+                for apps.
 
 ***********************************************************************/
 
@@ -679,6 +681,7 @@
 #define CFGG_ALERTBEEPOFF                                                               25218
 #define CFGG_ERRORBEEPOFF                                                               25219
 #define CFGG_WARNREADONLY                                                               25220
+#define CFGG_APPSEPARATESETTINGS                                                        25221
 
 #define CFGB_FRAME									25250
 #define CFGB_TOOLBARHELP								25251
@@ -702,9 +705,8 @@
 #define CFGM_EXTERNALVIEWER							25314
 #define CFGM_EXTERNALINIS								25315
 #define CFGM_EXTERNALCOLLECTOR						25316
-#define CFGM_SEPARATEPARMS								25317
-#define CFGM_BLUELED										25318
-#define CFGM_SHOWTARGET									25319
+#define CFGM_BLUELED										25317
+#define CFGM_SHOWTARGET									25318
 
 #define CFGV_FRAME										25330
 #define CFGV_EDITOR										25331

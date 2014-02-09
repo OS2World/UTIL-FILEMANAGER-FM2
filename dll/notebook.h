@@ -17,6 +17,8 @@
   06 Jun 09 GKY Add option to show file system type or drive label in tree
   04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
                 for delete of readonly files
+  09 Feb 14 GKY Fix separate parameters. Moved to general page renamed separate settings
+                for apps.
 
 ***********************************************************************/
 
@@ -90,7 +92,6 @@ extern BOOL fRScanVirtual;
 extern BOOL fRScanSlow;
 extern BOOL fRScanNoWrite;
 extern BOOL fSaveState;
-extern BOOL fSeparateParms;
 extern BOOL fShowDriveOnly;
 extern BOOL fShowEnv;
 extern BOOL fShowDriveLabelInTree;
@@ -112,6 +113,7 @@ extern BOOL fVTreeOpensWPS;
 extern BOOL fVerify;
 extern BOOL fViewChild;
 extern BOOL fWarnReadOnly;
+extern BOOL fAppSeparateSettings;
 extern HINI fmprof;
 extern ULONG fwsAnimate;
 extern HWND hwndHelp;

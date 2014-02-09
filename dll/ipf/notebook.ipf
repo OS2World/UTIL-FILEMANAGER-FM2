@@ -21,6 +21,8 @@
 .*               option to Quick page. 
 .* 04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
 .*               for delete of readonly files
+.* 09 Feb 14 GKY Fix separate parameters. Moved to general page renamed separate settings
+.*               for apps.
 .*
 .***********************************************************************
 .*
@@ -576,16 +578,6 @@ to the user directory quicklist and Walk Directories dialog. If grayed,
 FM/2 also places temporary entries for any directory chosen using the
 :link reftype=hd res=91500.Walk Directories:elink. dialog.
 :p.
-The :hp6.Separate parameters:ehp6. toggle tells FM/2 whether to use
-separate parameters for many of the mini-apps (like FM/2 lite, VDIR and VTREE). 
-If you select it with FM/2 running it applies to all the mini-apps. However,
-if you select it with a mini-app running it will only effect that app. If
-checked, you'll have to set up the effected applications separately, but
-configurations can be different than that in the monolithic FM/2
-application itself. If you don't understand that, let's try this&colon.
-if you run the Visual Tree program a lot, you'll probably want to check
-this. Otherwise, you won't.
-:p.
 If you check the :hp6.Free Drive Tree:ehp6. toggle, FM/2 will allow you
 to move the Drive Tree Container. Otherwise it "pins" it in the upper
 left corner of the client window.
@@ -662,6 +654,16 @@ appear when you attempt to delete a readonly file or copy/move a file
 over a readony file. Otherwise the file will be deleted/overwritten which 
 is what FM/2 always did for delete but not for copy/move which failed with 
 an error message.
+:p.
+The :hp6.Separate settings for Apps:ehp6. toggle tells FM/2 whether to use
+separate parameters for many of the mini-apps (like FM/2 lite, VDIR and VTREE). 
+If you select it with FM/2 running it applies to all the mini-apps. However,
+if you select it with a mini-app running it will only effect that app. If
+checked, you'll have to set up the effected applications separately, but
+configurations can be different than that in the monolithic FM/2
+application itself. If you don't understand that, let's try this&colon.
+if you run the Visual Tree program a lot, you'll probably want to check
+this. Otherwise, you won't.
 :p.
 The :hp6.Verify disk writes:ehp6. toggle turns system-level write
 verification on and off. This is like typing :link reftype=launch
