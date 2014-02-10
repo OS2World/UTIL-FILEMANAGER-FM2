@@ -80,7 +80,7 @@ VOID APIENTRY deinit(ULONG why)
 	do {
 	  strcpy(enddir, ffb3.achName);
 	  if (ffb3.attrFile & FILE_DIRECTORY) {
-	    wipeallf("%s\\*", s);
+	    wipeallf(TRUE, "%s\\*", s);
 	    DosDeleteDir(s);
 	  }
 	  else
