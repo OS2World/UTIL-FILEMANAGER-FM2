@@ -50,6 +50,7 @@
  *       of double quotes. SED seems to choke on an odd number, even if they are
  *       properly escaped.
  *    12 May 10 JBS Ticket 424: Deleted code related to obsolete "internal\makefile"
+ *    09 Feb 14 JBS Ticket 499: Changed bldlevel date format to YYY-MM-DD
  *
 */
 
@@ -142,6 +143,7 @@ parse value date('s') with year 5 month 7 day
 last_year = year - 1
 
 /* Process the request */
+/*                              month || '/' || day || '/' || year || ' ' || ,  */ /* or day month year? */
 select
    when ext = 'DEF' then
       do
@@ -171,7 +173,7 @@ select
          description    = GetFromRepository( 'desc.' || left(file, pos('.', file) - 1), '', 579 /* i.e. disable length check */ )
 
          option_description = '@#' || vendor || ':' || revision || '#@##1## ' || ,
-                              month || '/' || day || '/' || year || ' ' || ,  /* or day month year? */
+                              year || '-' || month || '-' || day || ' ' || ,
                               right(major, 2, '0') || ':' || right(minor, 2, '0') || ':' || right(CSDlevel, 2, '0') || ,
                               copies(' ', 6) || buildhost || ':' || asd_feature_id || ':' || ,
                               language_code || ':' || country_code || ':' || build || ':' || ,
