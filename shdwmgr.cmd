@@ -1,30 +1,38 @@
 /*
  * $Id$
  *
- * ShdwMgr: Create Shadows for FM/2 installation */
+ * ShdwMgr: Create Shadows for FM/2 installation
+ *
+ * 14 Feb 14  JBS Ticket 501: Corrected a syntax error and improved the error handling.
+ *                            Errors are now logged to a file.
  *
  */
 
 call RxFuncAdd 'SysLoadFuncs', 'REXXUTIL', 'SysLoadFuncs'
 call SysLoadFuncs
 
-parse upper arg package_parm .
-if strip(package_parm) == '' then
-   package_parm = 'FM2'
-else
-   if wordpos(package_parm, 'FM2 FM2UTILS') = 0 then
-      do
-         say 'Invalid parameter: 'arg(1)
-         say 'Program aborted....'
-         '@pause'
-         exit 1
-      end
-
 parse source . . thispgm
 thisdir = left(thispgm, lastpos('\', thispgm) - 1)
 if length(thisdir) = 2 then
    thisdir = thisdir || '\'
 call directory thisdir
+parse value filespec('N', thispgm) with program_stem '.' .
+
+parse upper arg package_parm .
+if strip(package_parm) == '' then
+   package_parm = 'FM2'
+pkgnum = wordpos(package_parm, 'FM2 FM2UTILS')
+
+error_log = program_stem || pkgnum || '.err'
+call SysFileDelete error_log              /* Delete previous error logs for this package */
+errors = 0
+
+if pkgnum = 0 then
+   do
+      call lineout error_log, 'Invalid parameter:' package_parm
+      call lineout error_log, 'Program aborted....'
+      exit 1
+   end
 
 i = 0
 
@@ -60,33 +68,36 @@ do i = 1 to Shadow.0
          fullfilename = stream(thisdir || '\' || Shadow.i.filename, 'c', 'query exists')
          if fullfilename = '' then
             do
-               say 'Unable to find file: 'Shadow.i.filename
-               say 'thisdir: 'thisdir
-               '@pause'
-               exit 1
+               call lineout error_log, 'Unable to find file: 'Shadow.i.filename
+               errors = errors + 1
             end
-         lenbytes = X2C( D2X( LENGTH( Shadow.i.longname ), 4 ))
-         rc = SysPutEA( fullfilename, '.LONGNAME', X2C('FDFF') || REVERSE( lenbytes ) || Shadow.i.longname )
-         if rc \= 0 then
-            do
-               say 'Error in setting .LONGNAME EA: 'rc
-               say 'Exiting...'
-               '@pause'
-               exit 2
-            end
-         p = lastpos('\', Shadow.i.filename)
-         if p > 0 then
-            shadowidname = substr(Shadow.i.filename, p + 1)
          else
-            shadowidname = Shadow.i.filename
-         rc = SysCreateObject( 'WPShadow', Shadow.i.longname, Shadow.i.folderid , 'SHADOWID='fullfilename';OBJECTID=<FM3_Shadow_'shadowidname'>;', 'R')
-         if rc \= 1 then
             do
-               say 'Unable to create shadow object for :'Shadow.i.filename
-               say 'Exiting...'
-               '@pause'
-               exit 3
+               lenbytes = X2C( D2X( LENGTH( Shadow.i.longname ), 4 ))
+               rc = SysPutEA( fullfilename, '.LONGNAME', X2C('FDFF') || REVERSE( lenbytes ) || Shadow.i.longname )
+               if rc \= 0 then
+                  do
+                     call lineout error_log, 'Error in setting .LONGNAME EA: 'rc
+                     errors = errors + 1
+                  end
+
+               p = lastpos('\', Shadow.i.filename)
+               if p > 0 then
+                  shadowidname = substr(Shadow.i.filename, p + 1)
+               else
+                  shadowidname = Shadow.i.filename
+               rc = SysCreateObject( 'WPShadow', Shadow.i.longname, Shadow.i.folderid , 'SHADOWID='fullfilename';OBJECTID=<FM3_Shadow_'shadowidname'>;', 'R')
+               if rc \= 1 then
+                  do
+                     call lineout error_log, 'Unable to create shadow object for :'Shadow.i.filename
+                     errors = errors + 1
+                  end
             end
       end
 end
+if errors > 0 then
+   do
+      call lineout error_log, errors 'errors encountered.'
+      call stream error_log, 'c', 'close'
+   end
 
