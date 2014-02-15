@@ -30,6 +30,7 @@
   11 Jan 08 GKY Replace "ARCHIVER.BB2" in string file with global set at compile in init.c
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   13 Aug 11 GKY Change to Doxygen comment format
+  15 Feb 14 GKY Assure the title is blank on the execute dialog call with the "see" button
 
 ***********************************************************************/
 
@@ -838,12 +839,14 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  if (p)
 	    *p = 0;
 	  {
-	    EXECARGS ex;
+            EXECARGS ex;
 
+            memset(&ex, 0, sizeof(EXECARGS));
 	    ex.flags = SEPARATEKEEP | WINDOWED | MAXIMIZED;
 	    ex.commandline = tempargs;
 	    *ex.path = 0;
-	    *ex.environment = 0;
+            *ex.environment = 0;
+            *ex.title = 0;
 	    if (WinDlgBox(HWND_DESKTOP,
 			  hwnd,
 			  CmdLineDlgProc, FM3ModHandle, EXEC_FRAME, &ex) == 1)

@@ -21,6 +21,7 @@
   23 Oct 10 GKY Changes to populate and utilize a HELPTABLE for context specific help
   11 Aug 13 GKY Fix directory create failure on extract to directory based on archive name
                 if the name needed quoting.
+  15 Feb 14 GKY Assure the title is blank on the execute dialog call with the "see" button
 
 ***********************************************************************/
 
@@ -511,7 +512,8 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  ex.commandline = s;
 	  ex.flags = WINDOWED | SEPARATEKEEP | MAXIMIZED;
 	  *ex.path = 0;
-	  *ex.environment = 0;
+          *ex.environment = 0;
+          *ex.title = 0;
 	  if (WinDlgBox(HWND_DESKTOP,
 			hwnd,
 			CmdLineDlgProc,
