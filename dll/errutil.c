@@ -6,7 +6,7 @@
   Error reporting
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2013 Steven H. Levine
+  Copyright (c) 2004, 2014 Steven H. Levine
 
   12 Aug 04 SHL Comments
   23 May 05 SHL Move saymsg here
@@ -38,6 +38,7 @@
   10 Mar 13 GKY Improvrd readonly check on delete to allow cancel and don't ask again options
 		Added saymsg2 for this purpose
   07 Nov 13 SHL Update comments
+  15 Feb 14 GKY Improvements to saymsg2 some code cleanup
 
 ***********************************************************************/
 
@@ -241,7 +242,8 @@ static VOID formatWinError(PSZ pszBuf, UINT cBufBytes,
   vsprintf(pszBuf, pszFmt, pva);
 
   if (pszBuf[cBufBytes - 1]) {
-    fprintf(stderr, "Buffer overflow in formatWinError - need %u bytes\n", strlen(pszBuf) + 1);
+    fprintf(stderr, "Buffer overflow in formatWinError - need %u bytes\n",
+            strlen(pszBuf) + 1);
     fflush(stderr);
   }
 
@@ -369,7 +371,8 @@ APIRET saymsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszFmt, ...)
  * Local errors written to stderr
  */
 
-APIRET saymsg2(PCSZ pszButtonNames, int DefaultButton, HWND hwnd, PCSZ pszTitle, PCSZ pszFmt, ...)
+APIRET saymsg2(PCSZ pszButtonNames, int DefaultButton, HWND hwnd,
+               PCSZ pszTitle, PCSZ pszFmt, ...)
 {
   ULONG i;
   APIRET rc;
@@ -390,11 +393,10 @@ APIRET saymsg2(PCSZ pszButtonNames, int DefaultButton, HWND hwnd, PCSZ pszTitle,
   }
 
   memset(mb2dBut, 0, sizeof(MB2D) * 4);
-  //fixme to use GetPString
-  strcpy(mb2dBut[0].achText, /*pszButtonNames[0] ? &pszButtonNames[0] :*/ GetPString(IDS_MB2DYES));
-  strcpy(mb2dBut[1].achText, /*pszButtonNames[1] ? &pszButtonNames[1] :*/ GetPString(IDS_MB2DYESDONTASK));
-  strcpy(mb2dBut[2].achText, /*pszButtonNames[2] ? &pszButtonNames[2] :*/ GetPString(IDS_MB2DNO));
-  strcpy(mb2dBut[3].achText,/* pszButtonNames[3] ? &pszButtonNames[3] :*/ GetPString(IDS_MB2DCANCELOP));
+  strcpy(mb2dBut[0].achText,GetPString(IDS_MB2DYES));
+  strcpy(mb2dBut[1].achText,GetPString(IDS_MB2DYESDONTASK));
+  strcpy(mb2dBut[2].achText,GetPString(IDS_MB2DNO));
+  strcpy(mb2dBut[3].achText,GetPString(IDS_MB2DCANCELOP));
   mb2dBut[0].idButton = 1;
   mb2dBut[1].idButton = 2;
   mb2dBut[2].idButton = 3;
@@ -406,14 +408,14 @@ APIRET saymsg2(PCSZ pszButtonNames, int DefaultButton, HWND hwnd, PCSZ pszTitle,
     pmbInfo->cb		= ulInfoSize;
     pmbInfo->hIcon      = 0;
     pmbInfo->cButtons   = 4;
-    pmbInfo->flStyle    = MB_MOVEABLE;
+    pmbInfo->flStyle    = MB_MOVEABLE | MB_SYSTEMMODAL | MB_ICONQUESTION ;
     pmbInfo->hwndNotify = NULLHANDLE;
     for (i = 0; i < 4; i++) {
       memcpy( pmbInfo->mb2d+i , mb2dBut+i , sizeof(MB2D));
     }
     rc = WinMessageBox2(HWND_DESKTOP, hwnd,
 			szMsg, pszTitle, 1234,
-			pmbInfo);
+                        pmbInfo);
     free(pmbInfo);
     return rc;
   }
@@ -459,7 +461,8 @@ VOID Win_Error(HWND hwndErr, HWND hwndOwner,
 
   // Format callers message
   va_start(va, pszFmt);
-  formatWinError(szMsg, sizeof(szMsg), hwndErr, hwndOwner, pszSrcFile, uSrcLineNo, pszFmt, va);
+  formatWinError(szMsg, sizeof(szMsg), hwndErr, hwndOwner, pszSrcFile,
+                 uSrcLineNo, pszFmt, va);
   va_end(va);
 
   showMsg(MB_ENTER | MB_ICONEXCLAMATION, hwndOwner, GetPString(IDS_GENERR2TEXT),
@@ -482,7 +485,8 @@ VOID Win_Error_NoMsgBox(HWND hwndErr, HWND hwndOwner,
 
   // Format callers message
   va_start(va, pszFmt);
-  formatWinError(szMsg, sizeof(szMsg), hwndErr, hwndOwner, pszSrcFile, uSrcLineNo, pszFmt, va);
+  formatWinError(szMsg, sizeof(szMsg), hwndErr, hwndOwner, pszSrcFile, uSrcLineNo,
+                 pszFmt, va);
   va_end(va);
 
   fputs(szMsg, stderr);
@@ -494,4 +498,4 @@ VOID Win_Error_NoMsgBox(HWND hwndErr, HWND hwndOwner,
 
 } // Win_Error_NoMsgBox
 
-#pragma alloc_text(ERROR,Win_Error,Dos_Error,saymsg,showMsg,Runtime_Error,GetMSecTimer)
+#pragma alloc_text(ERROR,Win_Error,Dos_Error,saymsg,saymsg2,showMsg,Runtime_Error,GetMSecTimer)
