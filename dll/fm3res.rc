@@ -6,7 +6,7 @@
   Command resources
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2012 Steven H. Levine
+  Copyright (c) 2003, 2014 Steven H. Levine
 
   08 Feb 03 SHL Enable SYS_FRAME
   17 Feb 07 GKY Add Make directory to white space directory container menu
@@ -67,6 +67,7 @@
   10 Mar 13 GKY Improvrd readonly check on delete to allow cancel and don't ask again options
                 Added saymsg2 for this purpose
   28 May 13 SHL Correct typos
+  15 Feb 14 GKY Improvements to saymsg2 added accel keys
   
 ***********************************************************************/
 
@@ -3384,10 +3385,10 @@ STRINGTABLE
     IDS_CONFIRMDELETE                     "Confirm Delete" 
     IDS_DOYOUWISHTODELETE                 "Do you wish to delete %s"
     IDS_DROPSETSTARGET                    "Do you wish to use this directory as the new target directory? \nYes sets target\nNo proceeds with drag/drop operation to current target"
-    IDS_MB2DYES                           "Yes"               
-    IDS_MB2DYESDONTASK                    "Yes don't ask again"
-    IDS_MB2DNO                            "No"                
-    IDS_MB2DCANCELOP                      "Cancel operation"  
+    IDS_MB2DYES                           "~Yes"               
+    IDS_MB2DYESDONTASK                    "Yes ~don't ask again"
+    IDS_MB2DNO                            "~No"                
+    IDS_MB2DCANCELOP                      "~Cancel operation"  
     IDS_SNAPSHOTFILEBADFORMAT             "The snapshot file lists no files or is not formatted correctly"
     IDS_SNAPSHOTFILELOADFAILED            "The snapshot file %s failed to load"
     IDS_LZIPLIMITATION                    "Lzip Limitation"
