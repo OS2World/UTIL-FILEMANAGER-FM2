@@ -69,16 +69,19 @@
  *          - Improved error handling
  *          - Added support for FTP and NNTP commands
  *    07 Aug 11 JBS Ticket 462: Fix bug in NNTP "To" code
+ *    11 Feb 14 JBS Ticket 462: Improved handling of missing cfg file.
  *
  * To Do
+ *    -  Better error handling for emails/NNTP
+ *    -  Support multiple description lines for SMTP/NNTP (to improve readabliity on verification screens)
  *    -  Make sure ##macro## key_values are filled before use?
- *    -  Better error handling for emails
  *    -  More flexibility for SMTP settings for the "Commit work" (to FM/2 developers)
  *       and the "Please move uplaoded file" (to Netlabs) emails. Currently only the
  *       first SMTP definition found in the CFG file will be used for both.
  *    -  Support multiple commands for an SMTP (or NNTP or FTP) task?
  *    -  Support configurable Hobbes names and email address? via parameter or CFG file?
  *    -  "hidden" display/entry for passwords?
+ *    -  Prompt for edit to fix or delete the Hobbes TXT file if invalid email address found
  *
 */
 
@@ -87,8 +90,8 @@ n = setlocal()
 signal on Error
 signal on Failure name Error
 signal on Notready name Error
+signal on Syntax name Error
 signal on Novalue name Error
-signal on SYNTAX name Error
 /* JBS: for debugging */
 signal on Novalue
 
@@ -137,7 +140,7 @@ select
          say
          say 'A line that was not:'
          say '  - blank'
-         say '  - a cooment line'
+         say '  - a comment line'
          say '  - a section name line (e.g. [FTP])'
          say '  - a "key-name = key-value" line'
          say 'was found at or around line:' (cfginit_rc - 10000)
@@ -377,17 +380,19 @@ select
                   say
                   if UploadRelease() = 0 then
                      do
-                        '@pause'
+                        say
+                        say 'Attempting to notify Netlabs of the upload...'
+                        say
                         call Email user_choice
                      end
-                  else	
+                  else
                      say 'Upload(s) failed. Email to Netlabs cancelled.'
                   prev_user_choice = user_choice
               end
             when user_choice = mainmenu.Announce_num then
                do /* Announce the release. */
-                  if Email(user_choice) = 0 then
-                     call AnnounceToNewsgroups
+                  call Email user_choice
+                  call AnnounceToNewsgroups
                   prev_user_choice = user_choice
               end
             when user_choice = mainmenu.TRAC_update_and_Next_ver_num then
@@ -421,8 +426,13 @@ Email: procedure expose (globals)
    parse arg user_choice
    if cfg.SMTP.0 = 0 then
       do
-         say 'Error: Cannot send Email. No SMTP sections were found in RELEASETOOL.CFG!'
-         return -1
+        if \cfg.file_exists then
+          say 'Error: Cannot send Email without the configuration file:' cfg.file
+        else
+          say 'Error: Cannot send Email. No SMTP sections were found in' cfg.file ||'.'
+        say
+        '@pause'
+        return -1
       end
    rcx = -1
    email.body_file = SysTempFilename('SMTPBody.???')
@@ -984,7 +994,7 @@ rxftperr:
          call SysFileSearch 'Email address:', Hobbes.TxtFilename, 'lines.'
          if lines.0 = 1 then
             Hobbes.uploader_email_address = word(lines.1, 3)
-         else  /* JBS: Prompt for edit to fix or delete the file here? */
+         else
             Hobbes.uploader_email_address = 'N/A (' || Hobbes.TxtFilename 'has zero or more than one email addresses!)'
       end
    else
@@ -1151,8 +1161,55 @@ SetVer: procedure expose (globals)
 return
 
 CfgInit: procedure expose (globals)
-   cfg.           = ''
-   cfg.file       = 'ReleaseTool.cfg'
+   cfg.            = ''
+/*
+   trace '?i'
+*/
+   cfg.file        = 'ReleaseTool.cfg'
+   cfg.file_exists = (stream(cfg.file, 'c', 'query exists') \= '')
+   if  \cfg.file_exists then
+     do
+       template_file = left(cfg.file, lastpos('.', cfg.file)) || 'tmp'
+       /* JBS: Check for missing template file? */
+       no_cfg_option = 0
+       do until wordpos(no_cfg_option, '1 2 3 4') > 0
+         call SysCls
+         say
+         say 'No' cfg.file 'file found.'
+         say
+         say 'Options:'
+         say '   1. Proceed without FTP, SMTP and NNTP features until one is configured.'
+         say '   2. Copy the template file (' || template_file || ') to' cfg.file 'and proceed'
+         say '         with (mostly) invalid CFG data.'
+         say '   3. Copy the template file to' cfg.file 'and edit it right now with'
+         say '         your SVN_EDITOR to suit your environment.'
+         say '   4. Exit now, create your own' cfg.file 'and restart ReleaseTool later.'
+         say
+         call charout , 'Enter the number of your choice: '
+         no_cfg_option = SysGetKey()
+         say
+         select
+           when no_cfg_option = 1 then
+             cfg.file_exists = 0
+           when no_cfg_option = 2 then
+             do
+               call CopyTemplateFile template_file, cfg.file /* No return on error */
+               cfg.file_exists = 1
+             end
+           when no_cfg_option = 3 then
+             do
+               call CopyTemplateFile template_file, cfg.file /* No return on error */
+               cmd.editor cmd.editorparams cfg.file
+               cfg.file_exists = 1
+             end
+           when no_cfg_option = 4 then
+             exit
+           otherwise
+             nop
+         end
+       end
+     end
+
    cfg.crlf       = '0D0A'x
    cfg.closing    = cfg.crlf || cfg.crlf || '.'
    cfg.user_agent = 'FM2ReleaseTool'
@@ -1176,91 +1233,125 @@ CfgInit: procedure expose (globals)
    retval = 0
    linenum = 0
    node = ''
-   do while (lines(cfg.file) > 0 & retval = 0)
-      parse value linein(cfg.file) || ';' with line ';'
-      linenum = linenum + 1
-      line = strip(line)
-      select
-         when line = '' then
-            nop      /* Skip blank/empty lines */
-         when left(line, 1) = ';' then
-            nop      /* Skip comment lines */
-         when left(line, 1) = '[' then
-            do
-               select
-                  when node = 'FTP' then
-                     do
-                        cfg.node.n.directory.0 = d
-                        cfg.node.n.directory.d.file.0 = f
-                     end
-                  when node = 'SMTP' | node = 'NNTP' then
-                     do
-                        cfg.node.n.signature.0 = s
-                        s = 0
-                     end
-                  otherwise
-                     nop
-               end
-               parse upper var line '[' node ']'
-               cfg.node.0 = cfg.node.0 + 1
-               n = cfg.node.0
-               d = 0
-               f = 0
-               s = 0
-            end
-         when pos('=', line) = 0 then
-            retval = 10000 + linenum
-         otherwise
-            do
-               parse var line key_name '=' key_value
-               key_name = translate(strip(key_name))
-               key_value = strip(key_value)
-               p =  lastpos(';', key_value)
-               if p = 1 then
-                  do
-                     retval = 10000 + linenum
-                     iterate
-                  end
-               else if p > 1 then
-                  key_value = strip(left(key_value, p - 1))
-               select
-                  when wordpos(key_name, cfg.node.keys) = 0 then
-                     retval = -(10000 + linenum)
-                  when (node = 'SMTP' | node = 'NNTP') & key_name = 'SIGNATURE' then
-                     do
-                        s = s + 1
-                        cfg.node.n.signature.s = key_value
-                     end
-                  when node = 'FTP' & key_name = 'DIRECTORY' then
-                     do
-                        d = d + 1
-                        cfg.node.n.directory.d = key_value
-                     end
-                  when node = 'FTP' & key_name = 'FILE' then
-                     do
-                        if d = 0 then
-                           do
-                              d = 1
-                              cfg.node.n.directory.d = ''
-                           end
-                        f = f + 1
-                        cfg.node.n.directory.d.file.f = key_value
-                     end
-                  otherwise
-                     cfg.node.n.key_name = key_value
-               end
-            end
-      end
-   end
-   if node = 'FTP' then
-      do
-         cfg.node.n.directory.0 = d
-         cfg.node.n.directory.d.file.0 = f
-      end
-   else if (node = 'SMTP' | node = 'NNTP') then
-      cfg.node.n.signature.0 = s
-   call stream cfg.file, 'c', 'close'
+   if cfg.file_exists then
+     do
+       do while (lines(cfg.file) > 0 & retval = 0)
+          parse value linein(cfg.file) || ';' with line ';'
+          linenum = linenum + 1
+          line = strip(line)
+          select
+             when line = '' then
+                nop      /* Skip blank/empty lines */
+             when left(line, 1) = ';' then
+                nop      /* Skip comment lines */
+             when left(line, 1) = '[' then
+                do
+                   select
+                      when node = 'FTP' then
+                         do
+                            cfg.node.n.directory.0 = d
+                            cfg.node.n.directory.d.file.0 = f
+                         end
+                      when node = 'SMTP' | node = 'NNTP' then
+                         do
+                            cfg.node.n.signature.0 = s
+                            s = 0
+                         end
+                      otherwise
+                         nop
+                   end
+                   parse upper var line '[' node ']'
+                   cfg.node.0 = cfg.node.0 + 1
+                   n = cfg.node.0
+                   d = 0
+                   f = 0
+                   s = 0
+                end
+             when pos('=', line) = 0 then
+                retval = 10000 + linenum
+             otherwise
+                do
+                   parse var line key_name '=' key_value
+                   key_name = translate(strip(key_name))
+                   key_value = strip(key_value)
+                   p =  lastpos(';', key_value)
+                   if p = 1 then
+                      do
+                         retval = 10000 + linenum
+                         iterate
+                      end
+                   else if p > 1 then
+                      key_value = strip(left(key_value, p - 1))
+                   select
+                      when wordpos(key_name, cfg.node.keys) = 0 then
+                         retval = -(10000 + linenum)
+                      when (node = 'SMTP' | node = 'NNTP') & key_name = 'SIGNATURE' then
+                         do
+                            s = s + 1
+                            cfg.node.n.signature.s = key_value
+                         end
+                      when node = 'FTP' & key_name = 'DIRECTORY' then
+                         do
+                            d = d + 1
+                            cfg.node.n.directory.d = key_value
+                         end
+                      when node = 'FTP' & key_name = 'FILE' then
+                         do
+                            if d = 0 then
+                               do
+                                  d = 1
+                                  cfg.node.n.directory.d = ''
+                               end
+                            f = f + 1
+                            cfg.node.n.directory.d.file.f = key_value
+                         end
+                      otherwise
+                         cfg.node.n.key_name = key_value
+                   end
+                end
+          end
+       end
+       if node = 'FTP' then
+          do
+             cfg.node.n.directory.0 = d
+             cfg.node.n.directory.d.file.0 = f
+          end
+       else if (node = 'SMTP' | node = 'NNTP') then
+          cfg.node.n.signature.0 = s
+       call stream cfg.file, 'c', 'close'
+     end
 return retval
+
+CopyTemplateFile: procedure
+  parse arg template_file, cfg_file
+  do i = 1 to 2
+    if stream(template_file, 'c', 'query exists') = '' then
+      do
+        say
+        say 'Unable to find template file:' template_file
+        if i = 1 then
+          do
+            say 'Trying to get one from the repository...'
+            'svn update' template_file
+          end
+        else
+          do
+            say 'svn update failed.'
+            say 'Exiting...'
+            exit
+          end
+      end
+  end
+  signal off error
+  '@copy' template_file cfg_file '>NUL 2>NUL'
+  if rc \= 0 then
+    do
+      say 'Copy of template file failed.'
+      say 'Exiting...'
+      exit
+    end
+  signal on error
+return
 
 DisplayMenu: procedure expose (globals)
    do forever
@@ -1709,19 +1800,26 @@ TestWPI: procedure expose (globals)
 return
 
 UploadRelease: procedure expose (globals)
-   if available.RXFTP = 0 then
+  rcx = 0
+  select
+    when (available.RXFTP = 0 | \cfg.file_exists) then
       do
-         say 'Until RXFTP.DLL is placed in a directory on the LIBPATH,'
-         say 'manual uploading will be required.'
-         say
-         call charout , 'Would you like a commandline session to upload? (Y/n) '
-         reply = translate(SysGetKey())
-         say
-         if reply \= 'N' then
-            call Commandline
-         say
+        if \cfg.file_exists then
+          say 'Until' cfg.file ' has been created and customized,'
+        else
+          say 'Until RXFTP.DLL is placed in a directory on the LIBPATH,'
+        say 'manual uploading will be required.'
+        say
+        call charout , 'Would you like a commandline session to upload? (Y/n) '
+        reply = translate(SysGetKey())
+        say
+        if reply \= 'N' then
+           call Commandline
+        else
+           rcx = 1
+        say
       end
-   else
+    otherwise
       do
          retval = 0
          do u = 1 to cfg.FTP.0
@@ -1831,172 +1929,182 @@ UploadRelease: procedure expose (globals)
                leave
          end
       end
+  end
 return rcx
 
 AnnounceToNewsgroups: procedure expose (globals)
-   body_file = SysTempFilename('NNTPBody.???')
-   call SetDefaultAnnouncementText body_file
-   cfg.NNTP.subject = 'FM/2' ver.full 'has been released.'
-   _text = '<Standard>'
-   do until ((option = 'C') | (option = 'Q'))
-      call SysCls
+  if \cfg.file_exists then
+    do
+      say 'Unable to post to newsgroups without the configuration file:' cfg.file
       say
-      say 'News: Verify/edit content'
-      say
-      say 'Subject  :' cfg.NNTP.subject
-      say 'Text     :' _text
-      say
-      say 'Type "C" to confirm the above and proceed.'
-      say '     "Q" to abort.'
-      say '     "S" to edit the subject.'
-      say '     "T" to edit the message text (in an editor).'
-      say
-      call charout, '==> '
-      option = translate(SysGetKey())
-      say
-      say
-      select
-         when ((option = 'C') | (option = 'Q')) then
-            nop
-         when option = 'S' then
-            do
-               say 'Enter the Subject (followed by the ENTER key):'
-               cfg.NNTP.subject = linein()
-            end
-         when option = 'T' then
-            do
-               b4_timestamp = SysGetFileDateTime(body_file)
-               say 'The current body of the newsgroup message will now be loaded into an editor.'
-               say 'Make desired changes, if any, and save the file.'
-               say
-               call charout, 'Press any key when ready to load the message body into an editor: '
-               call SysGetKey
-               say
-               call ExecCmd cmd.editor body_file
-               if b4_timestamp \= SysGetFileDateTime(body_file) then
-                  _text = '<Modified>'
-            end
-         otherwise
-            nop
-      end
-   end
-   if option = 'Q' then
-      rcx = -1      /* User aborted operation */
-   else
-      do s = 1 to cfg.NNTP.0
-         call SysCls
-         say
-         do until ((option = 'C') | (option = 'Q'))
-            call SysCls
-            say
-            say 'News: Verify/edit server-specific data for' cfg.NNTP.s.description
-            say
-            say 'Host     :' cfg.NNTP.s.host
-            say 'To       :' cfg.NNTP.s.to
-            say 'From     :' cfg.NNTP.s.from
-            say 'UserID   :' cfg.NNTP.s.userid
-            say 'Password :' cfg.NNTP.s.password
-            say
-            say 'Type "C" to confirm the above and send.'
-            say '     "Q" to abort sending this email.'
-            say '     "H" to change the name of the host.'
-            say '     "T" to change the list of newsgroups.'
-            say '     "F" to change the From address.'
-            say '     "U" to change the Userid.'
-            say '     "P" to change the Password.'
-            say
-            call charout, '==> '
-            option = translate(SysGetKey())
-            say
-            say
-            say
-            select
-               when option = 'H' then
-                  do
-                     say 'Enter the newsgroup host to use (followed by the ENTER key).'
-                     cfg.NNTP.s.host = linein()
-                  end
-               when option = 'T' then
-                  do
-                     say 'Enter a comma=separated list of newagroup(s) (followed by the ENTER key).'
-                     cfg.NNTP.s.to = linein()
-                  end
-               when option = 'F' then
-                  do
+      return
+    end
+  body_file = SysTempFilename('NNTPBody.???')
+  call SetDefaultAnnouncementText body_file
+  cfg.NNTP.subject = 'FM/2' ver.full 'has been released.'
+  _text = '<Standard>'
+  do until ((option = 'C') | (option = 'Q'))
+     call SysCls
+     say
+     say 'News: Verify/edit content'
+     say
+     say 'Subject  :' cfg.NNTP.subject
+     say 'Text     :' _text
+     say
+     say 'Type "C" to confirm the above and proceed.'
+     say '     "Q" to abort.'
+     say '     "S" to edit the subject.'
+     say '     "T" to edit the message text (in an editor).'
+     say
+     call charout, '==> '
+     option = translate(SysGetKey())
+     say
+     say
+     select
+        when ((option = 'C') | (option = 'Q')) then
+           nop
+        when option = 'S' then
+           do
+              say 'Enter the Subject (followed by the ENTER key):'
+              cfg.NNTP.subject = linein()
+           end
+        when option = 'T' then
+           do
+              b4_timestamp = SysGetFileDateTime(body_file)
+              say 'The current body of the newsgroup message will now be loaded into an editor.'
+              say 'Make desired changes, if any, and save the file.'
+              say
+              call charout, 'Press any key when ready to load the message body into an editor: '
+              call SysGetKey
+              say
+              call ExecCmd cmd.editor body_file
+              if b4_timestamp \= SysGetFileDateTime(body_file) then
+                 _text = '<Modified>'
+           end
+        otherwise
+           nop
+     end
+  end
+  if option = 'Q' then
+     rcx = -1      /* User aborted operation */
+  else
+     do s = 1 to cfg.NNTP.0
+        call SysCls
+        say
+        do until ((option = 'C') | (option = 'Q'))
+           call SysCls
+           say
+           say 'News: Verify/edit server-specific data for' cfg.NNTP.s.description
+           say
+           say 'Host     :' cfg.NNTP.s.host
+           say 'To       :' cfg.NNTP.s.to
+           say 'From     :' cfg.NNTP.s.from
+           say 'UserID   :' cfg.NNTP.s.userid
+           say 'Password :' cfg.NNTP.s.password
+           say
+           say 'Type "C" to confirm the above and send.'
+           say '     "Q" to abort sending this email.'
+           say '     "H" to change the name of the host.'
+           say '     "T" to change the list of newsgroups.'
+           say '     "F" to change the From address.'
+           say '     "U" to change the Userid.'
+           say '     "P" to change the Password.'
+           say
+           call charout, '==> '
+           option = translate(SysGetKey())
+           say
+           say
+           say
+           select
+              when option = 'H' then
+                 do
+                    say 'Enter the newsgroup host to use (followed by the ENTER key).'
+                    cfg.NNTP.s.host = linein()
+                 end
+              when option = 'T' then
+                 do
+                    say 'Enter a comma=separated list of newagroup(s) (followed by the ENTER key).'
+                    cfg.NNTP.s.to = linein()
+                 end
+              when option = 'F' then
+                 do
 /*
-                     say 'F.Y.I. The Hobbes email address is:' Hobbes.uploader_email_address
-                     say
-                  if reply \= '' then
-                     cfg.NNTP.s.from = reply
-                  else
-                     cfg.NNTP.s.from = Hobbes.uploader_email_address
+                    say 'F.Y.I. The Hobbes email address is:' Hobbes.uploader_email_address
+                    say
+                 if reply \= '' then
+                    cfg.NNTP.s.from = reply
+                 else
+                    cfg.NNTP.s.from = Hobbes.uploader_email_address
 */
-                     say 'Enter the From email address. (followed by the ENTER key).'
-                     say '(You may want to disguise the address to avoid spam.)'
-                     cfg.NNTP.s.from = linein()
-                  end
-               when option = 'U' then
-                  do
-                     say 'Enter the UserID (followed by the ENTER key):'
-                     cfg.NNTP.s.userid = linein()
-                  end
-               when option = 'P' then
-                  do
-                     say 'Enter the Password (followed by the ENTER key):'
-                     cfg.NNTP.s.password = linein()
-                  end
-               otherwise
-                  nop
-            end
-         end
-         if option = 'C' then
-            if cfg.NNTP.s.command \= '' then
-               do
-                  say 'Using external command(s) to post to newsgroup(s)...'
-                  _command = cfg.NNTP.s.command
-                  do while pos('##HOST##', _command) > 0
-                     parse var _command part1 '##HOST##' part2
-                     _command = part1 || cfg.NNTP.s.host || part2
-                  end
-                  do while pos('##PORT##', _command) > 0
-                     parse var _command part1 '##PORT##' part2
-                     _command = part1 || cfg.NNTP.s.port || part2
-                  end
-                  do while pos('##USERID##', _command) > 0
-                     parse var _command part1 '##USERID##' part2
-                     _command = part1 || cfg.NNTP.s.userid || part2
-                  end
-                  do while pos('##PASSWORD##', _command) > 0
-                     parse var _command part1 '##PASSWORD##' part2
-                     _command = part1 || cfg.NNTP.s.password || part2
-                  end
-                  do while pos('##MESSAGE_BODY_FILE##', _command) > 0
-                     parse var _command part1 '##MESSAGE_BODY_FILE##' part2
-                     _command = part1 || stream(body_file, 'c', 'query exists') || part2
-                  end
-                  do while pos('##FROM##', _command) > 0
-                     parse var _command part1 '##FROM##' part2
-                     _command = part1 || cfg.NNTP.s.from || part2
-                  end
-                  do while pos('##TO##', _command) > 0
-                     parse var _command part1 '##TO##' part2
-                     _command = part1 || cfg.NNTP.s.to || part2
-                  end
-                  rcx = ExecCmd(_command)
-               end
-            else
-               do
-                  cfg.NNTP.message_body = ''
-                  do while lines(body_file) > 0
-                     cfg.NNTP.message_body = cfg.NNTP.message_body || linein(body_file) || cfg.crlf
-                  end
-                  call stream body_file, 'c', 'close'
-                  rcx = SendNNTP(s)
-               end
-         else
-            rcx = -1 /* User aborted */
-      end
-   call SysFileDelete body_file
+                    say 'Enter the From email address. (followed by the ENTER key).'
+                    say '(You may want to disguise the address to avoid spam.)'
+                    cfg.NNTP.s.from = linein()
+                 end
+              when option = 'U' then
+                 do
+                    say 'Enter the UserID (followed by the ENTER key):'
+                    cfg.NNTP.s.userid = linein()
+                 end
+              when option = 'P' then
+                 do
+                    say 'Enter the Password (followed by the ENTER key):'
+                    cfg.NNTP.s.password = linein()
+                 end
+              otherwise
+                 nop
+           end
+        end
+        if option = 'C' then
+          do
+           if cfg.NNTP.s.command \= '' then
+              do
+                 say 'Using external command(s) to post to newsgroup(s)...'
+                 _command = cfg.NNTP.s.command
+                 do while pos('##HOST##', _command) > 0
+                    parse var _command part1 '##HOST##' part2
+                    _command = part1 || cfg.NNTP.s.host || part2
+                 end
+                 do while pos('##PORT##', _command) > 0
+                    parse var _command part1 '##PORT##' part2
+                    _command = part1 || cfg.NNTP.s.port || part2
+                 end
+                 do while pos('##USERID##', _command) > 0
+                    parse var _command part1 '##USERID##' part2
+                    _command = part1 || cfg.NNTP.s.userid || part2
+                 end
+                 do while pos('##PASSWORD##', _command) > 0
+                    parse var _command part1 '##PASSWORD##' part2
+                    _command = part1 || cfg.NNTP.s.password || part2
+                 end
+                 do while pos('##MESSAGE_BODY_FILE##', _command) > 0
+                    parse var _command part1 '##MESSAGE_BODY_FILE##' part2
+                    _command = part1 || stream(body_file, 'c', 'query exists') || part2
+                 end
+                 do while pos('##FROM##', _command) > 0
+                    parse var _command part1 '##FROM##' part2
+                    _command = part1 || cfg.NNTP.s.from || part2
+                 end
+                 do while pos('##TO##', _command) > 0
+                    parse var _command part1 '##TO##' part2
+                    _command = part1 || cfg.NNTP.s.to || part2
+                 end
+                 rcx = ExecCmd(_command)
+              end
+           else
+              do
+                 cfg.NNTP.message_body = ''
+                 do while lines(body_file) > 0
+                    cfg.NNTP.message_body = cfg.NNTP.message_body || linein(body_file) || cfg.crlf
+                 end
+                 call stream body_file, 'c', 'close'
+                 rcx = SendNNTP(s)
+              end
+            if rcx \= 0 then 'pause'
+          end
+        else
+           rcx = -1 /* User aborted */
+     end
+  call SysFileDelete body_file
 return rcx
 
 SendNNTP: procedure expose (globals)
@@ -2123,6 +2231,7 @@ SendNNTP: procedure expose (globals)
                leave
             end
          call SockSoClose(socket)
+
       end
 return rc
 
