@@ -56,6 +56,10 @@
                 Added saymsg2 for this purpose
   09 Feb 14 GKY Modified wipeallf to allow suppression of the readonly warning on delete
                 of temporary files
+  16 Feb 14 GKY Fixed move to trashcan to work when the trashcan::drives key hadn't been
+                written to OS2.INI. INI check is now only if fTrashCan is TRUE.
+  16 Feb 14 GKY Rework readonly check on delete code so it actually works in a logical way
+                and so it works with move to trashcan inabled.
 
 ***********************************************************************/
 
@@ -229,8 +233,9 @@ VOID Action(VOID * args)
 	if (hmq2) {
 	  CHAR message[(CCHMAXPATH * 2) + 80], wildname[CCHMAXPATH];
 	  UINT x;
-	  BOOL dontask = FALSE, wildcarding = FALSE, overold =
-	    FALSE, overnew = FALSE, noreadonlywarn = FALSE, usedtarget;
+          BOOL dontask = FALSE, wildcarding = FALSE, overold = FALSE;
+          BOOL overnew = FALSE, usedtarget;
+          BOOL noreadonlywarn = FALSE;
 
 	  WinCancelShutdown(hmq2, TRUE);
 	  IncrThreadUsage();
@@ -878,6 +883,12 @@ VOID Action(VOID * args)
                     rc = docopyf(type, wk->li->list[x], newname);
                     if (rc == ERROR_ACCESS_DENIED || rc == ERROR_SHARING_VIOLATION) {
                       ret = make_deleteable(newname, rc, noreadonlywarn);
+                      if (ret == SM2_CANCEL)
+                        break;
+                      if (ret == SM2_DONTASK)
+                        noreadonlywarn = TRUE;
+                      if (ret == SM2_NO)
+                        continue;
                       rc = docopyf(type, wk->li->list[x], newname);
                     }
                     if (rc == ERROR_ACCESS_DENIED || (rc == ERROR_SHARING_VIOLATION && fUnlock))
@@ -1586,11 +1597,12 @@ VOID MassAction(VOID * args)
 	      UINT x;
 	      FILESTATUS3 fsa;
 	      CHAR prompt[CCHMAXPATH * 3];
-	      APIRET error = 0;
+	      APIRET error = 0, rc;
 	      HOBJECT hObjectdest, hObjectofObject;
 	      BYTE G_abSupportedDrives[24] = {0};
               ULONG cbSupportedDrives = sizeof(G_abSupportedDrives);
               BOOL ignorereadonly = FALSE;
+              INT retrn = 0;
 
 	      for (x = 0; wk->li->list[x]; x++) {
 		if (IsRoot(wk->li->list[x])) {
@@ -1712,66 +1724,74 @@ VOID MassAction(VOID * args)
 
 		  DosError(FERR_DISABLEHARDERR);
 		  if (wk->li->type == IDM_DELETE) {
-		    hObjectdest = WinQueryObject("<XWP_TRASHCAN>");
-		    PrfQueryProfileData(HINI_USER,
-					"XWorkplace",
-					"TrashCan::Drives",
-					G_abSupportedDrives,
-					&cbSupportedDrives);
-		    if (hObjectdest != NULLHANDLE && fTrashCan &&
-			(G_abSupportedDrives ? (G_abSupportedDrives[toupper(*wk->li->list[x]) - 'C'] &
-						1):(!(driveflags[toupper(*wk->li->list[x]) - 'A'] &
-						      (DRIVE_REMOVABLE | DRIVE_IGNORE |
-						      DRIVE_REMOTE | DRIVE_VIRTUAL |
-						      DRIVE_NOTWRITEABLE | DRIVE_RAMDISK))))) {
-			hObjectofObject = WinQueryObject(wk->li->list[x]);
-			error = WinMoveObject(hObjectofObject, hObjectdest, 0);
-		    }
-		    else {
-		      error = DosDelete(wk->li->list[x]);
-		    }
+		    if (fTrashCan) {
+                        hObjectdest = WinQueryObject("<XWP_TRASHCAN>");
+                        rc = PrfQueryProfileData(HINI_USER,
+                                            "XWorkplace",
+                                            "TrashCan::Drives",
+                                            G_abSupportedDrives,
+                                            &cbSupportedDrives);
+                        if (hObjectdest != NULLHANDLE &&
+                            (rc ? (G_abSupportedDrives[toupper(*wk->li->list[x]) - 'C'] & 1)
+                             :((driveflags[toupper(*wk->li->list[x]) - 'A'] &
+                                DRIVE_LOCALHD )))) {
+                          hObjectofObject = WinQueryObject(wk->li->list[x]);
+                          retrn = make_deleteable(wk->li->list[x], error, ignorereadonly);
+                          if (retrn == SM2_CANCEL)
+                            break;
+                          if (retrn == SM2_DONTASK)
+                            ignorereadonly = TRUE;
+                          if (retrn == SM2_NO)
+                            continue;
+                          error = WinMoveObject(hObjectofObject, hObjectdest, 0);
+                        }
+                        else
+                          error = DosDelete(wk->li->list[x]);
+                      }
+                      else
+                        error = DosDelete(wk->li->list[x]);
 		  }
-		  else {
-		    error = DosForceDelete(wk->li->list[x]); ;
-		  }
+		  else
+		    error = DosForceDelete(wk->li->list[x]);
                   if (error) {
-                    INT retrn = 0;
 
 		    DosError(FERR_DISABLEHARDERR);
                     retrn = make_deleteable(wk->li->list[x], error, ignorereadonly);
-                    if (retrn == 2)
+                    if (retrn == SM2_CANCEL)
                       break;
-                    if (retrn == 1)
+                    if (retrn == SM2_DONTASK)
                       ignorereadonly = TRUE;
-                    if (retrn == 3)
+                    if (retrn == SM2_NO)
                       continue;
-		    if (wk->li->type == IDM_DELETE){
-		      hObjectdest = WinQueryObject("<XWP_TRASHCAN>");
-		      PrfQueryProfileData(HINI_USER,
-					  "XWorkplace",
-					  "TrashCan::Drives",
-					  G_abSupportedDrives,
-					  &cbSupportedDrives);
-		      if (hObjectdest != NULLHANDLE && fTrashCan &&
-			  (G_abSupportedDrives ? (G_abSupportedDrives[toupper(*wk->li->list[x]) - 'C'] &
-						  1):(!(driveflags[toupper(*wk->li->list[x]) - 'A'] &
-							(DRIVE_REMOVABLE | DRIVE_IGNORE |
-							DRIVE_REMOTE | DRIVE_VIRTUAL |
-							DRIVE_NOTWRITEABLE | DRIVE_RAMDISK))))) {
-			  hObjectofObject = WinQueryObject(wk->li->list[x]);
-			  error = WinMoveObject(hObjectofObject, hObjectdest, 0);
-		      }
-		      else {
-			error = DosDelete(wk->li->list[x]);
-		      }
+                    if (wk->li->type == IDM_DELETE) {
+                      if (fTrashCan) {
+                        hObjectdest = WinQueryObject("<XWP_TRASHCAN>");
+                        rc = PrfQueryProfileData(HINI_USER,
+                                            "XWorkplace",
+                                            "TrashCan::Drives",
+                                            G_abSupportedDrives,
+                                            &cbSupportedDrives);
+                        if (hObjectdest != NULLHANDLE &&
+                            (rc ? (G_abSupportedDrives[toupper(*wk->li->list[x]) - 'C'] & 1)
+                             :((driveflags[toupper(*wk->li->list[x]) - 'A'] &
+                                DRIVE_LOCALHD )))) {
+                            hObjectofObject = WinQueryObject(wk->li->list[x]);
+                            error = WinMoveObject(hObjectofObject, hObjectdest, 0);
+                        }
+                        else
+                          error = DosDelete(wk->li->list[x]);
+                      }
+                      else
+                        error = DosDelete(wk->li->list[x]);
 		    }
-		    else {
+		    else
 		      error = DosForceDelete(wk->li->list[x]);
-		    }
 		  }
 		  DosReleaseMutexSem(hmtxFM2Delete);
 		}
-		if (error) {
+                if (error && (error != 5 ||
+                              (error == 5 &&
+                               (retrn == SM2_YES || retrn == SM2_DONTASK || retrn == 0)))) {
 		  if (LogFileHandle)
 		    fprintf(LogFileHandle,
 			    GetPString(IDS_DELETEFAILED1TEXT),
