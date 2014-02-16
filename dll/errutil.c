@@ -39,6 +39,8 @@
 		Added saymsg2 for this purpose
   07 Nov 13 SHL Update comments
   15 Feb 14 GKY Improvements to saymsg2 some code cleanup
+  16 Feb 14 GKY Rework readonly check on delete code so it actually works in a logical way
+                and so it works with move to trashcan inabled.
 
 ***********************************************************************/
 
@@ -59,6 +61,7 @@
 #include "notebook.h"			// fErrorBeepOff
 #include "init.h"			// Data declares
 #include "wrappers.h"			// xmallocz
+#include "fm3dll2.h"
 
 #pragma data_seg(DATA1)
 
@@ -397,10 +400,10 @@ APIRET saymsg2(PCSZ pszButtonNames, int DefaultButton, HWND hwnd,
   strcpy(mb2dBut[1].achText,GetPString(IDS_MB2DYESDONTASK));
   strcpy(mb2dBut[2].achText,GetPString(IDS_MB2DNO));
   strcpy(mb2dBut[3].achText,GetPString(IDS_MB2DCANCELOP));
-  mb2dBut[0].idButton = 1;
-  mb2dBut[1].idButton = 2;
-  mb2dBut[2].idButton = 3;
-  mb2dBut[3].idButton = 4;
+  mb2dBut[0].idButton = SM2_YES;
+  mb2dBut[1].idButton = SM2_DONTASK;
+  mb2dBut[2].idButton = SM2_NO;
+  mb2dBut[3].idButton = SM2_CANCEL;
   if (DefaultButton)
     mb2dBut[DefaultButton - 1].flStyle = BS_DEFAULT;
   pmbInfo = xmallocz(ulInfoSize, pszSrcFile, __LINE__);
@@ -408,14 +411,15 @@ APIRET saymsg2(PCSZ pszButtonNames, int DefaultButton, HWND hwnd,
     pmbInfo->cb		= ulInfoSize;
     pmbInfo->hIcon      = 0;
     pmbInfo->cButtons   = 4;
-    pmbInfo->flStyle    = MB_MOVEABLE | MB_SYSTEMMODAL | MB_ICONQUESTION ;
+    pmbInfo->flStyle    = MB_MOVEABLE | MB_ICONQUESTION ;
     pmbInfo->hwndNotify = NULLHANDLE;
     for (i = 0; i < 4; i++) {
       memcpy( pmbInfo->mb2d+i , mb2dBut+i , sizeof(MB2D));
     }
     rc = WinMessageBox2(HWND_DESKTOP, hwnd,
-			szMsg, pszTitle, 1234,
+			szMsg, pszTitle, SM2_DIALOG,
                         pmbInfo);
+    WinSetFocus(HWND_DESKTOP, SM2_DIALOG);
     free(pmbInfo);
     return rc;
   }

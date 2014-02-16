@@ -35,6 +35,9 @@
   04 Aug 12 GKY Changes to use Unlock to unlock files if Unlock.exe is in path both from menu/toolbar and as part of
                 copy, move and delete operations
   06 Jan 13 GKY Added EA compare option to compare dir Ticket 80
+  15 Feb 14 GKY Improvements to saymsg2 some code cleanup
+  16 Feb 14 GKY Rework readonly check on delete code so it actually works in a logical way
+                and so it works with move to trashcan inabled.
 
   Align with spaces only - no tabs please
 
@@ -404,6 +407,12 @@
 #define IDM_OPENDIRTREE     1168
 #define IDM_OPENDIRWINDOW   1169
 #define IDM_UNLOCKFILE      1170
+
+#define SM2_DIALOG          1234
+#define SM2_YES                1
+#define SM2_CANCEL             2
+#define SM2_NO                 3
+#define SM2_DONTASK            4
 
 #define IDM_UTILITIESMENU   2000
 #define IDM_INIVIEWER       2001

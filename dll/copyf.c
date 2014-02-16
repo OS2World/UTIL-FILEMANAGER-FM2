@@ -35,6 +35,8 @@
   10 Mar 13 GKY Improvrd readonly check on delete to allow cancel and don't ask again options
   09 Feb 14 GKY Modified wipeallf to allow suppression of the readonly warning on delete
                 of temporary files
+  16 Feb 14 GKY Rework readonly check on delete code so it actually works in a logical way
+                and so it works with move to trashcan inabled.
 
 ***********************************************************************/
 
@@ -543,7 +545,7 @@ APIRET docopyf(INT type, CHAR *oldname, CHAR *newname)
           DosError(FERR_DISABLEHARDERR);
           error = DosForceDelete(dir);
 	  if (error) {
-	    make_deleteable(dir, error, FALSE);
+	    make_deleteable(dir, error, TRUE);
 	    DosForceDelete(dir);
 	  }
 	  if (zaplong) {
@@ -690,30 +692,25 @@ INT make_deleteable(CHAR * filename, INT error, BOOL Dontcheckreadonly)
   if (!rc) {
     if (fsi.attrFile & 0x00000001) {
       if (fWarnReadOnly && !Dontcheckreadonly) {
-        retrn = saymsg2(NULL, 0,
-                       HWND_DESKTOP,
-                       GetPString(IDS_READONLYFILEWARNINGTITLE),
-                       GetPString(IDS_READONLYFILEWARNING),
-                       filename);
-        if (retrn == 3)
-          ret = 3;
-        else if (retrn == 4)
-          ret = 2;
-        else {
-          fsi.attrFile = 0;
-          DosError(FERR_DISABLEHARDERR);
-          if (!xDosSetPathInfo(filename, FIL_STANDARD, &fsi, sizeof(fsi), 0))
-            if (retrn == 1)
-              ret = 0;
-            else
-              ret = 1;
-        }
+      retrn = saymsg2(NULL, 3,
+                     HWND_DESKTOP,
+                     GetPString(IDS_READONLYFILEWARNINGTITLE),
+                     GetPString(IDS_READONLYFILEWARNING),
+                      filename);
+      //DbgMsg(pszSrcFile, __LINE__, "retrn %x ", retrn);
+      ret = retrn;
+      if (retrn == SM2_YES || retrn == SM2_DONTASK)
+        fsi.attrFile = 0;
+        DosError(FERR_DISABLEHARDERR);
+        if (xDosSetPathInfo(filename, FIL_STANDARD, &fsi, sizeof(fsi), 0))
+          ret = -1; // failed
       }
-      else
+      else {
         fsi.attrFile = 0;
         DosError(FERR_DISABLEHARDERR);
         if (!xDosSetPathInfo(filename, FIL_STANDARD, &fsi, sizeof(fsi), 0))
           ret = 0;
+      }
     }
   }
   if (error ==  ERROR_SHARING_VIOLATION && fUnlock) {
@@ -728,7 +725,7 @@ INT make_deleteable(CHAR * filename, INT error, BOOL Dontcheckreadonly)
               NULL, NULL, "%s %s", PCSZ_UNLOCKEXE, filename);
     }
   }
-
+  //DbgMsg(pszSrcFile, __LINE__, "retrn %x ", ret);
   return ret;
 }
 
@@ -838,10 +835,12 @@ INT wipeallf(BOOL ignorereadonly, CHAR *string, ...)
           INT retrn = 0;
 
           retrn = make_deleteable(ss, error, ignorereadonly);
-          if (retrn == 3)
+          if (retrn == SM2_NO)
             continue;
-          else if (retrn == 1)
+          else if (retrn == SM2_DONTASK)
             ignorereadonly = TRUE;
+          else if (retrn == SM2_CANCEL)
+            break;
 	  DosError(FERR_DISABLEHARDERR);
 	  rc = (INT) DosForceDelete(ss);
 	  if (rc)
@@ -952,11 +951,14 @@ INT unlinkf(CHAR *string)
   }
   else {
     APIRET error;
+    INT ret;
 
     DosError(FERR_DISABLEHARDERR);
     error = DosForceDelete(string);
     if (error) {
-      make_deleteable(string, error, FALSE);
+      ret = make_deleteable(string, error, FALSE);
+      if (ret == SM2_CANCEL || ret == SM2_NO)
+        return 0;
       DosError(FERR_DISABLEHARDERR);
       return DosForceDelete(string);
     }

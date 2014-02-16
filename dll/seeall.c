@@ -58,6 +58,8 @@
                 Added saymsg2 for this purpose
   09 Feb 14 GKY Modified wipeallf to allow suppression of the readonly warning on delete
                 of temporary files
+  16 Feb 14 GKY Rework readonly check on delete code so it actually works in a logical way
+                and so it works with move to trashcan inabled.
 
 ***********************************************************************/
 
@@ -1097,11 +1099,11 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      if (error) {
 		DosError(FERR_DISABLEHARDERR);
                 retrn = make_deleteable(list[x], error, ignorereadonly);
-                if (retrn == 2)
+                if (retrn == SM2_CANCEL)
                   break;
-                if (retrn == 1)
+                if (retrn == SM2_DONTASK)
                   ignorereadonly = TRUE;
-                if (retrn == 3)
+                if (retrn == SM2_NO)
                   continue;
 		if (SHORT1FROMMP(mp1) == IDM_DELETE)
 		  error = DosDelete(list[x]);
