@@ -38,6 +38,9 @@
                 by temp file creation failures.
   26 Aug 11 GKY Add a low mem version of xDosAlloc* wrappers; move error checking into all the
                 xDosAlloc* wrappers.
+  16 Feb 14 GKY Add "#" command line switch to workaround problem with blank command shell
+                started from fm2 after fm2 has been started with stdout and stderr
+                redirected to a file.
 
 ***********************************************************************/
 
@@ -1189,7 +1192,11 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
         sdata.TermQ = (PBYTE)szTermTemp;
       }
       sdata.Environment = (PBYTE)pszEnvironment;
-      sdata.InheritOpt = SSF_INHERTOPT_PARENT;
+      if (fUseShellEnv && (!strcmp(GetCmdSpec(TRUE), pszPgm) ||
+          !strcmp(GetCmdSpec(FALSE), pszPgm)))
+        sdata.InheritOpt = SSF_INHERTOPT_SHELL;
+      else
+        sdata.InheritOpt = SSF_INHERTOPT_PARENT;
       sdata.SessionType = (USHORT) ulAppType;
       sdata.ObjectBuffer = szObject;
       sdata.ObjectBuffLen = sizeof(szObject);

@@ -32,6 +32,9 @@
                 copy, move and delete operations
   04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
                 for delete of readonly files
+  16 Feb 14 GKY Add "#" command line switch to workaround problem with blank command shell
+                started from fm2 after fm2 has been started with stdout and stderr
+                redirected to a file.
 
 ***********************************************************************/
 
@@ -202,6 +205,7 @@ extern BOOL fLogFile;
 extern BOOL fProtectOnly;
 extern BOOL fReminimize;
 extern BOOL fWantFirstTimeInit;
+extern BOOL fUseShellEnv;
 extern HPOINTER hptrApp;
 extern HPOINTER hptrArc;
 extern HPOINTER hptrArrow;

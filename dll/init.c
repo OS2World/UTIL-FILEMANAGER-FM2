@@ -116,6 +116,9 @@
                 for apps.
   09 Feb 14 GKY Modified wipeallf to allow suppression of the readonly warning on delete
                 of temporary files
+  16 Feb 14 GKY Add "#" command line switch to workaround problem with blank command shell
+                started from fm2 after fm2 has been started with stdout and stderr
+                redirected to a file.
 
 ***********************************************************************/
 
@@ -234,6 +237,7 @@ BOOL fLogFile;
 BOOL fProtectOnly;
 BOOL fReminimize;
 BOOL fWantFirstTimeInit;
+BOOL fUseShellEnv;
 //BOOL fDrivetoSkip[26];
 HPOINTER hptrApp;
 HPOINTER hptrArc;
@@ -1158,7 +1162,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     fLoadLongnames = fToolbar = fSaveState = fGuessType = fToolbarHelp =
     fAutoAddDirs = fUseNewViewer = fDataToFore = fDataShowDrives = fDataMin =
     fSplitStatus = fDragndropDlg = fQuickArcFind = fKeepCmdLine =
-    fMoreButtons = fDrivebar = fCollapseFirst = fSwitchTree = fWarnReadOnly =
+    fMoreButtons = fDrivebar = fCollapseFirst = fSwitchTree = 
     fSwitchTreeExpand = fNoSearch = fCustomFileDlg = fOtherHelp =
     fSaveMiniCmds = fUserComboBox = fFM2Deletes = fConfirmTarget =
     fShowTarget = fDrivebarHelp = fCheckMM = fInitialDriveScan =
@@ -1683,6 +1687,8 @@ HWND StartFM3(HAB hab, INT argc, CHAR ** argv)
       else
 	strcpy(profile, &argv[x][1]);
     }
+    if (*argv[x] == '#' && !argv[x][1])
+      fUseShellEnv = TRUE;
   }
 
   hwndFrame = WinCreateStdWindow(HWND_DESKTOP,
