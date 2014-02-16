@@ -50,7 +50,7 @@
  *       of double quotes. SED seems to choke on an odd number, even if they are
  *       properly escaped.
  *    12 May 10 JBS Ticket 424: Deleted code related to obsolete "internal\makefile"
- *    09 Feb 14 JBS Ticket 499: Changed bldlevel date format to YYY-MM-DD
+ *    09 Feb 14 JBS Ticket 499: Changed bldlevel date format to YYYY-MM-DD
  *
 */
 
