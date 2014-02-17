@@ -442,7 +442,7 @@ Email: procedure expose (globals)
             server_count = 1
             page_title = 'Note to FM/2 developer list requesting work commit.'
             email.subject = 'Request: Commit work for upcoming release.'
-            email.to_list = '"FM/2 Developmers" <fm2-dev@netlabs.org>'
+            email.to_list = '"FM/2 Developers" <fm2-dev@netlabs.org>'
             call lineout email.body_file, 'The release of FM/2' ver.full 'is imminent.'
             call lineout email.body_file, ''
             call lineout email.body_file, 'Please commit all work for this release within 24 hours.'
