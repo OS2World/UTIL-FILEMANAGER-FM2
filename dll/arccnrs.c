@@ -3606,7 +3606,7 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags, /*
 
 
   if (strrchr(arcname, '.')) {
-    if (!strcmp(strupr(strrchr(arcname, '.') + 1), "LZ")) {
+    if (!stricmp(strrchr(arcname, '.') + 1, "LZ")) {
       saymsg(MB_ENTER | MB_ICONASTERISK, HWND_DESKTOP, GetPString(IDS_LZIPLIMITATION),
              GetPString(IDS_LZIPNOLIST));
       return -1;
