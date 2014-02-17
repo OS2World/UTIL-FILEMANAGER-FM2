@@ -23,9 +23,10 @@
 #               in SED.IN which, in turn, means the SED command line is much simplified.
 #               Therefore SED.IN has now been removed from the SVN repository.
 # 20 Sep 09 SHL Set FM2_VER for v3.17
+# 17 Feb 14 GKY Set FM2UTILS_VER to -1-1-1 to match the last version released.
 
 !ifndef FM2_VER                  # if defined on wmake command, use it
-FM2_VER=-3-21-0                  # default value
+FM2_VER=-3-22-0                  # default value
 !ifdef %FM2_VER                  # if defined via env. var.
 FM2_VER=$(%FM2_VER)              #     use the env. var.
 !endif
@@ -37,7 +38,7 @@ FM2_VER=$(%FM2_VER)              #     use the env. var.
 # NOTE: Start the variable with '-'
 
 !ifndef FM2UTILS_VER             # if defined on wmake command, use it
-FM2UTILS_VER=-1-1                # default value
+FM2UTILS_VER=-1-1-1                # default value
 !ifdef %FM2UTILS_VER             # if defined via env. var.
 FM2UTILS_VER=$(%FM2UTILS_VER)    #     use the env. var.
 !endif
