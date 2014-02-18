@@ -43,6 +43,7 @@
 # 04 Jul 11 GKY Add eFTE backup files (*~) to clean target
 # 13 Aug 11 GKY Build xqs and sym files as part of dll and all targets
 # 25 Jan 12 SHL Allow NOHIGHMEM set from enviroment
+# 18 Feb 14 JBS Ticket #516: Run exehgr to set high-memory only if something has changed.
 
 # Environment: see makefile_pre.mk and makefile_post.mk
 
@@ -209,9 +210,6 @@ all: &
      $(BASE).dll &
      $(BASERES).res &
      $(BASERES).dll &
-!ifndef NOHIGHMEM
-     loadhigh &
-!endif
      $(SYMS) &
      ipf\fm3.hlp
 
@@ -221,6 +219,7 @@ $(BASE).dll $(BASE).lib $(BASE).map: $(OBJS) $(BASE).def $(BASE).lrf
   @echo Linking $(BASE).dll
   $(LINK) @$(BASE).lrf @$(BASE).def
   @rem type $(BASE).lrf
+  !exehdr /hi $(BASE).dll
 
 $(BASE).lrf: $(__MAKEFILES__)
    @%write $^@ $(LFLAGS)
@@ -265,6 +264,7 @@ $(BASERES).dll $(BASERES).lib $(BASERES).map: $(BASERES).res $(BASERES).obj $(BA
   @echo Attaching resources to $(BASERES).dll
   @echo.
   $(RC) $(RCFLAGS2) $(BASERES).res $(BASERES).dll
+  !exehdr /hi $(BASERES).dll
 
 $(BASERES).lrf: $(__MAKEFILES__)
    @%write $^@ $(LFLAGS)
@@ -298,7 +298,7 @@ $(BASERES).dll: $(BASERES).res
   lxlite $@ /c:minstub
 !endif
   @echo.
-  @echo Ataching resources to $@
+  @echo Attaching resources to $@
   @echo.
   $(RC) $(RCFLAGS2) $(BASERES).res $@
 !ifndef DEBUG
