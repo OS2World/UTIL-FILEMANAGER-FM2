@@ -16,6 +16,7 @@
 # 21 Jun 11 GKY Make high memory builds the default resources only for exes
 # 04 Jul 11 GKY Make xqs files an explicit target so they will be rebuild if lost somehow.
 # 25 Jan 12 SHL Renamae LOW -> NOHIGHMEM and allow set from enviroment
+# 17 Jan 14 JBS Ticket 500: Stop setting exe objects to high-memory
 
 !ifndef MAKERES
 
@@ -37,9 +38,9 @@ $(BASE).exe: $(BASE).lrf $(BASE).obj $(BASE).res $(BASE).def .explicit
   @echo Attaching resources to $@
   @echo.
   $(RC) $(RCFLAGS2) $(BASE).res $@
-!ifndef NOHIGHMEM
-  !exehdr /highmem:3 $@
-!endif
+# !ifndef NOHIGHMEM
+#   !exehdr /highmem:3 $@
+# !endif
 
 # 2012-01-25 SHL fixme to be gone - does not undefine
 # NOHIGHMEM =
