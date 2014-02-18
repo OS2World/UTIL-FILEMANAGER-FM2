@@ -219,7 +219,9 @@ $(BASE).dll $(BASE).lib $(BASE).map: $(OBJS) $(BASE).def $(BASE).lrf
   @echo Linking $(BASE).dll
   $(LINK) @$(BASE).lrf @$(BASE).def
   @rem type $(BASE).lrf
+!ifndef NOHIGHMEM
   !exehdr /hi $(BASE).dll
+!endif
 
 $(BASE).lrf: $(__MAKEFILES__)
    @%write $^@ $(LFLAGS)
@@ -264,7 +266,9 @@ $(BASERES).dll $(BASERES).lib $(BASERES).map: $(BASERES).res $(BASERES).obj $(BA
   @echo Attaching resources to $(BASERES).dll
   @echo.
   $(RC) $(RCFLAGS2) $(BASERES).res $(BASERES).dll
+!ifndef NOHIGHMEM
   !exehdr /hi $(BASERES).dll
+!endif
 
 $(BASERES).lrf: $(__MAKEFILES__)
    @%write $^@ $(LFLAGS)
