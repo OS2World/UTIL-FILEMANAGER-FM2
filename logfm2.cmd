@@ -66,7 +66,7 @@ call stream fulllogfilename, 'c', 'close'
 
 /* Start FM/2 */
 call directory logfiledir || '\..\..'
-'fm3.exe # 2>>' || fulllogfilename
+'fm3.exe 2>>' || fulllogfilename
 
 /* Write "footer" */
 call lineout fulllogfilename,  LinePrefix() 'Logging ended.'
