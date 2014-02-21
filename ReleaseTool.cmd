@@ -273,9 +273,9 @@ select
             when user_choice = mainmenu.WARNALL_build_num then
                do /* Ensure the edits build */
                   say
-                  'set WARNALL=1'
+                  myWarnall = SetEnv('WARNALL', '1')
                   call ExecCmd 'wmake -a all | tee warnall.log |' cmd.pager
-                  'set WARNALL='
+                  call SetEnv 'WARNALL', myWarnall
                   call ExecCmd 'diff.exe -rub warnall.base warnall.log > warnall.diff'
                   call ExecCmd cmd.editor 'warnall.diff'
                   say
@@ -303,10 +303,15 @@ select
                end
             when user_choice = mainmenu.Build_all_for_release_num then
                do /* Build for the release */
-                  'set WARNALL='
-                  'set FORTIFY='
-                  'set DEBUG='
-                  call ExecCmd 'wmake -a all | tee build.log'
+                  myWarnall = SetEnv('WARNALL', '')
+                  myFortify = SetEnv('FORTIFY', '')
+                  myDebug   = SetEnv('DEBUG', '')
+
+                  call ExecCmd 'wmake -a all  | tee build.log'
+
+                  call SetEnv 'WARNALL', myWarnall
+                  call SetEnv 'FORTIFY', myFortify
+                  call SetEnv 'DEBUG', myDebug
                   prev_user_choice = user_choice
                end
             when user_choice = mainmenu.Test_release_build_num then
@@ -328,7 +333,11 @@ select
                end
             when user_choice = mainmenu.LXLITE_build_num then
                do /* Lxlite */
-                  'wmake lxlite | tee lxlite.log'
+                  myDebug = SetEnv('DEBUG', '')
+
+                  'wmake -a lxlite | tee lxlite.log'
+
+                  call SetEnv 'DEBUG', myDebug
                   prev_user_choice = user_choice
                end
             when user_choice = mainmenu.Test_LXLITE_build_num then
@@ -346,7 +355,15 @@ select
                end
             when user_choice = mainmenu.Build_WPI_file_num then
                do /* Build distro */
+                  myWarnall = SetEnv('WARNALL', '')
+                  myFortify = SetEnv('FORTIFY', '')
+                  myDebug   = SetEnv('DEBUG', '')
+
                   call ExecCmd 'wmake dist | tee dist.log'
+
+                  call SetEnv 'WARNALL', myWarnall
+                  call SetEnv 'FORTIFY', myFortify
+                  call SetEnv 'DEBUG', myDebug
                   prev_user_choice = user_choice
                end
             when user_choice = mainmenu.Test_WPI_file_num then
@@ -2460,6 +2477,16 @@ WikiUpdates: procedure expose (globals)
    say '6) Update "WikiStart" with the newly released version:' ver.full
    say '7) Update "RBuild" with the new tag: FM2-' || ver.tag
 return
+
+GetEnv: procedure expose (globals)
+   parse arg varname
+return value(varname,, 'OS2ENVIRONMENT')
+
+SetEnv: procedure expose (globals)
+   parse arg varname, varvalue
+   oldvarvalue = GetEnv(varname)
+   call value varname, varvalue, 'OS2ENVIRONMENT'
+return oldvarvalue
 
 /* JBS: Disabled internal CFG code:
 Configuration: procedure expose (globals)
