@@ -43,7 +43,8 @@
 # 04 Jul 11 GKY Add eFTE backup files (*~) to clean target
 # 13 Aug 11 GKY Build xqs and sym files as part of dll and all targets
 # 25 Jan 12 SHL Allow NOHIGHMEM set from enviroment
-# 18 Feb 14 JBS Ticket #516: Run exehgr to set high-memory only if something has changed.
+# 18 Feb 14 JBS Ticket #516: Run exehdr to set high-memory only if something has changed.
+# 21 Feb 14 JBS Ticket #500: Set only non-resource objects in FM3RES.DLL to high memory
 
 # Environment: see makefile_pre.mk and makefile_post.mk
 
@@ -220,6 +221,9 @@ $(BASE).dll $(BASE).lib $(BASE).map: $(OBJS) $(BASE).def $(BASE).lrf
   $(LINK) @$(BASE).lrf @$(BASE).def
   @rem type $(BASE).lrf
 !ifndef NOHIGHMEM
+  @echo.
+  @echo Setting highmem objects in $(BASE).dll
+  @echo.
   !exehdr /hi $(BASE).dll
 !endif
 
@@ -267,7 +271,10 @@ $(BASERES).dll $(BASERES).lib $(BASERES).map: $(BASERES).res $(BASERES).obj $(BA
   @echo.
   $(RC) $(RCFLAGS2) $(BASERES).res $(BASERES).dll
 !ifndef NOHIGHMEM
-  !exehdr /hi $(BASERES).dll
+  @echo.
+  @echo Setting highmem objects in $(BASERES).dll
+  @echo.
+  !exehdr /hi:1,2 $(BASERES).dll
 !endif
 
 $(BASERES).lrf: $(__MAKEFILES__)
@@ -328,10 +335,17 @@ lxlite: $(BASE).dll $(BASERES).dll .symbolic
   @for %f in ($(BASE).dll $(BASERES).dll) do !lxlite /x- /b- %f
 !endif
 
-!ifndef NOHIGHMEM
 # Run for each dependent
 loadhigh: $(BASE).dll $(BASERES).dll .symbolic
-  @for %f in ($(BASE).dll $(BASERES).dll) do !exehdr /hi %f
+!ifndef NOHIGHMEM
+  @echo.
+  @echo 2Setting highmem objects in $(BASE).dll
+  @echo.
+  !exehdr /hi $(BASE).dll
+  @echo.
+  @echo 2Setting highmem objects in $(BASERES).dll
+  @echo.
+  !exehdr /hi:1,2 $(BASERES).dll
 !endif
 
 cleanobj: .symbolic
