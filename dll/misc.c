@@ -961,15 +961,9 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				 szData,
 				 sizeof(szData)))
             {
-              BOOL fDisplayEqualFile = FALSE;
-
-              if (pci->pszFileName == pci->pszDisplayName)
-                fDisplayEqualFile = TRUE;
-	      pci->pszFileName = xrealloc(pci->pszFileName, sizeof(szData), pszSrcFile, __LINE__);
+              pci->pszFileName = xrealloc(pci->pszFileName, sizeof(szData), pszSrcFile, __LINE__);
               strcpy(szData, pci->pszFileName);
-              if (fDisplayEqualFile)
-                pci->pszDisplayName = pci->pszFileName;
-	    }
+            }
 	    WinSetWindowText(hwndMLE, szData);
 	    if (strcmp(szData, testname)) {
               if (stricmp(szData, testname) && IsFile(testname) != -1) {
