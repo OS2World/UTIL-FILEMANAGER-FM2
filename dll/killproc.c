@@ -32,6 +32,8 @@
                 by temp file creation failures.
   26 Aug 11 GKY Add a low mem version of xDosAlloc* wrappers; move error checking into all the
                 xDosAlloc* wrappers.
+  22 Aug 14 JBS Ticket #519: Corrected mis-coded but probably harmless calls to strtol
+                and removed unneeded second parameter variables.
 
 ***********************************************************************/
 
@@ -311,8 +313,7 @@ static VOID FillKillListThread(VOID * arg)
 	  break;
 	if (*s == ' ' && s[5] == ' ' && isxdigit(s[1]) &&
 	    isxdigit(s[2]) && isxdigit(s[3]) && isxdigit(s[4])) {
-	  p = &s[1];
-	  pid = strtol(&s[1], &p, 16);
+	  pid = strtol(&s[1], NULL, 16);
 	  if (pid && pid != mypid) {
 	    strcpy(progname, &s[30]);
 	    p = strchr(progname, ' ');
@@ -503,7 +504,7 @@ MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					   MPFROMSHORT(LIT_FIRST), MPVOID);
       if (sSelect >= 0) {
 
-	CHAR s[31], *p;
+	CHAR s[31];
 	APIRET error;
 
 	*s = 0;
@@ -512,8 +513,7 @@ MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			  LM_QUERYITEMTEXT,
 			  MPFROM2SHORT(sSelect, 30), MPFROMP(s));
 	if (*s) {
-	  p = s;
-	  pid = strtol(s, &p, 16);
+	  pid = strtol(s, NULL, 16);
 	  if (pid) {
 	    if (SHORT1FROMMP(mp1) == DID_OK) {
 	      error = DosKillProcess(DKP_PROCESS, pid);

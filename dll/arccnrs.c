@@ -757,7 +757,7 @@ ReTry:
 		  break;
 		}
 	      }
-              else if (*p) 
+              else if (*p)
 		p++;
             }
 	    if (*p) {
@@ -2418,7 +2418,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, /*FOLD00
 	 * first time through -- set things up
 	 */
 	{
-	  CHAR *p, *pp;
+	  CHAR *p;
 	  ULONG z, was;
 	  APIRET rc;
 
@@ -2426,10 +2426,9 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, /*FOLD00
 	  if (rc) {
 	    if (rc == ERROR_ACCESS_DENIED) {
 	      p = strrchr(dcd->workdir, '.');
-	      if (p) {
+	      if (p) {          /* jbs: What if there is no "."? Give up? */
 		p++;
-		pp = p;
-		was = strtoul(p, &pp, 16);
+		was = strtoul(p, NULL, 16);
 		for (z = 0; z < 99; z++) {
 		  was++;
 		  sprintf(p, "%03x");
