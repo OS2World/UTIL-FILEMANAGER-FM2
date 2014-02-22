@@ -60,6 +60,8 @@
                 written to OS2.INI. INI check is now only if fTrashCan is TRUE.
   16 Feb 14 GKY Rework readonly check on delete code so it actually works in a logical way
                 and so it works with move to trashcan inabled.
+  22 Feb 14 GKY Cleanup of readonly check code suppress spurious error on blocked directory
+                delete and eliminated the check on additional temp file deletes
 
 ***********************************************************************/
 
@@ -1788,9 +1790,14 @@ VOID MassAction(VOID * args)
 		      error = DosForceDelete(wk->li->list[x]);
 		  }
 		  DosReleaseMutexSem(hmtxFM2Delete);
-		}
-                if (error && (error != 5 ||
-                              (error == 5 &&
+                }
+                //DbgMsg(pszSrcFile, __LINE__, "error %i retrn %i", error, retrn);
+                if (fWarnReadOnly && error ==  ERROR_FILE_EXISTS) {
+                  error = ERROR_ACCESS_DENIED;
+                  retrn = SM2_NO;
+                }
+                if (error && (error != ERROR_ACCESS_DENIED ||
+                              (error == ERROR_ACCESS_DENIED &&
                                (retrn == SM2_YES || retrn == SM2_DONTASK || retrn == 0)))) {
 		  if (LogFileHandle)
 		    fprintf(LogFileHandle,

@@ -119,6 +119,8 @@
   16 Feb 14 GKY Add "#" command line switch to workaround problem with blank command shell
                 started from fm2 after fm2 has been started with stdout and stderr
                 redirected to a file.
+  22 Feb 14 GKY Cleanup of readonly check code suppress spurious error on blocked directory
+                delete and eliminated the check on additional temp file deletes
 
 ***********************************************************************/
 
@@ -595,7 +597,7 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
       do {
 	strcpy(enddir, ffb.achName);
 	if (ffb.attrFile & FILE_DIRECTORY) {
-	  wipeallf(FALSE, "%s\\*", s);
+	  wipeallf(TRUE, "%s\\*", s);
 	  DosDeleteDir(s);
 	}
 	else
@@ -635,7 +637,7 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
   BldFullPathName(szTempFile, pTmpDir, PCSZ_FM2PLAYTEMP);
   DosForceDelete(szTempFile);
   if (pTmpDir) {
-    wipeallf(FALSE, "%s\\*", pTmpDir);
+    wipeallf(TRUE, "%s\\*", pTmpDir);
     DosDeleteDir(pTmpDir);
   }
   EndNote();
