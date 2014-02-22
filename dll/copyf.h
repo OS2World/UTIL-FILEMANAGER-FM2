@@ -17,12 +17,14 @@
   10 Mar 13 GKY Improvrd readonly check on delete to allow cancel and don't ask again options
   09 Feb 14 GKY Modified wipeallf to allow suppression of the readonly warning on delete
                 of temporary files
+  22 Feb 14 GKY Fix warn readonly yes don't ask to work when recursing directories.
 
 ***********************************************************************/
 
 #if !defined(COPYF_H)
 
 #define COPYF_H
+extern BOOL ignorereadonly;
 
 BOOL AdjustWildcardName(CHAR * oldname, CHAR * newname);
 char *MakeTempName(char *buffer, char *temproot, int type);

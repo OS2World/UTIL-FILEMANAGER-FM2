@@ -82,6 +82,7 @@
                 combination of event and mutex semaphores
   04 Aug 12 GKY Changes to use Unlock to unlock files if Unlock.exe is in path both from menu/toolbar and as part of
                 copy, move and delete operations
+  22 Feb 14 GKY Fix warn readonly yes don't ask to work when recursing directories.
 
 ***********************************************************************/
 
@@ -160,6 +161,7 @@
 #include "fortify.h"
 #include "excputil.h"			// 06 May 08 SHL added
 #include "pathutil.h"			// AddBackslashToPath
+#include "copyf.h"			// ignorereadonly
 
 // Data definitions
 #pragma data_seg(GLOBAL1)
@@ -974,6 +976,8 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case IDM_PERMDELETE:
       case IDM_MCIPLAY:
       case IDM_UPDATE:
+        if (li->type == IDM_DELETE)
+          ignorereadonly = FALSE;
 	if (PostMsg(hwnd, UM_MASSACTION, mp1, mp2))
 	  return (MRESULT) TRUE;
 	break;
@@ -2625,6 +2629,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    li->type = SHORT1FROMMP(mp1);
 	    li->hwnd = hwnd;
 	    li->list = BuildList(hwnd);
+            if (li->type == IDM_DELETE)
+              ignorereadonly = FALSE;
 	    switch (SHORT1FROMMP(mp1)) {
 	    case IDM_WILDMOVE:
 	    case IDM_WILDCOPY:
@@ -2696,7 +2702,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      case IDM_EAS:
 		action = UM_MASSACTION;
 		break;
-	      }
+              }
+              if (li->type == IDM_DELETE)
+                ignorereadonly = FALSE;
 	      if (SHORT1FROMMP(mp1) == IDM_OBJECT ||
 		  SHORT1FROMMP(mp1) == IDM_SHADOW ||
 		  SHORT1FROMMP(mp1) == IDM_SHADOW2)

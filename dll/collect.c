@@ -82,6 +82,7 @@
 	        delete operations
   05 Sep 12 SHL Correct UM_COLLECTFROMFILE bad list file reporting
   13 Dec 13 SHL CollectorCnrWndProc IDM_FILTER: avoid exception on missing fileName
+  22 Feb 14 GKY Fix warn readonly yes don't ask to work when recursing directories.
 
 ***********************************************************************/
 
@@ -157,6 +158,7 @@
 #include "fortify.h"
 #include "excputil.h"			// xbeginthread
 #include "walkem.h"			// WalkAllDlgProc
+#include "copyf.h"			// ignorereadonly
 
 // Data definitions
 #pragma data_seg(GLOBAL1)
@@ -639,6 +641,8 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
       case IDM_FAKEEXTRACTM:
       case IDM_MCIPLAY:
       case IDM_UPDATE:
+        if (li->type == IDM_DELETE)
+          ignorereadonly = FALSE;
 	if (PostMsg(hwnd, UM_MASSACTION, mp1, mp2))
 	  return (MRESULT) TRUE;
 	break;
@@ -2392,7 +2396,9 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      case IDM_EAS:
 		action = UM_MASSACTION;
 		break;
-	      }
+              }
+              if (li->type == IDM_DELETE)
+                ignorereadonly = FALSE;
 	      if (li->type == IDM_SHADOW || li->type == IDM_OBJECT ||
 		  li->type == IDM_SHADOW2)
 		*li->targetpath = 0;

@@ -62,6 +62,7 @@
                 and so it works with move to trashcan inabled.
   22 Feb 14 GKY Cleanup of readonly check code suppress spurious error on blocked directory
                 delete and eliminated the check on additional temp file deletes
+  22 Feb 14 GKY Fix warn readonly yes don't ask to work when recursing directories.
 
 ***********************************************************************/
 
@@ -1603,7 +1604,6 @@ VOID MassAction(VOID * args)
 	      HOBJECT hObjectdest, hObjectofObject;
 	      BYTE G_abSupportedDrives[24] = {0};
               ULONG cbSupportedDrives = sizeof(G_abSupportedDrives);
-              BOOL ignorereadonly = FALSE;
               INT retrn = 0;
 
 	      for (x = 0; wk->li->list[x]; x++) {
@@ -1710,7 +1710,7 @@ VOID MassAction(VOID * args)
 				 FIL_STANDARD,
 				 &fsa, (ULONG) sizeof(FILESTATUS3));
 		if (fsa.attrFile & FILE_DIRECTORY) {
-		  error = (APIRET) wipeallf(FALSE, "%s%s*",
+		  error = (APIRET) wipeallf(ignorereadonly, "%s%s*",
 					    wk->li->list[x],
 					    (*wk->li->list[x] &&
 					     wk->li->

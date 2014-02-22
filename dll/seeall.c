@@ -60,6 +60,7 @@
                 of temporary files
   16 Feb 14 GKY Rework readonly check on delete code so it actually works in a logical way
                 and so it works with move to trashcan inabled.
+  22 Feb 14 GKY Fix warn readonly yes don't ask to work when recursing directories.
 
 ***********************************************************************/
 
@@ -979,7 +980,6 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  FILESTATUS3 fsa;
 	  CHAR prompt[CCHMAXPATH * 3];
 	  APIRET error;
-          BOOL ignorereadonly = FALSE;
 
 	  for (x = 0; list[x]; x++) {
 	    if (IsRoot(list[x])) {
@@ -4345,7 +4345,9 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      case IDM_OBJECT:
 	      case IDM_SHADOW:
 	      case IDM_OPENSETTINGS:
-	      case IDM_OPENDEFAULT:
+              case IDM_OPENDEFAULT:
+                if (SHORT1FROMMP(mp1) == IDM_DELETE)
+                  ignorereadonly = FALSE;
 		if (!PostMsg(pAD->hwndObj, UM_MASSACTION, mp1, MPFROMP(list)))
 		  FreeList(list);
 		break;

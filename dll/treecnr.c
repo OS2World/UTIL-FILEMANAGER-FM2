@@ -89,6 +89,7 @@
   04 Aug 12 GKY Fix trap reported by Ben
   30 Dec 12 GKY Changed refresh removable media to query LVM directly to call Rediscover_PRMs (Ticket 472);
                 Also added a tree rescan following volume detach.
+  22 Feb 14 GKY Fix warn readonly yes don't ask to work when recursing directories.
 
 ***********************************************************************/
 
@@ -156,6 +157,7 @@
 #include "fortify.h"
 #include "init.h"			// GetTidForWindow
 #include "excputil.h"			// xbeginthread
+#include "copyf.h"			// ignorereadonly
 
 // Data definitions
 
@@ -902,6 +904,8 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case IDM_ATTRS:
       case IDM_DELETE:
       case IDM_PERMDELETE:
+        if (li->type == IDM_DELETE)
+          ignorereadonly = FALSE;
 	if (PostMsg(hwnd, UM_MASSACTION, mp1, mp2))
 	  return (MRESULT) TRUE;
       default:
@@ -3004,7 +3008,9 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    case IDM_EDITBINARY:
 	    case IDM_MCIPLAY:
 	      action = UM_MASSACTION;
-	    }
+            }
+            if (li->type == IDM_DELETE)
+              ignorereadonly = FALSE;
 	    if (SHORT1FROMMP(mp1) == IDM_SHADOW ||
 		SHORT1FROMMP(mp1) == IDM_SHADOW2)
 	      *li->targetpath = 0;

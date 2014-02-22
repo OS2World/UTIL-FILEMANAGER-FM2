@@ -38,6 +38,7 @@
   16 Feb 14 GKY Rework readonly check on delete code so it actually works in a logical way
                 and so it works with move to trashcan inabled.
   22 Feb 14 GKY Fix wipeallf to recurss properly
+  22 Feb 14 GKY Fix warn readonly yes don't ask to work when recursing directories.
 
 ***********************************************************************/
 
@@ -76,6 +77,8 @@ static PSZ pszSrcFile = __FILE__;
 
 static CHAR *GetLongName(CHAR * oldname, CHAR * buffer);
 static CHAR *TruncName(CHAR * oldname, CHAR * buffer);
+
+BOOL ignorereadonly = FALSE;
 
 //static CHAR default_disk(VOID);
 //static INT unlink_allf(CHAR * string, ...);
@@ -533,7 +536,7 @@ APIRET docopyf(INT type, CHAR *oldname, CHAR *newname)
       else if (!ret && *dir) {
 	if (!IsFile(dir)) {
 	  if (!strchr(dir, '?') && !strchr(dir, '*'))
-	    wipeallf(FALSE, "%s\\*", dir);
+	    wipeallf(TRUE, "%s\\*", dir);
 	  DosError(FERR_DISABLEHARDERR);
 	  if (DosDeleteDir(dir)) {
 	    make_deleteable(dir, -1, TRUE);
@@ -620,7 +623,7 @@ APIRET docopyf(INT type, CHAR *oldname, CHAR *newname)
 	    unlinkf(oldname);		// erase file
 	  else {
 	    // remove directory
-	    wipeallf(FALSE, "%s\\*", oldname);
+	    wipeallf(TRUE, "%s\\*", oldname);
 	    DosError(FERR_DISABLEHARDERR);
 	    if (DosDeleteDir(oldname)) {
 	      make_deleteable(oldname, -1, TRUE);

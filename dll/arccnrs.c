@@ -91,6 +91,7 @@
   11 Aug 13 GKY Removed code that attempted to use the archive name as the extract directory
                 It was never fully implemented and doesn't make sense for the container.
   09 Feb 14 GKY Fix trap on opening a file without an extention
+  22 Feb 14 GKY Fix warn readonly yes don't ask to work when recursing directories.
 
 ***********************************************************************/
 
@@ -3093,7 +3094,9 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, /*FOLD00
 	  if (li) {
 	    li->type = SHORT1FROMMP(mp1);
 	    li->hwnd = hwnd;
-	    li->list = BuildArcList(hwnd);
+            li->list = BuildArcList(hwnd);
+            if (li->type == IDM_DELETE)
+              ignorereadonly = FALSE;
 	    if (li->type == IDM_REFRESH) {
 
 	      CHAR s[CCHMAXPATH], *p;
