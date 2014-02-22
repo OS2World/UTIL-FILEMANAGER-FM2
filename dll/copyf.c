@@ -37,6 +37,7 @@
                 of temporary files
   16 Feb 14 GKY Rework readonly check on delete code so it actually works in a logical way
                 and so it works with move to trashcan inabled.
+  22 Feb 14 GKY Fix wipeallf to recurss properly
 
 ***********************************************************************/
 
@@ -816,7 +817,7 @@ INT wipeallf(BOOL ignorereadonly, CHAR *string, ...)
       strcpy(p, f->achName);
       if (f->attrFile & FILE_DIRECTORY) {
 	if (strcmp(f->achName, ".") && strcmp(f->achName, "..")) {
-	  wipeallf(FALSE, "%s/%s", ss, mask);	// recurse to wipe files
+	  wipeallf(ignorereadonly, "%s/%s", ss, mask);	// recurse to wipe files
 	  DosError(FERR_DISABLEHARDERR);
 	  // remove directory
 	  if (DosDeleteDir(ss)) {
