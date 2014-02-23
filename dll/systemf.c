@@ -41,6 +41,8 @@
   16 Feb 14 GKY Add "#" command line switch to workaround problem with blank command shell
                 started from fm2 after fm2 has been started with stdout and stderr
                 redirected to a file.
+  23 Feb 14 GKY Undated one of the error messages in runemf2 to provide the calling line
+                and file.
 
 ***********************************************************************/
 
@@ -892,8 +894,8 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
         if (rc) {
           if (rc == ERROR_FILE_NOT_FOUND || rc == ERROR_PATH_NOT_FOUND ||
               rc == ERROR_INVALID_EXE_SIGNATURE || rc == ERROR_EXE_MARKED_INVALID)
-            saymsg(MB_OK, HWND_DESKTOP, NullStr,
-                   GetPString(IDS_DOSQAPPTYPEFAILEDTEXT2), pszPgm);
+            saymsg(MB_OK, HWND_DESKTOP, NullStr,GetPString(IDS_DOSQAPPTYPEFAILEDTEXT2),
+                   pszPgm, pszCallingFile,uiLineNumber);
           else if (rc == ERROR_INVALID_DRIVE || rc == ERROR_DRIVE_LOCKED)
             saymsg(MB_OK, HWND_DESKTOP, NullStr,
                    GetPString(IDS_DOSQAPPTYPEFAILEDTEXT3), pszPgm);
@@ -1042,8 +1044,8 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
       if (rc) {
         if (rc == ERROR_FILE_NOT_FOUND || rc == ERROR_PATH_NOT_FOUND ||
             rc == ERROR_INVALID_EXE_SIGNATURE || rc == ERROR_EXE_MARKED_INVALID)
-          saymsg(MB_OK, HWND_DESKTOP, NullStr,
-                 GetPString(IDS_DOSQAPPTYPEFAILEDTEXT2), pszPgm);
+          saymsg(MB_OK, HWND_DESKTOP, NullStr, GetPString(IDS_DOSQAPPTYPEFAILEDTEXT2),
+                 pszPgm, pszCallingFile,uiLineNumber);
         else if (rc == ERROR_INVALID_DRIVE || rc == ERROR_DRIVE_LOCKED)
           saymsg(MB_OK, HWND_DESKTOP, NullStr,
                  GetPString(IDS_DOSQAPPTYPEFAILEDTEXT3), pszPgm);

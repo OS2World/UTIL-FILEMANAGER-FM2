@@ -68,6 +68,8 @@
                 Added saymsg2 for this purpose
   28 May 13 SHL Correct typos
   15 Feb 14 GKY Improvements to saymsg2 added accel keys
+  23 Feb 14 GKY Undated one of the error messages in runemf2 to provide the calling line
+                and file.
   
 ***********************************************************************/
 
@@ -3374,7 +3376,7 @@ STRINGTABLE
     IDS_PLEASEWAITCOUNTINGTEXT            "Please wait -- counting..."
     IDS_INSUFFICIENTMEMORY                "Insufficient memory or %u items (%u)"
     IDS_DOSQAPPTYPEFAILEDTEXT             "DosQAppType failed for %s\n called from %s %d."
-    IDS_DOSQAPPTYPEFAILEDTEXT2            "The program %s was not found on the PATH or is not an executable file type."
+    IDS_DOSQAPPTYPEFAILEDTEXT2            "The program %s was not found on the PATH or is not an executable file type.\n runemf2 was called from %s %i"
     IDS_DOSQAPPTYPEFAILEDTEXT3            "The drive specified in %s is locked or invalid."
     IDS_LOCKEDFILEWARNING                 "The file %s is locked! Do you wish to unlock it and complete the requested operation"
     IDS_LOCKEDFILEWARNINGTITLE            "Locked file!"
