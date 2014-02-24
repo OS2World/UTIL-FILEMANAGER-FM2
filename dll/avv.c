@@ -32,6 +32,7 @@
   13 Aug 11 GKY Change to Doxygen comment format
   15 Feb 14 GKY Assure the title is blank on the execute dialog call with the "see" button
   24 Feb 14 JBS Ticket #517: Replaced a call to DosQueryAppType to a call to the wrapped xDosQueryApptType
+  24 Feb 14 JBS Ticket #523: Stop considering missing "list", "create" or "extract" commands as errors
 
 ***********************************************************************/
 
@@ -441,9 +442,12 @@ static BOOL check_archiver(HWND hwnd, ARC_TYPE * info)
     noEnd = TRUE;
   if (info->fnpos > 50 || info->fnpos < -1)
     badPos = TRUE;
-  checkfile(info->list, &badList);
-  checkfile(info->create, &badCreate);
-  checkfile(info->extract, &badExtract);
+  if (info->list)
+    checkfile(info->list, &badList);
+  if (info->create)
+    checkfile(info->create, &badCreate);
+  if (info->extract)
+    checkfile(info->extract, &badExtract);
   if (!noStart && !noEnd && !badPos && !badList && !badCreate && !badExtract)
     return TRUE;			// OK
   if (!info->id)
