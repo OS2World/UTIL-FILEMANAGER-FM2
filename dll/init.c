@@ -121,6 +121,8 @@
                 redirected to a file.
   22 Feb 14 GKY Cleanup of readonly check code suppress spurious error on blocked directory
                 delete and eliminated the check on additional temp file deletes
+  23 Feb 14 JBS Ticket #515: Corrected a mis-coded call to strtol which was causing the traps
+                described in this ticket. (Also changed it to strtoul.)
 
 ***********************************************************************/
 
@@ -793,7 +795,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 	  p = strrchr(szTempName, '.');
 	  if (p) {
 	    p++;
-	    ul = strtol(p, &p + 2, 16);
+        ul = strtoul(p, NULL, 16);
 	    GetDosPgmName(ul, temp);
 	    if (!strstr(temp, "FM/2") &&
 		!strstr(temp, "AV/2")) {
@@ -1164,7 +1166,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     fLoadLongnames = fToolbar = fSaveState = fGuessType = fToolbarHelp =
     fAutoAddDirs = fUseNewViewer = fDataToFore = fDataShowDrives = fDataMin =
     fSplitStatus = fDragndropDlg = fQuickArcFind = fKeepCmdLine =
-    fMoreButtons = fDrivebar = fCollapseFirst = fSwitchTree = 
+    fMoreButtons = fDrivebar = fCollapseFirst = fSwitchTree =
     fSwitchTreeExpand = fNoSearch = fCustomFileDlg = fOtherHelp =
     fSaveMiniCmds = fUserComboBox = fFM2Deletes = fConfirmTarget =
     fShowTarget = fDrivebarHelp = fCheckMM = fInitialDriveScan =
@@ -1257,7 +1259,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     * aren't user settable; realappname should be used for setting applicable to
     * one or more miniapp but not to FM/2
     */
-  size = sizeof(BOOL);  
+  size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, realappname, "SeparateParms", &fAppSeparateSettings, &size);
   if (!fAppSeparateSettings)
     strcpy(appname, FM3Str);
