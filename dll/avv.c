@@ -31,6 +31,7 @@
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   13 Aug 11 GKY Change to Doxygen comment format
   15 Feb 14 GKY Assure the title is blank on the execute dialog call with the "see" button
+  24 Feb 14 JBS Ticket #517: Replaced a call to DosQueryAppType to a call to the wrapped xDosQueryApptType
 
 ***********************************************************************/
 
@@ -407,7 +408,7 @@ static PSZ checkfile(PSZ file, INT * error)
   if (!p || !*p)
     *error = 1;
   else {
-    ret = (INT) DosQueryAppType(p, &apptype);
+    ret = (INT) xDosQueryAppType(p, &apptype);
     apptype &= (~FAPPTYP_32BIT);
     if (!apptype ||
 	(apptype == FAPPTYP_NOTWINDOWCOMPAT) ||
