@@ -17,7 +17,9 @@ Change log
    12 Apr 10 JBS Ticket 430: Add deletion of the now obsolete FM2RES.STR, if present
    07 Aug 11 JBS Ticket 460: Fix bug in standalone installation of FM/2 Utilities (and
                              correct a couple of object settings)
-   17 Feb 14 GKY Ticket 511: Fixed failure of FM2 with logging to start after install                         
+   17 Feb 14 GKY Ticket 511: Fixed failure of FM2 with logging to start after install
+   24 Feb 14 JBS Ticket #512: Changed FM/2 logging icon so it does not start minimized
+                              (so the user can respond if the log file is locked.)
 
    NOTE: If a NON-EXTERNAL package (i.e. a package whose files
    will be staged before building the WPI file) with an index
@@ -145,7 +147,7 @@ PTREE and many more.
   TARGET="$(1)"
   SELECT
   FIXED
-  CREATEOBJECT="WPProgram|FM/2^with logging|<FM3_Folder>|EXENAME=*;STARTUPDIR=$(1)\Debug;PARAMETERS=/c $(1)\Debug\LogFM2.cmd [Enter enter the name for a log file:];PROGTYPE=WINDOWABLEVIO;ICONFILE=$(1)\icons\logging.ico;MINIMIZED=YES;OBJECTID=<FM2WithLogging>;"
+  CREATEOBJECT="WPProgram|FM/2^with logging|<FM3_Folder>|EXENAME=*;STARTUPDIR=$(1)\Debug;PARAMETERS=/c $(1)\Debug\LogFM2.cmd [Enter enter the name for a log file:];PROGTYPE=WINDOWABLEVIO;ICONFILE=$(1)\icons\logging.ico;MINIMIZED=NO;OBJECTID=<FM2WithLogging>;"
 >This package contains files which support efforts
 to debug problems with FM/2. Normally they will
 not be needed.
