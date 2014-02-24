@@ -45,6 +45,7 @@
 # 25 Jan 12 SHL Allow NOHIGHMEM set from enviroment
 # 18 Feb 14 JBS Ticket #516: Run exehdr to set high-memory only if something has changed.
 # 21 Feb 14 JBS Ticket #500: Set only non-resource objects in FM3RES.DLL to high memory
+# 24 Feb 14 JBS Ticket #500: Suspended use of high memory by commenting out the calls to exehdr
 
 # Environment: see makefile_pre.mk and makefile_post.mk
 
@@ -220,12 +221,12 @@ $(BASE).dll $(BASE).lib $(BASE).map: $(OBJS) $(BASE).def $(BASE).lrf
   @echo Linking $(BASE).dll
   $(LINK) @$(BASE).lrf @$(BASE).def
   @rem type $(BASE).lrf
-!ifndef NOHIGHMEM
-  @echo.
-  @echo Setting highmem objects in $(BASE).dll
-  @echo.
-  !exehdr /hi $(BASE).dll
-!endif
+# !ifndef NOHIGHMEM
+#   @echo.
+#   @echo Setting highmem objects in $(BASE).dll
+#   @echo.
+#   !exehdr /hi $(BASE).dll
+# !endif
 
 $(BASE).lrf: $(__MAKEFILES__)
    @%write $^@ $(LFLAGS)
@@ -270,12 +271,12 @@ $(BASERES).dll $(BASERES).lib $(BASERES).map: $(BASERES).res $(BASERES).obj $(BA
   @echo Attaching resources to $(BASERES).dll
   @echo.
   $(RC) $(RCFLAGS2) $(BASERES).res $(BASERES).dll
-!ifndef NOHIGHMEM
-  @echo.
-  @echo Setting highmem objects in $(BASERES).dll
-  @echo.
-  !exehdr /hi:1,2 $(BASERES).dll
-!endif
+# !ifndef NOHIGHMEM
+#   @echo.
+#   @echo Setting highmem objects in $(BASERES).dll
+#   @echo.
+#   !exehdr /hi:1,2 $(BASERES).dll
+# !endif
 
 $(BASERES).lrf: $(__MAKEFILES__)
    @%write $^@ $(LFLAGS)
@@ -336,17 +337,17 @@ lxlite: $(BASE).dll $(BASERES).dll .symbolic
 !endif
 
 # Run for each dependent
-loadhigh: $(BASE).dll $(BASERES).dll .symbolic
-!ifndef NOHIGHMEM
-  @echo.
-  @echo 2Setting highmem objects in $(BASE).dll
-  @echo.
-  !exehdr /hi $(BASE).dll
-  @echo.
-  @echo 2Setting highmem objects in $(BASERES).dll
-  @echo.
-  !exehdr /hi:1,2 $(BASERES).dll
-!endif
+# loadhigh: $(BASE).dll $(BASERES).dll .symbolic
+# !ifndef NOHIGHMEM
+#   @echo.
+#   @echo Setting highmem objects in $(BASE).dll
+#   @echo.
+#   !exehdr /hi $(BASE).dll
+#   @echo.
+#   @echo Setting highmem objects in $(BASERES).dll
+#   @echo.
+#   !exehdr /hi:1,2 $(BASERES).dll
+# !endif
 
 cleanobj: .symbolic
   -del *.obj
