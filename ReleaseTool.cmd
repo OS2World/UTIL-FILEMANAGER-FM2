@@ -70,6 +70,7 @@
  *          - Added support for FTP and NNTP commands
  *    07 Aug 11 JBS Ticket 462: Fix bug in NNTP "To" code
  *    11 Feb 14 JBS Ticket 462: Improved handling of missing cfg file.
+ *    28 Feb 14 JBS Ticket 510: Improved handling cleaenup of temporary files
  *
  * To Do
  *    -  Better error handling for emails/NNTP
@@ -485,7 +486,7 @@ Email: procedure expose (globals)
          do
             server_count = cfg.SMTP.0
             page_title = 'Release announcement'
-            email.subject = 'File Manager/2 v3.19.1 released'
+            email.subject = 'File Manager/2' ver.full 'released'
             call SetDefaultAnnouncementText email.body_file
         end
       otherwise
@@ -1956,8 +1957,8 @@ AnnounceToNewsgroups: procedure expose (globals)
       say
       return
     end
-  body_file = SysTempFilename('NNTPBody.???')
-  call SetDefaultAnnouncementText body_file
+  nntp_body_file = SysTempFilename('NNTPBody.???')
+  call SetDefaultAnnouncementText nntp_body_file
   cfg.NNTP.subject = 'FM/2' ver.full 'has been released.'
   _text = '<Standard>'
   do until ((option = 'C') | (option = 'Q'))
@@ -1987,15 +1988,15 @@ AnnounceToNewsgroups: procedure expose (globals)
            end
         when option = 'T' then
            do
-              b4_timestamp = SysGetFileDateTime(body_file)
+              b4_timestamp = SysGetFileDateTime(nntp_body_file)
               say 'The current body of the newsgroup message will now be loaded into an editor.'
               say 'Make desired changes, if any, and save the file.'
               say
               call charout, 'Press any key when ready to load the message body into an editor: '
               call SysGetKey
               say
-              call ExecCmd cmd.editor body_file
-              if b4_timestamp \= SysGetFileDateTime(body_file) then
+              call ExecCmd cmd.editor nntp_body_file
+              if b4_timestamp \= SysGetFileDateTime(nntp_body_file) then
                  _text = '<Modified>'
            end
         otherwise
@@ -2113,7 +2114,7 @@ AnnounceToNewsgroups: procedure expose (globals)
                  do while lines(body_file) > 0
                     cfg.NNTP.message_body = cfg.NNTP.message_body || linein(body_file) || cfg.crlf
                  end
-                 call stream body_file, 'c', 'close'
+                 call stream nntp_body_file, 'c', 'close'
                  rcx = SendNNTP(s)
               end
             if rcx \= 0 then 'pause'
@@ -2121,7 +2122,7 @@ AnnounceToNewsgroups: procedure expose (globals)
         else
            rcx = -1 /* User aborted */
      end
-  call SysFileDelete body_file
+  call SysFileDelete nntp_body_file
 return rcx
 
 SendNNTP: procedure expose (globals)
