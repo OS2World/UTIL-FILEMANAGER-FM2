@@ -42,6 +42,7 @@
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   26 Aug 11 GKY Add a low mem version of xDosAlloc* wrappers; move error checking into all the
                 xDosAlloc* wrappers.
+  28 Apr 14 JBS Ticket #522: Ensure use of wrapper functions where needed
 
 ***********************************************************************/
 
@@ -274,9 +275,9 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
   ULONG clParmBytes;
   ULONG clDataBytes;
   HFILE hDev;
-  EASIZEBUF easize = {0};
-  ULONG   ulDataLen        = sizeof(EASIZEBUF);  
-  ULONG   ulParmLen        = 0;
+  EASIZEBUF easize	= {0};
+  ULONG   ulDataLen	= sizeof(EASIZEBUF);
+  ULONG   ulParmLen	= 0;
 
 # pragma pack(1)
   struct
@@ -351,7 +352,7 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
   if (pulType && !strcmp(pfsn, RAMFS)){
 	*pulType |= DRIVE_RAMDISK;
     }
-  if (((PFSQBUFFER2) pvBuffer)->iType == FSAT_REMOTEDRV) { 
+  if (((PFSQBUFFER2) pvBuffer)->iType == FSAT_REMOTEDRV) {
     if (pulType)
       *pulType |= DRIVE_REMOTE;
 
@@ -611,14 +612,14 @@ BOOL IsExecutable(CHAR *filename)
     DosError(FERR_DISABLEHARDERR);
     p = strrchr(filename, '.');
     if (p)
-      ret = DosQueryAppType(filename, &apptype);
+      ret = xDosQueryAppType(filename, &apptype);
     else {
 
       char fname[CCHMAXPATH + 2];
 
       strcpy(fname, filename);
       strcat(fname, ".");
-      ret = DosQueryAppType(fname, &apptype);
+      ret = xDosQueryAppType(fname, &apptype);
     }
     if (apptype & (FAPPTYP_DLL |
 		   FAPPTYP_PHYSDRV |
@@ -737,7 +738,7 @@ VOID ArgDriveFlags(INT argc, CHAR ** argv)
 VOID DriveFlagsOne(INT x, CHAR *FileSystem, VOID *volser)
 {
   INT removable;
-  CHAR szDrive[] = " :\\"; 
+  CHAR szDrive[] = " :\\";
   ULONG drvtype;
 
   *szDrive = (CHAR) (x + 'A');
@@ -759,7 +760,7 @@ VOID DriveFlagsOne(INT x, CHAR *FileSystem, VOID *volser)
         CHAR volumelabel[CCHMAXPATH];
       }
       volserl;
-  
+
       DosError(FERR_DISABLEHARDERR);
       if (!DosQueryFSInfo((ULONG) x + 1, FSIL_VOLSER, &volserl, sizeof(volserl)))
         driveserial[x] = volserl.serial;

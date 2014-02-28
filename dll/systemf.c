@@ -43,6 +43,7 @@
                 redirected to a file.
   23 Feb 14 GKY Undated one of the error messages in runemf2 to provide the calling line
                 and file.
+  28 Apr 14 JBS Ticket #522: Ensure use of wrapper functions where needed
 
 ***********************************************************************/
 
@@ -80,7 +81,7 @@
 
 static PSZ pszSrcFile = __FILE__;
 
-      
+
 //static HAPP Exec(HWND hwndNotify, BOOL child, char *startdir, char *env,
 //          PROGTYPE * progt, ULONG fl, char *formatstring, ...);
 
@@ -885,7 +886,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	  strcpy(szSavedir, pFM2SaveDirectory);
 	  switch_to(pszDirectory);
 	}
-	rc = DosQueryAppType(pszPgm,&ulAppType);
+	rc = xDosQueryAppType(pszPgm, &ulAppType);
 	if (!strchr(pszPgm, '\\') &&
 	    !strchr(pszPgm, ':') &&
 	    pszDirectory &&
@@ -1035,7 +1036,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	strcpy(szSavedir, pFM2SaveDirectory);
 	switch_to(pszDirectory);
       }
-      rc = DosQueryAppType(pszPgm,&ulAppType);
+      rc = xDosQueryAppType(pszPgm, &ulAppType);
       if (!strchr(pszPgm, '\\') &&
 	  !strchr(pszPgm, ':') &&
 	  pszDirectory &&

@@ -37,6 +37,7 @@
   17 Jan 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   20 Apr 13 GKY Double click on directory in Info listbox opens directory object instead of
                 causing an error message from DefaultView
+  28 Apr 14 JBS Ticket #522: Ensure use of wrapper functions where needed
 
 ***********************************************************************/
 
@@ -763,7 +764,7 @@ MRESULT EXPENTRY FileInfoProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinCheckButton(hwnd, FLE_HIDDEN, ((fs.attrFile & FILE_HIDDEN) != 0));
 	WinCheckButton(hwnd, FLE_SYSTEM, ((fs.attrFile & FILE_SYSTEM) != 0));
 	DosError(FERR_DISABLEHARDERR);
-	if (!DosQueryAppType(pfs->szFileName, &apptype)) {
+	if (!xDosQueryAppType(pfs->szFileName, &apptype)) {
 	  WinEnableWindow(WinWindowFromID(hwnd, FLE_OS2FS), TRUE);
 	  WinEnableWindow(WinWindowFromID(hwnd, FLE_OS2WIN), TRUE);
 	  WinEnableWindow(WinWindowFromID(hwnd, FLE_OS2PM), TRUE);

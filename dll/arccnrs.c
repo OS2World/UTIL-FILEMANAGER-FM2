@@ -92,6 +92,7 @@
                 It was never fully implemented and doesn't make sense for the container.
   09 Feb 14 GKY Fix trap on opening a file without an extention
   22 Feb 14 GKY Fix warn readonly yes don't ask to work when recursing directories.
+  28 Apr 14 JBS Ticket #522: Ensure use of wrapper functions where needed
 
 ***********************************************************************/
 
@@ -571,8 +572,10 @@ static INT FillArcCnr(HWND hwndCnr, CHAR * arcname, ARC_TYPE ** arcinfo, /*FOLD0
   FILE *fp;
   HFILE oldstdout;
   HFILE newstdout;
-  CHAR s[CCHMAXPATH * 2], lonename[CCHMAXPATH + 2],
+  CHAR lonename[CCHMAXPATH + 2],
        *nsize, *osize, *fdate, *fname, *p, *pp, *arctemp;
+  // Change the DosQueryAppType call below to xDosQueryAppType if "s" is no longer in low memory
+  CHAR s[CCHMAXPATH * 2];
   BOOL gotstart;
   BOOL gotend;
   BOOL wasquote;
