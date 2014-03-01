@@ -936,13 +936,8 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		   GetPString(IDS_ADCHANGESINMEMTEXT),
 		   GetPString(IDS_ADREWRITETEXT),
 		   !ok ? GetPString(IDS_NOTRECOMMENDTEXT) : NullStr) ==
-	    MBID_YES) {
-
-//	  PSZ ab2;
-
-//	  ab2 = searchpath(PCSZ_ARCHIVERBB2);	// Rewrite without alerting
-	  rewrite_archiverbb2(archiverbb2);  // jbs: Re-use path set by load_archivers
-	}
+		   MBID_YES)
+	  rewrite_archiverbb2(archiverbb2);
       }
       WinDismissDlg(hwnd, TRUE);
       return 0;

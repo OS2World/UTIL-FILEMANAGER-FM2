@@ -791,7 +791,6 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     else {
       struct stat Buffer;
 
-//      stat(searchpath(PCSZ_ARCHIVERBB2), &Buffer);
       stat(archiverbb2, &Buffer);   // jbs: Re-use full name set by load_achivers
       if (Archiverbb2Stats.st_size != Buffer.st_size ||
           Archiverbb2Stats.st_mtime != Buffer.st_mtime)
@@ -888,11 +887,8 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (saymsg(MB_YESNO,
 		   hwnd,
 		   GetPString(IDS_ADCHANGESINMEMTEXT),
-		   GetPString(IDS_ADREWRITETEXT), NullStr) == MBID_YES) {
-// 524	  PSZ ab2 = searchpath(PCSZ_ARCHIVERBB2);	// Rewrite without prompting
-
-	  rewrite_archiverbb2(archiverbb2);  // jbs: Re-use full path set by load_archivers
-	}
+		   GetPString(IDS_ADREWRITETEXT), NullStr) == MBID_YES)
+	  rewrite_archiverbb2(archiverbb2);
       }
       sSelect = (SHORT) WinSendDlgItemMsg(hwnd,
 					  ASEL_LISTBOX,
