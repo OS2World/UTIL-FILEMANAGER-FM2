@@ -13,6 +13,7 @@
   23 Aug 07 SHL Comments
   04 Oct 08 JBS Make searchapath non-static
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  01 Mar 14 JBS Ticket #524: Made "searchapath" thread-safe. Function names and signatures were changed.
 
 ***********************************************************************/
 
@@ -20,6 +21,7 @@
 
 #define INCL_WIN
 #define INCL_DOS
+#define INCL_DOSERRORS
 #define INCL_LONGLONG			// dircnrs.h
 
 #include "fm3dll.h"
@@ -101,46 +103,87 @@ CHAR *first_path(CHAR * path, CHAR * ret)
 #endif
 
 /**
- * Search for file in name PATH env variable
- * 23 Aug 07 SHL fixme to be MT safe
+ * SearchPathForFile: Search for a file along a path
+ *
+ * @param pPathname: the name of a path environment variable (input)
+ *    Used only if pFilename has no directory separators or ':' for a drive sepcification
+ *
+ * @param pFilename: the name of a file to search for (input)
+ *    If the file name includes a directory separator or the ':' for a drive specification then
+ *        DosQueryPathInfo is used for the search
+ *    else
+ *        DosSearchPath is used, along with the pPathname parameter
+ *
+ * @param pFullFilename: address of where to place fully-qulified name if search succeeds (output)
+ *    This parameter may be NULL if the fully-qualified filename is not desired.
+ *
+ * @return Return code from call to DosQueryPathInfo/DosSearchPath
+ *
  */
-
-CHAR *searchapath(PCSZ pathvar, PCSZ filename)
+APIRET SearchPathForFile(PCSZ pPathname,
+			 PCSZ pFilename,
+			 PCHAR pFullFilename)
 {
-  static CHAR fbuf[CCHMAXPATH];
+  APIRET rc;
+  CHAR szFullFilename[CCHMAXPATH];
 
-  if (strchr(filename, '\\') || strchr(filename, '/')
-      || strchr(filename, ':')) {
+  if (!pPathname || !*pPathname || !pFilename || !*pFilename)
+    return ERROR_INVALID_PARAMETER;
 
-    FILESTATUS3 fsa;
-
-    strcpy(fbuf, filename);
-    if (!DosQueryPathInfo(fbuf, FIL_STANDARD, &fsa, (ULONG) sizeof(fsa)))
-      return fbuf;
-    *fbuf = 0;
-    return fbuf;
+  if (strchr(pFilename, '\\') || strchr(pFilename, '/')
+      || strchr(pFilename, ':')) {
+    rc = DosQueryPathInfo(pFilename, FIL_QUERYFULLNAME,
+			  (PVOID)szFullFilename, (ULONG) CCHMAXPATH-1);
   }
-  *fbuf = 0;
-  if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
-		    SEARCH_CUR_DIRECTORY,
-		    (CHAR *) pathvar, (CHAR *) filename, (PBYTE)fbuf, CCHMAXPATH - 1))
-    *fbuf = 0;
-  return fbuf;
+  else {
+   rc = DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
+		      SEARCH_CUR_DIRECTORY,
+		      (CHAR *) pPathname,
+		      (CHAR *) pFilename,
+		      (PBYTE) szFullFilename,
+		      CCHMAXPATH - 1);
+  }
+  if (!rc && pFullFilename) {
+    strcpy(pFullFilename, szFullFilename);
+  }
+  return rc;
 }
 
-CHAR *searchpath(PCSZ filename)
+/**
+ * SearchMultiplePathsForFile: Search for a file along multiple paths.
+ *   Currently these paths are hard-coded to: PATH, DPATH and XPATH.
+ *
+ * @param pFilename: the name of a file to search for (input)
+ *
+ * @param pFullFilename: address of where to place fully-qulified name if search succeeds (output)
+ *    This parameter may be NULL if the fully-qualified filename is not desired.
+ *
+ * @return Return code from call to SearchPathForFile (DosQueryPathInfo/DosSearchPath)
+ *
+ * @note: The code uses DosSearchPathForFile for all searches. First it searches PATH.
+ *	  If this fails it searches DPATH. If this fails it seaches XPATH.
+ *
+ */
+APIRET SearchMultiplePathsForFile(PCSZ pFilename,
+				  PSZ pFullFilename)
 {
-  CHAR *found;
+  APIRET rc;
 
-  if (!filename)
-    return NullStr;
-  found = searchapath(PCSZ_PATH, filename);
-  if (!*found) {
-    found = searchapath("DPATH", filename);
-    if (!*found)
-      found = searchapath("XPATH", filename);
+  rc = SearchPathForFile(PCSZ_PATH,
+			 pFilename,
+			 pFullFilename);
+  if (rc && rc != ERROR_INVALID_PARAMETER) {
+    rc = SearchPathForFile("DPATH",
+			   pFilename,
+			   pFullFilename);
+    if (rc && rc != ERROR_INVALID_PARAMETER)
+      rc = SearchPathForFile("XPATH",
+			     pFilename,
+			     pFullFilename);
   }
-  return found;
+  return rc;
 }
 
-#pragma alloc_text(MISC9,first_path,searchapath,searchpath,RunFM2Util)
+//#pragma alloc_text(MISC9,first_path,searchapath,searchpath,RunFM2Util)
+// jbs: first_path seems to be unused
+#pragma alloc_text(MISC9,first_path,SearchPathForFile,SearchMultiplePathsForFile,RunFM2Util)

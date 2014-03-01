@@ -123,6 +123,8 @@
                 delete and eliminated the check on additional temp file deletes
   23 Feb 14 JBS Ticket #515: Corrected a mis-coded call to strtol which was causing the traps
                 described in this ticket. (Also changed it to strtoul.)
+  01 Mar 14 JBS Ticket #524: Made "searchapath" thread-safe. Function names and signatures were changed.
+                So calls to these functions had to be changed.
 
 ***********************************************************************/
 
@@ -195,7 +197,7 @@
 #include "notebook.h"                   // command line variables (editor etc)
 #include "strips.h"                     // bstrip
 #include "killproc.h"                   // GetDosPgmName
-#include "srchpath.h"                   // searchpath
+#include "srchpath.h"                   // Search*Path*ForFile
 #include "fortify.h"
 #include "excputil.h"			// xbeginthread
 #include "systemf.h"                    // runemf2
@@ -897,10 +899,12 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
       }
     }
     else {
-      env = searchpath(profile);
-      if (!env)
-	env = profile;
-      strcpy(inipath, env);
+      CHAR szFullFilename[CCHMAXPATH];
+      if (!SearchMultiplePathsForFile(profile, szFullFilename)) {
+        strcpy(inipath, szFullFilename);
+      } else {
+        strcpy(inipath, profile);
+      }
     } //fixme the DosCopies probably fail if the INI isn't in the FM2 directory GKY 06 Aug 11
     if (!*inipath)
       strcpy(inipath, profile);
@@ -1210,11 +1214,9 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   }
   }
   { // Check for the existance of various partitioning tools to set up menu items
-    CHAR *FullPath;
     ULONG ulAppType;
 
-    FullPath = searchapath(PCSZ_PATH, PCSZ_LVMGUICMD);
-    if (*FullPath)
+    if (!SearchPathForFile(PCSZ_PATH, PCSZ_LVMGUICMD, NULL))
       fLVMGui = TRUE;
     if (!xDosQueryAppType(PCSZ_DFSOS2EXE, &ulAppType))
       fDFSee = TRUE;

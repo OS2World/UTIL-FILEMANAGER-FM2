@@ -42,6 +42,8 @@
   13 Aug 11 GKY Change to Doxygen comment format
   26 Aug 11 GKY Add the code to correctly format the date time strings for tar.gz archives
                 viewed using tar 1.15+
+  01 Mar 14 JBS Ticket #524: Made "searchapath" thread-safe. Function names and signatures were changed.
+                So calls to these functions had to be changed.
 
 ***********************************************************************/
 
@@ -75,7 +77,7 @@
 #include "literal.h"			// literal
 #include "wrappers.h"			// xfgets
 #include "strips.h"			// bstrip
-#include "srchpath.h"			// searchpath
+#include "srchpath.h"			// Search*Path*ForFile
 #include "stristr.h"			// stristr
 #include "delims.h"			// to_delim
 #include "fortify.h"
@@ -375,21 +377,21 @@ INT load_archivers(VOID)
   arcsigs_header_lines = 0;
   arcsigs_trailer_line_num = 0;
 
-  //DosEnterCritSec(); //GKY 11-29-08
-  DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
-  psz = searchpath(PCSZ_ARCHIVERBB2);
-  if (!psz || !*psz) {
+  {
+    CHAR szFullFilename[CCHMAXPATH];
+
+    DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
+    if (SearchMultiplePathsForFile(PCSZ_ARCHIVERBB2, szFullFilename)) {
+      DosReleaseMutexSem(hmtxFM2Globals);
+      return -1;
+    }
+    stat(szFullFilename, &Archiverbb2Stats);
+    fp = xfsopen(szFullFilename, moder, SH_DENYWR, pszSrcFile, __LINE__, TRUE);
     DosReleaseMutexSem(hmtxFM2Globals);
-    //DosExitCritSec();
-    return -1;
+    if (!fp)
+      return -2;
+    strcpy(archiverbb2, szFullFilename);		// Remember full path
   }
-  stat(psz, &Archiverbb2Stats);
-  fp = xfsopen(psz, moder, SH_DENYWR, pszSrcFile, __LINE__, TRUE);
-  DosReleaseMutexSem(hmtxFM2Globals);
-  //DosExitCritSec();
-  if (!fp)
-    return -2;
-  strcpy(archiverbb2, psz);		// Remember full path
 
   cur_line_num = 0;
 
@@ -789,10 +791,11 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     else {
       struct stat Buffer;
 
-      stat(searchpath(PCSZ_ARCHIVERBB2), &Buffer);
+//      stat(searchpath(PCSZ_ARCHIVERBB2), &Buffer);
+      stat(archiverbb2, &Buffer);   // jbs: Re-use full name set by load_achivers
       if (Archiverbb2Stats.st_size != Buffer.st_size ||
-          Archiverbb2Stats.st_mtime != Buffer.st_mtime)        
-        if (saymsg(MB_YESNO,                                   
+          Archiverbb2Stats.st_mtime != Buffer.st_mtime)
+        if (saymsg(MB_YESNO,
 		   hwnd,
 		   GetPString(IDS_ADCHANGESONDISKTEXT),
                    GetPString(IDS_ADRELOADMEMTEXT)) == MBID_YES)
@@ -886,9 +889,9 @@ MRESULT EXPENTRY SBoxDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		   hwnd,
 		   GetPString(IDS_ADCHANGESINMEMTEXT),
 		   GetPString(IDS_ADREWRITETEXT), NullStr) == MBID_YES) {
-	  PSZ ab2 = searchpath(PCSZ_ARCHIVERBB2);	// Rewrite without prompting
+// 524	  PSZ ab2 = searchpath(PCSZ_ARCHIVERBB2);	// Rewrite without prompting
 
-	  rewrite_archiverbb2(ab2);
+	  rewrite_archiverbb2(archiverbb2);  // jbs: Re-use full path set by load_archivers
 	}
       }
       sSelect = (SHORT) WinSendDlgItemMsg(hwnd,

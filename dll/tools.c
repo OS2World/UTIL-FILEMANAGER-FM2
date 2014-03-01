@@ -24,6 +24,8 @@
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  01 Mar 14 JBS Ticket #524: Made "searchapath" thread-safe. Function names and signatures were changed.
+                So calls to these functions had to be changed.
 
 ***********************************************************************/
 
@@ -53,7 +55,7 @@
 #include "literal.h"			// literal
 #include "wrappers.h"			// xfgets
 #include "misc.h"			// CheckDriveSpaceAvail
-#include "srchpath.h"			// searchpath
+#include "srchpath.h"			// Search*Path*ForFile
 #include "stristr.h"			// stristr
 #include "valid.h"			// IsFile
 #include "systemf.h"			// runemf2
@@ -140,6 +142,7 @@ TOOL *load_tools(CHAR * filename)
 {
   FILE *fp;
   CHAR help[80], text[80], flagstr[80], idstr[80], *fname;
+  CHAR szFullFilename[CCHMAXPATH];
   TOOL *info;
   CHAR *moder = "r";
 
@@ -149,10 +152,14 @@ TOOL *load_tools(CHAR * filename)
   }
   if (!filename || !*filename)
     filename = (*lasttoolbar) ? lasttoolbar : "CMDS.TLS";
-  if (*filename)
-    fname = searchpath(filename);
-  if (!fname || !*fname)
-    fname = (PSZ) PCSZ_FM3TOOLSDAT;
+  if (SearchMultiplePathsForFile(filename, szFullFilename)) {
+    if (SearchMultiplePathsForFile(PCSZ_FM3TOOLSDAT, szFullFilename))
+      fname = NULL;
+    else
+      fname = szFullFilename;
+  }
+  else
+    fname = szFullFilename;
   if (fname && *fname) {
     filename = fname;
     strcpy(lasttoolbar, filename);
@@ -213,28 +220,26 @@ TOOL *load_tools(CHAR * filename)
 VOID save_tools(CHAR * filename)
 {
   FILE *fp;
-  CHAR *fname;
   TOOL *info;
   CHAR *modew = "w";
+  CHAR szFullFilename[CCHMAXPATH];
 
   if (!filename)
     filename = lasttoolbar;
-  if (*filename)
-    fname = searchpath(filename);
-  if (fname && *fname)
-    filename = fname;
+  if (!SearchMultiplePathsForFile(filename, szFullFilename))
+    filename = szFullFilename;
   else {
     if (*lasttoolbar)
       filename = lasttoolbar;
     else
-      filename = "FM3TOOLS.TLS";
-    fname = searchpath(filename);
-    if (fname && *fname)
-      filename = fname;
+      filename = "FM3TOOLS.TLS";	// jbs: Why not PCSZ_FM3TOOLSDAT?
+    if (!SearchMultiplePathsForFile(filename, szFullFilename))
+      filename = szFullFilename;
   }
 
   if (stristr(filename, PCSZ_FM3TOOLSDAT))
-    filename = "FM3TOOLS.TLS";
+    filename = "FM3TOOLS.TLS";		// jbs: Why not PCSZ_FM3TOOLSDAT?
+  // jbs: Why save full name for toolbar files that are not FM3TOOLS.DAT?
   if (toolhead && filename && *filename) {
     strcpy(lasttoolbar, filename);
     PrfWriteProfileString(fmprof, FM3Str, "LastToolbar", filename);
@@ -955,7 +960,7 @@ MRESULT EXPENTRY ToolIODlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       FILEFINDBUF3 findbuf;
       HDIR hDir;
       ULONG ulSearchCount, x = 0;
-      CHAR *masks[] = { "*.TLS", "FM3TOOLS.DAT", NULL };
+      CHAR *masks[] = { "*.TLS", "FM3TOOLS.DAT", NULL };	// jbs: Why not PCSZ_FM3TOOLSDAT?
 
       if (mp2)
 	masks[1] = NULL;

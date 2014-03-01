@@ -18,6 +18,8 @@
   12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
   23 Oct 10 GKY Add ForwardslashToBackslash function to streamline code
   17 Sep 11 GKY Fix commandline quoting issues
+  01 Mar 14 JBS Ticket #524: Made "searchapath" thread-safe. Function names and signatures were changed.
+                So calls to these functions had to be changed.
 
 ***********************************************************************/
 
@@ -32,7 +34,7 @@
 #include "notebook.h"			// Data declaration(s)
 #include "init.h"			// Data declaration(s)
 #include "fm3str.h"
-#include "srchpath.h"                   // searchapath
+#include "srchpath.h"                   // Search*Path*ForFile
 #include "pathutil.h"
 #include "strips.h"			// remove_first_occurence_of_character
 #include "valid.h"			// needs_quoting
@@ -156,7 +158,6 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
   APIRET ret;
   ULONG ulAppType;
   char *pszChar;
-  char *FullPath;
   PSZ pszNewCmdLine = pszWorkBuf;
 
   szCmdLine = xmalloc(MaxComLineStrg, pszSrcFile, __LINE__);
@@ -209,9 +210,8 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
 	       GetPString(IDS_QUOTESINARGSTEXT),
 	       pszCmdLine_);
       if (!offsetexe && !offsetcom) {
-	FullPath = searchapath(PCSZ_PATH, szCmdLine);
-	if (*FullPath)
-	  ret = 0;
+        if (!SearchPathForFile(PCSZ_PATH, szCmdLine, NULL))
+          ret = 0;
       }
       else
 	ret = xDosQueryAppType(szCmdLine, &ulAppType);
@@ -256,20 +256,17 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
 	    offset = strrchr(szCmdLine, '.' );
 	    *offset = 0;
 	    strcat(szCmdLine, PCSZ_DOTCMD);
-	    FullPath = searchapath(PCSZ_PATH, szCmdLine);
-	    if (*FullPath)
+	    if (!SearchPathForFile(PCSZ_PATH, szCmdLine, NULL))
 	      ret = 0;
 	    else {
 	      *offset = 0;
 	      strcat(szCmdLine, PCSZ_DOTBAT);
-	      FullPath = searchapath(PCSZ_PATH, szCmdLine);
-	      if (*FullPath)
+	      if (!SearchPathForFile(PCSZ_PATH, szCmdLine, NULL))
 		ret = 0;
 	      else {
 		*offset = 0;
 		strcat(szCmdLine, PCSZ_DOTBTM);
-		FullPath = searchapath(PCSZ_PATH, szCmdLine);
-		if (*FullPath)
+		if (!SearchPathForFile(PCSZ_PATH, szCmdLine, NULL))
 		  ret = 0;
 	      }
 	    }
@@ -295,24 +292,21 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
 		offset = strrchr(szCmdLine, '.' );
 		*offset = 0;
 		strcat(szCmdLine, PCSZ_DOTCMD);
-		FullPath = searchapath(PCSZ_PATH, szCmdLine);
-		if (*FullPath) {
+		if (!SearchPathForFile(PCSZ_PATH, szCmdLine, NULL)) {
 		  ret = 0;
 		  break;
 		}
 		else {
 		  *offset = 0;
 		  strcat(szCmdLine, PCSZ_DOTBAT);
-		  FullPath = searchapath(PCSZ_PATH, szCmdLine);
-		  if (*FullPath) {
+		  if (!SearchPathForFile(PCSZ_PATH, szCmdLine, NULL)) {
 		    ret = 0;
 		    break;
 		  }
 		  else {
 		    *offset = 0;
 		    strcat(szCmdLine, PCSZ_DOTBTM);
-		    FullPath = searchapath(PCSZ_PATH, szCmdLine);
-		    if (*FullPath) {
+		    if (!SearchPathForFile(PCSZ_PATH, szCmdLine, NULL)) {
 		      ret = 0;
 		      break;
 		    }
@@ -371,9 +365,8 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
 	     NullStr,
 	     GetPString(IDS_QUOTESINARGSTEXT),
 	     pszCmdLine_);
-    FullPath = searchapath(PCSZ_PATH, szCmdLine);
     BldQuotedFileName(pszNewCmdLine, szCmdLine);
-    if (!*FullPath) {
+    if (SearchPathForFile(PCSZ_PATH, szCmdLine, NULL)) {
       ret = saymsg(MB_YESNO,
 		   HWND_DESKTOP,
 		   NullStr,

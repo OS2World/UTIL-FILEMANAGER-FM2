@@ -33,6 +33,8 @@
   15 Feb 14 GKY Assure the title is blank on the execute dialog call with the "see" button
   24 Feb 14 JBS Ticket #517: Replaced a call to DosQueryAppType to a call to the wrapped xDosQueryApptType
   24 Feb 14 JBS Ticket #523: Stop considering missing "list", "create" or "extract" commands as errors
+  01 Mar 14 JBS Ticket #524: Made "searchapath" thread-safe. Function names and signatures were changed.
+                So calls to these functions had to be changed and checkfile's signature was changed.
 
 ***********************************************************************/
 
@@ -63,7 +65,7 @@
 #include "pathutil.h"                   // NormalizeCmdLine
 #include "strips.h"			// bstrip
 #include "misc.h"			// CheckDriveSpaceAvail
-#include "srchpath.h"			// searchpath
+#include "srchpath.h"			// Search*Path*ForFile
 #include "systemf.h"			// runemf2
 #include "fortify.h"
 
@@ -72,7 +74,7 @@
 
 static PSZ pszSrcFile = __FILE__;
 
-static PSZ checkfile(PSZ file, INT * error);
+static ULONG checkfile(PSZ file);
 static BOOL check_archiver(HWND hwnd, ARC_TYPE * info);
 static INT get_int_from_window(HWND hwnd, USHORT id);
 static LONG get_long_from_window(HWND hwnd, USHORT id);
@@ -392,38 +394,48 @@ VOID rewrite_archiverbb2(PSZ archiverbb2)
     load_archivers();			// Resync commend line numbers
 }
 
-static PSZ checkfile(PSZ file, INT * error)
+/**
+ * checkfile: Determine if a program is reachable and of an acceptable type.
+ *
+ * @param pFilename: the name of a program file to check (input)
+ *
+ * @return 0 if the program reachable and of an acceptable type
+ *         1 if the program is unreachable (or pFilename is invalid)
+ *         2 if the program is of an unacceptable type
+ *         3 if pFilename is null or points to a null string
+ *
+ */
+static ULONG checkfile(PSZ file)
 {
-  CHAR *p, *pp = NULL;
-  INT ret;
+  CHAR szFullFilename[CCHMAXPATH], *pp = NULL;
+  ULONG ret;
   ULONG apptype;
 
   if (!file || !*file) {
-    *error = 3;
-    return NULL;
+    return 3;
   }
   pp = strchr(file, ' ');
   if (pp)
     *pp = 0;
-  p = searchpath(file);
-  if (!p || !*p)
-    *error = 1;
+  if (SearchPathForFile(PCSZ_PATH, file, szFullFilename)) {
+    ret = 1;
+  }
   else {
-    ret = (INT) xDosQueryAppType(p, &apptype);
+    ret = xDosQueryAppType(szFullFilename, &apptype);
     apptype &= (~FAPPTYP_32BIT);
     if (!apptype ||
 	(apptype == FAPPTYP_NOTWINDOWCOMPAT) ||
 	(apptype == FAPPTYP_WINDOWCOMPAT) ||
 	(apptype & FAPPTYP_BOUND) ||
 	(apptype & FAPPTYP_WINDOWAPI) || (apptype & FAPPTYP_DOS)) {
-       *error = 0;
+       ret = 0;
      }
      else
-       *error = 2;
+       ret = 2;
   }
   if (pp)
     *pp = ' ';
-  return p;
+  return ret;
 }
 
 
@@ -443,11 +455,11 @@ static BOOL check_archiver(HWND hwnd, ARC_TYPE * info)
   if (info->fnpos > 50 || info->fnpos < -1)
     badPos = TRUE;
   if (info->list)
-    checkfile(info->list, &badList);
+    badList = checkfile(info->list);
   if (info->create)
-    checkfile(info->create, &badCreate);
+    badCreate = checkfile(info->create);
   if (info->extract)
-    checkfile(info->extract, &badExtract);
+    badExtract = checkfile(info->extract);
   if (!noStart && !noEnd && !badPos && !badList && !badCreate && !badExtract)
     return TRUE;			// OK
   if (!info->id)
@@ -926,10 +938,10 @@ MRESULT EXPENTRY ArcReviewDlgProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		   !ok ? GetPString(IDS_NOTRECOMMENDTEXT) : NullStr) ==
 	    MBID_YES) {
 
-	  PSZ ab2;
+//	  PSZ ab2;
 
-	  ab2 = searchpath(PCSZ_ARCHIVERBB2);	// Rewrite without alerting
-	  rewrite_archiverbb2(ab2);
+//	  ab2 = searchpath(PCSZ_ARCHIVERBB2);	// Rewrite without alerting
+	  rewrite_archiverbb2(archiverbb2);  // jbs: Re-use path set by load_archivers
 	}
       }
       WinDismissDlg(hwnd, TRUE);
