@@ -125,6 +125,9 @@
                 described in this ticket. (Also changed it to strtoul.)
   01 Mar 14 JBS Ticket #524: Made "searchapath" thread-safe. Function names and signatures were changed.
                 So calls to these functions had to be changed.
+  02 Mar 14 GKY Fixed typo that reversed the function of the saymsg dialog g/bzip check.
+                Added option to suppress message regarding missing bzip2.exe
+                or gzip.exe on TAR.B/GZ archives.
 
 ***********************************************************************/
 
@@ -244,6 +247,8 @@ BOOL fProtectOnly;
 BOOL fReminimize;
 BOOL fWantFirstTimeInit;
 BOOL fUseShellEnv;
+BOOL fDontAskBzip;
+BOOL fDontAskGzip;
 //BOOL fDrivetoSkip[26];
 HPOINTER hptrApp;
 HPOINTER hptrArc;
@@ -1619,6 +1624,10 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, appname, "ThreadNotes", &fThreadNotes, &size);
   if (fThreadNotes)
     ShowNote();
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "DontAskBzip", &fDontAskBzip, &size);
+  size = sizeof(BOOL);
+  PrfQueryProfileData(fmprof, FM3Str, "DontAskGzip", &fDontAskGzip, &size);
 
   LoadDetailsSwitches(PCSZ_DIRCNR, &dsDirCnrDefault, FALSE);
 

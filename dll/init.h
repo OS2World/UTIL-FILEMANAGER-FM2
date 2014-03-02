@@ -35,6 +35,9 @@
   16 Feb 14 GKY Add "#" command line switch to workaround problem with blank command shell
                 started from fm2 after fm2 has been started with stdout and stderr
                 redirected to a file.
+  02 Mar 14 GKY Fixed typo that reversed the function of the saymsg dialog g/bzip check.
+                Added option to suppress message regarding missing bzip2.exe
+                or gzip.exe on TAR.B/GZ archives.
 
 ***********************************************************************/
 
@@ -206,6 +209,8 @@ extern BOOL fProtectOnly;
 extern BOOL fReminimize;
 extern BOOL fWantFirstTimeInit;
 extern BOOL fUseShellEnv;
+extern BOOL fDontAskBzip;
+extern BOOL fDontAskGzip;
 extern HPOINTER hptrApp;
 extern HPOINTER hptrArc;
 extern HPOINTER hptrArrow;

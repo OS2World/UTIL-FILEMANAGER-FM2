@@ -625,20 +625,38 @@ static INT FillArcCnr(HWND hwndCnr, CHAR * arcname, ARC_TYPE ** arcinfo, /*FOLD0
     nogzip = stricmp(p, "TAR.GZ");
     if (!nobzip) {
       ftarbz = TRUE;
-      if (DosQueryAppType("bzip.exe" , &apptype)) {
+      if (DosQueryAppType("bzip2.exe" , &apptype)) {
         nobzip = TRUE;
-        temp = saymsg(MB_YESNO, HWND_DESKTOP, NullStr, GetPString(IDS_ARCNOBZIP));
-        if (temp != MBID_NO)
-          return 0;                                               
+        if (!fDontAskBzip) {
+          temp = saymsg2(NULL, 3,
+                         HWND_DESKTOP,
+                         NullStr,
+                         GetPString(IDS_ARCNOBZIP));
+          if (temp == SM2_NO ||temp == SM2_CANCEL)
+            return 0;
+          else if (temp == SM2_DONTASK) {
+            fDontAskBzip = TRUE;
+            PrfWriteProfileData(fmprof, FM3Str, "DontAskBzip", &fDontAskBzip, sizeof(BOOL));
+          }
+        }
       }                                                           
     }                                                             
-    else if (!nogzip) {                                           
-      ftargz = TRUE;                                              
+    else if (!nogzip) {
+      ftargz = TRUE;
       if (DosQueryAppType("gzip.exe" , &apptype)) {
         nogzip = TRUE;
-        temp = saymsg(MB_YESNO, HWND_DESKTOP, NullStr, GetPString(IDS_ARCNOGZIP));
-        if (temp != MBID_NO)
-          return 0;
+        if (!fDontAskGzip) {
+          temp = saymsg2(NULL, 3,
+                         HWND_DESKTOP,
+                         NullStr,
+                         GetPString(IDS_ARCNOGZIP));
+          if (temp == SM2_NO || temp == SM2_CANCEL)
+            return 0;
+          else if (temp == SM2_DONTASK) {
+            fDontAskGzip = TRUE;
+            PrfWriteProfileData(fmprof, FM3Str, "DontAskGzip", &fDontAskGzip, sizeof(BOOL));
+          }
+        }
       }
     }
   }
@@ -733,8 +751,10 @@ ReTry:
               if (cnter == 1) {
                 if (info->test)
                   strcpy(TestStr, info->test);
-                else
+                else {
+                  strcpy(TestStr, "");
                   notest = TRUE;
+                }
               }
               else if (notest && info->test) {
                 strcpy(TestStr, info->test);
@@ -989,8 +1009,12 @@ ReTry:
             info->test = xstrdup(TestStr, pszSrcFile, __LINE__);
           }
           else if ((ftarbz && !nobzip) || (ftargz && !nogzip))
-            info->test = xstrdup(ftarbz ? "bzip.exe -t" : "gzip.exe - t",
+            info->test = xstrdup(ftarbz ? "bzip2.exe -t" : "gzip.exe - t",
                                  pszSrcFile, __LINE__);
+          else if (rc) {
+            strcpy(Temp, info->test);
+            info->test = NULL;
+          }
           ad.errmsg = errstr;
           WinDlgBox(HWND_DESKTOP,
                     hwndCnr,
@@ -999,6 +1023,8 @@ ReTry:
             info->test = xstrdup(Temp, pszSrcFile, __LINE__);
           else if ((ftarbz && !nobzip) || (ftargz && !nogzip))
             info->test = xstrdup("", pszSrcFile, __LINE__);
+          else if (rc)
+            info->test = xstrdup(Temp, pszSrcFile, __LINE__);
         }
         else
           saymsg(MB_OK, HWND_DESKTOP, GetPString(IDS_ARCMISSINGEXE),
