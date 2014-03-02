@@ -100,6 +100,7 @@
   22 Oct 11 GKY Removing unneeded UnFlesh call from StubbyScanThread appears to significantly speed opening of FM/2
   02 Mar 14 GKY !didone for fFirstTime so the suggest code works again. Also clear out the
                 garbage that was appearing in the string.
+  02 Mar 14 GKY Speed up intial drive scans Ticket 528
 
 ***********************************************************************/
 
@@ -285,7 +286,7 @@ VOID StubbyScanThread(VOID * arg)
     }
     ProcessDirCount = 0;
     FixedVolume = 0;
-    fInitialDriveScan = FALSE;
+    //fInitialDriveScan = FALSE;
   }
 # ifdef FORTIFY
   Fortify_LeaveScope();
@@ -1708,6 +1709,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
     PostMsg(hwndMain, UM_BUILDDRIVEBAR, MPVOID, MPVOID);
   DosSleep(16);				// 05 Aug 07 GKY 33
   fDummy = FALSE;
+  fInitialDriveScan = FALSE;
   DosPostEventSem(CompactSem);
 
   if (!fDontSuggestAgain) {

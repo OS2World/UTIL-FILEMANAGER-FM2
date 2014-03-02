@@ -83,6 +83,7 @@
   04 Aug 12 GKY Changes to use Unlock to unlock files if Unlock.exe is in path both from menu/toolbar and as part of
                 copy, move and delete operations
   22 Feb 14 GKY Fix warn readonly yes don't ask to work when recursing directories.
+  02 Mar 14 GKY Speed up intial drive scans Ticket 528
 
 ***********************************************************************/
 
@@ -876,7 +877,9 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (hwndMain)
 	  WinSendMsg(hwndMain, UM_LOADFILE, MPVOID, MPVOID);
       }
-      if (!fInitialDriveScan && fSwitchTree && hwndTree) {
+      while (fInitialDriveScan)
+        DosSleep(100);
+      if (fSwitchTree && hwndTree) {
 	// Keep drive tree in sync with directory container
         PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
         if (pszTempDir) {
