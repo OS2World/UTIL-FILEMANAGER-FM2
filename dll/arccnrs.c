@@ -100,6 +100,9 @@
   01 Mar 14 GKY Fix a trap caused by selecting "print" from the arccontainer menu. Ticket 525
   01 Mar 14 GKY Fix the problem with copying text from the test archive window by launching
                 it in a command shell (i.e. comspec /k archiver -t archive) Ticket 503
+  02 Mar 14 GKY Fixed typo that reversed the function of the saymsg dialog g/bzip check.
+                Added option to suppress message regarding missing bzip2.exe
+                or gzip.exe on TAR.B/GZ archives.
 
 ***********************************************************************/
 
