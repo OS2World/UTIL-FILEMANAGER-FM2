@@ -93,6 +93,13 @@
   09 Feb 14 GKY Fix trap on opening a file without an extention
   22 Feb 14 GKY Fix warn readonly yes don't ask to work when recursing directories.
   28 Apr 14 JBS Ticket #522: Ensure use of wrapper functions where needed
+  01 Mar 14 GKY Fixed error checking in FillArcCnr only to report missing archivers after
+                all entries have been tried. Added a check b/gzip exes for TAR.B/GZ archives.
+                Use the test archive string from the first working archive description.
+                Enhance the error message. Ticket 502
+  01 Mar 14 GKY Fix a trap caused by selecting "print" from the arccontainer menu. Ticket 525
+  01 Mar 14 GKY Fix the problem with copying text from the test archive window by launching
+                it in a command shell (i.e. comspec /k archiver -t archive) Ticket 503
 
 ***********************************************************************/
 
@@ -329,14 +336,18 @@ static MRESULT EXPENTRY ArcErrProc(HWND hwnd, ULONG msg, MPARAM mp1, /*FOLD00*/
       }
       break;
 
-    case ARCERR_TEST:
+    case ARCERR_TEST: {
+      CHAR *comspec;
+
       ad = WinQueryWindowPtr(hwnd, QWL_USER);
+      comspec = getenv( "COMSPEC" );
       runemf2(SEPARATEKEEP | WINDOWED | MAXIMIZED,
 	      hwnd, pszSrcFile, __LINE__, NULL, NULL,
-	      "%s %s",
-	      ad->info->test,
+	      "%s /k %s %s",
+	      comspec, ad->info->test,
 	      BldQuotedFileName(szQuotedArcName, ad->arcname));
       break;
+    }
     }
     return 0;
   }
@@ -574,12 +585,14 @@ static INT FillArcCnr(HWND hwndCnr, CHAR * arcname, ARC_TYPE ** arcinfo, /*FOLD0
   HFILE newstdout;
   CHAR lonename[CCHMAXPATH + 2],
        *nsize, *osize, *fdate, *fname, *p, *pp, *arctemp;
-  // Change the DosQueryAppType call below to xDosQueryAppType if "s" is no longer in low memory
+  CHAR TestStr[CCHMAXPATH * 2];
   CHAR s[CCHMAXPATH * 2];
   BOOL gotstart;
   BOOL gotend;
   BOOL wasquote;
   BOOL nomove = FALSE;			// fixme to be gone?
+  BOOL notest;
+  BOOL nobzip, ftarbz, nogzip, ftargz;
   INT highest = 0, fieldnum, counter = 0, numarcfiles = 0;
   PARCITEM lastpai;
   ARC_TYPE *info;
@@ -587,6 +600,7 @@ static INT FillArcCnr(HWND hwndCnr, CHAR * arcname, ARC_TYPE ** arcinfo, /*FOLD0
   ULONG apptype;
   APIRET rc;
   CHAR *mode;
+  ULONG cnter = 0;
 
   if (!arcname || !arcinfo)
     return 0;
@@ -602,7 +616,32 @@ static INT FillArcCnr(HWND hwndCnr, CHAR * arcname, ARC_TYPE ** arcinfo, /*FOLD0
 	   GetPString(IDS_ARCTMPDRIVESPACELIMITED),
 	   ArcTempRoot);
   MakeTempName(arctemp, ArcTempRoot, 2);
+  p = strrchr(arcname, '.');
+  if (p) {
+    APIRET temp;
 
+    p = p - 3;
+    nobzip = stricmp(p, "TAR.BZ");
+    nogzip = stricmp(p, "TAR.GZ");
+    if (!nobzip) {
+      ftarbz = TRUE;
+      if (DosQueryAppType("bzip.exe" , &apptype)) {
+        nobzip = TRUE;
+        temp = saymsg(MB_YESNO, HWND_DESKTOP, NullStr, GetPString(IDS_ARCNOBZIP));
+        if (temp != MBID_NO)
+          return 0;                                               
+      }                                                           
+    }                                                             
+    else if (!nogzip) {                                           
+      ftargz = TRUE;                                              
+      if (DosQueryAppType("gzip.exe" , &apptype)) {
+        nogzip = TRUE;
+        temp = saymsg(MB_YESNO, HWND_DESKTOP, NullStr, GetPString(IDS_ARCNOGZIP));
+        if (temp != MBID_NO)
+          return 0;
+      }
+    }
+  }
 
 ReTry:
 
@@ -680,18 +719,34 @@ ReTry:
 	    xfree(arctemp, pszSrcFile, __LINE__);
 	    return 0;
 	  }
-	  else {
-	    runemf2(SEPARATE | INVISIBLE | MINIMIZED | BACKGROUND | WAIT,
-		    hwndCnr, pszSrcFile, __LINE__, NULL, NULL,
-		    "%s %s",
-		    info->list,
-		    BldQuotedFileName(s, arcname));
-	    oldstdout = fileno(stdout);
-	    DosError(FERR_DISABLEHARDERR);
-	    DosDupHandle(newstdout, &oldstdout);
-	    DosClose(newstdout);
-	    fclose(fp);
-	  }
+          else {
+            rc = 0;
+            //DbgMsg(pszSrcFile, __LINE__, "Number of tries %i", cnter);
+            rc = DosQueryAppType(s, &apptype);
+            if (!rc) {
+              cnter ++;
+              runemf2(SEPARATE | INVISIBLE | MINIMIZED | BACKGROUND | WAIT,
+                      hwndCnr, pszSrcFile, __LINE__, NULL, NULL,
+                      "%s %s",
+                      info->list,
+                      BldQuotedFileName(s, arcname));
+              if (cnter == 1) {
+                if (info->test)
+                  strcpy(TestStr, info->test);
+                else
+                  notest = TRUE;
+              }
+              else if (notest && info->test) {
+                strcpy(TestStr, info->test);
+                notest = FALSE;
+              }
+            }
+            oldstdout = fileno(stdout);
+            DosError(FERR_DISABLEHARDERR);
+            DosDupHandle(newstdout, &oldstdout);
+            DosClose(newstdout);
+            fclose(fp);
+          }
 	}
       }
     }
@@ -888,7 +943,8 @@ ReTry:
       }					// while !eof
 
       fclose(fp);
-
+      //DbgMsg(pszSrcFile, __LINE__, "Archive check counter %i numarcfiles %i gotstart %i %c",
+      //       cnter, numarcfiles, gotstart, pStopFlag);
       if (*pStopFlag)
 	numarcfiles = 0;		// Request close
       else if (!numarcfiles || !gotstart
@@ -898,7 +954,7 @@ ReTry:
 	ARCDUMP ad;
 	CHAR errstr[CCHMAXPATH + 256];
 
-	// Try for alternate archiver
+        // Try for alternate archiver
 	tinfo = info;
 	do {
 	  tinfo = tinfo->next;
@@ -912,25 +968,45 @@ ReTry:
 	  }
         } while (tinfo);
         if (!fAlertBeepOff)
-	  DosBeep(750, 50);		// wake up user
-	sprintf(errstr, GetPString(IDS_ARCERRORINFOTEXT),
-		arcname,
-		!gotstart ? GetPString(IDS_NOGOTSTARTTEXT) : NullStr,
-		!numarcfiles ? GetPString(IDS_NOARCFILESFOUNDTEXT) :
-		NullStr,
-		!gotend ? GetPString(IDS_NOENDOFLISTTEXT) : NullStr);
-	memset(&ad, 0, sizeof(ARCDUMP));
-	ad.info = info;
-	strcpy(ad.listname, arctemp);
-	strcpy(ad.arcname, arcname);
-	ad.errmsg = errstr;
-	WinDlgBox(HWND_DESKTOP,
-		  hwndCnr,
-		  ArcErrProc, FM3ModHandle, ARCERR_FRAME, MPFROMP(&ad));
+          DosBeep(750, 50);		// wake up user
+        if (cnter > 0) {
+          CHAR Temp[CCHMAXPATH + 2];
+
+          sprintf(errstr, GetPString(IDS_ARCERRORINFOTEXT),
+                  arcname,
+                  !gotstart ? GetPString(IDS_NOGOTSTARTTEXT) : NullStr,
+                  !numarcfiles ? GetPString(IDS_NOARCFILESFOUNDTEXT) : NullStr,
+                  !gotend ? GetPString(IDS_NOENDOFLISTTEXT) : NullStr,
+                  !notest ? NullStr : GetPString(IDS_ARCNOTEST),
+                  ftarbz && !nobzip ? GetPString(IDS_ARCBZIPTESTTARBZ) : NullStr,
+                  ftargz && !nogzip ? GetPString(IDS_ARCGZIPTESTTARGZ) : NullStr);
+          memset(&ad, 0, sizeof(ARCDUMP));
+          ad.info = info;                                                   
+          strcpy(ad.listname, arctemp);                                     
+          strcpy(ad.arcname, arcname);                                      
+          if (!notest) {
+            strcpy(Temp, info->test);
+            info->test = xstrdup(TestStr, pszSrcFile, __LINE__);
+          }
+          else if ((ftarbz && !nobzip) || (ftargz && !nogzip))
+            info->test = xstrdup(ftarbz ? "bzip.exe -t" : "gzip.exe - t",
+                                 pszSrcFile, __LINE__);
+          ad.errmsg = errstr;
+          WinDlgBox(HWND_DESKTOP,
+                    hwndCnr,
+                    ArcErrProc, FM3ModHandle, ARCERR_FRAME, MPFROMP(&ad));
+          if (!notest)
+            info->test = xstrdup(Temp, pszSrcFile, __LINE__);
+          else if ((ftarbz && !nobzip) || (ftargz && !nogzip))
+            info->test = xstrdup("", pszSrcFile, __LINE__);
+        }
+        else
+          saymsg(MB_OK, HWND_DESKTOP, GetPString(IDS_ARCMISSINGEXE),
+                 GetPString(IDS_ARCMISSINGEXEVERBOSE));
       }
       else if (!nomove && tinfo) {
-	// if we got a false hit, move working hit to top
-	tinfo = info->next;
+	// if we got a false hit, move working hit to top                   
+	tinfo = info->next;                                                 
 	info->next = arcsighead;
 	arcsighead->prev = info;
 	if (tinfo)
@@ -1891,8 +1967,8 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) /*F
 		      li->type == IDM_EDITTEXT ||
 		      li->type == IDM_OPENDEFAULT ||
 		      li->type == IDM_OPENSETTINGS ||
-		      (li->type == IDM_EDITBINARY &&		// JBS No way for this () to be true??
-		       li->type == IDM_MCIPLAY)) &&
+		      (li->type == IDM_EDITBINARY ||		// JBS No way for this () to be true??
+		       li->type == IDM_MCIPLAY)) ||
 		     !li->info->exwdirs)) ?
 		     li->info->extract :
 		     li->info->exwdirs);
@@ -2197,7 +2273,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) /*F
 	  break;
 	} // switch
       }
-      if (li->type != IDM_OPENDEFAULT && li->type != IDM_OPENSETTINGS)
+      if (li && li->type != IDM_OPENDEFAULT && li->type != IDM_OPENSETTINGS)
       {
 	FreeListInfo(li);
       }
@@ -2667,9 +2743,11 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, /*FOLD00
 	if (dcd->info) {
 	  WinEnableMenuItem((HWND) mp2,
 			    IDM_DELETE, dcd->info->delete != NULL);
-	  WinEnableMenuItem((HWND) mp2, IDM_TEST, dcd->info->test != NULL);
-	  WinEnableMenuItem((HWND) mp2,
-			    IDM_EXTRACT, dcd->info->extract != NULL);
+          WinEnableMenuItem((HWND) mp2, IDM_TEST, dcd->info->test != NULL);
+          WinEnableMenuItem((HWND) mp2, IDM_EXTRACT,
+                            dcd->info->extract != NULL && !strstr(dcd->info->ext, "TAR"));
+          WinEnableMenuItem((HWND) mp2, IDM_ARCEXTRACT,
+                            dcd->info->extract != NULL && !strstr(dcd->info->ext, "TAR"));
 	  WinEnableMenuItem((HWND) mp2,
 			    IDM_EXTRACTWDIRS, dcd->info->exwdirs != NULL);
 	  WinEnableMenuItem((HWND) mp2,
@@ -2681,6 +2759,9 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, /*FOLD00
 	break;
 
       case IDM_VIEWSMENU:
+        WinEnableMenuItem((HWND) mp2, IDM_TEST, dcd->info->test != NULL);
+        WinEnableMenuItem((HWND) mp2, IDM_ARCEXTRACT,
+                            dcd->info->extract != NULL && !strstr(dcd->info->ext, "TAR"));
 	WinCheckMenuItem((HWND) mp2,
 			 IDM_MINIICONS, (dcd->flWindowAttr & CV_MINI) != 0);
 	WinEnableMenuItem((HWND) mp2,
@@ -3688,21 +3769,6 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags, /*
 	  else
 	    strcpy(dcd->directory, extractpath);
         }
-        // Removed because it can't be set from inside the container and names with a space
-        // break it. I don't think it makes sense from the container any way GKY 8-10-13
-	/*if (!*dcd->directory && fFileNameCnrPath && dcd->arcname) {
-	  strcpy(fullname, dcd->arcname);
-	  p = strrchr(fullname, '.');
-          if (p) {
-            *p = 0;
-          }
-	  else {
-	    p = fullname + strlen(fullname);
-            p--;
-            *p = 0;
-	  }
-	  strcpy(dcd->directory, fullname);
-	} */
 	if (!*dcd->directory && *lastextractpath) {
 	  //DosEnterCritSec();  //GKY 11-29-08
 	  DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);

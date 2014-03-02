@@ -70,6 +70,10 @@
   15 Feb 14 GKY Improvements to saymsg2 added accel keys
   23 Feb 14 GKY Undated one of the error messages in runemf2 to provide the calling line
                 and file.
+  01 Mar 14 GKY Fixed error checking in FillArcCnr only to report missing archivers after
+                all entries have been tried. Added a check b/gzip exes for TAR.B/GZ archives.
+                Use the test archive string from the first working archive description.
+                Enhance the error message. Ticket 502
   
 ***********************************************************************/
 
@@ -2562,7 +2566,7 @@ STRINGTABLE
     IDS_SAYWHATTEXT                       "Say what?"
     IDS_SHAMETEXT                         "Shame, shame, shame..."
     IDS_BUNGEDUPTEXT                      "Probably bunged-up archiver information."
-    IDS_ARCERRORINFOTEXT                  "An error occured when trying to obtain information from the archiver about %s.  Errors noted (bad start-of-list can cause all):%s%s%s"
+    IDS_ARCERRORINFOTEXT                  "An error occured when trying to obtain information from the archiver about %s.  Errors noted (bad start-of-list can cause all):%s%s%s %s %s %s"
     IDS_NOGOTSTARTTEXT                    "  *Start-of-list string not found."
     IDS_NOARCFILESFOUNDTEXT               "  *No file lines found."
     IDS_NOENDOFLISTTEXT                   "  *End-of-list string not found."
@@ -2574,6 +2578,13 @@ STRINGTABLE
     IDS_ARCCNRFOLDERHELPTEXT              "Click to change extract directory\r(or enter a new directory into the\rentry field at the bottom of the\rwindow).  Or drop on me."
     IDS_ARCCNRFOLDERDROPHELPTEXT          "Dropping here can change the extract directory."
     IDS_ARCCNRDELREFTEXT                  "You have elected to %s the object%s above from archive ""%s"".  Unhighlight any objects which you do not wish to %s."
+    IDS_ARCNOBZIP                         "bzip.exe could not be found. Do you wish to continue"
+    IDS_ARCNOGZIP                         "gzip.exe could not be found. Do you wish to continue"
+    IDS_ARCNOTEST                         "Archiver doesn't support full archive testing"
+    IDS_ARCBZIPTESTTARBZ                  "This is a .TAR.BZ archive and while tar does't support testing bzip does. Select Test to test the bzip portion of the archive. If it suceeds either your tar version is to old to support .TAR.BZ archives or the tar ball is damaged"
+    IDS_ARCGZIPTESTTARGZ                  "This is a .TAR.GZ archive and while tar does't support testing gzip does. Select Test to test the gzip portion of the archive. If it suceeds either your tar version is to old to support .TAR.GZ archives or the tar ball is damaged"
+    IDS_ARCMISSINGEXE                     "Missing executable"
+    IDS_ARCMISSINGEXEVERBOSE              "None of the executable files identified in ARCHIVER.BB2 for this archive type were found on the PATH"
     IDS_DELETELOWERTEXT                   "delete"
     IDS_REFRESHLOWERTEXT                  "refresh"
     IDS_REPLACEWARNTEXT                   "The following member%s of archive ""%s"" exist%s in the extract directory ""%s"".  Unhighlight any you do not want to replace existing files."

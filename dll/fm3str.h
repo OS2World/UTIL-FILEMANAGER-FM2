@@ -50,6 +50,10 @@
   10 Mar 13 GKY Improvrd readonly check on delete to allow cancel and don't ask again options
                 Added saymsg2 for this purpose
   10 Mar 13 GKY Fixes to snapshot file.
+  01 Mar 14 GKY Fixed error checking in FillArcCnr only to report missing archivers after
+                all entries have been tried. Added a check b/gzip exes for TAR.B/GZ archives.
+                Use the test archive string from the first working archive description.
+                Enhance the error message. Ticket 502
 
 ***********************************************************************/
 
@@ -1048,6 +1052,13 @@
 #define IDS_LOCKEDFILEWARNINGTITLE                           1021
 #define IDS_READONLYFILEWARNING                              1022
 #define IDS_READONLYFILEWARNINGTITLE                         1023
+#define IDS_ARCNOBZIP                                        1024
+#define IDS_ARCNOGZIP                                        1025
+#define IDS_ARCNOTEST                                        1026
+#define IDS_ARCBZIPTESTTARBZ                                 1027
+#define IDS_ARCGZIPTESTTARGZ                                 1028
+#define IDS_ARCMISSINGEXE                                    1029
+#define IDS_ARCMISSINGEXEVERBOSE                             1030
 
 //The following strings were cut up form the string of the root name (ie IDS_SUGGEST1TEXT)
 //This was done as part of the conversion to a StringTable where strings are limited to 255
