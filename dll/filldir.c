@@ -98,6 +98,8 @@
                 responsiveness when closing containers with large numbers of items
   12 Jun 11 GKY Replaced SleepIfNeeded with IdleIfNeeded in the container loade loop
   22 Oct 11 GKY Removing unneeded UnFlesh call from StubbyScanThread appears to significantly speed opening of FM/2
+  02 Mar 14 GKY !didone for fFirstTime so the suggest code works again. Also clear out the
+                garbage that was appearing in the string.
 
 ***********************************************************************/
 
@@ -148,7 +150,6 @@ VOID StubbyScanThread(VOID * arg);
 
 // Data definitions
 static PSZ pszSrcFile = __FILE__;
-static BOOL fFirstTime;
 INT FixedVolume = 0;
 
 #pragma data_seg(GLOBAL1)
@@ -1278,7 +1279,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   PCNRITEM  pciParent = NULL;
   UINT iDrvNum;
   ULONG ulDriveMapMask;
-  CHAR szSuggest[32];			// Suggested startup command line parameters
+  CHAR szSuggest[32] = {0};			// Suggested startup command line parameters
   CHAR szDrive[CCHMAXPATH] = " :\\";	// 13 Oct 09 SHL
   CHAR szFSType[CCHMAXPATH];
   FILESTATUS4L fsa4;
@@ -1713,8 +1714,8 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
     BYTE info;
     BOOL includesyours = FALSE;
 
-    // 10 Jan 08 SHL fixme to understand fFirstTime - looks obsolete to me - probably mean didonce?
-    if (*szSuggest || ~driveflags[1] & DRIVE_IGNORE && fFirstTime) {
+    // 02 Mar 14 GKY !didone for fFirstTime so it works again
+   if (*szSuggest || ~driveflags[1] & DRIVE_IGNORE && !didonce) {
       if (!DosDevConfig(&info, DEVINFO_FLOPPY) && info == 1) {
 	if (!*szSuggest) {
 	  *szSuggest = '/';
@@ -1725,6 +1726,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	szSuggest[1] = 'B';
       }
     }
+    //DbgMsg(pszSrcFile, __LINE__, "szSuggest %x info %x", *szSuggest, info);
     if (*szSuggest) {
       APIRET rc;
       for (iDrvNum = 2; iDrvNum < 26; iDrvNum++) {
@@ -1735,11 +1737,11 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
       }
       strcat(szSuggest, " %*");
       rc = saymsg(MB_YESNOCANCEL | MB_ICONEXCLAMATION,
-	     hwndParent ? hwndParent : hwndCnr,
-	     GetPString(IDS_SUGGESTTITLETEXT),
-	     GetPString(IDS_SUGGEST1TEXT),
-	     (includesyours) ? GetPString(IDS_SUGGEST2TEXT) : NullStr,
-	     szSuggest);
+                  hwndParent ? hwndParent : hwndCnr,
+                  GetPString(IDS_SUGGESTTITLETEXT),
+                  GetPString(IDS_SUGGEST1TEXT),
+                  (includesyours) ? GetPString(IDS_SUGGEST2TEXT) : NullStr,
+                  szSuggest);
       if (rc == MBID_YES) {
 	HOBJECT hFM2Object;
 	char s[64];
