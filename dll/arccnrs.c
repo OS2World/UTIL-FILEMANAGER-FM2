@@ -743,7 +743,7 @@ ReTry:
           else {
             rc = 0;
             //DbgMsg(pszSrcFile, __LINE__, "Number of tries %i", cnter);
-            rc = DosQueryAppType(s, &apptype);
+            rc = SearchPathForFile(PCSZ_PATH, s, NULL);
             if (!rc) {
               cnter ++;
               runemf2(SEPARATE | INVISIBLE | MINIMIZED | BACKGROUND | WAIT,
