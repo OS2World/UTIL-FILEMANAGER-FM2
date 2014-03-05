@@ -26,6 +26,7 @@
       Allow the above filename to be passed as a parameter
       Edit to make sure this program is located correctly
       Add version checking
+      Fully implement logging
 
    Change log:
       16 Mar 09 JBS Added code to copy discontinued directory container state ini keys to new names
@@ -36,6 +37,9 @@
             backup existing .\ARCHIVER.BB2 file to .\USER_CONFIG_BACKUP\B4UNZIP6.BB2
             insert the UNZIP v6 entry from .\TMPLATES\ARCHVER.TMP into ,\ARCHIVER.BB2 (at the end)
       30 Jun 11 JBS Ticket 459: Fix a bug and improve text when support for Unzip v6 has already been added.
+      05 Mar 14 JBS Ticket #532: Modified to append additional archiver definitions to ARCHIVER,BB2
+         Also, reworked the code to make appending more definitions easier in the future
+         Also, added missing features and a partial implementation of logging.
 
 */
 
@@ -47,9 +51,7 @@ signal on Halt
 signal on NOTREADY name Error
 signal on NOVALUE name Error
 signal on SYNTAX name Error
-/*
 signal on novalue             /* for debugging */
-*/
 
 call RxFuncAdd 'SysLoadFuncs', 'REXXUTIL', 'SysLoadFuncs'
 call SysLoadFuncs
@@ -63,16 +65,28 @@ call ProcessArgs strip(args)
 if cfg.errorcode \= 0 then
    signal ErrorExit
 
-if cfg.unattended = 0 then
-   call GetUserOptions
-
-if cfg.userabort = 1 then
-   signal NormalExit
-
 if cfg.operation = 'INSTALL' then
    call UpdateFM2Ini
 
-cfg.action_taken = 0
+if cfg.attended = 1 then
+   do
+      call GetUserOptions
+      if cfg.userabort = 1 then
+         signal NormalExit
+   end
+
+/*
+ *
+ * The following code
+ *    Installs default files if /DEFAUTLS is specified or if a cfg file is missing
+ *    Handles all /DEINSTALL actions
+ * It should precede the call to UpdateArchiverBB2
+ *
+ */
+
+/*
+trace '?i'
+*/
 do f = 1 to cfg.file.0
    file_exists = stream(cfg.file.f.name, 'c' , 'query exists')
    if cfg.operation = 'INSTALL' then
@@ -82,21 +96,18 @@ do f = 1 to cfg.file.0
                if cfg.defaults = 1 then
                   if FilesAreDifferent(cfg.file.f.default, cfg.file.f.name) = 1 then
                      do
-                        if cfg.unattended = 0 then
+                        if cfg.attended = 1 then
                            do
-                              user_choice = PromptForReplaceOption(f)
-                              if user_choice == 'Q' then
-                                 signal NormalExit
-                              if user_choice == 'N' then
+                              if PromptForReplaceOption(f) = 'N' then
                                  iterate
                            end
-                        /* unattended = 1 or user_choice = 'Y' */
+                        /* attended = 0 or user choice = 'Y' */
                         cfg.errorcode = CfgAction( 'RESETTODEFAULT', f )
                      end
                   else
                      nop
                else
-                  if (cfg.file.f.toolbar = 1) & (cfg.unattended = 1) & (translate(right(cfg.file.f.name, 13, ' ')) \= '\QUICKTLS.DAT') then
+                  if (cfg.file.f.toolbar = 1) & (cfg.attended = 0) & (translate(right(cfg.file.f.name, 13, ' ')) \= '\QUICKTLS.DAT') then
                      call Ticket267Fix cfg.file.f.name
             end
          else
@@ -107,7 +118,7 @@ do f = 1 to cfg.file.0
       do
          if BackupFileIsOK(f) = 0 then
             iterate
-         if cfg.unattended = 0 then
+         if cfg.attended = 1 then
             do
                user_choice = PromptForReplaceOption(f)
                if user_choice == 'Q' then
@@ -121,84 +132,130 @@ do f = 1 to cfg.file.0
       end
 end
 
-if cfg.operation = 'INSTALL' then
-   call UpdateArchiverBB2
-
-if cfg.errorcode \= 0 then
-   signal ErrorExit
-
-if cfg.action_taken = 0 then
-   do
-      say
-      say 'No action taken.'
-      say
-      say 'FM/2 configuration files are already as you desire.'
-   end
-
-signal NormalExit
+call UpdateArchiverBB2
 
 ErrorExit:
-   select
-      when cfg.errorcode = 1 then
-         call Usage
-      when cfg.errorcode = 2 then
-         call Usage
-      when cfg.errorcode = 3 then
-         call ProgramError
-      otherwise
-         call ProgramError
-   end
+select
+   when cfg.errorcode = 0 then
+      nop
+   when cfg.errorcode = 1 then
+      call Usage
+   when cfg.errorcode = 2 then
+      call Usage
+   when cfg.errorcode = 5 then
+      do
+         say 'Fatal error occurred in updating your ARCHIVER.BB2 file!'
+      end
+   when cfg.errorcode = 3 then
+      call ProgramError
+   otherwise
+      call ProgramError
+end
 
 NormalExit:
+signal off notready
+call stream cfg.log_file, 'c', 'close'
 n = endlocal()
 exit cfg.errorcode
 
 /* Subroutines */
+
+/*=== Error() Report ERROR, FAILURE etc. and exit ===*/
+
+Error:
+   say
+   parse source . . cmd
+   say 'CONDITION'('C') 'signaled at' cmd 'line' SIGL'.'
+   if 'CONDITION'('D') \= '' then
+     say 'REXX reason =' 'CONDITION'('D')'.'
+   if 'CONDITION'('C') == 'SYNTAX' & 'SYMBOL'('RC') == 'VAR' then
+     say 'REXX error =' RC '-' 'ERRORTEXT'(RC)'.'
+   else if 'SYMBOL'('RC') == 'VAR' then
+     say 'RC =' RC'.'
+   say 'Source =' 'SOURCELINE'(SIGL)
+
+   if 'CONDITION'('I') \== 'CALL' | 'CONDITION'('C') == 'NOVALUE' | 'CONDITION'('C') == 'SYNTAX' then do
+     trace '?A'
+     say 'Exiting.'
+     call 'SYSSLEEP' 2
+     exit 'CONDITION'('C')
+   end
+return
+
+/* end Error */
+
+novalue:
+   say 'Uninitialized variable: ' || condition('D') || ' on line: 'sigl
+   say 'Line text: 'sourceline(sigl)
+   cfg.errorcode = 3
+   signal ErrorExit
+
+
 Init: procedure expose (globals)
 
-        button.                         = ''
+   button.                         = ''
 
-        button.CMDS.helptext = 'Commands toolbar'
-        button.CMDS.text     = 'Cmds'
-        button.CMDS.id       = 4900
+   button.CMDS.helptext = 'Commands toolbar'
+   button.CMDS.text     = 'Cmds'
+   button.CMDS.id       = 4900
 
-        button.UTILS.helptext = 'Utility toolbar'
-        button.UTILS.text     = 'Utils'
-        button.UTILS.id       = 4901
+   button.UTILS.helptext = 'Utility toolbar'
+   button.UTILS.text     = 'Utils'
+   button.UTILS.id       = 4901
 
-        button.SORT.helptext = 'Sort toolbar'
-        button.SORT.text     = 'Sort'
-        button.SORT.id       = 4902
+   button.SORT.helptext = 'Sort toolbar'
+   button.SORT.text     = 'Sort'
+   button.SORT.id       = 4902
 
-        button.SELECT.helptext = 'Select toolbar'
-        button.SELECT.text     = 'Select'
-        button.SELECT.id       = 4903
+   button.SELECT.helptext = 'Select toolbar'
+   button.SELECT.text     = 'Select'
+   button.SELECT.id       = 4903
 
-        button.CONFIG.helptext = 'Configuration toolbar'
-        button.CONFIG.text     = 'Cmds'
-        button.CONFIG.id       = 4904
+   button.CONFIG.helptext = 'Configuration toolbar'
+   button.CONFIG.text     = 'Cmds'
+   button.CONFIG.id       = 4904
 
-        button.FILES.helptext = 'Files toolbar'
-        button.FILES.text     = 'Files'
-        button.FILES.id       = 4905
+   button.FILES.helptext = 'Files toolbar'
+   button.FILES.text     = 'Files'
+   button.FILES.id       = 4905
 
-        button.VIEWS.helptext = 'Views toolbar'
-        button.VIEWS.text     = 'Views'
-        button.VIEWS.id       = 4906
+   button.VIEWS.helptext = 'Views toolbar'
+   button.VIEWS.text     = 'Views'
+   button.VIEWS.id       = 4906
 
    cfg.              = ''
    cfg.errorcode     = 0
    cfg.defaults      = 0
-   cfg.unattended    = 0
+   cfg.attended      = 1
    cfg.toolbarsonly  = 0
-   cfg.actionmethod  = 'COPY'       /* The default method of backing up and restoring */
-   cfg.backupdir     = '.\User_Config_Backup'
+   cfg.actionmethod  = 'COPY'       /* The default (and currently only) method of backing up and restoring */
+   cfg.log_file      = 'cfgmgr.log'
+   cfg.vio_output_control = '>NUL 2>NUL'
 
-   call SysMkDir cfg.backupdir
+   parse source . . thispgm
+   p = lastpos('\', thispgm)
+   cfg.this_dir = filespec('D', thispgm) || filespec('P', thispgm)  /* Directory w/ backslash */
+   cfg.this_dir = left(cfg.this_dir, length(cfg.this_dir) - 1)      /* Directory w/o backslash */
+   if length(cfg.this_dir) = 2 then /* If root dir */
+      call directory cfg.this_dir || '\'
+   else                            /* not root dir */
+      call directory left(cfg.this_dir, length(cfg.this_dir) - 1)
 
-   f = 0
+   cfg.backup_dir = cfg.this_dir || '\User_Config_Backup'
+   call SysMkDir cfg.backup_dir
+
+   cfg.pgmname  = translate(substr(thispgm, p + 1, lastpos('.', thispgm) - p - 1))
+
+   fm3ini = value('FM3INI',,'OS2ENVIRONMENT')
+   if fm3ini = '' then
+      cfg.inifile = cfg.this_dir || '\FM3.INI'
+   else
+      cfg.inifile = fm3ini
+
 
    /*   Read from a file instead?   */
+
+   f = 0
 
    f = f + 1
    cfg.file.f.default = '.\Tmplates\assoc.tmp'
@@ -314,32 +371,20 @@ Init: procedure expose (globals)
 
    cfg.file.0         = f
 
-   parse source . . thispgm
-   p = lastpos('\', thispgm)
-   cfg.pgmname = translate(substr(thispgm, p + 1, lastpos('.', thispgm) - p - 1))
-   thisdir           = left(thispgm, lastpos('\', thispgm) - 1)
-   if length(thisdir) = 2 then
-      thisdir = thisdir || '\'
-   call directory thisdir
-   fm2ini = value('FM3INI',,'OS2ENVIRONMENT')
-   if fm2ini = '' then
-      if right(thisdir, 1) \= '\' then
-      	cfg.inifile = thisdir || '\' || 'FM3.INI'
-      else
-      	cfg.inifile = thisdir || 'FM3.INI'
-   else
-      cfg.inifile = fm2ini
 
-   /* edit for correct directory here? */
-
+/*
+ * Unused code
+ *
    parse value SysTextScreenSize() with . cfg.screen_width
    if cfg.screen_width = 0 then           /* for running in PMREXX */
       cfg.screen_width = 80
+*/
 
 return
 
 ProcessArgs: procedure expose (globals)
    parse arg args
+   call lineout cfg.log_file, 'Arguments:' args
    if pos('/ToOlBaRsOnLy', args) > 0 then
       cfg.specialiconrun = 1
    else
@@ -359,7 +404,7 @@ ProcessArgs: procedure expose (globals)
             else
                cfg.operation = 'DEINSTALL'
          when param = '/UNATTENDED' then
-            cfg.unattended = 1
+            cfg.attended = 0
          when param = '/DEFAULTS' then
             cfg.defaults = 1
          when param = '/TOOLBARSONLY' then
@@ -370,9 +415,11 @@ ProcessArgs: procedure expose (globals)
    end
    if cfg.operation = '' then
       cfg.errorcode = 1
+/*
    else
       if cfg.operation = 'INSTALL' & cfg.defaults = 0 then
-         cfg.unattended = 1
+         cfg.attended = 0
+*/
 return
 
 GetUserOptions: procedure expose (globals)
@@ -405,8 +452,8 @@ GetUserOptions: procedure expose (globals)
                say 'You have chosen to replace ALL configuration files with'
                say 'default values.'
                say
-               if GetResponse('Type ''Y'' to proceed, anthing else cancels') = 'Y' then
-                  cfg.unattended = 1
+               if GetResponse('Type ''Y'' to proceed, anything else cancels') = 'Y' then
+                  cfg.attended = 0
                else
                   cfg.userabort = 1
             end
@@ -423,7 +470,7 @@ GetUserOptions: procedure expose (globals)
             say 'DELETE all FM/2 configuration files.'
             say
             if GetResponse('Type ''Y'' to proceed, anthing else cancels') = 'Y' then
-               cfg.unattended = 1
+               cfg.attended = 0
             else
                cfg.userabort = 1
          end
@@ -450,6 +497,7 @@ FilesAreDifferent: procedure
          if file.1.data = file.2.data then
             retval = 0
       end
+   drop file.
 return retval
 
 PromptForReplaceOption: procedure expose (globals)
@@ -504,7 +552,7 @@ Usage: procedure expose (globals)
 return
 
 ProgramError: procedure expose (globals)
-   say 'Fatal prgram error.'
+   say 'Fatal program error.'
    say
    say 'This file may have been altered in some way. Please re-install FM/2.'
    say
@@ -520,9 +568,8 @@ CfgAction: procedure expose (globals)
          select
             when cfg.actionmethod = 'COPY' then
                do
-                  'copy 'cfg.file.f.name cfg.backupdir
-                  'copy 'cfg.file.f.default cfg.file.f.name
-                  cfg.action_taken = 1
+                  call CopyFile cfg.file.f.name, cfg.backup_dir
+                  call CopyFile cfg.file.f.default, cfg.file.f.name
                end
             /* Implement other archive/restore methods here */
             otherwise
@@ -532,8 +579,7 @@ CfgAction: procedure expose (globals)
          select
             when cfg.actionmethod = 'COPY' then
                do
-                  'copy 'cfg.file.f.default cfg.file.f.name
-                  cfg.action_taken = 1
+                  call CopyFile cfg.file.f.default, cfg.file.f.name
                end
             /* Implement other archive/restore methods here */
             otherwise
@@ -544,8 +590,7 @@ CfgAction: procedure expose (globals)
             select
                when cfg.actionmethod = 'COPY' then
                   do
-                     'copy 'cfg.backupdir || '\' || cfg.file.f.name' .'
-                     cfg.action_taken = 1
+                     call CopyFile cfg.backup_dir || '\' || cfg.file.f.name, ' .'
                   end
                /* Implement other archive/restore methods here */
                otherwise
@@ -557,8 +602,7 @@ CfgAction: procedure expose (globals)
                   if stream(cfg.file.f.name, 'c', 'query exists') \= '' then
                      if FilesAreDifferent(cfg.file.f.name, cfg.file.f.default) = 0 then
                         do
-                           'del 'cfg.file.f.name
-                           cfg.action_taken = 1
+                           '@del 'cfg.file.f.name cfg.vio_output_control
                         end
                /* Implement other archive/restore methods here */
                otherwise
@@ -579,7 +623,7 @@ BackupFileIsOK: procedure expose (globals)
          select
             when cfg.actionmethod = 'COPY' then
                do
-                  backup_file = cfg.backupdir || '\' || cfg.file.f.name
+                  backup_file = cfg.backup_dir || '\' || cfg.file.f.name
                   if stream(backup_file, 'c', 'query exists') \= '' then
                      retval = FilesAreDifferent(cfg.file.f.name, backup_file)
                end
@@ -624,7 +668,6 @@ UpdateFM2Ini: procedure expose (globals)
       else
          if pos('FM2Shutdown' || null, StateNames) = 0 then
             StateNames = StateNames || 'FM2Shutdown' || null
-      call charout , 'One-time conversion of states to new format...'
       do while StateNames \= ''
          parse var StateNames StateName (null) StateNames
          NumDirCnrs = SysIni(cfg.inifile, 'FM/3', StateName || '.NumDirsLastTime')
@@ -634,7 +677,6 @@ UpdateFM2Ini: procedure expose (globals)
                do d = 0 to NumDirCnrs
                   d2 = NumDirCnrs + 1 - d /* Work from the last to the first */
                   do f = 1 to NumKeyFragments
-                     call charout , '.'
                      frag = word(KeyFragments, f)
                      OldKey = StateName || '.DirCnr' || frag || '.' || d2
                      OldKeyValue = SysIni(cfg.inifile, 'FM/3', OldKey)
@@ -703,139 +745,262 @@ Ticket267Fix: procedure expose (globals)
    call stream outfile, 'c', 'close'
    if abort_fix = 0 then
       do
-         'copy' infile cfg.backupdir         /* backup tls file */
+         'copy' infile cfg.backup_dir         /* backup tls file */
          'copy' outfile infile                   /* "install" new  tls file */
-         cfg.action_taken = 1
       end
    call SysFileDelete outfile
 return
 
+/* Write a message to the log file and, if attended, to the screen */
+WriteMsg: procedure expose (globals)
+   parse arg msg
+   call lineout cfg.log_file, date() time() ':' msg
+   if cfg.attended = 1 then
+      say msg
+return
+
+CopyFile: procedure expose (globals)
+   parse arg from_file, to_file
+   '@copy' from_file to_file cfg.vio_output_control
+return rc
+
 UpdateArchiverBB2: procedure expose (globals)
-   bb2_file = '.\ARCHIVER.BB2'
-   bb2_v6_startline = FindUnzip6(bb2_file)
-   if bb2_v6_startline = 0 then
+   myrc = 0
+
+   /* If CFGMGR was called with /DEFAULTS and/or /DEINSTALL parameters
+      then there is nothing to do here! */
+   if cfg.defaults = 1 | cfg.operation = 'DEINSTALL' then
+      return myrc
+
+   bb2_file = cfg.this_dir || '\ARCHIVER.BB2'
+   bb2_template_file = cfg.this_dir || '\Tmplates\archiver.tmp'
+
+   bb2_backup_file = cfg.backup_dir || '\Backup.bb2'  /* <== Change this each new archivers are to be inserted */
+
+   myrc = CopyFile(bb2_file, bb2_backup_file)
+   if myrc \= 0 then
       do
-         tmp_file       = '.\Tmplates\archiver.tmp'
-         tmp_v6_startline = FindUnzip6(tmp_file)
-         if tmp_v6_startline \= 0 then
+         if cfg.attended = 1 then
             do
-               backup_file       = '.\User_Config_backup\B4Unzip6.bb2'
-               if stream(backup_file, 'c', 'query exists') \= '' then
-                  if cfg.unattended = 0 then
-                     do
-                        say 'Support for Unzip v6 has previously been added.'
-                        if GetResponse("If you want to repeat this process, type 'Y'") \= 'Y' then
-                           return
-                     end
-                  else
-                     return
-               insert_line = FindEndOfDefinitions(bb2_file)
-               if insert_line > 0 then
-                  do
-                     '@copy' bb2_file backup_file '>NUL 2>NUL'
-                     if rc \= 0 then
-                        return
-                     call SysFileDelete bb2_file
-                     do i = 1 to insert_line
-                        call lineout bb2_file, bb2_lines.i
-                     end
-                     do j = 1 to tmp_v6_startline
-                        line = linein(tmp_file)
-                     end
-                     do 25 /* 21 lines of def + 3 prefix comment lines + 1 postfix comment */
-                        line = linein(tmp_file)
-                        call lineout bb2_file, line
-                     end
-                     call stream tmp_file, 'c', 'close'
-                     do j = i to bb2_lines.0
-                        call lineout bb2_file, bb2_lines.j
-                     end
-                     call stream bb2_file, 'c', 'close'
-                     cfg.action_taken = 1
-                  end
+               say
+               call WriteMsg 'Error: Unable to back up' filespec('n', bb2_file) || '.'
+               say
+               if cfg.defaults = 1 then
+                  msgend = 'reverting to a default FM/2 ARCHIVER.BB2.'
                else
-                  if cfg.unattended = 1 then
-                     say 'Unable to find place to insert definition.'
+                  msgend = 'appending new archiver definitions to' filespec('n', bb2_file) || '.'
+               call WriteMsg "Enter 'P' to proceed with" msgend ', or...'
+               user_option = GetResponse("Enter 'Q' to abort" cfg.pgmname '(P/q)')
             end
          else
-            if cfg.unattended = 1 then
-               say 'Unable to find Unzip v6 definition'
+            user_option = 'P'
       end
    else
-      if cfg.unattended = 1 then
-         say 'Unzip v6 definition is already installed.'
-return
-
-FindUnzip6: procedure expose (globals)
-   parse arg filename
-   start_string   = '--------  ------  ------- ---- ---------- ----- --------  ----'
-   end_string     = '--------          -------  ---                            -------'
-   call SysFileSearch start_string, filename, 'start_lines.', 'N'
-   call SysFileSearch end_string, filename, 'end_lines.', 'N'
-   start_line = 0
-   do i = 1 to start_lines.0
-      do j = 1 to end_lines.0
-         if word(end_lines.j, 1) = word(start_lines.i, 1) + 1 then
+      user_option = 'P'
+   if user_option = 'P' then
+      do
+         if cfg.attended = 1 & myrc \= 0 then
             do
-               start_line = word(start_lines.i, 1) - 18
-               i = start_lines.0
-               j = end_lines.0
+               say
+               call WriteMsg 'Appending new archiver definitions to' filespec('n', bb2_file) || '.'
+               say
+               user_option = GetResponse("OK to proceed? (Y/n)")
             end
+         else
+            user_option = 'Y'
+         if user_option = 'Y' then
+            do
+               myrc = InsertNewArchivers(bb2_file, bb2_template_file)
+               select
+                  when myrc < 0 then
+                     do
+                        if cfg.attended = 1 then
+                           do
+                              say
+                              call WriteMsg filespec('n', bb2_file) 'already has definitions for the new archivers.'
+                           end
+                        myrc = 0
+                     end
+                  when myrc = 0 then
+                     if cfg.attended = 1 then
+                        do
+                           say
+                           call WriteMsg filespec('n', bb2_file) 'successfully updated with new archivers definitions.'
+                        end
+                  otherwise
+                     do
+                        if cfg.attended = 1 then
+                           do
+                              say
+                              call WriteMsg 'Error: Unable to update' filespec('n', bb2_file) 'with new archiver definitions.'
+                              say
+                              call WriteMsg 'Current file continues in use.'
+                              say
+                              call WriteMsg "Enter 'P' to proceed with other updates or..."
+                              user_option = GetResponse("Enter 'Q' to abort" cfg.pgmname '(P/q)')
+                              if user_option = 'Q' then
+                                 cfg.userabort = 1
+                           end
+                     end
+               end
+            end
+      end /* Install, append new */
+   else /* Backup not OK, no proceed */
+      cfg.userabort = 1
+return (5*(myrc \= 0))  /* Convert any non-zero into a 5 */
+
+InsertNewArchivers: procedure expose(globals)
+   parse arg bb2_file, bb2_template_file
+   myrc = 0
+
+   files.1.name = bb2_file
+   files.2.name = bb2_template_file
+   files.0 = 2
+
+   do i = 1 to files.0
+      j = 0
+      do while lines(files.i.name) > 0
+         j = j + 1
+         files.i.lines.j = linein(files.i.name)
+      end
+      files.i.lines.0 = j
+      call stream files.i.name, 'c', 'close'
+   end
+
+   zip6_liststart_line = '--------  ------  ------- ---- ---------- ----- --------  ----'
+   zip6_listend_line =   '--------          -------  ---                            -------'
+
+   markers. = ''
+   i = 0
+   i = i + 1
+   markers.i.name = 'Zip v6.0'
+   markers.i.markerline_start = zip6_listend_line
+   markers.i.markerline_pos_in_def = 16
+   markers.i.pos_of_def_in_file.1 = 0
+   markers.i.pos_of_def_in_file.2 = 0
+   i = i + 1
+   markers.i.name = '7 Zip'
+   markers.i.markerline_start = '7ZA.EXE'
+   markers.i.markerline_pos_in_def   = 4
+   markers.i.pos_of_def_in_file.1 = 0
+   markers.i.pos_of_def_in_file.2 = 0
+   i = i + 1
+   markers.i.name = 'LZip'
+   markers.i.markerline_start = 'LZIP.EXE'
+   markers.i.markerline_pos_in_def   = 4
+   markers.i.pos_of_def_in_file.1 = 0
+   markers.i.pos_of_def_in_file.2 = 0
+   i = i + 1
+   markers.i.name = 'XC'
+   markers.i.markerline_start = 'XC.EXE'
+   markers.i.markerline_pos_in_def   = 4
+   markers.i.pos_of_def_in_file.1 = 0
+   markers.i.pos_of_def_in_file.2 = 0
+
+   markers.0 = i - 1 /* test: skip xc for now */
+
+   do i = 1 to files.0
+      in_def = 0
+      do j = 1 to files.i.lines.0
+         if left(files.i.lines.j, 1) = ';' then
+            do
+               if in_def = 1 then in_def = 0
+               iterate
+            end
+         else
+            if in_def = 0 then
+               if strip(files.i.lines.j) = '' then  /* 1st line of def can't be blank? */
+                  iterate
+               else
+                  do
+                     in_def = 1
+                     def_line = 1
+                     last_def.i = j
+                  end
+            else
+               def_line = def_line + 1
+         do m = 1 to markers.0
+            if markers.m.pos_of_def_in_file.i = 0 then
+               if markers.m.markerline_pos_in_def = def_line then
+                  do /* Check for marker line here */
+                     if abbrev(translate(files.i.lines.j), markers.m.markerline_start) = 1 then
+                        do
+                           if markers.m.name \= 'Zip v6.0' then
+                              do
+                                 markers.m.pos_of_def_in_file.i = j - markers.m.markerline_pos_in_def + 1
+/*
+                                 call WriteMsg 'Found' markers.m.name 'definition in' filespec('n', files.i.name) || '.'
+*/
+                              end
+                           else
+                              do /* special code for zip 6 with 2 marker lines */
+                                 q = j - 1
+                                 if abbrev(files.i.lines.q, zip6_liststart_line) = 1 then
+                                    do
+                                       markers.m.pos_of_def_in_file.i = j - markers.m.markerline_pos_in_def + 1
+/*
+                                       call WriteMsg 'Found' markers.m.name 'definition in' filespec('n', files.i.name) || '.'
+*/
+                                    end
+                              end
+                        end
+                  end
+         end
       end
    end
-   drop start_lines.
-   drop end_lines.
-return start_line
+   end_of_archivers_line = last_def.1 + 21
 
-FindEndOfDefinitions: procedure expose (globals) bb2_lines.
-   parse arg bb2_file
-   end_of_defs_line = 0
-   i = 0
-   do while lines(bb2_file) > 0
-      i = i + 1
-      bb2_lines.i = linein(bb2_file)
-      if strip(bb2_lines.i) \= '' then
-         if abbrev(bb2_lines.i, ';') then
-            if end_of_defs_line = 0 then
-               end_of_defs_line = i
-            else
-               nop
+   temp_file = SysTempFilename(cfg.this_dir || '\bb2temp.???')
+   new_data_written = 0
+   do j = 1 to end_of_archivers_line
+      call lineout temp_file, files.1.lines.j
+   end
+   do m = 1 to markers.0
+      if markers.m.pos_of_def_in_file.1 = 0 then
+/*
+   Don't bother checking to see if archiver.tmp has new defs. Just assume this.
+         if markers.m.pos_of_def_in_file.2 = 0 then
+            do
+               call WriteMsg 'Definition for' markers.m.name 'not found in either file!!'
+            end
          else
-            end_of_defs_line = 0
+*/
+            do
+               call WriteMsg 'Inserting definition for' markers.m.name
+               start_at = markers.m.pos_of_def_in_file.2 - 3
+               end_at = start_at + 21 + 4 - 1
+               do q = start_at to end_at
+                  call lineout temp_file, files.2.lines.q
+               end
+               new_data_written = 1
+            end
+/*
+   Debug code
+      else
+         if markers.m.pos_of_def_in_file.2 = 0 then
+            do
+               call WriteMsg 'Definition for' markers.m.name 'not found in' filespec('n', files.2.name) || '!!'
+            end
+         else
+            do
+               call WriteMsg markers.m.name 'found in' files.1.name 'and' files.2.name
+            end
+*/
    end
-   call stream bb2_file, 'c', 'close'
-   bb2_lines.0 = i
-return end_of_defs_line
-
-
-/*=== Error() Report ERROR, FAILURE etc. and exit ===*/
-
-Error:
-   say
-   parse source . . cmd
-   say 'CONDITION'('C') 'signaled at' cmd 'line' SIGL'.'
-   if 'CONDITION'('D') \= '' then
-     say 'REXX reason =' 'CONDITION'('D')'.'
-   if 'CONDITION'('C') == 'SYNTAX' & 'SYMBOL'('RC') == 'VAR' then
-     say 'REXX error =' RC '-' 'ERRORTEXT'(RC)'.'
-   else if 'SYMBOL'('RC') == 'VAR' then
-     say 'RC =' RC'.'
-   say 'Source =' 'SOURCELINE'(SIGL)
-
-   if 'CONDITION'('I') \== 'CALL' | 'CONDITION'('C') == 'NOVALUE' | 'CONDITION'('C') == 'SYNTAX' then do
-     trace '?A'
-     say 'Exiting.'
-     call 'SYSSLEEP' 2
-     exit 'CONDITION'('C')
-   end
-return
-
-/* end Error */
-
-novalue:
-   say 'Uninitialized variable: ' || condition('D') || ' on line: 'sigl
-   say 'Line text: 'sourceline(sigl)
-   cfg.errorcode = 3
-   signal ErrorExit
-
+   if new_data_written = 1 then
+      do
+         do q = j to files.1.lines.0   /* "j" is from the earlier loop */
+            call lineout temp_file, files.1.lines.q
+         end
+         call stream temp_file, 'c', 'close'
+         call SysFileDelete files.1.name
+         myrc = CopyFile( temp_file, files.1.name )
+      end
+   else
+      do /* No need to update ARCHIVER.BB2 */
+         myrc = -1
+         call stream temp_file, 'c', 'close'
+      end
+   call SysFileDelete temp_file
+return myrc
 
