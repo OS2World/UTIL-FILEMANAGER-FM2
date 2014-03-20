@@ -95,12 +95,13 @@
   30 May 11 GKY Added SleepIfNeeded to DosFind and container load loops to improve WPS responsiveness
   31 May 11 SHL Disable antique debug code in RemoveCnrItems - really speeds up container close
   12 Jun 11 GKY Added IdleIfNeeded to the container "free" loops to improve system
-                responsiveness when closing containers with large numbers of items
+	        responsiveness when closing containers with large numbers of items
   12 Jun 11 GKY Replaced SleepIfNeeded with IdleIfNeeded in the container loade loop
   22 Oct 11 GKY Removing unneeded UnFlesh call from StubbyScanThread appears to significantly speed opening of FM/2
   02 Mar 14 GKY !didone for fFirstTime so the suggest code works again. Also clear out the
-                garbage that was appearing in the string.
+	        garbage that was appearing in the string.
   02 Mar 14 GKY Speed up intial drive scans Ticket 528
+  19 Mar 14 SHL RemoveCnrItems: clean up odd code
 
 ***********************************************************************/
 
@@ -258,10 +259,10 @@ VOID StubbyScanThread(VOID * arg)
 	    if (!(flags & ((fRScanNoWrite ? 0 : DRIVE_NOTWRITEABLE) ||
 			   (fRScanSlow ? 0 : DRIVE_SLOW)))) {
 	      Flesh(StubbyScan->hwndCnr, StubbyScan->pci);
-            }
-            else {
-              Stubby(StubbyScan->hwndCnr, StubbyScan->pci);
-            }
+	    }
+	    else {
+	      Stubby(StubbyScan->hwndCnr, StubbyScan->pci);
+	    }
 	  }
 	  else {
 	    Stubby(StubbyScan->hwndCnr, StubbyScan->pci);
@@ -282,7 +283,7 @@ VOID StubbyScanThread(VOID * arg)
     if (fInitialDriveScan && fSwitchTree && hwndTree && fSaveState && pszFocusDir) {
        // Keep drive tree in sync with directory container
       if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszFocusDir), MPVOID))
-        free(pszFocusDir);
+	free(pszFocusDir);
     }
     ProcessDirCount = 0;
     FixedVolume = 0;
@@ -324,8 +325,8 @@ static HPOINTER IDFile(PSZ p)
 	     cmp == *(ULONG *) ".ZOO" || cmp == *(ULONG *) ".RAR" ||
 	     cmp == *(ULONG *) ".TAR" || cmp == *(ULONG *) ".TGZ" ||
 	     cmp == *(ULONG *) ".GZ"  || cmp == *(ULONG *) ".Z"   ||
-             cmp == *(ULONG *) ".CAB" || cmp == *(ULONG *) ".BZ2" ||
-             cmp == *(ULONG *) ".WPI" || cmp == *(ULONG *) ".7Z")
+	     cmp == *(ULONG *) ".CAB" || cmp == *(ULONG *) ".BZ2" ||
+	     cmp == *(ULONG *) ".WPI" || cmp == *(ULONG *) ".7Z")
       hptr = hptrArc;
     else if (cmp == *(ULONG *) PCSZ_DOTBMP  ||
 	     cmp == *(ULONG *) PCSZ_DOTICO  ||
@@ -1086,7 +1087,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	if (stopflag && *stopflag)
 	  goto Abort;
 
-        InitITimer(&itdSleep, 500);
+	InitITimer(&itdSleep, 500);
 	pci = NULL;
 	ullTotalBytes = 0;
 	pffbFile = paffbTotal;
@@ -1126,24 +1127,24 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	  // Can not use offset since we have merged lists - this should be equivalent
 	  pffbFile = (PFILEFINDBUF4L)((PBYTE)pffbFile + sizeof(FILEFINDBUF4L));
 
-          if (!IdleIfNeeded(&itdSleep, 30)) {
-            for (x = x+1; x < cAffbTotal; x++) {
-              ullBytes = FillInRecordFromFFB(hwndCnr, pci, pszFileSpec,
-                                          pffbFile, partial, dcd);
-              pci = (PCNRITEM) pci->rc.preccNextRecord;
-              ullTotalBytes += ullBytes;
-              if (dcd) {
-                dcd->totalfiles = x;
-                dcd->ullTotalBytes = ullTotalBytes;
-              }
-              pffbFile = (PFILEFINDBUF4L)((PBYTE)pffbFile + sizeof(FILEFINDBUF4L));
-              if (pci == NULL) {
-                priority_normal();
-                InitITimer(&itdSleep, 500);
-                break;
-              }
-            }
-          }
+	  if (!IdleIfNeeded(&itdSleep, 30)) {
+	    for (x = x+1; x < cAffbTotal; x++) {
+	      ullBytes = FillInRecordFromFFB(hwndCnr, pci, pszFileSpec,
+	                                  pffbFile, partial, dcd);
+	      pci = (PCNRITEM) pci->rc.preccNextRecord;
+	      ullTotalBytes += ullBytes;
+	      if (dcd) {
+	        dcd->totalfiles = x;
+	        dcd->ullTotalBytes = ullTotalBytes;
+	      }
+	      pffbFile = (PFILEFINDBUF4L)((PBYTE)pffbFile + sizeof(FILEFINDBUF4L));
+	      if (pci == NULL) {
+	        priority_normal();
+	        InitITimer(&itdSleep, 500);
+	        break;
+	      }
+	    }
+	  }
 
 	  if (pci == NULL && ulRecsToInsert) {
 	    memset(&ri, 0, sizeof(RECORDINSERT));
@@ -1173,8 +1174,8 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	    }
 	  }
 	  //SleepIfNeeded(&itdSleep, 1);
-        }
-        priority_normal();
+	}
+	priority_normal();
 	if (ok) {
 	  ullReturnBytes += ullTotalBytes;
 	  ulReturnFiles += ulFindCnt;
@@ -1648,13 +1649,13 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	  // Hard drive or current drive
 	  ULONG flags = driveflags[iDrvNum];	// Speed up
 	  if (~flags & DRIVE_INVALID &&
-              ~flags & DRIVE_NOPRESCAN && (!fNoRemovableScan || ~flags & DRIVE_REMOVABLE)) {
-            // DbgMsg(pszSrcFile, __LINE__, "Begin Thread %s", pci->pszFileName);
-            if (xbeginthread(StubbyScanThread,
+	      ~flags & DRIVE_NOPRESCAN && (!fNoRemovableScan || ~flags & DRIVE_REMOVABLE)) {
+	    // DbgMsg(pszSrcFile, __LINE__, "Begin Thread %s", pci->pszFileName);
+	    if (xbeginthread(StubbyScanThread,
 			     65536,
 			     stubbyScan,
 			     pszSrcFile, __LINE__) == -1)
-              xfree(stubbyScan, pszSrcFile, __LINE__);
+	      xfree(stubbyScan, pszSrcFile, __LINE__);
 
 	  } // if drive needs to be scanned
 	}
@@ -1739,11 +1740,11 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
       }
       strcat(szSuggest, " %*");
       rc = saymsg(MB_YESNOCANCEL | MB_ICONEXCLAMATION,
-                  hwndParent ? hwndParent : hwndCnr,
-                  GetPString(IDS_SUGGESTTITLETEXT),
-                  GetPString(IDS_SUGGEST1TEXT),
-                  (includesyours) ? GetPString(IDS_SUGGEST2TEXT) : NullStr,
-                  szSuggest);
+	          hwndParent ? hwndParent : hwndCnr,
+	          GetPString(IDS_SUGGESTTITLETEXT),
+	          GetPString(IDS_SUGGEST1TEXT),
+	          (includesyours) ? GetPString(IDS_SUGGEST2TEXT) : NullStr,
+	          szSuggest);
       if (rc == MBID_YES) {
 	HOBJECT hFM2Object;
 	char s[64];
@@ -1964,9 +1965,9 @@ VOID FreeCnrItemList(HWND hwnd, PCNRITEM pciFirst)
     pci = pciNext;
     if (!IdleIfNeeded(&itdSleep, 30)) {
       for (usCount = usCount + 1; pci; usCount++) {
-        pciNext = (PCNRITEM) pci->rc.preccNextRecord;
-        FreeCnrItemData(pci);
-        pci = pciNext;
+	pciNext = (PCNRITEM) pci->rc.preccNextRecord;
+	FreeCnrItemData(pci);
+	pci = pciNext;
       }
       break;
     }
@@ -1993,7 +1994,6 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
   PCNRITEM pci;
   ITIMER_DESC itdSleep = { 0 };		// 30 May 11 GKY
 
-
   if ((usCnt && !pciFirst) || (!usCnt && pciFirst)) {
       Runtime_Error(pszSrcFile, __LINE__, "pciFirst %p usCnt %u mismatch", pciFirst, usCnt);
       remaining = -1;
@@ -2014,31 +2014,14 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
       }
       InitITimer(&itdSleep, 500);
       while (pci) {
-#if 0 // 12 Sep 07 SHL dwg drivebar crash testing - ticket# ??? - fixme to be gone
-	static PCNRITEM pciLast;	// 12 Sep 07 SHL
-	ULONG ulSize = sizeof(*pci);
-	ULONG ulAttr;
-	APIRET apiret = DosQueryMem((PVOID)pci, &ulSize, &ulAttr);
-	if (apiret)
-	  Dos_Error(MB_ENTER, apiret, HWND_DESKTOP, pszSrcFile, __LINE__,
-		    "DosQueryMem failed pci %p pciLast %p", pci, pciLast);
-#endif
 	FreeCnrItemData(pci);
-#if 0 // 12 Sep 07 SHL dwg drivebar crash testing - ticket# ??? - fixme to be gone
-	pciLast = pci;
-#endif
 	pci = (PCNRITEM)pci->rc.preccNextRecord;
+	if (!pci)
+	  break;
 	if (remaining && --remaining == 0)
 	  break;
-        if (!IdleIfNeeded(&itdSleep, 30)) {
-          while (pci) {
-            FreeCnrItemData(pci);
-            pci = (PCNRITEM)pci->rc.preccNextRecord;
-            if (remaining && --remaining == 0)
-              break;
-          }
-        }
-      }
+	IdleIfNeeded(&itdSleep, 30);
+      } // while
       priority_normal();
       DosPostEventSem(CompactSem);
     }
