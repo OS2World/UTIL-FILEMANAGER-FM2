@@ -2,7 +2,7 @@
 # $Id$
 
 # Copyright (c) 1993-98 M. Kimes
-# Copyright (c) 2002, 2012 Steven H. Levine
+# Copyright (c) 2002, 2014 Steven H. Levine
 
 # 22 May 03 SHL Correct icon dependencies
 # 12 May 07 SHL Drop obsolete macros
@@ -335,19 +335,6 @@ lxlite: $(BASE).dll $(BASERES).dll .symbolic
 !ifndef DEBUG
   @for %f in ($(BASE).dll $(BASERES).dll) do !lxlite /x- /b- %f
 !endif
-
-# Run for each dependent
-# loadhigh: $(BASE).dll $(BASERES).dll .symbolic
-# !ifndef NOHIGHMEM
-#   @echo.
-#   @echo Setting highmem objects in $(BASE).dll
-#   @echo.
-#   !exehdr /hi $(BASE).dll
-#   @echo.
-#   @echo Setting highmem objects in $(BASERES).dll
-#   @echo.
-#   !exehdr /hi:1,2 $(BASERES).dll
-# !endif
 
 cleanobj: .symbolic
   -del *.obj
