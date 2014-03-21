@@ -10,6 +10,7 @@
   05 Jan 08 SHL Baseline
   12 Jun 11 GKY Added IdleIfNeeded to the container/list fill and free loops to improve system
                 responsiveness when dealing with large numbers of items
+  21 Mar 14 SHL Comments
 
 ***********************************************************************/
 
@@ -100,6 +101,11 @@ BOOL IsITimerExpired(ITIMER_DESC *pitd)
   return FALSE;				// Keep waiting
 }
 
+/**
+ * Sleep if timer expired to avoid hogging CPU
+ * @note Assumes ITIMER_DESC initialized by caller before first call
+ */
+
 VOID SleepIfNeeded(ITIMER_DESC *pitd, UINT sleepTime)
 {
   if (IsITimerExpired(pitd)) {
@@ -107,6 +113,12 @@ VOID SleepIfNeeded(ITIMER_DESC *pitd, UINT sleepTime)
     InitITimer(pitd, 0);
   }
 }
+
+/**
+ * Switch to idle priority if timer expired
+ * @return 0 if switched otherwise return APIRET or non-zero value
+ * @note Assumes ITIMER_DESC initialized by caller before first call
+ */
 
 ULONG IdleIfNeeded(ITIMER_DESC *pitd, LONG delta)
 {
