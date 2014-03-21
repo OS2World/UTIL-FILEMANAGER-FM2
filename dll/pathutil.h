@@ -12,6 +12,7 @@
   29 Feb 08 GKY Changes to enable user settable command line length
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
   23 Oct 10 GKY Add ForwardslashToBackslash function to streamline code
+  21 Mar 14 SHL Add IsAbsolutePath
 
 ***********************************************************************/
 
@@ -23,11 +24,15 @@
 #include <os2.h>
 #endif
 
-PSZ ForwardslashToBackslash(PSZ pszPathName);
 PSZ AddBackslashToPath(PSZ pszPathName);
+
 PSZ BldFullPathName(PSZ pszFullPathName, PCSZ pszPathName, PCSZ pszFileName);
 PSZ BldQuotedFullPathName(PSZ pszFullPathName, PCSZ pszPathName, PCSZ pszFileName);
 PSZ BldQuotedFileName(PSZ pszQuotedFileName, PCSZ pszFileName);
+
+BOOL IsAbsolutePath(PCSZ pszPathName);
+PSZ ForwardslashToBackslash(PSZ pszPathName);
+
 PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_);
 
 #define MAXCOMLINESTRGDEFAULT (1024)			/* used to build command line strings */

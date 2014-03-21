@@ -14,6 +14,7 @@
   04 Oct 08 JBS Make searchapath non-static
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   01 Mar 14 JBS Ticket #524: Made "searchapath" thread-safe. Function names and signatures were changed.
+  21 Mar 14 SHL	SearchPathForFile: use IsAbsolutePath
 
 ***********************************************************************/
 
@@ -105,14 +106,14 @@ CHAR *first_path(CHAR * path, CHAR * ret)
 /**
  * SearchPathForFile: Search for a file along a path
  *
- * @param pPathname: the name of a path environment variable (input)
- *    Used only if pFilename has no directory separators or ':' for a drive sepcification
+ * @param pszEnvVarName: the name of a path environment variable (input)
+ *    Used only if pFilename has not an absoluate path
  *
  * @param pFilename: the name of a file to search for (input)
- *    If the file name includes a directory separator or the ':' for a drive specification then
+ *    If the file name is an absolute path then
  *        DosQueryPathInfo is used for the search
  *    else
- *        DosSearchPath is used, along with the pPathname parameter
+ *        DosSearchPath is used, along with the pszEnvVarName parameter
  *
  * @param pFullFilename: address of where to place fully-qulified name if search succeeds (output)
  *    This parameter may be NULL if the fully-qualified filename is not desired.
@@ -120,32 +121,31 @@ CHAR *first_path(CHAR * path, CHAR * ret)
  * @return Return code from call to DosQueryPathInfo/DosSearchPath
  *
  */
-APIRET SearchPathForFile(PCSZ pPathname,
+APIRET SearchPathForFile(PCSZ pszEnvVarName,
 			 PCSZ pFilename,
 			 PCHAR pFullFilename)
 {
   APIRET rc;
   CHAR szFullFilename[CCHMAXPATH];
 
-  if (!pPathname || !*pPathname || !pFilename || !*pFilename)
+  if (!pszEnvVarName || !*pszEnvVarName || !pFilename || !*pFilename)
     return ERROR_INVALID_PARAMETER;
 
-  if (strchr(pFilename, '\\') || strchr(pFilename, '/')
-      || strchr(pFilename, ':')) {
+  if (IsAbsolutePath(pFilename)) {
     rc = DosQueryPathInfo(pFilename, FIL_QUERYFULLNAME,
-			  (PVOID)szFullFilename, (ULONG) CCHMAXPATH-1);
+			  (PVOID)szFullFilename, (ULONG)CCHMAXPATH-1);
   }
   else {
    rc = DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
 		      SEARCH_CUR_DIRECTORY,
-		      (CHAR *) pPathname,
+		      (CHAR *) pszEnvVarName,
 		      (CHAR *) pFilename,
 		      (PBYTE) szFullFilename,
 		      CCHMAXPATH - 1);
   }
-  if (!rc && pFullFilename) {
+  if (!rc && pFullFilename)
     strcpy(pFullFilename, szFullFilename);
-  }
+
   return rc;
 }
 

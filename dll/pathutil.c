@@ -13,18 +13,20 @@
   29 Feb 08 GKY Changes to enable user settable command line length
   15 Oct 08 GKY Fix NormalizeCmdLine to check all 5 executable extensions when no extension provided;
 		use searchapath to check for existance of file types not checked by DosQAppType;
-                close DosFind.
+		close DosFind.
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code
   12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
   23 Oct 10 GKY Add ForwardslashToBackslash function to streamline code
   17 Sep 11 GKY Fix commandline quoting issues
   01 Mar 14 JBS Ticket #524: Made "searchapath" thread-safe. Function names and signatures were changed.
-                So calls to these functions had to be changed.
+		So calls to these functions had to be changed.
+  21 Mar 14 SHL Add IsAbsolutePath
 
 ***********************************************************************/
 
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define INCL_WIN
 #define INCL_DOS
@@ -141,6 +143,26 @@ PSZ BldQuotedFileName(PSZ pszQuotedFileName, PCSZ pszFileName)
   return pszQuotedFileName;
 }
 
+/**
+ * Return TRUE if absolute path name
+ * @param pszPathName points to path name
+ * @returns TRUE if absolute path, with or without drive letter
+ * @note Odd inputs return FALSE
+ *
+ */
+
+BOOL IsAbsolutePath(PCSZ pszPathName)
+{
+  return pszPathName &&
+	 pszPathName[0] &&
+	 ((pszPathName[0] == '\\' || pszPathName[0] == '/') ||
+	  (toupper(pszPathName[0]) >= 'A' &&
+	   toupper(pszPathName[0]) <= 'Z' &&
+	   pszPathName[1] &&
+	   pszPathName[1] == ':' &&
+	   (pszPathName[2] == '\\' || pszPathName[2] == '/')));
+}
+
 /** NormalizeCmdLine
  * Checks a command line for common errors (missing quotes, missing extension,
  * no space between exe and args etc) Also check for the existance of the file
@@ -210,8 +232,8 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
 	       GetPString(IDS_QUOTESINARGSTEXT),
 	       pszCmdLine_);
       if (!offsetexe && !offsetcom) {
-        if (!SearchPathForFile(PCSZ_PATH, szCmdLine, NULL))
-          ret = 0;
+	if (!SearchPathForFile(PCSZ_PATH, szCmdLine, NULL))
+	  ret = 0;
       }
       else
 	ret = xDosQueryAppType(szCmdLine, &ulAppType);
@@ -409,3 +431,4 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
 #pragma alloc_text(PATHUTIL,BldQuotedFileName)
 #pragma alloc_text(PATHUTIL,BldQuotedFullPathName)
 #pragma alloc_text(PATHUTIL,NormalizeCmdLine)
+#pragma alloc_text(PATHUTIL,IsAbsolutePath)
