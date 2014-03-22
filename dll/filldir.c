@@ -1993,6 +1993,10 @@ VOID FreeCnrItemList(HWND hwnd, PCNRITEM pciFirst)
 INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
 {
   INT remaining = usCnt;
+  BOOL bIdlePrioritySet	= FALSE;
+// #define RCI_ITEMS_PER_TIMER_CHECK (10)
+// 10 seems a very conservative number
+//   USHORT usTimerCheckCountdown	= RCI_ITEMS_PER_TIMER_CHECK;
   PCNRITEM pci;
   ITIMER_DESC itdSleep = { 0 };		// 30 May 11 GKY
 
@@ -2020,21 +2024,16 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
 	pci = (PCNRITEM)pci->rc.preccNextRecord;
 	if (!pci)
 	  break;
-        if (remaining && --remaining == 0) '
+        if (remaining && --remaining == 0)
           break;
-        // 22 Mar 14 GKY This second loop is to avoid calling or checking if
-        // IdleIfNeeded has been called on loops after it has set the process to idle
-        if (!IdleIfNeeded(&itdSleep, 30)) {
-          while (pci) {
-            FreeCnrItemData(pci);
-            pci = (PCNRITEM)pci->rc.preccNextRecord;
-            if (remaining && --remaining == 0)
-              break;
-          } // while
-          break;
+        if (!bIdlePrioritySet /* && --usTimerCheckCountdown == 0 */) {
+          bIdlePrioritySet = !IdleIfNeeded(&itdSleep, 30);
+//           usTimerCheckCountdown = RCI_ITEMS_PER_TIMER_CHECK;
         }
       } // while
-      priority_normal();
+      if (bIdlePrioritySet)
+        priority_normal();
+
       DosPostEventSem(CompactSem);
     }
   }
