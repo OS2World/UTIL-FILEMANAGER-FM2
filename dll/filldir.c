@@ -102,6 +102,8 @@
 	        garbage that was appearing in the string.
   02 Mar 14 GKY Speed up intial drive scans Ticket 528
   19 Mar 14 SHL RemoveCnrItems: clean up odd code
+  22 Mar 14 GKY Reverted some code from the RemoveCnrItems changes adding a previously
+                missing break and comments explaining the code structure.
 
 ***********************************************************************/
 
@@ -2018,9 +2020,19 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
 	pci = (PCNRITEM)pci->rc.preccNextRecord;
 	if (!pci)
 	  break;
-	if (remaining && --remaining == 0)
-	  break;
-	IdleIfNeeded(&itdSleep, 30);
+        if (remaining && --remaining == 0) '
+          break;
+        // 22 Mar 14 GKY This second loop is to avoid calling or checking if
+        // IdleIfNeeded has been called on loops after it has set the process to idle
+        if (!IdleIfNeeded(&itdSleep, 30)) {
+          while (pci) {
+            FreeCnrItemData(pci);
+            pci = (PCNRITEM)pci->rc.preccNextRecord;
+            if (remaining && --remaining == 0)
+              break;
+          } // while
+          break;
+        }
       } // while
       priority_normal();
       DosPostEventSem(CompactSem);
