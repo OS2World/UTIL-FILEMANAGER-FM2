@@ -5,7 +5,7 @@
 .* fm/2 help - Troubleshooting
 .*
 .* Copyright (c) 1993-98 M. Kimes
-.* Copyright (c) 2002-2013 Steven H.Levine
+.* Copyright (c) 2002-2014 Steven H.Levine
 .*
 .* 06 Apr 07 GKY Added drag limit information
 .* 24 Jun 07 GKY Added change from VAC to open Watcom notes and Global issue with 4OS2.
@@ -14,23 +14,25 @@
 .* 08 Jan 12 GKY Updated GBM.DLL note.
 .* 01 Jan 13 GKY Removed GBM.DLL note as the problem has been fixed.
 .* 01 Jan 13 GKY Removed reference to install.cmd which is no longer in the FM/2 package
+.* 23 Mar 14 GKY Add known problems with starting with redirection and inability to copy
+.*               from "completed" windows. Fixed some typos
 .*
 .***********************************************************************
 .*
 :h2 res=100100 id='PANEL_TROUBLE'.
 Troubleshooting
-:p.If FM&slash.2 won&apos.t run&comma. &lpar.the probable culprit is CONFIG&per.SYS&per.  
-Your LIBPATH statement should contain a "&per.&bsl." entry&per.
+:p.If FM&slash.2 won&apos.t run&comma. &lpar.the probable culprit is CONFIG.SYS.  
+Your LIBPATH statement should contain a "." entry.
 If yours doesn&apos.t&comma. add it&per.  It&apos.s
 standard for an OS&slash.2 installation&comma. but some buggy install programs knock
 it out because they translate entries to their full pathname before
-rewriting &lpar.so "&per.&bsl." gets translated to whatever the current
-directory is for the buggy install program&rpar.&per.  What this "&per.&bsl." entry does is
-allow a program to find and use &per.DLL files in the program&apos.s current directory
+rewriting &lpar.so "." gets translated to whatever the current
+directory is for the buggy install program&rpar..  What this "." entry does is
+allow a program to find and use .DLL files in the program&apos.s current directory
 &endash.&endash. obviously something you want programs to be able to do&comma. otherwise
-you&apos.d have to put every application&apos.s &per.DLLs into directories already on the
+you&apos.d have to put every application&apos.s .DLLs into directories already on the
 LIBPATH&comma. or add the directories of all applications to the LIBPATH&comma. a
-rather huge pain in the&comma. uh&comma. neck&per.
+rather huge pain in the&comma. uh&comma. neck.
 :p.If things in FM&slash.2 are suddenly acting strange after an upgrade&comma. try
 reinstalling the Warpin package.
 :p.If the "FM&slash.2 Online Help" object in the "FM&slash.2 Docs" sub-folder
@@ -50,8 +52,8 @@ error&per.
 :p. &endash. Tree switching on Focus&slash.Directory Change appears to be slower
 than expected&per.
 :p. &endash. Access to LS120 and FAT32 drives slower than expected
-:p. &endash. Icon display in Directory Container does not always match WPS icons
-:p. &endash. Spurious WPS Objects Handles created during some operations
+:p. &endash. Icons displayed in Directory Containers do not always match WPS icons
+:p. &endash. Spurious WPS Objects Handles are created during some operations
 :p. &endash. PM has a 64k draginfo buffer for compatibility with 16 bit programs.
 This limits each drag operation to a maximum of about 1800 objects, however in some testing
 we were limited to under 1700. The main problem is PM is happy to over write this buffer.
@@ -78,4 +80,20 @@ drive types. Also be aware that deleted files are still retained on the drive
 they were deleted from. The result can be full drive type errors. If you are 
 deleting to free up drive space you must either empty the trash can or use 
 :hp6.Permanent Delete:ehp6. which deletes the files directly bypassing the trash can.
+:p. &endash. You can't copy from a completed command window in OS&slash.2. If you run 
+commands where you wish to copy the output following their completion you have 2
+options. If you have dragtext installed you can select the text, drag it to the desktop
+and then copy it from the file created by this operation. Alternatively, you can use a
+commandline of the form CMD.EXE &slash.k BLDLEVEL.EXE  &percent.a. This leaves a running
+window because the command shell doesn't terminate and the text can be copied in the 
+usual ways from the active window.
+:p. &endash. Starting FM2 from commandline with stdout and stderr redirected to a file may
+result in command shell windows started from FM2 opening blank &lpar.and useless&rpar.. 
+You can work around this in 2 different ways. First you can use logFM2.cmd located in 
+the debug directory and as an object in the FM2 folder which starts FM2 with redirection. 
+Otherwise you can use &numsign. as the first switch on the commandline &lpar.FM3.EXE 
+&numsign 2&gtsym.&gtsym.FM2.LOG&rpar.. The drawback to the second solution is it uses 
+the base environment, the one set by CONFIG.SYS. This means that command prompts start 
+directed at the root of the boot drive not the directory from the active directory container. 
+You also lose any other environment variables created by the method you used to start FM2.
 
