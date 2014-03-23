@@ -9,6 +9,7 @@
 .*
 .* 2009-12-29 SHL Split from install.ipf
 .* 2011-09-14 SHL Correct typo
+.* 2014-03-23 GKY Add section on program object parameters and behaviors 
 .*
 .***********************************************************************
 .*
@@ -59,4 +60,13 @@ toggle under Config Menu&endash.&gt.Toggles in the online help&rpar. for that in
 "&endash.C&colon.&bsl.FM2&bsl.MYINI&per.INI"&per.
 :p.You can also specify the INI file location with the environment variable
 FM3INI &endash.&endash. for example&colon.  SET FM2INI&eq.C&colon.&bsl.FM2&bsl.MYINI&per.INI&per.
+:p.Program objects are optionally created on the desktop when FM2 is installed. These contain 
+the parameter &percent.&asterisk. it is present so FM2 and the other apps can be opened
+using drag and drop. If you drop a file on FM2 it opens as if you had just double clicked
+on it. If you drop a folder or object on it&comma. it opens the directory associated with the
+object or folder in addition to the shutdown directories &lpar.if any&rpar.. Archive viewer&slr.2 
+will open files in the viewers or association you have setup in FM2 if the file isn't an archive.
+Additional parameters for FM2, FM2Lite and Vtree you may find useful include placing drive 
+letters following a &slash. &lpar.no spaces&rpar. to exclude them such as &slash.B so the 
+phantom B drive won't be shown on single floppy systems.
 
