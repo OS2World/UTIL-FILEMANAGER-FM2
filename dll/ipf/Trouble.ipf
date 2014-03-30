@@ -15,7 +15,7 @@
 .* 01 Jan 13 GKY Removed GBM.DLL note as the problem has been fixed.
 .* 01 Jan 13 GKY Removed reference to install.cmd which is no longer in the FM/2 package
 .* 23 Mar 14 GKY Add known problems with starting with redirection and inability to copy
-.*               from "completed" windows. Fixed some typos
+             from "completed" windows. Fixed some typos
 .*
 .***********************************************************************
 .*
@@ -92,7 +92,7 @@ result in command shell windows started from FM2 opening blank &lpar.and useless
 You can work around this in 2 different ways. First you can use logFM2.cmd located in 
 the debug directory and as an object in the FM2 folder which starts FM2 with redirection. 
 Otherwise you can use &numsign. as the first switch on the commandline &lpar.FM3.EXE 
-&numsign 2&gtsym.&gtsym.FM2.LOG&rpar.. The drawback to the second solution is it uses 
+&numsign. 2&gtsym.&gtsym.FM2.LOG&rpar.. The drawback to the second solution is it uses 
 the base environment, the one set by CONFIG.SYS. This means that command prompts start 
 directed at the root of the boot drive not the directory from the active directory container. 
 You also lose any other environment variables created by the method you used to start FM2.
