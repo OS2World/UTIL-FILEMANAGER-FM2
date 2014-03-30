@@ -223,7 +223,7 @@ WAITCHILD;
 /** Creates a thread to wait for a child process to complete then posts a message and closes
  *  This function should only be used for runemf2 calls that include the WAIT flag
  */
-VOID WaitChildThread(VOID * arg) /*FOLD00*/
+VOID WaitChildThread(VOID * arg)
 {
   WAITCHILD *WaitChild;
   HAB thab;
@@ -264,7 +264,7 @@ VOID WaitChildThread(VOID * arg) /*FOLD00*/
 #  endif
 }
 
-static MRESULT EXPENTRY ArcErrProc(HWND hwnd, ULONG msg, MPARAM mp1, /*FOLD00*/
+static MRESULT EXPENTRY ArcErrProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				   MPARAM mp2)
 {
   ARCDUMP *ad;
@@ -357,7 +357,7 @@ static MRESULT EXPENTRY ArcErrProc(HWND hwnd, ULONG msg, MPARAM mp1, /*FOLD00*/
   return WinDefDlgProc(hwnd, msg, mp1, mp2);
 }
 
-static SHORT APIENTRY ArcSort(PMINIRECORDCORE pmrc1, PMINIRECORDCORE pmrc2, /*FOLD00*/
+static SHORT APIENTRY ArcSort(PMINIRECORDCORE pmrc1, PMINIRECORDCORE pmrc2,
 			      PVOID pStorage)
 {
   PARCITEM pai1 = (PARCITEM) pmrc1;
@@ -435,7 +435,7 @@ static SHORT APIENTRY ArcSort(PMINIRECORDCORE pmrc1, PMINIRECORDCORE pmrc2, /*FO
   return (SHORT) stricmp(pai1->pszFileName, pai2->pszFileName);
 }
 
-static INT APIENTRY ArcFilter(PMINIRECORDCORE rmini, PVOID arg) /*FOLD00*/
+static INT APIENTRY ArcFilter(PMINIRECORDCORE rmini, PVOID arg)
 {
   DIRCNRDATA *dcd = (DIRCNRDATA *) arg;
   PARCITEM r;
@@ -470,13 +470,13 @@ static INT APIENTRY ArcFilter(PMINIRECORDCORE rmini, PVOID arg) /*FOLD00*/
   return ret;
 }
 
-static MRESULT EXPENTRY ArcFrameWndProc(HWND hwnd, ULONG msg, MPARAM mp1, /*FOLD00*/
+static MRESULT EXPENTRY ArcFrameWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 					MPARAM mp2)
 {
   return CommonFrameWndProc(ARC_CNR, hwnd, msg, mp1, mp2);
 }
 
-static BOOL IsArcThere(HWND hwnd, CHAR * arcname) /*FOLD00*/
+static BOOL IsArcThere(HWND hwnd, CHAR * arcname)
 {
   if (arcname) {
     if (IsFile(arcname) != 1) {
@@ -495,7 +495,7 @@ static BOOL IsArcThere(HWND hwnd, CHAR * arcname) /*FOLD00*/
  * Caller is responsible for correcting pointers
  */
 
-static VOID FreeArcItemData(PARCITEM pai) /*FOLD00*/
+static VOID FreeArcItemData(PARCITEM pai)
 {
   // DbgMsg(pszSrcFile, __LINE__, "FreeArcItemData %p", pai);
   PSZ psz;
@@ -513,7 +513,7 @@ static VOID FreeArcItemData(PARCITEM pai) /*FOLD00*/
  * @param usCnt is remove count or 0 to remove all
  */
 
-static VOID RemoveArcItems(HWND hwnd, PARCITEM paiFirst, USHORT usCnt, USHORT usFlags) /*FOLD00*/
+static VOID RemoveArcItems(HWND hwnd, PARCITEM paiFirst, USHORT usCnt, USHORT usFlags)
 {
   INT remaining = usCnt;
   PARCITEM pai;
@@ -559,7 +559,7 @@ static VOID RemoveArcItems(HWND hwnd, PARCITEM paiFirst, USHORT usCnt, USHORT us
  * free associated storage and free up field infos
  */
 
-static VOID EmptyArcCnr(HWND hwnd) /*FOLD00*/
+static VOID EmptyArcCnr(HWND hwnd)
 {
 #if 0 // fixme to be gone or to be configurable
   {
@@ -1005,7 +1005,7 @@ ReTry:
 
   return numarcfiles;
 } // FillArcCnr
-MRESULT EXPENTRY ArcTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) /*FOLD00*/
+MRESULT EXPENTRY ArcTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   static BOOL emphasized = FALSE;
   static HWND hwndButtonPopup = (HWND) 0;
@@ -1328,7 +1328,7 @@ MRESULT EXPENTRY ArcTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) /*FOL
   return PFNWPStatic(hwnd, msg, mp1, mp2);
 }
 
-MRESULT EXPENTRY ArcClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1, /*FOLD00*/
+MRESULT EXPENTRY ArcClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				  MPARAM mp2)
 {
 
@@ -1433,7 +1433,7 @@ MRESULT EXPENTRY ArcClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1, /*FOLD00*/
   return WinDefWindowProc(hwnd, msg, mp1, mp2);
 }
 
-MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) /*FOLD00*/
+MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   DIRCNRDATA *dcd;
   PSZ psz;
@@ -2287,7 +2287,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2) /*F
   return WinDefWindowProc(hwnd, msg, mp1, mp2);
 }
 
-static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, /*FOLD00*/
+static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				      MPARAM mp2)
 {
   DIRCNRDATA *dcd = INSTDATA(hwnd);
@@ -3560,7 +3560,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, /*FOLD00
       return PFNWPCnr(hwnd, msg, mp1, mp2);
 }
 
-MRESULT EXPENTRY ArcCnrMenuProc(HWND hwnd, ULONG msg, MPARAM mp1, /*FOLD00*/
+MRESULT EXPENTRY ArcCnrMenuProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				     MPARAM mp2)
 {
   PFNWP oldMenuProc = WinQueryWindowPtr(hwnd, QWL_USER);
@@ -3647,7 +3647,7 @@ MRESULT EXPENTRY ArcCnrMenuProc(HWND hwnd, ULONG msg, MPARAM mp1, /*FOLD00*/
     return oldMenuProc(hwnd, msg, mp1, mp2);
 }
 
-HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags, /*FOLD00*/
+HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 		 ARC_TYPE * sinfo)
 {
   /**
@@ -3668,7 +3668,7 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags, /*
 
 
   if (strrchr(arcname, '.')) {
-    if (!stricmp(strrchr(arcname, '.') + 1, "LZ")) {
+    if (!stricmp(strrchr(arcname, '.') + 1, "LZ") && info->list == NULL) {
       saymsg(MB_ENTER | MB_ICONASTERISK, HWND_DESKTOP, GetPString(IDS_LZIPLIMITATION),
              GetPString(IDS_LZIPNOLIST));
       return -1;
