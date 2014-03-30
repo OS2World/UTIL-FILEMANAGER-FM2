@@ -3322,6 +3322,7 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
       Fortify_ChangeScope(dcd, +1);
 #   endif
   }
+  WinShowWindow(hwndFrame, FALSE);
   return hwndFrame;
 }
 
