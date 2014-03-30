@@ -1052,13 +1052,9 @@
 #define IDS_LOCKEDFILEWARNINGTITLE                           1021
 #define IDS_READONLYFILEWARNING                              1022
 #define IDS_READONLYFILEWARNINGTITLE                         1023
-#define IDS_ARCNOBZIP                                        1024
-#define IDS_ARCNOGZIP                                        1025
-#define IDS_ARCNOTEST                                        1026
-#define IDS_ARCBZIPTESTTARBZ                                 1027
-#define IDS_ARCGZIPTESTTARGZ                                 1028
-#define IDS_ARCMISSINGEXE                                    1029
-#define IDS_ARCMISSINGEXEVERBOSE                             1030
+#define IDS_ARCNOTEST                                        1024
+#define IDS_ARCMISSINGEXE                                    1025
+#define IDS_ARCMISSINGEXEVERBOSE                             1026
 
 //The following strings were cut up form the string of the root name (ie IDS_SUGGEST1TEXT)
 //This was done as part of the conversion to a StringTable where strings are limited to 255
