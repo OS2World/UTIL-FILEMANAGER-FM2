@@ -4,6 +4,6 @@
 
 # 14 Jun 07 SHL Convert to OpenWatcom
 
-option description '@#The Netlabs FM/2 team:3.21.0#@##1## 01/01/2013 03:21:00      tresbopeep::EN:US:0:U:@@F(ile) M(anager)/2 Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, 2013 Steven Levine and Associates, Inc. All rights reserved'
+option description '@#The Netlabs FM/2 team:3.22.0#@##1## 2014-04-06 03:22:00      TRESBOPEEP::EN:US:0:U:@@F(ile) M(anager)/2 Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, 2014 Steven Levine and Associates, Inc. All rights reserved'
 
 option stack = 655360

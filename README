@@ -5,6 +5,14 @@
  읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
 
 
+FM/2 3.22 provides enhancements to compare directories, seek and scan and the 
+archive viewer. It fixes the check for readonly files on delete to work in all 
+cases. It fixes some problems with the installer. We have also fixed a number 
+of cosmetic issues and several traps. We no longer load FM/2 in high memory as 
+we determined that was causing some of the traps. We tried to improve the speed
+of drive scans and the responsiveness of the UI during long seek and scans.
+See the history file for more details. Please let us know if you find a defect.
+
 FM/2 3.21 has a few enhancement which we hope you will find useful. Since eCS 
 includes unlock.exe I have added unlock file to the file (directory container 
 context) menu so you can easily unlock a dll or exe file. Delete, copy and move 

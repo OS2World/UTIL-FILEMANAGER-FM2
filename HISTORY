@@ -1,5 +1,60 @@
 New stuff at the top.  This list is not necessarily complete.
 
+3.22
+ o Compare directories enhancements: 
+   Fix snapshot file to actually load and save (with/without subdirectories) properly. 
+   Toggle of include subdirectories leaves snapshot file loaded. Added an indicator 
+   (textbox) that a list (snapshot) file is loaded.Ticket 490 (Gregg)
+   Added optional confirmation dialogs for delete move and copy Ticket 277 (Gregg)
+   Added EA compare option Ticket 80 (Gregg)
+   Fixed some minor interspace/display issues (Steven, Gregg)
+ o Fixed the readonly warning on delete code and enhanced the dialog it now has focus on 
+   opening, accel keys, defaults to no and Esc key cancels operation. Rework readonly 
+   code so it works with move to trashcan enabled Ticket 506 (Gregg)
+   Suppress readonly warning for delete of temporary files. Ticket 497 (Gregg)
+ o Changes to get 7z archives to work with AV2. Includes an ugly hack to compensate for 
+   the fact that the compressed size is missing from some files in some archives. 
+   This results in the filename being put in the nsize variable which then must be passed 
+   to fname. Fortunately it displays compressed size as 0 since it can't deal with the non 
+   numeric text string. A file name that is all numeric will show odd results. 
+   Ticket 492 (Gregg)
+ o Changes to fix .tar.gz list because of changes in tar 1.20 (maybe earlier). Ticket 493
+   (Gregg)
+ o Added lzip support Ticket 494 (Gregg)
+ o Fix failure to create directory from archive file name when the name had a space.
+   Ticket 495 (Gregg)
+ o Added instruction for creating a new archiver definition in Archiver.bb2 using an 
+   archive of the new type as a template to the help file. Ticket 21 (Gregg) 
+ o Improved user interface responsiveness during long seek and scan operations (Gregg)
+ o Fixed trap that occurred when trying to run commands from the command list drop down
+   Ticket 509 (Gregg)
+ o Support git, svn, hg etc. version control metadata directory excludes in seek and scan
+   Ticket 404 (Steven)
+ o Fix trap on opening a file without an extension Ticket 496 (Gregg)  
+ o Fix separate parameters. Moved to general page renamed separate settings for apps. 
+   Ticket 497 (Gregg)
+ o Add "#" command line switch to workaround problem with blank command shell started 
+   from fm2 after fm2 has been started with stdout and stderr redirected to a file.
+   Ticket 508 (Gregg)
+ o Fixed move to trashcan so it works when the trashcan::drives key hadn't been written 
+   to OS2.INI Ticket 507 (Gregg)
+ o Installer fixes: Fixed the FM2 with logging object. Ticket 511 (Gregg)
+   Fixed install of file shadows in FM2 folder and subfolders Ticket 501 (John)
+   Fixed FM2 utilities install by FM2 warpin. (Gregg)
+   Fixed the suggest dialog which suggests parameters for newly installed objects.
+   Ticket 527 (Gregg)
+ o Fixed trap caused by cleanup of temp files left after a crash. Ticket 515 (John)
+ o Stopped file extensions in directory containers from changing to upper case following 
+   a double click. Ticket 513 (Gregg)
+ o Stop loading FM2 in high memory to prevent odd traps. Ticket 500 (John)
+ o Fixed trap when attempting to print a file from an archive container Ticket 525 (Gregg)
+ o Disabled menu choices in archive container that aren't options for the selected
+   archiver. Ticket 100 (Gregg)
+ o Enhanced initial drive scan speed Ticket 528 (Gregg)
+ o Suppressed error message drive A: not ready on initial scan Ticket 529 (Gregg)
+ o Added information about drag and drop on program objects to the help file Ticket 530
+   (Gregg)
+
 3.21
  o Search for duplicates now sorts results by filename. Ticket 8 (Gregg)
  o Since eCS includes unlock.exe I have added unlock file to the file (directory container context) menu

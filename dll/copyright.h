@@ -7,7 +7,7 @@
  *
  */
 
-#define COPYRIGHT_YEAR "2013"
+#define COPYRIGHT_YEAR "2014"
 
 #define COPYRIGHT_STRING "Copyright (c) 1993, 1998 M. Kimes, " \
                      "Copyright (c) 2001, " \
