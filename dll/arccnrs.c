@@ -103,6 +103,7 @@
   02 Mar 14 GKY Fixed typo that reversed the function of the saymsg dialog g/bzip check.
                 Added option to suppress message regarding missing bzip2.exe
                 or gzip.exe on TAR.B/GZ archives.
+  06 Apr 14 GKY Removed all BZ/GZ checks
 
 ***********************************************************************/
 
@@ -3665,15 +3666,6 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
   CHAR title[MAXNAMEL + 1] = "AV/2 - ";
   CHAR fullname[CCHMAXPATH + 8], *p, temp;
   static USHORT idinc = 0;
-
-
-  if (strrchr(arcname, '.')) {
-    if (!stricmp(strrchr(arcname, '.') + 1, "LZ") && info->list == NULL) {
-      saymsg(MB_ENTER | MB_ICONASTERISK, HWND_DESKTOP, GetPString(IDS_LZIPLIMITATION),
-             GetPString(IDS_LZIPNOLIST));
-      return -1;
-    }
-  }
 
   if (!idinc)
     idinc = (rand() % 256);
