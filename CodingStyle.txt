@@ -40,7 +40,7 @@ Layouts
   // If expr and statement are brief single line is OK.
   if (expr) statement;
 
-  // If statment is long, split logically and use braces.
+  // If statement is long, split logically and use braces.
   if (expr) {
     statement_part1...
       restoflongstatement;
@@ -105,15 +105,15 @@ Variable naming
   Prefer lower case and underscores for local variables.
 
     BOOL is_ok;
-  
-  Local varibles can be short as long as meaning is clear.
+
+  Local variables can be short as long as meaning is clear.
 
     BOOL ok;
 
   Underscores can be omitted if name remains readable.
 
     USHORT maxcnt;
-  
+
 Spaces
 
   Separate keywords from leading paren with 1 space.
@@ -147,7 +147,7 @@ Expressions
 
     return (0);
 
-  Do not use superfluous parens when operator precedence with do the
+  Do not use superfluous parens when operator precedence will do the
   right thing.
 
   Prefer
@@ -160,6 +160,25 @@ Expressions
 
   Avoid nested ternary conditionals (i.e. ? :).  They are hard to read and
   rarely generate better code than switch or if statement.
+
+Disabling code
+
+  When disabling multiple lines of code, prefer
+
+    #if 0
+    #endif
+
+  to
+
+    /*
+    */
+
+  comments or // comments.
+
+  When disabling multiple lines of code, it is acceptable to use // comments
+  to disable a single line.  The // should be followed by a trailing space
+
+    // DbgMsg("here");
 
 Memory
 
