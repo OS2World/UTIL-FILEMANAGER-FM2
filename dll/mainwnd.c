@@ -564,6 +564,12 @@ HWND FindDirCnrByName(CHAR * directory, BOOL restore)
   return hwndF;
 }
 
+/**
+ * Sync menu item checkmarks to match globals
+ * Called before submenu or context menu opened
+ * Does more work than really needed, but makes code easier to maintain
+ */
+
 static VOID SetToggleChecks(HWND hwndMenu)
 {
   WinCheckMenuItem(hwndMenu, IDM_TEXTTOOLS, fTextTools);
@@ -577,6 +583,7 @@ static VOID SetToggleChecks(HWND hwndMenu)
   WinCheckMenuItem(hwndMenu, IDM_DRIVEBAR, fDrivebar);
   WinCheckMenuItem(hwndMenu, IDM_AUTOTILE, fAutoTile);
   WinCheckMenuItem(hwndMenu, IDM_TILEBACKWARDS, fTileBackwards);
+  WinCheckMenuItem(hwndMenu, IDM_CONFIRMDELETE, fConfirmDelete);	// 2014-05-17 SHL
   WinCheckMenuItem(hwndMenu, IDM_TOGGLEDRAGDIALOG, fDragndropDlg);
   WinCheckMenuItem(hwndMenu, IDM_SYNCUPDATES, fSyncUpdates);
 }
@@ -5474,6 +5481,15 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WM_UPDATEFRAME, MPFROMLONG(FCF_SIZEBORDER), MPVOID);
     break;
 
+  // 2014-05-17 SHL
+  case IDM_CONFIRMDELETE:
+    SetMenuCheck(WinQueryWindowULong(hwnd, QWL_USER),
+		 IDM_CONFIRMDELETE,
+		 &fConfirmDelete,
+		 TRUE,
+		 "ConfirmDelete");
+    break;
+
   case IDM_TOGGLEDRAGDIALOG:
     SetMenuCheck(WinQueryWindowULong(hwnd, QWL_USER),
 		 IDM_TOGGLEDRAGDIALOG,
@@ -6640,7 +6656,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSendMsg(hwndTree, WM_CLOSE, MPVOID, MPVOID);
     }
     DosSleep(1);
-    return 0;              	// Suppress WinDefWindowProc WM_QUIT message generation
+    return 0; 		// Suppress WinDefWindowProc WM_QUIT message generation
 
   case UM_CLOSE:
     HideNote();

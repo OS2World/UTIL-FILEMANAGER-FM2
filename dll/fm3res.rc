@@ -74,7 +74,7 @@
                 all entries have been tried. Added a check b/gzip exes for TAR.B/GZ archives.
                 Use the test archive string from the first working archive description.
                 Enhance the error message. Ticket 502
-  
+
 ***********************************************************************/
 
 #include <os2.h>
@@ -323,6 +323,7 @@ MENU  MAIN_FRAME
 	 MENUITEM "Toggle ~quicklists\tF8",IDM_USERLIST
 	 MENUITEM "Toggle ~bottom buttons\tCtrl + F8",IDM_MOREBUTTONS
 	 MENUITEM "Toggle dri~vebar\tCtrl + Shift + F8",IDM_DRIVEBAR
+	 MENUITEM "Toggle ~confirm deletes",IDM_CONFIRMDELETE		// 2014-05-17 SHL
 	 MENUITEM "Toggle ~drag&drop prompting",IDM_TOGGLEDRAGDIALOG	// 12 Jan 08 SHL
 	 MENUITEM "Toggle ~immediate updates",IDM_SYNCUPDATES		// 16 Jan 08 SHL
 	 MENUITEM "",                  -1,           MIS_SEPARATOR
@@ -537,6 +538,8 @@ MENU  MAIN2_FRAME
 		MENUITEM "Te~xt toolbar",   IDM_TEXTTOOLS
 		MENUITEM "Toolbar t~itles", IDM_TOOLTITLES
 	 }
+	 MENUITEM "Toggle ~confirm deletes",IDM_CONFIRMDELETE		// 2014-05-17 SHL
+	 MENUITEM "Toggle ~drag&drop prompting",IDM_TOGGLEDRAGDIALOG	// 2014-05-15 SHL
 	 MENUITEM "Toggle ~autoview window\tF4",IDM_AUTOVIEW
 	 MENUITEM "",                  -1,   MIS_SEPARATOR
 	 MENUITEM "Edit ~associations...",IDM_EDITASSOC
@@ -1558,7 +1561,7 @@ MENU COLLECTORFILE_POPUP
 	 MENUITEM "WPS directory D~etails",    IDM_OPENDIRDETAILS
 	 MENUITEM "WPS directory ~Tree",       IDM_OPENDIRTREE
   }
-  SUBMENU "Create objects",     IDM_OBJECTSUBMENU       
+  SUBMENU "Create objects",     IDM_OBJECTSUBMENU
   {
 	 MENUITEM "~Shadows...",     IDM_SHADOW
 	 MENUITEM "~Real objects...",IDM_OBJECT
@@ -2885,7 +2888,7 @@ STRINGTABLE
     IDS_ADNEWSZTEXT                       "The field of compressed sizes in an archiver listing."
     IDS_ADSTARTLISTTEXT                   "The string that comes before files in a listing."
     IDS_ADENDLISTTEXT                     "The string that comes after files in a listing."
-    IDS_ADCHANGESONDISKTEXT               "Archiverbb2 has changed on disk" 
+    IDS_ADCHANGESONDISKTEXT               "Archiverbb2 has changed on disk"
     IDS_ADRELOADMEMTEXT                   "Do you wish to reload it"
     IDS_ADCHANGESINMEMTEXT                "Changes recorded in memory."
     IDS_ADREWRITETEXT                     "Rewrite ARCHIVER.BB2 file?%s"
@@ -3103,12 +3106,13 @@ STRINGTABLE
     IDS_MVMTTEXT                          "Multi-value multi-type data (%u entr%s, %u bytes%s)"
     IDS_ALLTEXTTEXT                       ", all text"
     IDS_MIXEDTYPESTEXT                    ", mixed types"
-    IDS_BINARYBYTESTEXT                   "Binary data (%u bytes)"
+    IDS_BINARYBYTESTEXT                   "%sBinary data (%u bytes)"
     IDS_BITMAPBYTESTEXT                   "Bitmap data (%u bytes)"
     IDS_METAFILEBYTESTEXT                 "Metafile data (%u bytes)"
     IDS_ICONBYTESTEXT                     "Icon data (%u bytes)"
     IDS_ASN1BYTESTEXT                     "ASN1 data (%u bytes)"
     IDS_UNKNOWNBYTESTEXT                  "Unknown datatype 0x%04x (%u bytes)"
+    IDS_CRITICALEA                        "Critical EA - " // 2014-02-10 SHL
     IDS_DATABARTITLETEXT                  "FM/2 Databar"
     IDS_NTFSDRIVERFAILSTEXT               "The NTFS.IFS fails with a NO_MORE_FILES_ERROR on each subdirectory. We have not found a work around as yet."
     IDS_SUNDAY                            "Sun"
@@ -3391,20 +3395,19 @@ STRINGTABLE
     IDS_READONLYFILEWARNINGTITLE          "Read Only file!"
     IDS_NOTARGETSET                       "A target directory has not been set"
     IDS_LEFTRIGHTOUTOFSYNC                "pcil and pcir out of sync"
-    IDS_CONFIRMDELETE                     "Confirm Delete" 
+    IDS_CONFIRMDELETE                     "Confirm Delete"
     IDS_DOYOUWISHTODELETE                 "Do you wish to delete %s"
     IDS_DROPSETSTARGET                    "Do you wish to use this directory as the new target directory? \nYes sets target\nNo proceeds with drag/drop operation to current target"
-    IDS_MB2DYES                           "~Yes"               
+    IDS_MB2DYES                           "~Yes"
     IDS_MB2DYESDONTASK                    "Yes ~don't ask again"
-    IDS_MB2DNO                            "~No"                
-    IDS_MB2DCANCELOP                      "~Cancel operation"  
+    IDS_MB2DNO                            "~No"
+    IDS_MB2DCANCELOP                      "~Cancel operation"
     IDS_SNAPSHOTFILEBADFORMAT             "The snapshot file lists no files or is not formatted correctly"
     IDS_SNAPSHOTFILELOADFAILED            "The snapshot file %s failed to load"
     IDS_LZIPLIMITATION                    "Lzip Limitation"
     IDS_LZIPNOLIST                        "Lzip doesn't have a list files option"
-           
-    
-    
+
+
     // Add strings that need to be combined by GetPString here
     IDS_SUGGEST1TEXT1                     "Based on this scan of your drives, I would like to suggest the following parameters for your FM/2 program object (each letter following the '/' character is a drive that probably should be excluded from viewing by FM/2 (see README), and the '%%*' on the"
     IDS_SUGGEST1TEXT2                     " end enables drag-and-drop to the program object%s):\r\r""%s""\r\rYes: Replace all relevant FM/2 object parameters with this string.\rNo: Parameters are left unchanged.\rCancel: Same as ""No"" plus don't show this message again.\r\r"
@@ -3444,8 +3447,8 @@ HELPTABLE ID_HELPTABLE
    HELPITEM EXEC_FRAME,      ID_HELPSUBTABLEB, HELP_CMDLINE
    HELPITEM ASEL_FRAME,      ID_HELPSUBTABLEB, HELP_ARCHIVERS
    HELPITEM ASEL_EDIT_FRAME, ID_HELPSUBTABLEA, HELP_EDITARC
-   HELPITEM FLE_FRAME,       ID_HELPSUBTABLEA, HELP_INFO 
-   HELPITEM CMD_FRAME,       ID_HELPSUBTABLEA, HELP_COMMAND 
+   HELPITEM FLE_FRAME,       ID_HELPSUBTABLEA, HELP_INFO
+   HELPITEM CMD_FRAME,       ID_HELPSUBTABLEA, HELP_COMMAND
    HELPITEM EA_FRAME,        ID_HELPSUBTABLEB, HELP_EAS
 }
 
@@ -3457,7 +3460,7 @@ HELPSUBTABLE ID_HELPSUBTABLE
    HELPSUBITEM MAIN_DRIVELIST, HELP_USERLISTS
    HELPSUBITEM MAIN_CMDLIST, HELP_USERLISTS
    HELPSUBITEM MAIN_BUTTONLIST, HELP_USERLISTS
-   
+
 }
 
 HELPSUBTABLE ID_HELPSUBTABLEA

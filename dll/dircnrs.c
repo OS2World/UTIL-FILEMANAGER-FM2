@@ -746,7 +746,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_SETUP:
 #   ifdef FORTIFY
-    //DbgMsg(pszSrcFile, __LINE__, "UM_SETUP hwnd %p TID %u", hwnd, GetTidForThread());	// 18 Jul 08 SHL fixme
+    // DbgMsg(pszSrcFile, __LINE__, "UM_SETUP hwnd %p TID %u", hwnd, GetTidForThread());	// 18 Jul 08 SHL fixme
     Fortify_EnterScope();
 #   endif
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
@@ -877,8 +877,9 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (hwndMain)
 	  WinSendMsg(hwndMain, UM_LOADFILE, MPVOID, MPVOID);
       }
-      while (fInitialDriveScan)
-        DosSleep(100);
+      while (fInitialDriveScan) {
+        DosSleep(100);			// Allow to complete
+      }
       if (fSwitchTree && hwndTree) {
 	// Keep drive tree in sync with directory container
         PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
@@ -1413,15 +1414,15 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (stricmp(dcd->directory, fullname)) {
 	  strcpy(dcd->previous, dcd->directory);
 	  strcpy(dcd->directory, fullname);
-	  //DosEnterCritSec(); //GKY 11-27-08
+	  // DosEnterCritSec(); // GKY 11-27-08
 	  dcd->stopflag++;
-          //DosExitCritSec();
-          //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
+          // DosExitCritSec();
+          // DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
 	  if (!PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
 	    strcpy(dcd->directory, dcd->previous);
-	    //DosEnterCritSec(); //GKY 11-27-08
+	    // DosEnterCritSec(); // GKY 11-27-08
 	    dcd->stopflag--;
-	    //DosExitCritSec();
+	    // DosExitCritSec();
 	  }
 	  else if (*dcd->directory) {
 	    if (hwndMain)
@@ -1619,9 +1620,10 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  return 0;
 	}
 	else
-	  DosSleep(32); //05 Aug 07 GKY 64
+	  DosSleep(32); // 05 Aug 07 GKY 64
 	WinEnableMenuItem(DirCnrMenu, IDM_FINDINTREE, (hwndTree != (HWND) 0));
       }
+      // 2014-06-11 SHL fm/2 lite can get here before drive scan completes
       if (!fInitialDriveScan)
 	PostMsg(hwnd, UM_SETUP2, MPVOID, MPVOID);
     }
@@ -1633,6 +1635,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_SETUP2:
     if (dcd) {
+      // DbgMsg(pszSrcFile, __LINE__, "DirCnrWndProc UM_SETUP2 %x", hwnd);
       AdjustCnrColsForPref(hwnd, NULL, &dcd->ds, FALSE);
       SayFilter(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 		DIR_FILTER), &dcd->mask, FALSE);
@@ -1846,8 +1849,10 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	      strcpy(newfile, dcd->directory);
 	      AddBackslashToPath(newfile);
-	      //if (newfile[strlen(newfile) - 1] != '\\')
-	      //  strcat(newfile, "\\");
+#	      if 0	
+	      if (newfile[strlen(newfile) - 1] != '\\')
+		strcat(newfile, "\\");
+#	      endif	
 	      strcat(newfile, sip.ret);
 	      test = IsFile(newfile);
               if (test != 1) {
@@ -2123,7 +2128,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     !strcmp(realappname, FM3Str))
 	      TileChildren(dcd->hwndParent, TRUE);
 	    WinSetWindowPos(hwndC, HWND_TOP, 0, 0, 0, 0, SWP_ACTIVATE);
-	    DosSleep(100); //05 Aug 07 GKY 250
+	    DosSleep(100); // 05 Aug 07 GKY 250
 	  }
 	}
 	else
@@ -2146,7 +2151,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
 
       case IDM_COLLECTOR:
-	DosSleep(32); //05 Aug 07 GKY 64
+	DosSleep(32); // 05 Aug 07 GKY 64
 	{
 	  CHAR **list;
 
@@ -2211,10 +2216,12 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
 
       case IDM_RESORT:
-//	    WinSendMsg(hwnd,
-//		       CM_SORTRECORD,
-//		       MPFROMP(SortDirCnr),
-//		       MPFROMLONG((fSyncUpdates) ? sortFlags : dcd->sortFlags));
+#	    if 0
+	    WinSendMsg(hwnd,
+		       CM_SORTRECORD,
+		       MPFROMP(SortDirCnr),
+		       MPFROMLONG((fSyncUpdates) ? sortFlags : dcd->sortFlags));
+#endif
 	WinSendMsg(hwnd,
 		   CM_SORTRECORD,
 		   MPFROMP(SortDirCnr), MPFROMLONG(dcd->sortFlags));
@@ -2314,8 +2321,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case IDM_RESCAN:
 	//DosEnterCritSec(); //GKY 11-27-08
 	dcd->stopflag++;
-        //DosExitCritSec();
-        //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
+        // DosExitCritSec();
+        // DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
 	if (!PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPVOID)) {
 	  //DosEnterCritSec(); //GKY 11-27-08
 	  dcd->stopflag--;
@@ -2768,7 +2775,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (pci && (INT) pci != -1) {
 	if (pci->attrFile & FILE_DIRECTORY) {
 	  menuHwnd = CheckMenu(hwndMainMenu, &DirMenu, DIR_POPUP);
-//	    WinEnableMenuItem(DirMenu,IDM_TREE,TRUE);
+	  // WinEnableMenuItem(DirMenu,IDM_TREE,TRUE);
 	}
 	else
 	  menuHwnd = CheckMenu(hwndMainMenu, &FileMenu, FILE_POPUP);

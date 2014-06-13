@@ -750,7 +750,7 @@
 #define IDS_UNKNOWNBYTESTEXT                                  722
 #define IDS_DATABARTITLETEXT                                  723
 #define IDS_NTFSDRIVERFAILSTEXT                               724
-//Must be ordered & sequential
+// Must be ordered & sequential
 #define IDS_SUNDAY                                            725
 #define IDS_MONDAY                                            726
 #define IDS_TUESDAY                                           727
@@ -758,7 +758,7 @@
 #define IDS_THURSDAY                                          729
 #define IDS_FRIDAY                                            730
 #define IDS_SATURDAY                                          731
-//End O & S
+// End of must be order & sequential
 #define IDS_SWAPTITLETEXT                                     732
 #define IDS_MEMTITLETEXT                                      733
 #define IDS_PROCSTITLETEXT                                    734
@@ -869,7 +869,7 @@
 #define IDS_FLRAMDISKTEXT                                     838
 #define IDS_FLWRITEVERIFYOFFTEXT                              839
 #define IDS_FLRECURSESCANDONETEXT                             840
-// End drive flag strings
+// End of drive flag strings
 #define IDS_CANTQUERYVOLTEXT                                  841
 #define IDS_CANTQUERYALLOCTEXT                                842
 #define IDS_DRIVEINACCESSIBLETEXT                             843
@@ -888,7 +888,7 @@
 #define IDS_NOTICETITLETEXT                                   857
 #define IDS_PLEASEWAITSCANNINGTEXT                            858
 #define IDS_PLEASEWAITCOUNTINGTEXT                            859
-#define IDS_SPARE_860                                         860
+#define IDS_CRITICALEA                                        860 // 2014-02-10 SHL
 #define IDS_CONFIRMDELETE                                     861
 #define IDS_DOYOUWISHTODELETE                                 862
 #define IDS_MB2DYES                                           863
@@ -912,9 +912,9 @@
 #define IDS_CHANGECMDLINELENGTHDEFAULT                        880
 #define IDS_LZIPLIMITATION                                    881
 #define IDS_LZIPNOLIST                                        882 
-#define IDS_DECRYPT1TEXT                                      883 //Not used
-#define IDS_DECRYPT2TEXT                                      884 //Not used
-#define IDS_DECRYPT3TEXT                                      885 //Not used
+#define IDS_SPARE_883                                         883
+#define IDS_SPARE_884                                         884
+#define IDS_SPARE_885                                         885
 #define IDS_SOURCEISATEXT                                     886
 #define IDS_DIRECTORYTEXT                                     887
 #define IDS_SORRYTEXT                                         888
@@ -1056,8 +1056,8 @@
 #define IDS_ARCMISSINGEXE                                    1025
 #define IDS_ARCMISSINGEXEVERBOSE                             1026
 
-//The following strings were cut up form the string of the root name (ie IDS_SUGGEST1TEXT)
-//This was done as part of the conversion to a StringTable where strings are limited to 255
+// The following strings were cut up form the string of the root name (ie IDS_SUGGEST1TEXT)
+// This was done as part of the conversion to a StringTable where strings are limited to 255
 #define IDS_SUGGEST1TEXT1                                   10000
 #define IDS_SUGGEST1TEXT2                                   10001
 #define IDS_ARCHIVERBB2TEXT1                                10010
@@ -1086,4 +1086,4 @@
 #define IDS_FM2CMDHELPTEXT1                                 10100
 #define IDS_FM2CMDHELPTEXT2                                 10101
 #define IDS_FM2CMDHELPTEXT3                                 10102
-//End of cut string that existed when we converted to a StringTable 11 Jan 09 GKY
+// End of cut up strings that existed when we converted to a StringTable 11 Jan 09 GKY

@@ -27,19 +27,19 @@
   01 Sep 08 GKY Add bmps for default toolbars
   10 Dec 08 SHL Integrate exception handler support
   03 Jan 09 GKY Check for system that is protectonly to gray out Dos/Win command lines and prevent
-                Dos/Win programs from being inserted into the execute dialog with message why.
+		Dos/Win programs from being inserted into the execute dialog with message why.
   21 Jun 09 GKY Added drive letter to bitmap buttons in drive bar; Eliminate static drive
-                letter windows; Use button ID to identify drive letter for processing.
+		letter windows; Use button ID to identify drive letter for processing.
   22 Jul 09 GKY Code changes to use semaphores to serialize drive scanning
   12 Sep 09 GKY Add FM3.INI User ini and system ini to submenu for view ini
   13 Dec 09 GKY Fixed separate paramenters. Please note that appname should be used in
-                profile calls for user settings that work and are setable in more than one
-                miniapp; FM3Str should be used for setting only relavent to FM/2 or that
-                aren't user settable; realappname should be used for setting applicable to
-                one or more miniapp but not to FM/2
+		profile calls for user settings that work and are setable in more than one
+		miniapp; FM3Str should be used for setting only relavent to FM/2 or that
+		aren't user settable; realappname should be used for setting applicable to
+		one or more miniapp but not to FM/2
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   11 Apr 10 GKY Fix drive tree rescan failure and program hang caused by event sem
-                never being posted
+		never being posted
   12 Aug 12 GKY Allow for selection of include subdirectories or a list file on initial startup of compare dirs
 
 ***********************************************************************/
@@ -75,7 +75,7 @@
 #include "misc.h"			// BoxWindow, FixSwitchList, SetConditionalCascade
 					// SetSysMenu
 #include "mainwnd.h"			// CloseChildren, MainWMCommand, MakeMainObjWin, ResizeDrives
-				// TopWindow
+					// TopWindow
 #include "common.h"			// CommonCreateMainChildren, CommonMainWndProc
 #include "notify.h"			// HideNote
 #include "mainwnd2.h"
@@ -458,6 +458,8 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1,
   case IDM_AUTOVIEWCOMMENTS:
   case IDM_AUTOVIEWFILE:
   case IDM_AUTOVIEW:
+  case IDM_CONFIRMDELETE:		// 2014-05-17 SHL
+  case IDM_TOGGLEDRAGDIALOG:		// 2014-05-15 SHL
 //    case IDM_SYSINFO:
   case IDM_HIDENOTEWND:
   case IDM_SHOWNOTEWND:
@@ -554,8 +556,8 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1,
 	    cmp->size = sizeof(COMPARE);
 	    strcpy(cmp->leftdir, wa.szCurrentPath1);
 	    strcpy(cmp->rightdir, wa.szCurrentPath2);
-            cmp->listfile = wa.listfile;
-            cmp->includesubdirs = wa.includesubdirs;
+	    cmp->listfile = wa.listfile;
+	    cmp->includesubdirs = wa.includesubdirs;
 	    cmp->hwndParent = hwnd;
 	    cmp->dcd.hwndParent = hwnd;
 	    WinDlgBox(HWND_DESKTOP,
@@ -782,15 +784,20 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
 				    MPARAM mp2)
 {
   PERSON1DATA *pd;
+  TID tid;
+  SWP swp;
+  PFNWP oldproc;
+  HWND hwndMenu;
+  DIRCNRDATA *dcd;
+  HWND hwndC;
+  ULONG which;
+  ULONG size;
 
   switch (msg) {
   case WM_CREATE:
-    {
-      TID tid;
-
-      WinQueryWindowProcess(hwnd, &mypid, &tid);
-    }
+    WinQueryWindowProcess(hwnd, &mypid, &tid);
     hwndMain = hwnd;
+
     WinSetWindowUShort(hwnd, QWL_USER + 8, 0);
     WinSetWindowUShort(hwnd, QWL_USER + 10, 0);
     WinSetWindowUShort(hwnd, QWL_USER + 12, 0);
@@ -814,36 +821,37 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
       pd->size = sizeof(PERSON1DATA);
       WinSetWindowPtr(hwnd, QWL_USER + 4, (PVOID) pd);
     }
-    {
-      SWP swp;
-      PFNWP oldproc;
 
-      // create frame children (not client children, frame children)
-      DosSleep(1);
-      WinQueryWindowPos(WinQueryWindow(hwnd, QW_PARENT), &swp);
-      oldproc = WinSubclassWindow(WinQueryWindow(hwnd, QW_PARENT),
-				  (PFNWP) MainFrameWndProc2);
-      if (oldproc)
-	WinSetWindowPtr(WinQueryWindow(hwnd, QW_PARENT), QWL_USER, (PVOID) oldproc);
-      CommonCreateMainChildren(hwnd, &swp);
+    // create frame children (not client children, frame children)
+    DosSleep(1);
+    WinQueryWindowPos(WinQueryWindow(hwnd, QW_PARENT), &swp);
+    oldproc = WinSubclassWindow(WinQueryWindow(hwnd, QW_PARENT),
+				(PFNWP) MainFrameWndProc2);
+    if (oldproc)
+      WinSetWindowPtr(WinQueryWindow(hwnd, QW_PARENT), QWL_USER, (PVOID) oldproc);
 
-      {
-	HWND hwndMenu;
+    CommonCreateMainChildren(hwnd, &swp);
 
-	hwndMenu = WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT), FID_MENU);
-	WinSetWindowULong(hwnd, QWL_USER, hwndMenu);
-	CfgMenuInit(hwndMenu, FALSE);	// 14 Feb 08 SHL
-	SetConditionalCascade(hwndMenu, IDM_COMMANDLINESUBMENU, IDM_COMMANDLINE);
-        if (fProtectOnly) {
-          WinEnableMenuItem(hwndMenu, IDM_DOSCOMMANDLINE, FALSE);
-          WinEnableMenuItem(hwndMenu, IDM_WINFULLSCREEN, FALSE);
-        }
-	SetConditionalCascade(hwndMenu, IDM_COMMANDSMENU, IDM_DOITYOURSELF);
-	SetConditionalCascade(hwndMenu, IDM_TOOLSUBMENU, IDM_TOOLBAR);
-      }
+    hwndMenu = WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT), FID_MENU);
+    WinSetWindowULong(hwnd, QWL_USER, hwndMenu);
+
+    // 2014-05-15 SHL FIXME to be sure needed
+    // WinCheckMenuItem(hwndMenu, IDM_TOGGLEDRAGDIALOG, fDragndropDlg);	// 2014-05-15 SHL
+
+    CfgMenuInit(hwndMenu, FALSE);	// 14 Feb 08 SHL
+    SetConditionalCascade(hwndMenu, IDM_COMMANDLINESUBMENU, IDM_COMMANDLINE);
+
+    if (fProtectOnly) {
+      WinEnableMenuItem(hwndMenu, IDM_DOSCOMMANDLINE, FALSE);
+      WinEnableMenuItem(hwndMenu, IDM_WINFULLSCREEN, FALSE);
     }
+
+    SetConditionalCascade(hwndMenu, IDM_COMMANDSMENU, IDM_DOITYOURSELF);
+    SetConditionalCascade(hwndMenu, IDM_TOOLSUBMENU, IDM_TOOLBAR);
+
     WinSetWindowText(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 				     FID_TITLEBAR), "FM/2 Lite");
+
     FixSwitchList(WinQueryWindow(hwnd, QW_PARENT), NULL);
     SetSysMenu(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT), FID_SYSMENU));
     break;
@@ -851,26 +859,22 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
   case UM_SETUP:
     pd = WinQueryWindowPtr(hwnd, QWL_USER + 4);
     if (pd) {
-
       CHAR s[CCHMAXPATH];
-      ULONG size;
-      DIRCNRDATA *dcd;
-      HWND hwndC;
       BOOL dummy = TRUE;
 
       size = sizeof(BOOL);
       PrfQueryProfileData(fmprof, realappname, "FM/4 TreeUp",
-                          (PVOID) &dummy, &size);
+			  (PVOID) &dummy, &size);
       if (dummy) {
 	size = sizeof(ULONG);
 	hwndTree = StartTreeCnr(hwnd, 3);
-        PrfQueryProfileData(fmprof, realappname, "FM/4 TreeWidth",
-                            (PVOID) &TreeWidth, &size);
+	PrfQueryProfileData(fmprof, realappname, "FM/4 TreeWidth",
+			    (PVOID) &TreeWidth, &size);
 	TreeWidth = max(TreeWidth, 80);
       }
       size = sizeof(BOOL);
       if (PrfQueryProfileData(fmprof, appname, "Toolbar", &dummy, &size) &&
-          size && !dummy)
+	  size && !dummy)
 	WinSendMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_TOOLBAR, 0), MPVOID);
 
       size = sizeof(s);
@@ -970,17 +974,38 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
 	}
       }
     }
-    {
-      ULONG which = 0, size = sizeof(ULONG);
-
-      if (PrfQueryProfileData(fmprof, realappname, "FM/4 Max",
-			      (PVOID) & which,
-			      &size) && size == sizeof(ULONG) && which) {
-	PostMsg(hwnd,
-		UM_MAXIMIZE,
-		MPFROMLONG(((which == 1) ?
-			    pd->hwndDir1 : pd->hwndDir2)), MPVOID);
+    // 2014-06-11 SHL Initialize view, sort and filter button text
+    if (pd->hwndDir1) {
+      hwndC = WinWindowFromID(pd->hwndDir1, FID_CLIENT);
+      if (hwndC) {
+	dcd = WinQueryWindowPtr(WinWindowFromID(hwndC, DIR_CNR), QWL_USER);
+	if (dcd && dcd->hwndCnr)
+	  PostMsg(dcd->hwndCnr, UM_SETUP2, MPVOID, MPVOID);
       }
+    }
+    if (pd->hwndDir2) {
+      hwndC = WinWindowFromID(pd->hwndDir2, FID_CLIENT);
+      if (hwndC) {
+	dcd = WinQueryWindowPtr(WinWindowFromID(hwndC, DIR_CNR), QWL_USER);
+	if (dcd && dcd->hwndCnr)
+	  PostMsg(dcd->hwndCnr, UM_SETUP2, MPVOID, MPVOID);
+      }
+    }
+
+    which = 0;
+    size = sizeof(ULONG);
+    if (PrfQueryProfileData(fmprof,
+			    realappname,
+			    "FM/4 Max",
+			    (PVOID)&which,
+			    &size) &&
+	size == sizeof(ULONG) &&
+	which)
+    {
+      PostMsg(hwnd,
+	      UM_MAXIMIZE,
+	      MPFROMLONG(((which == 1) ?
+			  pd->hwndDir1 : pd->hwndDir2)), MPVOID);
     }
     PostMsg(hwnd, UM_SIZE, MPVOID, MPVOID);
     if (!hwndTree)
@@ -1238,15 +1263,20 @@ MRESULT EXPENTRY MainWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSendMsg(pd->hwndCurr, UM_INITMENU, mp1, mp2);
       break;
     case IDM_CONFIGMENU:
+      // 2014-05-17 SHL	FIXME to use SetToggleChecks maybe
       WinCheckMenuItem((HWND) mp2, IDM_TOOLSUBMENU, fToolbar);
       WinCheckMenuItem((HWND) mp2, IDM_AUTOVIEW, fAutoView);
+      WinCheckMenuItem((HWND) mp2, IDM_CONFIRMDELETE, fConfirmDelete);	// 2014-05-17 SHL
+      WinCheckMenuItem((HWND) mp2, IDM_TOGGLEDRAGDIALOG, fDragndropDlg);	// 2014-05-15 SHL
       break;
     case IDM_TOOLSUBMENU:
+      // 2014-05-17 SHL	FIXME to use SetToggleChecks maybe
       WinCheckMenuItem((HWND) mp2, IDM_TOOLBAR, fToolbar);
       WinCheckMenuItem((HWND) mp2, IDM_TEXTTOOLS, fTextTools);
       WinCheckMenuItem((HWND) mp2, IDM_TOOLTITLES, fToolTitles);
       break;
     case IDM_WINDOWSMENU:
+      // 2014-05-17 SHL	FIXME to use SetToggleChecks maybe
       WinCheckMenuItem((HWND) mp2, IDM_VTREE, (hwndTree != (HWND) 0));
       WinCheckMenuItem((HWND) mp2, IDM_TILEBACKWARDS, fTileBackwards);
       SetupWinList((HWND) mp2, hwnd, WinQueryWindow(hwnd, QW_PARENT));

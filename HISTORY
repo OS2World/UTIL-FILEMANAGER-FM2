@@ -1,5 +1,11 @@
 New stuff at the top.  This list is not necessarily complete.
 
+3.23 (beta)
+ o Rework FM/2 Lite Config menu.  Add drag&drop dialog toggle. (Steven)
+ o Rework FM/2 Lite Config menu.  Add confirm delete toggle. (Steven)
+ o Correct View, Sort and Filter button initialization. (Steven)
+ o Rework FM/2 Config menu.  Add confirm delete toggle. (Steven)
+
 3.22
  o Compare directories enhancements: 
    Fix snapshot file to actually load and save (with/without subdirectories) properly. 

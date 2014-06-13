@@ -802,7 +802,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 	  p = strrchr(szTempName, '.');
 	  if (p) {
 	    p++;
-        ul = strtoul(p, NULL, 16);
+            ul = strtoul(p, NULL, 16);
 	    GetDosPgmName(ul, temp);
 	    if (!strstr(temp, "FM/2") &&
 		!strstr(temp, "AV/2")) {
@@ -1198,27 +1198,28 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 
   //Get default Country info
   {
-  COUNTRYCODE Country    = {0};
-  ULONG ulInfoLen  = 0;
-  COUNTRYINFO CtryInfo   = {0};
+    COUNTRYCODE Country    = {0};
+    ULONG ulInfoLen  = 0;
+    COUNTRYINFO CtryInfo   = {0};
 
-  if (!DosQueryCtryInfo(sizeof(CtryInfo), &Country, &CtryInfo, &ulInfoLen)) {
-    *ThousandsSeparator = CtryInfo.szThousandsSeparator[0];
-    strcpy(DateSeparator, CtryInfo.szDateSeparator);
-    strcpy(TimeSeparator, CtryInfo.szTimeSeparator);
-    ulDateFmt = CtryInfo.fsDateFmt;
-    ulTimeFmt = CtryInfo.fsTimeFmt;
-    //DbgMsg(pszSrcFile, __LINE__, "Date Fmt %x", ulDateFmt);
+    if (!DosQueryCtryInfo(sizeof(CtryInfo), &Country, &CtryInfo, &ulInfoLen)) {
+      *ThousandsSeparator = CtryInfo.szThousandsSeparator[0];
+      strcpy(DateSeparator, CtryInfo.szDateSeparator);
+      strcpy(TimeSeparator, CtryInfo.szTimeSeparator);
+      ulDateFmt = CtryInfo.fsDateFmt;
+      ulTimeFmt = CtryInfo.fsTimeFmt;
+      //DbgMsg(pszSrcFile, __LINE__, "Date Fmt %x", ulDateFmt);
+    }
+    else {
+      strcpy(ThousandsSeparator, ",");
+      strcpy(DateSeparator, "/");
+      strcpy(TimeSeparator, ":");
+      ulDateFmt = 0;
+      ulTimeFmt = 0;
+    }
   }
-  else {
-    strcpy(ThousandsSeparator, ",");
-    strcpy(DateSeparator, "/");
-    strcpy(TimeSeparator, ":");
-    ulDateFmt = 0;
-    ulTimeFmt = 0;
-  }
-  }
-  { // Check for the existance of various partitioning tools to set up menu items
+  {
+    // Check for the existance of various partitioning tools to set up menu items
     ULONG ulAppType;
 
     if (!SearchPathForFile(PCSZ_PATH, PCSZ_LVMGUICMD, NULL))
@@ -1415,7 +1416,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "ShowEnv", &fShowEnv, &size);
   PrfQueryProfileString(fmprof, appname, "TreeEnvVarList", "PATH;DPATH;LIBPATH;HELP;BOOKSHELF;",
-	                pszTreeEnvVarList, MaxComLineStrg);
+			pszTreeEnvVarList, MaxComLineStrg);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "ShowDriveOnly", &fShowDriveOnly, &size);
   size = sizeof(BOOL);
