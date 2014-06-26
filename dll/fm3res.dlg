@@ -2031,7 +2031,7 @@ BEGIN
                         132, 10
         AUTOCHECKBOX    "~Switch on focus change", CFGT_SWITCHTREEONFOCUS, 4,
                         80, 132, 10
-        AUTOCHECKBOX    "Switch on directory ~change", CFGT_SWITCHTREE, 4,
+        AUTOCHECKBOX    "Switch on directory ~change", CFGT_SWITCHTREEONDIRCHG, 4,
                         68, 132, 10
         AUTOCHECKBOX    "Co~llapse before switch", CFGT_COLLAPSEFIRST, 4, 56,
                         132, 10

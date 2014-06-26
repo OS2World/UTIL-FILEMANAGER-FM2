@@ -1175,7 +1175,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     fLoadLongnames = fToolbar = fSaveState = fGuessType = fToolbarHelp =
     fAutoAddDirs = fUseNewViewer = fDataToFore = fDataShowDrives = fDataMin =
     fSplitStatus = fDragndropDlg = fQuickArcFind = fKeepCmdLine =
-    fMoreButtons = fDrivebar = fCollapseFirst = fSwitchTree =
+    fMoreButtons = fDrivebar = fCollapseFirst = fSwitchTreeOnDirChg =
     fSwitchTreeExpand = fNoSearch = fCustomFileDlg = fOtherHelp =
     fSaveMiniCmds = fUserComboBox = fFM2Deletes = fConfirmTarget =
     fShowTarget = fDrivebarHelp = fCheckMM = fInitialDriveScan =
@@ -1382,7 +1382,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "ErrorBeepOff", &fErrorBeepOff, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, appname, "SwitchTree", &fSwitchTree, &size);
+  PrfQueryProfileData(fmprof, appname, "SwitchTree", &fSwitchTreeOnDirChg, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "SwitchTreeExpand", &fSwitchTreeExpand, &size);
   size = sizeof(BOOL);

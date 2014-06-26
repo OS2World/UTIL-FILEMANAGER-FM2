@@ -3552,7 +3552,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 	    RemoveOldCnrSwitches(szPrefix, x);
 	    continue;
 	  }
-	  if (x == 0 && fSwitchTree)
+	  if (x == 0 && fSwitchTreeOnDirChg)
 	    pszFocusDir = xstrdup(szDir, pszSrcFile, __LINE__);
 	  LoadDetailsSwitches(szKeyBase, &localdcd.ds, TRUE);
 	  hwndDir = (HWND) WinSendMsg(hwndClient,

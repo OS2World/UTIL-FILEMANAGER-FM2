@@ -84,6 +84,7 @@
                 copy, move and delete operations
   22 Feb 14 GKY Fix warn readonly yes don't ask to work when recursing directories.
   02 Mar 14 GKY Speed up intial drive scans Ticket 528
+  26 Jun 14 SHL	Rework DirObjWndProc UM_RESCAN to avoid hanging FM/2 Lite when tree hidden
 
 ***********************************************************************/
 
@@ -760,7 +761,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSetWindowUShort(hwnd, QWS_ID, DIROBJ_FRAME + (DIR_FRAME - dcd->id));
       dcd->hwndObject = hwnd;
       if (ParentIsDesktop(hwnd, dcd->hwndParent))
-	DosSleep(100); 
+	DosSleep(100);
     }
     else
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
@@ -877,24 +878,28 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (hwndMain)
 	  WinSendMsg(hwndMain, UM_LOADFILE, MPVOID, MPVOID);
       }
-      while (fInitialDriveScan) {
-        DosSleep(100);			// Allow to complete
-      }
-      if (fSwitchTree && hwndTree) {
-	// Keep drive tree in sync with directory container
-        PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
-        if (pszTempDir) {
-          if (hwndMain) {
-            if (TopWindow(hwndMain, (HWND) 0) == dcd->hwndFrame)
-              if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
-                free(pszTempDir);
-          }
-          else {
-            if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
-              free(pszTempDir);
-          }
-        }
-      }
+      // 2014-06-26 SHL FM/2 Lite may not have drive tree yet
+      if (hwndTree) {
+	if (fSwitchTreeOnDirChg) {
+	  // Keep drive tree in sync with directory container
+	  PSZ pszTempDir;
+	  while (fInitialDriveScan) {
+	    DosSleep(100);			// Allow to complete
+	  }
+	  pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
+	  if (pszTempDir) {
+	    if (hwndMain) {
+	      if (TopWindow(hwndMain, (HWND) 0) == dcd->hwndFrame)
+		if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
+		  free(pszTempDir);
+	    }
+	    else {
+	      if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
+		free(pszTempDir);
+	    }
+	  }
+	} // fSwitchTreeOnDirChg
+      } // if hwndTree
       dcd->firsttree = FALSE;
       WinStartTimer(WinQueryAnchorBlock(hwnd), dcd->hwndCnr, ID_DIRCNR_TIMER, 500);
       // fixme to check errors
@@ -980,8 +985,8 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case IDM_PERMDELETE:
       case IDM_MCIPLAY:
       case IDM_UPDATE:
-        if (li->type == IDM_DELETE)
-          ignorereadonly = FALSE;
+	if (li->type == IDM_DELETE)
+	  ignorereadonly = FALSE;
 	if (PostMsg(hwnd, UM_MASSACTION, mp1, mp2))
 	  return (MRESULT) TRUE;
 	break;
@@ -1394,8 +1399,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       LastDir = hwnd;
       PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
       if (fSwitchTreeOnFocus && hwndTree && dcd && *dcd->directory) {
-        PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
-        if (pszTempDir) {
+	PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
+	if (pszTempDir) {
 	  if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
 	    free(pszTempDir);		// Failed
 	}
@@ -1416,8 +1421,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  strcpy(dcd->directory, fullname);
 	  // DosEnterCritSec(); // GKY 11-27-08
 	  dcd->stopflag++;
-          // DosExitCritSec();
-          // DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
+	  // DosExitCritSec();
+	  // DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
 	  if (!PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
 	    strcpy(dcd->directory, dcd->previous);
 	    // DosEnterCritSec(); // GKY 11-27-08
@@ -1473,7 +1478,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       sprintf(s, "%s / %s", tb, tf);
       WinSetDlgItemText(dcd->hwndClient, DIR_SELECTED, s);
       if (hwndStatus &&
-          dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
+	  dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
 	PostMsg(dcd->hwndObject, UM_RESCAN2, MPVOID, MPVOID);
 	if ((fSplitStatus && hwndStatus2) || fMoreButtons) {
 	  pci = WinSendMsg(hwnd,
@@ -1726,7 +1731,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WinEnableMenuItem((HWND) mp2, IDM_EDITBINARY, TRUE);
 	    WinEnableMenuItem((HWND) mp2, IDM_ATTRS, TRUE);
 	  }
-        WinEnableMenuItem((HWND) mp2, IDM_UNLOCKFILE, fUnlock);
+	WinEnableMenuItem((HWND) mp2, IDM_UNLOCKFILE, fUnlock);
 	}
 	break;
 
@@ -1743,7 +1748,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	WinEnableMenuItem((HWND) mp2,
 			  IDM_SELECTCOMPAREMENU,
-                          (CountDirCnrs(dcd->hwndParent) > 1));
+		          (CountDirCnrs(dcd->hwndParent) > 1));
 	break;
 
       case IDM_DETAILSSETUP:
@@ -1849,17 +1854,17 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	      strcpy(newfile, dcd->directory);
 	      AddBackslashToPath(newfile);
-#	      if 0	
+#	      if 0
 	      if (newfile[strlen(newfile) - 1] != '\\')
 		strcat(newfile, "\\");
-#	      endif	
+#	      endif
 	      strcat(newfile, sip.ret);
 	      test = IsFile(newfile);
-              if (test != 1) {
-                CHAR *modew = "w";
+	      if (test != 1) {
+		CHAR *modew = "w";
 
-                fp = xfopen(newfile, modew, pszSrcFile, __LINE__, TRUE);
-              }
+		fp = xfopen(newfile, modew, pszSrcFile, __LINE__, TRUE);
+	      }
 	      if (test != 1 && !fp) {
 		saymsg(MB_ENTER,
 		       hwnd,
@@ -1878,8 +1883,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  dummy[0] = newfile;
 		  dummy[1] = NULL;
 		  ExecOnList(hwnd,
-                             editor, WINDOWED | SEPARATE, NULL, NULL,
-                             dummy, NULL, pszSrcFile, __LINE__);
+		             editor, WINDOWED | SEPARATE, NULL, NULL,
+		             dummy, NULL, pszSrcFile, __LINE__);
 		}
 		else
 		  StartMLEEditor(dcd->hwndParent, 4, newfile, dcd->hwndFrame);
@@ -2321,8 +2326,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case IDM_RESCAN:
 	//DosEnterCritSec(); //GKY 11-27-08
 	dcd->stopflag++;
-        // DosExitCritSec();
-        // DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
+	// DosExitCritSec();
+	// DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
 	if (!PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPVOID)) {
 	  //DosEnterCritSec(); //GKY 11-27-08
 	  dcd->stopflag--;
@@ -2460,8 +2465,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  strcpy(dcd->directory, (CHAR *)mp2);
 	  //DosEnterCritSec(); // GKY 11-27-08
 	  dcd->stopflag++;
-          //DosExitCritSec();
-          //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
+	  //DosExitCritSec();
+	  //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
 	  if (!PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
 	    strcpy(dcd->directory, dcd->previous);
 	    //DosEnterCritSec(); // GKY 11-27-08
@@ -2493,7 +2498,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      strcpy(dcd->previous, dcd->directory);
 	      strcpy(dcd->directory, tempname2);
 	      dcd->stopflag++;
-              //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
+	      //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
 	      if (!PostMsg(dcd->hwndObject,
 			   UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
 		strcpy(dcd->directory, dcd->previous);
@@ -2522,7 +2527,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    strcpy(dcd->directory, dcd->previous);
 	    strcpy(dcd->previous, tempname);
 	    dcd->stopflag++; ;
-            //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
+	    //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
 	    if (!PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
 	      strcpy(dcd->directory, dcd->previous);
 	      dcd->stopflag--;
@@ -2556,7 +2561,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    strcpy(dcd->previous, dcd->directory);
 	    strcpy(dcd->directory, newdir);
 	    dcd->stopflag++;
-            //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
+	    //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
 	    if (!PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
 	      strcpy(dcd->directory, dcd->previous);
 	      dcd->stopflag--;
@@ -2639,8 +2644,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    li->type = SHORT1FROMMP(mp1);
 	    li->hwnd = hwnd;
 	    li->list = BuildList(hwnd);
-            if (li->type == IDM_DELETE)
-              ignorereadonly = FALSE;
+	    if (li->type == IDM_DELETE)
+	      ignorereadonly = FALSE;
 	    switch (SHORT1FROMMP(mp1)) {
 	    case IDM_WILDMOVE:
 	    case IDM_WILDCOPY:
@@ -2712,9 +2717,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      case IDM_EAS:
 		action = UM_MASSACTION;
 		break;
-              }
-              if (li->type == IDM_DELETE)
-                ignorereadonly = FALSE;
+	      }
+	      if (li->type == IDM_DELETE)
+		ignorereadonly = FALSE;
 	      if (SHORT1FROMMP(mp1) == IDM_OBJECT ||
 		  SHORT1FROMMP(mp1) == IDM_SHADOW ||
 		  SHORT1FROMMP(mp1) == IDM_SHADOW2)
@@ -2991,8 +2996,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    }
 	  }
 
-          /**
-           * Access DRAGITEM index to DRAGITEM
+	  /**
+	   * Access DRAGITEM index to DRAGITEM
 	   * Check valid rendering mechanisms and data
 	   */
 	  pDItem = DrgQueryDragitemPtr(pDInfo, 0);
@@ -3399,7 +3404,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  strcpy(dcd->previous, dcd->directory);
 		  strcpy(dcd->directory, pci->pszFileName);
 		  dcd->stopflag++;
-                  //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
+		  //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
 		  if (!PostMsg(dcd->hwndObject,
 			       UM_RESCAN, MPVOID, MPFROMLONG(1))) {
 		    dcd->stopflag--;
@@ -3443,7 +3448,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	      else {
 		dcd->stopflag++;
-                //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
+		//DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
 		if (!PostMsg(dcd->hwndObject,
 			     UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
 		  dcd->stopflag--;
@@ -3548,7 +3553,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 #   ifdef FORTIFY    // 11 May 08 SHL fixme debug fortify
     if ((ULONG)dcd->oldproc == 0xa9a9a9a9)
       DbgMsg(pszSrcFile, __LINE__, "calling oldproc after dcd free msg %x mp1 %x mp2 %x",
-             msg, mp1, mp2);
+	     msg, mp1, mp2);
 #   endif
     return dcd->oldproc(hwnd, msg, mp1, mp2);
   }

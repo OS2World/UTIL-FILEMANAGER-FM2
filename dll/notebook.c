@@ -177,7 +177,7 @@ BOOL fShowFSTypeInTree;
 BOOL fShowTarget;
 BOOL fStartMaximized;
 BOOL fStartMinimized;
-BOOL fSwitchTree;
+BOOL fSwitchTreeOnDirChg;
 BOOL fSwitchTreeExpand;
 BOOL fSwitchTreeOnFocus;
 BOOL fSyncUpdates;
@@ -1374,7 +1374,7 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinCheckButton(hwnd, CFGT_VTREEOPENSWPS, fVTreeOpensWPS);
     WinCheckButton(hwnd, CFGT_COLLAPSEFIRST, fCollapseFirst);
     WinCheckButton(hwnd, CFGT_SWITCHTREEONFOCUS, fSwitchTreeOnFocus);
-    WinCheckButton(hwnd, CFGT_SWITCHTREE, fSwitchTree);
+    WinCheckButton(hwnd, CFGT_SWITCHTREEONDIRCHG, fSwitchTreeOnDirChg);
     WinCheckButton(hwnd, CFGT_SWITCHTREEEXPAND, fSwitchTreeExpand);
     WinCheckButton(hwnd, CFGT_SHOWENV, fShowEnv);
     WinSetDlgItemText(hwnd, CFGT_ENVVARLIST, pszTreeEnvVarList);
@@ -1456,8 +1456,8 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       fSwitchTreeExpand = WinQueryButtonCheckstate(hwnd, CFGT_SWITCHTREEEXPAND);
       PrfWriteProfileData(fmprof, appname, "SwitchTreeExpand",
                           &fSwitchTreeExpand, sizeof(BOOL));
-      fSwitchTree = WinQueryButtonCheckstate(hwnd, CFGT_SWITCHTREE);
-      PrfWriteProfileData(fmprof, appname, "SwitchTree", &fSwitchTree,
+      fSwitchTreeOnDirChg = WinQueryButtonCheckstate(hwnd, CFGT_SWITCHTREEONDIRCHG);
+      PrfWriteProfileData(fmprof, appname, "SwitchTree", &fSwitchTreeOnDirChg,
                           sizeof(BOOL));
       fFollowTree = WinQueryButtonCheckstate(hwnd, CFGT_FOLLOWTREE);
       PrfWriteProfileData(fmprof, appname, "FollowTree", &fFollowTree,
@@ -3178,7 +3178,7 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
 
     case CFG9_HECTOR:
-      fSwitchTree = TRUE;
+      fSwitchTreeOnDirChg = TRUE;
       fSwitchTreeOnFocus = FALSE;
       fSwitchTreeExpand = TRUE;
       fCollapseFirst = TRUE;
@@ -3294,7 +3294,7 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       break;
 
     case CFG9_DEFAULT:
-      fSwitchTree = TRUE;
+      fSwitchTreeOnDirChg = TRUE;
       fSwitchTreeOnFocus = FALSE;
       fSwitchTreeExpand = TRUE;
       fCollapseFirst = TRUE;
@@ -3448,7 +3448,7 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       ulCnrType = CCS_MULTIPLESEL;
       fFollowTree = TRUE;
       fTopDir = FALSE;
-      fSwitchTree = TRUE;
+      fSwitchTreeOnDirChg = TRUE;
       fSwitchTreeOnFocus = FALSE;
       fSwitchTreeExpand = TRUE;
       fCollapseFirst = TRUE;
@@ -3512,7 +3512,7 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case CFG9_DOSTHINK:
       fTileBackwards = TRUE;
       ulCnrType = CCS_MULTIPLESEL;
-      fSwitchTree = TRUE;
+      fSwitchTreeOnDirChg = TRUE;
       fSwitchTreeOnFocus = FALSE;
       fSwitchTreeExpand = TRUE;
       fCollapseFirst = TRUE;
@@ -3553,7 +3553,7 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (SHORT1FROMMP(mp1) == CFG9_1X) {
 	fTileBackwards = FALSE;
 	ulCnrType = CCS_MULTIPLESEL | CCS_EXTENDSEL;
-	fSwitchTree = FALSE;
+	fSwitchTreeOnDirChg = FALSE;
 	fSwitchTreeOnFocus = FALSE;
 	fSwitchTreeExpand = FALSE;
 	fCollapseFirst = FALSE;
@@ -3610,7 +3610,7 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       return 0;
 
     case CFG9_GREGG:
-      fSwitchTree = TRUE;
+      fSwitchTreeOnDirChg = TRUE;
       fSwitchTreeOnFocus = FALSE;
       fSwitchTreeExpand = TRUE;
       fCollapseFirst = TRUE;

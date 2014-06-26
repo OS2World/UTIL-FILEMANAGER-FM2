@@ -99,7 +99,7 @@ extern BOOL fShowFSTypeInTree;
 extern BOOL fShowTarget;
 extern BOOL fStartMaximized;
 extern BOOL fStartMinimized;
-extern BOOL fSwitchTree;
+extern BOOL fSwitchTreeOnDirChg;
 extern BOOL fSwitchTreeExpand;
 extern BOOL fSwitchTreeOnFocus;
 extern BOOL fSyncUpdates;

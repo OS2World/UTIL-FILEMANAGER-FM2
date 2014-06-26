@@ -3163,6 +3163,11 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return PFNWPCnr(hwnd, msg, mp1, mp2);
 }
 
+/**
+ * Start drive tree container
+ * @returns tree handle or NULLHANDLE
+ */
+
 HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 {
   /**
@@ -3261,8 +3266,8 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
       memset(dcd, 0, sizeof(DIRCNRDATA));
       dcd->size = sizeof(DIRCNRDATA);
       dcd->type = TREE_FRAME;
-      dcd->dontclose = ((flags & 1) != 0);
-      dcd->hwndParent = (hwndParent) ? hwndParent : HWND_DESKTOP;
+      dcd->dontclose = (flags & 1) != 0;
+      dcd->hwndParent = hwndParent ? hwndParent : HWND_DESKTOP;
       dcd->hwndClient = hwndClient;
       dcd->hwndFrame = hwndFrame;
       {

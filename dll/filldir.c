@@ -235,7 +235,6 @@ VOID StubbyScanThread(VOID * arg)
   STUBBYSCAN *StubbyScan;
   HAB thab;
   HMQ hmq = (HMQ) 0;
-  //BOOL ok;
   static INT ProcessDirCount = 0;
 
   DosError(FERR_DISABLEHARDERR);
@@ -282,14 +281,13 @@ VOID StubbyScanThread(VOID * arg)
   if (ProcessDirCount >= FixedVolume) {
     DosReleaseMutexSem(hmtxScanning);
     DosPostEventSem(hevTreeCnrScanComplete);
-    if (fInitialDriveScan && fSwitchTree && hwndTree && fSaveState && pszFocusDir) {
+    if (fInitialDriveScan && fSwitchTreeOnDirChg && hwndTree && fSaveState && pszFocusDir) {
        // Keep drive tree in sync with directory container
       if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszFocusDir), MPVOID))
 	free(pszFocusDir);
     }
     ProcessDirCount = 0;
     FixedVolume = 0;
-    //fInitialDriveScan = FALSE;
   }
 # ifdef FORTIFY
   Fortify_LeaveScope();
@@ -1533,7 +1531,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   }
 
   // move cursor onto the default drive rather than the first drive
-  if (!fSwitchTree) {
+  if (!fSwitchTreeOnDirChg) {
     pci = (PCNRITEM) WinSendMsg(hwndCnr,
 				CM_QUERYRECORD,
 				MPVOID,
@@ -1706,7 +1704,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 				CM_QUERYRECORD,
 				MPFROMP(pci),
 				MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
-  }
+  } // while pci
 
   if (hwndMain)
     PostMsg(hwndMain, UM_BUILDDRIVEBAR, MPVOID, MPVOID);

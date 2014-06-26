@@ -435,6 +435,7 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1,
 				       MPARAM mp2)
 {
   PERSON1DATA *pd;
+  BOOL yes;
 
   SetShiftState();
   switch (SHORT1FROMMP(mp1)) {
@@ -583,27 +584,22 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1,
   case IDM_VTREE:
     WinSendMsg(hwnd, UM_SETUP2, MPFROMLONG(1), MPVOID);
     if (hwndTree) {
+      // Hide
       WinShowWindow(hwndTree, FALSE);
       PostMsg(hwndTree, WM_CLOSE, MPVOID, MPVOID);
-      hwndTree = (HWND) 0;
+      hwndTree = NULLHANDLE;
     }
     else {
-
+      // Create tree window if needed and make visible
       ULONG size = sizeof(ULONG);
-
       hwndTree = StartTreeCnr(hwnd, 3);
-      PrfQueryProfileData(fmprof,
-			  realappname,
-			  "FM/4 TreeWidth", (PVOID) & TreeWidth, &size);
+      PrfQueryProfileData(fmprof, realappname,
+			  "FM/4 TreeWidth", (PVOID)&TreeWidth, &size);
       TreeWidth = max(TreeWidth, 80);
     }
-    {
-      BOOL dummy = (hwndTree != (HWND) 0);
-
-      PrfWriteProfileData(fmprof,
-			  realappname,
-			  "FM/4 TreeUp", (PVOID) & dummy, sizeof(dummy));
-    }
+    yes = hwndTree != NULLHANDLE;
+    PrfWriteProfileData(fmprof, realappname,
+			"FM/4 TreeUp", (PVOID)&yes, sizeof(yes));
     PostMsg(hwnd, UM_SIZE, MPVOID, MPVOID);
     break;
 
@@ -792,6 +788,7 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
   HWND hwndC;
   ULONG which;
   ULONG size;
+  BOOL yes;
 
   switch (msg) {
   case WM_CREATE:
@@ -860,22 +857,24 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
     pd = WinQueryWindowPtr(hwnd, QWL_USER + 4);
     if (pd) {
       CHAR s[CCHMAXPATH];
-      BOOL dummy = TRUE;
-
+      yes = TRUE;
       size = sizeof(BOOL);
-      PrfQueryProfileData(fmprof, realappname, "FM/4 TreeUp",
-			  (PVOID) &dummy, &size);
-      if (dummy) {
-	size = sizeof(ULONG);
+      PrfQueryProfileData(fmprof, realappname,
+			  "FM/4 TreeUp", (PVOID)&yes, &size);
+      if (yes) {
 	hwndTree = StartTreeCnr(hwnd, 3);
+	size = sizeof(TreeWidth);
 	PrfQueryProfileData(fmprof, realappname, "FM/4 TreeWidth",
-			    (PVOID) &TreeWidth, &size);
+			    (PVOID)&TreeWidth, &size);
 	TreeWidth = max(TreeWidth, 80);
       }
       size = sizeof(BOOL);
-      if (PrfQueryProfileData(fmprof, appname, "Toolbar", &dummy, &size) &&
-	  size && !dummy)
+      if (PrfQueryProfileData(fmprof, appname, "Toolbar", &yes, &size) &&
+	  size &&
+	  !yes)
+      {
 	WinSendMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_TOOLBAR, 0), MPVOID);
+      }
 
       size = sizeof(s);
       *s = 0;

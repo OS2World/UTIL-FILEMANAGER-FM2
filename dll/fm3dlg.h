@@ -630,7 +630,7 @@
 
 #define CFGT_FRAME										25050
 #define CFGT_SWITCHTREEONFOCUS						                25051
-#define CFGT_SWITCHTREE									25052
+#define CFGT_SWITCHTREEONDIRCHG								25052
 #define CFGT_SWITCHTREEEXPAND							        25053
 #define CFGT_COLLAPSEFIRST								25054
 #define CFGT_DCOPENS									25055
