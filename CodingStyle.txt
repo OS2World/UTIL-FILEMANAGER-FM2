@@ -161,6 +161,14 @@ Expressions
   Avoid nested ternary conditionals (i.e. ? :).  They are hard to read and
   rarely generate better code than switch or if statement.
 
+Commenting code
+
+  Prefer javadoc style comments for function headers.
+
+  When usings // comments, // should be followed by a space.
+
+  Avoid using /* */ comments to disable code.  They can be hard to see.
+
 Disabling code
 
   When disabling multiple lines of code, prefer
