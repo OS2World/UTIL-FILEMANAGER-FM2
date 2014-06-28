@@ -70,6 +70,7 @@
   26 Aug 11 GKY Add a low mem version of xDosAlloc* wrappers; move error checking into all the
                 xDosAlloc* wrappers.
   12 Nov 11 GKY Fixed HelpViewer's failure to open help files and subsequent failure with files with spaces.
+  28 Jun 14 GKY Fix errors identified with CPPCheck
 
 ***********************************************************************/
 
@@ -2139,7 +2140,7 @@ VOID LoadLibPath(PSZ str, LONG len)
   ULONG ver[2];
   CHAR configsys[] = "C:\\CONFIG.SYS";
   static CHAR var[8192], beg[16384], end[16384];
-  BOOL warp;
+  BOOL warp = FALSE;
   FILE *fp;
   PFN DQELIBPATH = NULL;
   HMODULE hmod;

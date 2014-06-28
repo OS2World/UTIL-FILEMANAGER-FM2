@@ -104,6 +104,7 @@
                 Added option to suppress message regarding missing bzip2.exe
                 or gzip.exe on TAR.B/GZ archives.
   06 Apr 14 GKY Removed all BZ/GZ checks
+  28 Jun 14 GKY Fix errors identified with CPPCheck; Fix retry to create workdir code
 
 ***********************************************************************/
 
@@ -2488,16 +2489,17 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 		was = strtoul(p, NULL, 16);
 		for (z = 0; z < 99; z++) {
 		  was++;
-		  sprintf(p, "%03x");
+		  sprintf(p, "%03x", was);
 		  rc = DosCreateDir(dcd->workdir, 0);
 		  if (!rc || rc != ERROR_ACCESS_DENIED)
 		    break;
 		}
 	      }
 	    }
-	    if (rc)
+            if (rc) {
 	      PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
-	    return 0;
+              return 0;
+            }
 	  }
 	}
 	RestorePresParams(hwnd, PCSZ_ARCCNR);

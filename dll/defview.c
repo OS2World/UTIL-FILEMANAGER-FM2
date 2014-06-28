@@ -29,6 +29,7 @@
   12 Dec 09 GKY Pass .WPI files to PM for default handling.
   02 Jan 12 GKY Completely rework ShowMultimedia to only test and try to open files with known multimedia extensions
                 This fixes some traps in GBM.DLL and PMCTLS.DLL; mmioIdentifyFile appears to pretty much be broken.
+  28 Jun 14 GKY Fix errors identified with CPPCheck
 
 ***********************************************************************/
 
@@ -104,7 +105,7 @@ BOOL ShowMultimedia(CHAR * filename)
   }
   else {
     ULONG cmp;
-    CHAR cmps[5];
+    CHAR cmps[6];
 
     p = strrchr(filename, '.');
     if (p) {

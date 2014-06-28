@@ -21,6 +21,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   08 Mar 09 GKY Additional strings move to PCSZs
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  28 Jun 14 GKY Fix errors identified with CPPCheck
 
 ***********************************************************************/
 
@@ -249,7 +250,7 @@ BOOL AcceptOneDrop(HWND hwnd, MPARAM mp1, MPARAM mp2)
 static ULONG GetDropCount(HWND hwnd, MPARAM mp1)
 {
   PDRAGINFO pDInfo;
-  ULONG numitems;
+  ULONG numitems = 0;
 
   pDInfo = mp1;
   if (pDInfo) {

@@ -41,6 +41,7 @@
   01 May 10 GKY Changes to move environment storage to INI file
   03 Jul 11 GKY Fixed problem with creation of duplicate command IDs.
   24 Sep 11 GKY Fixed trap caused by selecting cancel from duplicate hotkey dialog if adding or replacing a command
+  28 Jun 14 GKY Fix errors identified with CPPCheck
 
 ***********************************************************************/
 
@@ -399,7 +400,7 @@ VOID load_commands(VOID)
             break;				// error!
           if (!xfgets_bstripcr(flags, sizeof(flags), fp, pszSrcFile, __LINE__))
             break;
-          flags[34] = 0;
+          flags[33] = 0;
           if (!pszCmdLine)
             continue;
           info = xmallocz(sizeof(LINKCMDS), pszSrcFile, __LINE__);

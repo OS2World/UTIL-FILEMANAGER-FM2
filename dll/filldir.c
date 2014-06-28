@@ -104,6 +104,7 @@
   19 Mar 14 SHL RemoveCnrItems: clean up odd code
   22 Mar 14 GKY Reverted some code from the RemoveCnrItems changes adding a previously
                 missing break and comments explaining the code structure.
+  28 Jun 14 GKY Fix errors identified with CPPCheck
 
 ***********************************************************************/
 
@@ -299,7 +300,7 @@ static HPOINTER IDFile(PSZ p)
 {
   HPOINTER hptr;
   ULONG cmp;
-  CHAR cmps[5];
+  CHAR cmps[6];
 
   p = strrchr(p, '.');
   if (p) {

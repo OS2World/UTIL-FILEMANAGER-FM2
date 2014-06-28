@@ -42,6 +42,7 @@
 		will switch between normal and idle priority and back.
   05 Aug 12 GKY Always sort "Find Dups" by filename in the collector.
   08 Feb 14 SHL Support Ignore SVN option
+  28 Jun 14 GKY Fix errors identified with CPPCheck
 
 ***********************************************************************/
 
@@ -444,7 +445,7 @@ VOID GrepThread(VOID *arg)
     DecrThreadUsage();
     WinTerminate(ghab);
   }
-  if (!ghmq || !ghab)
+  if (!ghab || !ghmq)
     WinPostMsg(grep.hwndFiles, UM_CONTAINER_FILLED, MPVOID, MPVOID);
   if (grep.dupehead)
     FreeDupes(&grep);

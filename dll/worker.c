@@ -1205,7 +1205,7 @@ VOID MassAction(VOID * args)
 	      if (DosSearchPath(SEARCH_IGNORENETERRS | SEARCH_ENVIRONMENT |
 				SEARCH_CUR_DIRECTORY,
 				(CHAR *) PCSZ_PATH, (CHAR *) PCSZ_FM2PLAYEXE, (PBYTE)fbuf, CCHMAXPATH - 1))
-		total += MaxFM2playStrLen;
+		total = MaxFM2playStrLen;
 	      else
 		total = strlen(fbuf);
 	      for (x = 0; wk->li->list[x]; x++)

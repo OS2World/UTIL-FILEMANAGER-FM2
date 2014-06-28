@@ -197,11 +197,11 @@ static FATTRS Fattrs;
 // mailstr checks for a designated character in a string then cuts the string
 //to the first word that contains the character then prepends <mailto: and appends >
 
-CHAR *mailstr(CHAR *pszSrc, CHAR *pszFindChar, LONG StrLens)
+PSZ mailstr(CHAR *pszSrc, CHAR *pszFindChar, LONG StrLens)
 {
   CHAR *pszCharCounter;
   CHAR *pszTestStr = pszSrc;
-  CHAR szMailTo[1024] = "mailto:";
+  CHAR szMailTo[SEARCHSTRINGLEN] = "mailto:";
   //CHAR szMailEnd[] = ">";
 
   if (!strnstr(pszTestStr, pszFindChar, StrLens))
@@ -215,7 +215,7 @@ CHAR *mailstr(CHAR *pszSrc, CHAR *pszFindChar, LONG StrLens)
       strip_trail_char(">", pszSrc);
       strcat(szMailTo, pszSrc);
      // strcat(szMailTo, szMailEnd);
-      pszSrc = szMailTo;
+      strcpy(pszSrc, szMailTo);
       return pszSrc;
     }
     else {
@@ -242,7 +242,7 @@ CHAR *mailstr(CHAR *pszSrc, CHAR *pszFindChar, LONG StrLens)
     strip_trail_char(">", pszSrc);
     strcat(szMailTo, pszSrc);
     //strcat(szMailTo, szMailEnd);
-    pszSrc = szMailTo;
+    strcpy(pszSrc, szMailTo);
     return pszSrc;
     }
   else {
@@ -261,6 +261,7 @@ MRESULT EXPENTRY UrlDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (mp2) {
       CHAR *p, *e, *pp;
       SHORT count;
+      CHAR szUrlString[SEARCHSTRINGLEN];
 
       WinSetWindowPtr(hwnd, QWL_USER, mp2);
       urld = mp2;
@@ -300,9 +301,12 @@ MRESULT EXPENTRY UrlDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       while (p && *p && p < e);
       p = urld->line;
-      if (mailstr(p, "@", e - p)) {
-	pp = mailstr(p, "@", e - p);
-	strcpy(urld->url, pp);
+      if (strchr(p, '@')) {
+        strcpy(szUrlString, urld->line);
+	mailstr(szUrlString, "@", e - p);
+        strcpy(urld->url, szUrlString);
+        if (pp = strchr(urld->url, '>'))
+          *pp = 0;
 	WinSendDlgItemMsg(hwnd, URL_LISTBOX, LM_INSERTITEM,
 			  MPFROM2SHORT(LIT_END, 0), MPFROMP(urld->url));
       }
@@ -1399,6 +1403,11 @@ static VOID ReLineThread(VOID * args)
 	  ad->busy--;
 	} // if got sim
       } // if got VIEWDATA
+      if (ad && !ad->stopflag) {
+        PostMsg(hwnd, UM_CONTAINER_FILLED, MPFROMLONG(firstline),
+                MPFROMLONG(cursored));
+        ad->relining = FALSE;
+      }
       WinDestroyMsgQueue(hmq2);
     }
     DecrThreadUsage();
@@ -1408,11 +1417,6 @@ static VOID ReLineThread(VOID * args)
   Fortify_LeaveScope();
 #  endif
   DosPostEventSem(CompactSem);
-  if (ad && !ad->stopflag) { //Fixme can't post message withou HAB GKY 7-10-08
-    PostMsg(hwnd, UM_CONTAINER_FILLED, MPFROMLONG(firstline),
-	    MPFROMLONG(cursored));
-    ad->relining = FALSE;
-  }
 }
 
 static VOID LoadFileThread(VOID * args)
@@ -2425,10 +2429,12 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	SHORT numsels, sSelect = 0, numinserted;
 	ULONG linenum, size;
+	CHAR *s = NULL, *p;
 
 	if (!ad->hex && ad->lines) {
 
-	  CHAR *p, *e;
+          CHAR *e;
+          CHAR szUrlString[SEARCHSTRINGLEN];
 
 	  width = (Rectl.xRight - Rectl.xLeft) / ad->fattrs.lAveCharWidth;
 	  e = p = ad->lines[whichline];
@@ -2441,13 +2447,14 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    e--;
 	  width = e - p;
 	  if (!width)
-	    goto NoAdd;
+            goto NoAdd;
 
+          strcpy(szUrlString,ad->lines[whichline]);
 	  if ((ad->httpin && (*httprun || fHttpRunWPSDefault) &&
-	       strnstr(ad->lines[whichline], "http://", width)) ||
+	       strnstr(szUrlString, "http://", width)) ||
 	      (ad->ftpin && (*ftprun || fFtpRunWPSDefault) &&
-	       strnstr(ad->lines[whichline], "ftp://", width)) ||
-	      (ad->mailin && *mailrun && mailstr(ad->lines[whichline], "@", width))) {
+	       strnstr(szUrlString, "ftp://", width)) ||
+	      (ad->mailin && *mailrun && mailstr(szUrlString, "@", width))) {
 
 	    USHORT ret;
 	    URLDATA *urld;
@@ -2455,7 +2462,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    urld = xmallocz(sizeof(URLDATA), pszSrcFile, __LINE__);
 	    if (urld) {
 	      urld->size = sizeof(URLDATA);
-	      urld->line = ad->lines[whichline];
+	      urld->line = szUrlString;
 	      urld->len = width;
 	      ret = (USHORT) WinDlgBox(HWND_DESKTOP, hwnd, UrlDlgProc,
 				       FM3ModHandle, URL_FRAME, urld);
@@ -2514,8 +2521,8 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    "%s %s", ftprun, urld->url);
 		}
 		free(urld);
-		goto NoAdd;
-	      case 3:
+                goto NoAdd;
+              case 3:
 		if (*urld->url){
 		  runemf2(SEPARATE | WINDOWED,
 			  hwnd, pszSrcFile, __LINE__,
@@ -2531,84 +2538,82 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      free(urld);
 	    }
 	  }
-	}
-	//Move line to selection box at top of viewer
-	numsels = (SHORT) WinSendDlgItemMsg(ad->hwndFrame, NEWVIEW_LISTBOX,
-					    LM_QUERYITEMCOUNT, MPVOID,
-					    MPVOID);
-	if (numsels > 0) {
-	  for (sSelect = 0; sSelect < numsels; sSelect++) {
-	    linenum =
-	      (ULONG) WinSendDlgItemMsg(ad->hwndFrame, NEWVIEW_LISTBOX,
-					LM_QUERYITEMHANDLE,
-					MPFROM2SHORT(sSelect, 0), MPVOID);
-	    if (linenum == whichline)
-	      goto NoAdd;
-	  }
-	}
-	{
-	  CHAR *s = NULL, *p;
+          }
+          //Move line to selection box at top of viewer
+          numsels = (SHORT) WinSendDlgItemMsg(ad->hwndFrame, NEWVIEW_LISTBOX,
+                                              LM_QUERYITEMCOUNT, MPVOID,
+                                              MPVOID);
+          if (numsels > 0) {
+            for (sSelect = 0; sSelect < numsels; sSelect++) {
+              linenum =
+             (ULONG) WinSendDlgItemMsg(ad->hwndFrame, NEWVIEW_LISTBOX,
+                                       LM_QUERYITEMHANDLE,
+                                       MPFROM2SHORT(sSelect, 0), MPVOID);
+              if (linenum == whichline)
+                goto NoAdd;
+            }
+          }
+          //{
+          if (!ad->hex && ad->lines) {
+          s = xmalloc(width + 2, pszSrcFile, __LINE__);
+          if (!s)
+            goto NoAdd;
+          strncpy(s, ad->lines[whichline], width + 1);
+          s[width + 1] = 0;
+          p = s;
+          while (*p) {
+            if (*p == '\r' || *p == '\n') {
+              *p = 0;
+              break;
+            }
+            p++;
+          }
+        }
+        else {
 
-	  if (!ad->hex && ad->lines) {
-	    s = xmalloc(width + 2, pszSrcFile, __LINE__);
-	    if (!s)
-	      goto NoAdd;
-	    strncpy(s, ad->lines[whichline], width + 1);
-	    s[width + 1] = 0;
-	    p = s;
-	    while (*p) {
-	      if (*p == '\r' || *p == '\n') {
-		*p = 0;
-		break;
-	      }
-	      p++;
-	    }
-	  }
-	  else {
+          register ULONG x;
 
-	    register ULONG x;
-
-	    width = ad->textsize - (whichline * 16);
-	    width = min(width, 16); //standard hexx line length
-	    //use 80 as width * 5 gives inconsistent format on short lines
-	    s = xmalloc(80, pszSrcFile, __LINE__);
-	    if (!s)
-	      goto NoAdd;
-	    sprintf(s, "%08lx ", whichline * 16);
-	    p = s + 9;
-	    for (x = 0; x < width; x++) {
-	      sprintf(p, " %02x", (UCHAR)ad->text[(whichline * 16) + x]);
-	      p += 3;
-	    }
-	    *p = ' ';
-	    p++;
-	    *p = ' ';
-	    p++;
-	    for (x = 0; x < width; x++) {
-	      *p = ad->text[(whichline * 16) + x];
-	      p++;
-	    }
-	    *p = 0;
-	  }
-	  if (s) {
-	    if (*s) {
-	      ad->dummy = TRUE;
-	      numinserted = (SHORT) WinSendDlgItemMsg(ad->hwndFrame,
-						      NEWVIEW_LISTBOX,
-						      LM_INSERTITEM,
-						      MPFROM2SHORT(LIT_END,
-								   0),
-						      MPFROMP(s));
-	      ad->dummy = FALSE;
-	      if (numinserted >= 0)
-		WinSendDlgItemMsg(ad->hwndFrame, NEWVIEW_LISTBOX,
-				  LM_SETITEMHANDLE,
-				  MPFROM2SHORT(numinserted, 0),
-				  MPFROMLONG(whichline));
-	    }
-	    free(s);
-	  }
-	}
+          width = ad->textsize - (whichline * 16);
+          width = min(width, 16); //standard hexx line length
+          //use 80 as width * 5 gives inconsistent format on short lines
+          s = xmalloc(80, pszSrcFile, __LINE__);
+          if (!s)
+            goto NoAdd;
+          sprintf(s, "%08lx ", whichline * 16);
+          p = s + 9;
+          for (x = 0; x < width; x++) {
+            sprintf(p, " %02x", (UCHAR)ad->text[(whichline * 16) + x]);
+            p += 3;
+          }
+          *p = ' ';
+          p++;
+          *p = ' ';
+          p++;
+          for (x = 0; x < width; x++) {
+            *p = ad->text[(whichline * 16) + x];
+            p++;
+          }
+          *p = 0;
+        }
+        if (s) {
+          if (*s) {
+            ad->dummy = TRUE;
+            numinserted = (SHORT) WinSendDlgItemMsg(ad->hwndFrame,
+                                                    NEWVIEW_LISTBOX,
+                                                    LM_INSERTITEM,
+                                                    MPFROM2SHORT(LIT_END,
+                                                                 0),
+                                                    MPFROMP(s));
+            ad->dummy = FALSE;
+            if (numinserted >= 0)
+              WinSendDlgItemMsg(ad->hwndFrame, NEWVIEW_LISTBOX,
+                                LM_SETITEMHANDLE,
+                                MPFROM2SHORT(numinserted, 0),
+                                MPFROMLONG(whichline));
+          }
+          free(s);
+        }
+	//}
 	if (!numsels)
 	  WinSendMsg(ad->hwndFrame, WM_UPDATEFRAME,
 		     MPFROMLONG(FCF_SIZEBORDER), MPVOID);
