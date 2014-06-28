@@ -39,6 +39,7 @@
   08 Mar 09 GKY Additional strings move to PCSZs in init.c
   13 Jul 09 SHL Sync with renames
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  28 Jun 14 GKY Fix errors identified with CPPCheck Fix "mailto" failure to drop trailing >
 
 ***********************************************************************/
 
@@ -2434,7 +2435,6 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (!ad->hex && ad->lines) {
 
           CHAR *e;
-          CHAR szUrlString[SEARCHSTRINGLEN];
 
 	  width = (Rectl.xRight - Rectl.xLeft) / ad->fattrs.lAveCharWidth;
 	  e = p = ad->lines[whichline];
@@ -2449,12 +2449,11 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (!width)
             goto NoAdd;
 
-          strcpy(szUrlString,ad->lines[whichline]);
 	  if ((ad->httpin && (*httprun || fHttpRunWPSDefault) &&
-	       strnstr(szUrlString, "http://", width)) ||
+	       strnstr(ad->lines[whichline], "http://", width)) ||
 	      (ad->ftpin && (*ftprun || fFtpRunWPSDefault) &&
-	       strnstr(szUrlString, "ftp://", width)) ||
-	      (ad->mailin && *mailrun && mailstr(szUrlString, "@", width))) {
+	       strnstr(ad->lines[whichline], "ftp://", width)) ||
+	      (ad->mailin && *mailrun && strchr(ad->lines[whichline], '@'))) {
 
 	    USHORT ret;
 	    URLDATA *urld;
@@ -2462,7 +2461,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    urld = xmallocz(sizeof(URLDATA), pszSrcFile, __LINE__);
 	    if (urld) {
 	      urld->size = sizeof(URLDATA);
-	      urld->line = szUrlString;
+	      urld->line = ad->lines[whichline];
 	      urld->len = width;
 	      ret = (USHORT) WinDlgBox(HWND_DESKTOP, hwnd, UrlDlgProc,
 				       FM3ModHandle, URL_FRAME, urld);
