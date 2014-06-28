@@ -15,6 +15,7 @@
   08 Mar 09 GKY Additional strings move to PCSZs declare change
   12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  28 Jun 14 GKY Fix errors identified with CPPCheck;
 
 ***********************************************************************/
 
@@ -111,7 +112,7 @@ HOBJECT CreateDataObject(CHAR * objtitle, CHAR * location, CHAR * path,
 			(location) ? location : cnr, CO_FAILIFEXISTS);
   if (obj) {
     sprintf(s2,
-	    "%s%s%sOBJECTID=<FM2_%s>",
+	    "%s%s%s%sOBJECTID=<FM2_%s>",
 	    objtitle,
 	    (p == type[1]) ? "ICONFILE=" : NullStr,
 	    (p == type[1]) ? s : NullStr, (p == type[1]) ? ";" : NullStr, objtitle);

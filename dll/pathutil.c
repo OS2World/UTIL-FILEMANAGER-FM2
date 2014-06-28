@@ -21,6 +21,7 @@
   01 Mar 14 JBS Ticket #524: Made "searchapath" thread-safe. Function names and signatures were changed.
 		So calls to these functions had to be changed.
   21 Mar 14 SHL Add IsAbsolutePath
+  28 Jun 14 GKY Fix errors identified with CPPCheck;
 
 ***********************************************************************/
 
@@ -262,8 +263,8 @@ PCSZ NormalizeCmdLine(PSZ pszWorkBuf, PSZ pszCmdLine_)
 
     }
     // if it doesn't have an extension try it with all the standard ones and add if found
-    else if (szCmdLine && (!strchr(szCmdLine, '.') ||
-			   strrchr(szCmdLine, '.' ) < strrchr(szCmdLine, '\\'))) {
+    else if (!strchr(szCmdLine, '.') ||
+             strrchr(szCmdLine, '.' ) < strrchr(szCmdLine, '\\')) {
       if (!strchr(szCmdLine, ' ')) {
 	// strip quotes readded by BuildQuotedFileName
 	while (strchr(szCmdLine, '\"'))

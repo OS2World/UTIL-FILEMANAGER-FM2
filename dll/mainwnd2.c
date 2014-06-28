@@ -41,6 +41,7 @@
   11 Apr 10 GKY Fix drive tree rescan failure and program hang caused by event sem
 		never being posted
   12 Aug 12 GKY Allow for selection of include subdirectories or a list file on initial startup of compare dirs
+  28 Jun 14 GKY Fix errors identified with CPPCheck;
 
 ***********************************************************************/
 
@@ -972,46 +973,47 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
 	  }
 	}
       }
-    }
-    // 2014-06-11 SHL Initialize view, sort and filter button text
-    if (pd->hwndDir1) {
-      hwndC = WinWindowFromID(pd->hwndDir1, FID_CLIENT);
-      if (hwndC) {
-	dcd = WinQueryWindowPtr(WinWindowFromID(hwndC, DIR_CNR), QWL_USER);
-	if (dcd && dcd->hwndCnr)
-	  PostMsg(dcd->hwndCnr, UM_SETUP2, MPVOID, MPVOID);
+    //}
+      // 2014-06-11 SHL Initialize view, sort and filter button text
+      if (pd->hwndDir1) {
+        hwndC = WinWindowFromID(pd->hwndDir1, FID_CLIENT);
+        if (hwndC) {
+          dcd = WinQueryWindowPtr(WinWindowFromID(hwndC, DIR_CNR), QWL_USER);
+          if (dcd && dcd->hwndCnr)
+            PostMsg(dcd->hwndCnr, UM_SETUP2, MPVOID, MPVOID);
+        }
       }
-    }
-    if (pd->hwndDir2) {
-      hwndC = WinWindowFromID(pd->hwndDir2, FID_CLIENT);
-      if (hwndC) {
-	dcd = WinQueryWindowPtr(WinWindowFromID(hwndC, DIR_CNR), QWL_USER);
-	if (dcd && dcd->hwndCnr)
-	  PostMsg(dcd->hwndCnr, UM_SETUP2, MPVOID, MPVOID);
+      if (pd->hwndDir2) {
+        hwndC = WinWindowFromID(pd->hwndDir2, FID_CLIENT);
+        if (hwndC) {
+          dcd = WinQueryWindowPtr(WinWindowFromID(hwndC, DIR_CNR), QWL_USER);
+          if (dcd && dcd->hwndCnr)
+            PostMsg(dcd->hwndCnr, UM_SETUP2, MPVOID, MPVOID);
+        }
       }
-    }
-
-    which = 0;
-    size = sizeof(ULONG);
-    if (PrfQueryProfileData(fmprof,
-			    realappname,
-			    "FM/4 Max",
-			    (PVOID)&which,
-			    &size) &&
-	size == sizeof(ULONG) &&
-	which)
-    {
-      PostMsg(hwnd,
-	      UM_MAXIMIZE,
-	      MPFROMLONG(((which == 1) ?
-			  pd->hwndDir1 : pd->hwndDir2)), MPVOID);
-    }
-    PostMsg(hwnd, UM_SIZE, MPVOID, MPVOID);
-    if (!hwndTree)
-      PostMsg(hwnd, UM_BUILDDRIVEBAR, MPVOID, MPVOID);
-    load_tools(NULL);
-    PostMsg(hwndToolback, UM_SETUP2, MPVOID, MPVOID);
-    fRunning = TRUE;
+  
+      which = 0;
+      size = sizeof(ULONG);
+      if (PrfQueryProfileData(fmprof,
+                              realappname,
+                              "FM/4 Max",
+                              (PVOID)&which,
+                              &size) &&
+          size == sizeof(ULONG) &&
+          which)
+      {
+        PostMsg(hwnd,
+                UM_MAXIMIZE,
+                MPFROMLONG(((which == 1) ?
+                            pd->hwndDir1 : pd->hwndDir2)), MPVOID);
+      }
+      PostMsg(hwnd, UM_SIZE, MPVOID, MPVOID);
+      if (!hwndTree)
+        PostMsg(hwnd, UM_BUILDDRIVEBAR, MPVOID, MPVOID);
+      load_tools(NULL);
+      PostMsg(hwndToolback, UM_SETUP2, MPVOID, MPVOID);
+      fRunning = TRUE;
+    } //if pd
     return 0;
 
   case WM_SAVEAPPLICATION:

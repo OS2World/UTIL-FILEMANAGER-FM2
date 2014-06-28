@@ -20,6 +20,7 @@
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   31 May 11 SHL Rework Filter() for speed
+  28 Jun 14 GKY Fix errors identified with CPPCheck;
 
 ***********************************************************************/
 
@@ -457,9 +458,9 @@ MRESULT EXPENTRY PickMaskDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinSetDlgItemText(hwnd, MSK_TEXT, mask->szText);
 	  WinSendDlgItemMsg(hwnd, MSK_TEXT,
 			    EM_SETSEL, MPFROM2SHORT(0, 256), MPVOID);
-	}
+        }
+        *mask->szText = 0;
       }
-      *mask->szText = 0;
     }
     WinShowWindow(hwnd, TRUE);
     return 0;

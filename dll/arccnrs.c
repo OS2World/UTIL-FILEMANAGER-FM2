@@ -1658,9 +1658,9 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WAITCHILD *WaitChild;
 
       WaitChild = xmallocz(sizeof(WAITCHILD), pszSrcFile, __LINE__);
-      WaitChild->pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
       if (!WaitChild)
 	return 0;
+      WaitChild->pszCmdLine = xmallocz(MaxComLineStrg, pszSrcFile, __LINE__);
       if (s) {
 	if (!dcd->info->extract) {
 	  Runtime_Error(pszSrcFile, __LINE__, "no extract");
