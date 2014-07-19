@@ -39,6 +39,7 @@
                 and so it works with move to trashcan inabled.
   22 Feb 14 GKY Fix wipeallf to recurss properly
   22 Feb 14 GKY Fix warn readonly yes don't ask to work when recursing directories.
+  19 Jul 14 GKY Fix redundant error message following selection of no for unlocking a file
 
 ***********************************************************************/
 
