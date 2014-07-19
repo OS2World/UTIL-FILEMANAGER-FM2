@@ -30,6 +30,9 @@
   02 Jan 12 GKY Completely rework ShowMultimedia to only test and try to open files with known multimedia extensions
                 This fixes some traps in GBM.DLL and PMCTLS.DLL; mmioIdentifyFile appears to pretty much be broken.
   28 Jun 14 GKY Fix errors identified with CPPCheck
+  19 Jul 14 GKY MMOS2 misids all kinds of things including window bitmaps as audio files
+                Removed FM2play from code since the misid leads to a failure to open the
+                bitmaps.
 
 ***********************************************************************/
 
@@ -160,21 +163,9 @@ BOOL ShowMultimedia(CHAR * filename)
   //       mmFormatInfo.szDefaultFormatExt, mmFormatInfo.ulMediaType);
   if (!rc && (mmFormatInfo.fccIOProc != FOURCC_DOS ||
               !stricmp(p, PCSZ_DOTMPG) || !stricmp(p, PCSZ_DOTMPEG))) {
-    if (mmFormatInfo.ulMediaType == MMIO_MEDIATYPE_IMAGE &&
-	(mmFormatInfo.ulFlags & MMIO_CANREADTRANSLATED)) {
-      //if (!stricmp(p, PCSZ_DOTJPG) || !stricmp(p, PCSZ_DOTJPEG))
-        OpenObject(filename, Default, hwnd);  //Image fails to display these
-     // else       // is an image that can be translated
-      //  RunFM2Util(PCSZ_IMAGEEXE, filename); // 29 Oct 11 GKY Image.exe doesn't handle multilayer bitmaps or jpgs
-      played = TRUE;
-    }
-    else if (mmFormatInfo.ulMediaType != MMIO_MEDIATYPE_IMAGE) {
-	// is a multimedia file (WAV, MID, AVI, etc.)
-      if (!stricmp(p, PCSZ_DOTOGG) || !stricmp(p, PCSZ_DOTMP3) || !stricmp(p, PCSZ_DOTFLAC))
-        OpenObject(filename, Default, hwnd);  //FM2Play fails to play these
-      else
-        RunFM2Util(PCSZ_FM2PLAYEXE, filename);
-      played = TRUE;
+    if ((mmFormatInfo.ulFlags & MMIO_CANREADTRANSLATED)) {
+        OpenObject(filename, Default, hwnd);
+        played = TRUE;
     }
   }
 
@@ -353,7 +344,6 @@ VOID DefaultView(HWND hwnd, HWND hwndFrame, HWND hwndParent, SWP * swp,
               else
                 StartMLEEditor(hwndParent, 5, filename, hwndFrame);
             }
-	    //}
 	  }
 	}
       }
