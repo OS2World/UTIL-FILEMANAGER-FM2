@@ -728,6 +728,8 @@ INT make_deleteable(CHAR * filename, INT error, BOOL Dontcheckreadonly)
               HWND_DESKTOP, pszSrcFile, __LINE__,
               NULL, NULL, "%s %s", PCSZ_UNLOCKEXE, filename);
     }
+    else
+      ret = SM2_NO;
   }
   //DbgMsg(pszSrcFile, __LINE__, "retrn %x ", ret);
   return ret;
