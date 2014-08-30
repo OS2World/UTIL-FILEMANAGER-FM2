@@ -725,7 +725,7 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg,
       // fixme to draw listbox item emphasized
       // DrawTargetEmphasis(hwnd, emphasized);
       // fprintf(stderr, "DRAGLEAVE\n");
-      fflush(stderr);
+      // fflush(stderr);
     }
     return 0;
 
