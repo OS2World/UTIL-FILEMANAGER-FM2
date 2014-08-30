@@ -71,6 +71,7 @@
  *    07 Aug 11 JBS Ticket 462: Fix bug in NNTP "To" code
  *    11 Feb 14 JBS Ticket 462: Improved handling of missing cfg file.
  *    28 Feb 14 JBS Ticket 510: Improved handling cleaenup of temporary files
+ *    30 Aug 14 GKY Add "pub" to front of Hobbes path to prevent deletion of upload
  *
  * To Do
  *    -  Better error handling for emails/NNTP
@@ -1497,7 +1498,7 @@ BuildHobbesTxt: procedure expose (globals)
    call lineout Hobbes.TxtFilename, right('Long Description:', rm2) || ' The package contains a warpin package for installing FM2.'
    call lineout Hobbes.TxtFilename, copies(' ', rm2) || ' The FM2 source code is available on netlabs.'
    call lineout Hobbes.TxtFilename, right('Proposed directory ', rm2)
-   call lineout Hobbes.TxtFilename, right('for placement:', rm2) || ' os2/util/browser'
+   call lineout Hobbes.TxtFilename, right('for placement:', rm2) || ' pub/os2/util/browser'
    call lineout Hobbes.TxtFilename, ''
    call lineout Hobbes.TxtFilename, right('Your name:', rm2) name
    call lineout Hobbes.TxtFilename, right('Email address:', rm2) Hobbes.uploader_email_address
