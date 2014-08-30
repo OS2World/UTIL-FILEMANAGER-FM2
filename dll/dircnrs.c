@@ -85,6 +85,8 @@
   22 Feb 14 GKY Fix warn readonly yes don't ask to work when recursing directories.
   02 Mar 14 GKY Speed up intial drive scans Ticket 528
   26 Jun 14 SHL	Rework DirObjWndProc UM_RESCAN to avoid hanging FM/2 Lite when tree hidden
+  30 Aug 14 GKY Add semaphore hmtxFiltering to prevent freeing dcd while filtering. Prevents
+                a trap when FM2 is shutdown while directory containers are still populating
 
 ***********************************************************************/
 
@@ -1209,7 +1211,8 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			0,
 			0,
 			0,
-			SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
+                        SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
+      DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
       FreeList(dcd->lastselection);
       WinSetWindowPtr(dcd->hwndCnr, QWL_USER, NULL);	// 13 Apr 10 SHL Set NULL before freeing dcd
       xfree(dcd, pszSrcFile, __LINE__);
@@ -1629,8 +1632,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinEnableMenuItem(DirCnrMenu, IDM_FINDINTREE, (hwndTree != (HWND) 0));
       }
       // 2014-06-11 SHL fm/2 lite can get here before drive scan completes
-      if (!fInitialDriveScan)
-	PostMsg(hwnd, UM_SETUP2, MPVOID, MPVOID);
+      //if (!fInitialDriveScan) // 2014-08-30 GKY This doesn't seem to be needed
+        PostMsg(hwnd, UM_SETUP2, MPVOID, MPVOID);
     }
     else {
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
@@ -3521,7 +3524,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			0,
 			0,
 			0,
-			SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
+                        SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
+      DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
       FreeList(dcd->lastselection);
       free(dcd);
       WinSetWindowPtr(hwnd, QWL_USER, NULL);

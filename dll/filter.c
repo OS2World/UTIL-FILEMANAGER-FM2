@@ -21,6 +21,8 @@
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   31 May 11 SHL Rework Filter() for speed
   28 Jun 14 GKY Fix errors identified with CPPCheck;
+  30 Aug 14 GKY Add semaphore hmtxFiltering to prevent freeing dcd while filtering. Prevents
+                a trap when FM2 is shutdown while directory containers are still populating
 
 ***********************************************************************/
 
@@ -83,29 +85,38 @@ INT APIENTRY Filter(PMINIRECORDCORE rmini, PVOID arg)
   if (!mask)
     return TRUE;			// No mask data
 
+  DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
   pci = (PCNRITEM) rmini;
   // Always show root directory
   // 2011-05-31 SHL fixme to know if this is correct
   if (!(*(pci->pszFileName + 3))
-      || mask->fShowDirs && (pci->attrFile & FILE_DIRECTORY))
+      || mask->fShowDirs && (pci->attrFile & FILE_DIRECTORY)) {
+    DosReleaseMutexSem(hmtxFiltering);
     return TRUE;
+  }
 
   if ((~mask->attrFile & FILE_HIDDEN && pci->attrFile & FILE_HIDDEN) ||
       (~mask->attrFile & FILE_SYSTEM && pci->attrFile & FILE_SYSTEM) ||
       (~mask->attrFile & FILE_READONLY && pci->attrFile & FILE_READONLY) ||
       (~mask->attrFile & FILE_ARCHIVED && pci->attrFile & FILE_ARCHIVED) ||
-      (~mask->attrFile & FILE_DIRECTORY && pci->attrFile & FILE_DIRECTORY))
+      (~mask->attrFile & FILE_DIRECTORY && pci->attrFile & FILE_DIRECTORY)) {
+    DosReleaseMutexSem(hmtxFiltering);
     return FALSE;
+  }
 
   if ((mask->antiattr & FILE_HIDDEN && ~pci->attrFile & FILE_HIDDEN) ||
       (mask->antiattr & FILE_SYSTEM && ~pci->attrFile & FILE_SYSTEM) ||
       (mask->antiattr & FILE_READONLY && ~pci->attrFile & FILE_READONLY) ||
       (mask->antiattr & FILE_ARCHIVED && ~pci->attrFile & FILE_ARCHIVED) ||
-      (mask->antiattr & FILE_DIRECTORY && ~pci->attrFile & FILE_DIRECTORY))
+      (mask->antiattr & FILE_DIRECTORY && ~pci->attrFile & FILE_DIRECTORY)) {
+    DosReleaseMutexSem(hmtxFiltering);
     return FALSE;
+  }
 
-  if (!*mask->szMask)
-    return TRUE;			// No masks
+  if (mask && !*mask->szMask) {
+    DosReleaseMutexSem(hmtxFiltering);
+    return TRUE;
+  }// No masks
 
   // Have mask string
   file = strrchr(pci->pszFileName, '\\');
@@ -117,6 +128,7 @@ INT APIENTRY Filter(PMINIRECORDCORE rmini, PVOID arg)
     file = pci->pszFileName;
 
   if (!mask->pszMasks[1]) {
+    DosReleaseMutexSem(hmtxFiltering);
     // Just one mask string
     return wildcard(strchr(mask->szMask, '\\') ||
 		      strchr(mask->szMask, ':') ?
@@ -152,7 +164,7 @@ INT APIENTRY Filter(PMINIRECORDCORE rmini, PVOID arg)
       }
     }
   } // for
-
+  DosReleaseMutexSem(hmtxFiltering);
   return matched;
 }
 

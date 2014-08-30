@@ -38,6 +38,8 @@
   02 Mar 14 GKY Fixed typo that reversed the function of the saymsg dialog g/bzip check.
                 Added option to suppress message regarding missing bzip2.exe
                 or gzip.exe on TAR.B/GZ archives.
+  30 Aug 14 GKY Add semaphore hmtxFiltering to prevent freeing dcd while filtering. Prevents
+                a trap when FM2 is shutdown while directory containers are still populating
 
 ***********************************************************************/
 
@@ -235,6 +237,7 @@ extern ULONGLONG ullTmpSpaceNeeded;
 extern HMTX hmtxFM2Globals;
 extern HMTX hmtxFM2Delete;
 extern HMTX hmtxScanning;
+extern HMTX hmtxFiltering;
 extern HEV  hevTreeCnrScanComplete;
 #endif
 

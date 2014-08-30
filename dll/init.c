@@ -128,6 +128,8 @@
   02 Mar 14 GKY Fixed typo that reversed the function of the saymsg dialog g/bzip check.
                 Added option to suppress message regarding missing bzip2.exe
                 or gzip.exe on TAR.B/GZ archives.
+  30 Aug 14 GKY Add semaphore hmtxFiltering to prevent freeing dcd while filtering. Prevents
+                a trap when FM2 is shutdown while directory containers are still populating
 
 ***********************************************************************/
 
@@ -227,6 +229,7 @@ unsigned __MaxThreads = {48};
 HMTX hmtxFM2Delete;
 HMTX hmtxFM2Globals;
 HMTX hmtxScanning;
+HMTX hmtxFiltering;
 HEV  hevTreeCnrScanComplete;
 ULONG OS2ver[2];
 PFNWP PFNWPCnr;
@@ -589,8 +592,6 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
   fcloseall();
   save_dir(s);
   AddBackslashToPath(s);
-  //if (s[strlen(s) - 1] != '\\')
-  //  strcat(s, "\\");
   enddir = &s[strlen(s)];
   if (*ArcTempRoot) {
     strcat(s, ArcTempRoot);
@@ -1160,7 +1161,10 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 	      PCSZ_DOSCREATEMUTEXSEM);
   if (DosCreateMutexSem(NULL, &hmtxFM2Delete, 0L, FALSE))
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-	      PCSZ_DOSCREATEMUTEXSEM);
+              PCSZ_DOSCREATEMUTEXSEM);
+  if (DosCreateMutexSem(NULL, &hmtxFiltering, 0L, FALSE))
+    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+              PCSZ_DOSCREATEMUTEXSEM);
   if (DosCreateEventSem(NULL, &hevTreeCnrScanComplete, 0L, TRUE))
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      PCSZ_DOSCREATEEVENTSEM);
