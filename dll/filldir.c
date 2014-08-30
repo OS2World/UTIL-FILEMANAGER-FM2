@@ -105,6 +105,7 @@
   22 Mar 14 GKY Reverted some code from the RemoveCnrItems changes adding a previously
                 missing break and comments explaining the code structure.
   28 Jun 14 GKY Fix errors identified with CPPCheck
+  30 Aug 14 GKY Use saymsg2 for Suggest dialog
 
 ***********************************************************************/
 
@@ -1740,13 +1741,12 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	}
       }
       strcat(szSuggest, " %*");
-      rc = saymsg(MB_YESNOCANCEL | MB_ICONEXCLAMATION,
-	          hwndParent ? hwndParent : hwndCnr,
-	          GetPString(IDS_SUGGESTTITLETEXT),
-	          GetPString(IDS_SUGGEST1TEXT),
-	          (includesyours) ? GetPString(IDS_SUGGEST2TEXT) : NullStr,
-	          szSuggest);
-      if (rc == MBID_YES) {
+      rc = saymsg2(NULL, 3, HWND_DESKTOP,
+              GetPString(IDS_SUGGESTTITLETEXT),
+              GetPString(IDS_SUGGEST1TEXT),
+              (includesyours) ? GetPString(IDS_SUGGEST2TEXT) : NullStr,
+	      szSuggest);
+      if (rc == SM2_YES || rc == SM2_DONTASK) {
 	HOBJECT hFM2Object;
 	char s[64];
 	sprintf(s, "PARAMETERS=%s", szSuggest);
@@ -1783,9 +1783,10 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	  rc = WinSetObjectData(hFM2Object, (PSZ)s);
 	}
       }
-      else if (rc == MBID_CANCEL) {
+     if (rc == SM2_NO || rc == SM2_DONTASK) {
 	fDontSuggestAgain = TRUE;
-	PrfWriteProfileData(fmprof, FM3Str, "DontSuggestAgain", &fDontSuggestAgain, sizeof(BOOL));
+        PrfWriteProfileData(fmprof, FM3Str, "DontSuggestAgain",
+                            &fDontSuggestAgain, sizeof(BOOL));
       }
     } // if suggest
   } // if !fDontSuggestAgain

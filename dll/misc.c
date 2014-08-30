@@ -2254,7 +2254,7 @@ void SayFilter(HWND hwnd, MASK * mask, BOOL archive)
 
   s = xmalloc(CCHMAXPATH * 2, pszSrcFile, __LINE__);
   if (s) {
-    sprintf(s, "F:%s%s",
+    sprintf(s, "F:%s%s%s",
 	    mask->szMask,
 	    (!archive && (mask->attrFile != ALLATTRS ||
 			  mask->antiattr != 0)) ? " " : NullStr,
