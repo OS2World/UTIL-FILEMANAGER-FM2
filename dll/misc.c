@@ -550,6 +550,7 @@ VOID AdjustCnrColsForFSType(HWND hwndCnr, PCSZ directory, DETAILS_SETTINGS *pds,
   }
   else {
     // Assume FAT
+    x = toupper(*directory) - 'A';  //31 Aug 14 GKY added since x = -1 so "if" was always false
     hasCreateDT = FALSE;
     hasAccessDT = FALSE;
     if (driveflags[x] & DRIVE_NOEASUPPORT) {
