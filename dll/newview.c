@@ -40,6 +40,9 @@
   13 Jul 09 SHL Sync with renames
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   28 Jun 14 GKY Fix errors identified with CPPCheck Fix "mailto" failure to drop trailing >
+  30 Aug 14 GKY Added isemailaddress to try to eliminate lines being falsely identified as
+                containing an email. Fixed the mailto code to avoid a buffer over run (trap)
+                and to cut trailing punctuation marks from the address
 
 ***********************************************************************/
 
@@ -48,6 +51,7 @@
 // #include <process.h>			// 10 Dec 08 SHL
 #include <limits.h>
 #include <share.h>
+#include <ctype.h> 
 
 #define INCL_DOS
 #define INCL_WIN
@@ -198,6 +202,49 @@ static FATTRS Fattrs;
 // mailstr checks for a designated character in a string then cuts the string
 //to the first word that contains the character then prepends <mailto: and appends >
 
+BOOL isemailaddress(PSZ pszLine)
+{
+  CHAR *tmp;
+  CHAR *p, *pp;
+
+  tmp = xmallocz(strlen(pszLine) + 1, pszSrcFile, __LINE__);
+  if (!tmp)
+    return FALSE;
+  memcpy(tmp, pszLine, strlen(pszLine));
+  tmp[strlen(pszLine) + 1] = 0;
+  bstripcr(tmp);
+  p = tmp;
+  p++;
+  p = strchr(p, '@');
+  if (!p) {
+    free(tmp);
+    return FALSE;
+  }
+  pp = strchr(p, '.');
+  if (!pp || pp - p < 2) {
+    free(tmp);
+    return FALSE;
+  }
+  p++;
+  for (p ; p < pp; p++) {
+    if (isalnum(*p) || *p == '-')
+      continue;
+    else if (*p == '{') {
+      if (!strchr(p ,'}') || pp - p > 4) {
+        free(tmp);
+        return FALSE;
+      }
+    }
+    else  {
+      free(tmp);
+      return FALSE;
+    }
+
+  }
+  free(tmp);
+  return TRUE;
+}
+
 PSZ mailstr(CHAR *pszSrc, CHAR *pszFindChar, LONG StrLens)
 {
   CHAR *pszCharCounter;
@@ -239,16 +286,16 @@ PSZ mailstr(CHAR *pszSrc, CHAR *pszFindChar, LONG StrLens)
     pszCharCounter++;
   *pszCharCounter = 0;
   if (!stristr(pszSrc, "<mailto:") && !fNoMailtoMailRun) {
-    strip_lead_char("<", pszSrc);
-    strip_trail_char(">", pszSrc);
+    strip_lead_char("'<", pszSrc);
+    strip_trail_char(",.;:'>", pszSrc);
     strcat(szMailTo, pszSrc);
     //strcat(szMailTo, szMailEnd);
     strcpy(pszSrc, szMailTo);
     return pszSrc;
     }
   else {
-    strip_lead_char("<", pszSrc);
-    strip_trail_char(">", pszSrc);
+    strip_lead_char("'<", pszSrc);
+    strip_trail_char(",.;':>", pszSrc);
     return pszSrc;
   }
 }
@@ -262,7 +309,7 @@ MRESULT EXPENTRY UrlDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (mp2) {
       CHAR *p, *e, *pp;
       SHORT count;
-      CHAR szUrlString[SEARCHSTRINGLEN];
+      CHAR szUrlString[SEARCHSTRINGLEN] = {0};
 
       WinSetWindowPtr(hwnd, QWL_USER, mp2);
       urld = mp2;
@@ -302,10 +349,11 @@ MRESULT EXPENTRY UrlDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       while (p && *p && p < e);
       p = urld->line;
-      if (strchr(p, '@')) {
-        strcpy(szUrlString, urld->line);
+      if (isemailaddress(p)) {
+        memcpy(szUrlString, urld->line, SEARCHSTRINGLEN - 1);
 	mailstr(szUrlString, "@", e - p);
-        strcpy(urld->url, szUrlString);
+        memcpy(urld->url, szUrlString, strlen( szUrlString) + 1);
+        urld->url[strlen(szUrlString) + 1] = 0;
         if (pp = strchr(urld->url, '>'))
           *pp = 0;
 	WinSendDlgItemMsg(hwnd, URL_LISTBOX, LM_INSERTITEM,
@@ -375,7 +423,7 @@ MRESULT EXPENTRY UrlDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  break;
 		}
 	      }
-	      else if (strchr(urld->url, '@')) {
+	      else if (isemailaddress(urld->url)) {
 		  WinDismissDlg(hwnd, 3);
 		  break;
 	      }
@@ -1394,7 +1442,7 @@ static VOID ReLineThread(VOID * args)
 	      if ((*httprun || fHttpRunWPSDefault) && !ad->ignorehttp &&
 		  strstr(ad->text, "http://"))
 		ad->httpin = TRUE;
-	      if (*mailrun && !ad->ignoremail && strstr(ad->text, "@"))
+	      if (*mailrun && !ad->ignoremail && isemailaddress(ad->text))
 		ad->mailin = TRUE;
 	    }
 	  }
@@ -2453,7 +2501,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	       strnstr(ad->lines[whichline], "http://", width)) ||
 	      (ad->ftpin && (*ftprun || fFtpRunWPSDefault) &&
 	       strnstr(ad->lines[whichline], "ftp://", width)) ||
-	      (ad->mailin && *mailrun && strchr(ad->lines[whichline], '@'))) {
+	      (ad->mailin && *mailrun && isemailaddress(ad->lines[whichline]))) {
 
 	    USHORT ret;
 	    URLDATA *urld;
@@ -3383,7 +3431,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       ad->ignoremail = (ad->ignoremail) ? FALSE : TRUE;
       ad->mailin = FALSE;
       if (ad->text && *mailrun && !ad->ignoremail &&
-	  strstr(ad->text, "@"))
+	  isemailaddress(ad->text))
 	ad->mailin = TRUE;
       IgnoreMail = ad->ignoremail;
       PrfWriteProfileData(fmprof, appname, "Viewer.IgnoreMail",
