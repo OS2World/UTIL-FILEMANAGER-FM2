@@ -90,6 +90,9 @@
   30 Dec 12 GKY Changed refresh removable media to query LVM directly to call Rediscover_PRMs (Ticket 472);
                 Also added a tree rescan following volume detach.
   22 Feb 14 GKY Fix warn readonly yes don't ask to work when recursing directories.
+  07 Sep 14 GKY Fix tree container mis-draws (stacked icons with RWS) The problem was magnified
+                by RWS but I think the occasional extra blank directory or duplicating
+                directories is related.
 
 ***********************************************************************/
 
@@ -707,7 +710,9 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       dcd->suspendview = TRUE;
       ExpandAll(dcd->hwndCnr,
-		(SHORT1FROMMP(mp1) == IDM_EXPAND), (PCNRITEM) mp2);
+                (SHORT1FROMMP(mp1) == IDM_EXPAND), (PCNRITEM) mp2);
+      DosSleep(1); // Fixes tree epansion (dir text and icons all placed on
+                       // the same line as the drive) failure on startup using RWS
       dcd->suspendview = (USHORT) tempsusp;
       PostMsg(dcd->hwndCnr, UM_FILTER, MPVOID, MPVOID);
     }
