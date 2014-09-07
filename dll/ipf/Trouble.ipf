@@ -15,7 +15,7 @@
 .* 01 Jan 13 GKY Removed GBM.DLL note as the problem has been fixed.
 .* 01 Jan 13 GKY Removed reference to install.cmd which is no longer in the FM/2 package
 .* 23 Mar 14 GKY Add known problems with starting with redirection and inability to copy
-             from "completed" windows. Fixed some typos
+.*               from "completed" windows. Fixed some typos
 .*
 .***********************************************************************
 .*
