@@ -1212,10 +1212,11 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			0,
 			0,
                         SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
-      DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
       FreeList(dcd->lastselection);
       WinSetWindowPtr(dcd->hwndCnr, QWL_USER, NULL);	// 13 Apr 10 SHL Set NULL before freeing dcd
+      DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
       xfree(dcd, pszSrcFile, __LINE__);
+      DosReleaseMutexSem(hmtxFiltering);
       DosPostEventSem(CompactSem);
     }
 #   ifdef FORTIFY
@@ -3525,9 +3526,10 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			0,
 			0,
                         SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
-      DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
       FreeList(dcd->lastselection);
+      DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
       free(dcd);
+      DosReleaseMutexSem(hmtxFiltering);
       WinSetWindowPtr(hwnd, QWL_USER, NULL);
       DosPostEventSem(CompactSem);
     }
