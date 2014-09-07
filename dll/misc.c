@@ -873,8 +873,16 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      pci->pszSubject = NullStr;
 	      xfree(psz, pszSrcFile, __LINE__);
 	    }
-	    else
-	      pci->pszSubject = xrealloc(pci->pszSubject, retlen + 1, pszSrcFile, __LINE__);
+            else {
+              psz = xrealloc(pci->pszSubject, retlen + 1, pszSrcFile, __LINE__);
+              if (psz)
+                pci->pszSubject = psz;
+              else {
+                free(pci->pszSubject);
+                pci->pszSubject = NullStr;
+                return FALSE; // out of memory
+              }
+            }
 	  }
 	  else {
 	    pci->pszSubject = xmalloc(retlen + 1, pszSrcFile, __LINE__);
@@ -933,8 +941,16 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      pci->pszLongName = NullStr;
 	      xfree(psz, pszSrcFile, __LINE__);
 	    }
-	    else
-	      pci->pszLongName = xrealloc(pci->pszLongName, retlen + 1, pszSrcFile, __LINE__);
+            else {
+              psz = xrealloc(pci->pszLongName, retlen + 1, pszSrcFile, __LINE__);
+              if (psz)
+                pci->pszLongName = psz;
+              else {
+                free(pci->pszLongName);
+                pci->pszLongName = NullStr;
+                return FALSE; // out of memory
+              }
+            }
 	  }
 	  else {
 	    pci->pszLongName = xmalloc(retlen + 1, pszSrcFile, __LINE__);
@@ -943,7 +959,9 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	  return (MRESULT) WriteLongName(pci->pszFileName, longname);
 	}
-	else {
+        else {
+          PSZ psz;
+
 	  WinQueryWindowText(hwndMLE, sizeof(szData), szData);
 	  if (strchr(szData, '?') ||
 	      strchr(szData, '*') || IsRoot(pci->pszFileName))
@@ -963,7 +981,14 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				 szData,
 				 sizeof(szData)))
             {
-              pci->pszFileName = xrealloc(pci->pszFileName, sizeof(szData), pszSrcFile, __LINE__);
+              psz = xrealloc(pci->pszFileName, sizeof(szData), pszSrcFile, __LINE__);
+              if (psz)
+                pci->pszFileName = psz;
+              else {
+                free(pci->pszFileName);
+                pci->pszFileName = NullStr;
+                return FALSE; // out of memory
+              }
               strcpy(szData, pci->pszFileName);
             }
 	    WinSetWindowText(hwndMLE, szData);
