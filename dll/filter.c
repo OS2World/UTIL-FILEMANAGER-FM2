@@ -82,10 +82,12 @@ INT APIENTRY Filter(PMINIRECORDCORE rmini, PVOID arg)
   INT matched;
   CHAR *file;
 
-  if (!mask)
-    return TRUE;			// No mask data
-
   DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
+  if (!mask) {
+    DosReleaseMutexSem(hmtxFiltering);
+    return TRUE;
+  } // No mask data
+
   pci = (PCNRITEM) rmini;
   // Always show root directory
   // 2011-05-31 SHL fixme to know if this is correct
@@ -127,14 +129,11 @@ INT APIENTRY Filter(PMINIRECORDCORE rmini, PVOID arg)
   else
     file = pci->pszFileName;
 
-  if (!mask->pszMasks[1]) {
+  if (!mask->pszMasks[1]) { // Just one mask string
+    BOOL wild = wildcard(strchr(mask->szMask, '\\') || strchr(mask->szMask, ':') ?
+                         pci->pszFileName : file, mask->szMask,	FALSE);
     DosReleaseMutexSem(hmtxFiltering);
-    // Just one mask string
-    return wildcard(strchr(mask->szMask, '\\') ||
-		      strchr(mask->szMask, ':') ?
-			pci->pszFileName : file,
-		    mask->szMask,
-		    FALSE);
+    return wild;
   }
 
   // Have multiple mask strings
