@@ -24,6 +24,7 @@
   15 Feb 14 GKY Assure the title is blank on the execute dialog call with the "see" button
   31 Aug 14 GKY Fix failure to remove leading quote on toogle of extract directory to and
                 from using file name.
+  16 Mar 15 GKY Fixed case where leading quote fix would remove the drive letter.
 
 ***********************************************************************/
 
@@ -166,7 +167,7 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           p = FileName + strlen(arcdata->arcname);
           p--;
           *p = 0;
-          if (strchr(FileName, '\"') == strrchr(FileName, '\"'))
+          if (strchr(FileName, '\"') && strchr(FileName, '\"') == strrchr(FileName, '\"'))
             memmove(FileName , FileName + 1, strlen(FileName) + 1);
         }
         strcpy(arcdata->extractdir, FileName);
@@ -314,7 +315,7 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             p = FileName + strlen(arcdata->arcname);
             p--;
             *p = 0;
-            if (strchr(FileName, '\"') == strrchr(FileName, '\"'))
+            if (strchr(FileName, '\"') && strchr(FileName, '\"') == strrchr(FileName, '\"'))
               memmove(FileName, FileName + 1, strlen(FileName) + 1);
           }
           strcpy(arcdata->extractdir, FileName);
@@ -355,7 +356,7 @@ MRESULT EXPENTRY ExtractDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             if (!*arcdata->extractdir)
               strcpy(arcdata->extractdir, pFM2SaveDirectory);
           }
-          if (strchr(arcdata->extractdir, '\"') == strrchr(arcdata->extractdir, '\"'))
+          if (strchr(arcdata->extractdir, '\"') && strchr(arcdata->extractdir, '\"') == strrchr(arcdata->extractdir, '\"'))
             memmove(arcdata->extractdir, arcdata->extractdir + 1,
                     strlen(arcdata->extractdir) + 1);
           WinSetDlgItemText(hwnd, EXT_DIRECTORY, arcdata->extractdir);
