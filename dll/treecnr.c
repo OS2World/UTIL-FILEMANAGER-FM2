@@ -93,6 +93,9 @@
   07 Sep 14 GKY Fix tree container mis-draws (stacked icons with RWS) The problem was magnified
                 by RWS but I think the occasional extra blank directory or duplicating
                 directories is related.
+  16 Mar 15 GKY Add semaphore hmtxFiltering to prevent freeing dcd while filtering. Prevents
+                a trap when FM2 is shutdown or the container is closed while tree
+                container is still populating
 
 ***********************************************************************/
 
@@ -1011,7 +1014,9 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSendMsg(dcd->hwndCnr,
 		 UM_CLOSE, MPFROMLONG(dcd->dontclose != FALSE), MPVOID);
       WinSetWindowPtr(dcd->hwndCnr, QWL_USER, NULL);	// 13 Apr 10 SHL Set NULL before freeing dcd
+      DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
       free(dcd);
+      DosReleaseMutexSem(hmtxFiltering);
 #     ifdef FORTIFY
       Fortify_LeaveScope();
 #     endif

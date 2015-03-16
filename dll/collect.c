@@ -83,6 +83,9 @@
   05 Sep 12 SHL Correct UM_COLLECTFROMFILE bad list file reporting
   13 Dec 13 SHL CollectorCnrWndProc IDM_FILTER: avoid exception on missing fileName
   22 Feb 14 GKY Fix warn readonly yes don't ask to work when recursing directories.
+  16 Mar 15 GKY Add semaphore hmtxFiltering to prevent freeing dcd while filtering. Prevents
+                a trap when FM2 is shutdown or the container is closed while collector
+                container is still populating
 
 ***********************************************************************/
 
@@ -1159,7 +1162,9 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
       WinSendMsg(dcd->hwndCnr, UM_CLOSE, MPVOID, MPVOID);
       FreeList(dcd->lastselection);
       WinSetWindowPtr(dcd->hwndCnr, QWL_USER, NULL);	// 13 Apr 10 SHL Set NULL before freeing dcd
+      DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
       free(dcd);
+      DosReleaseMutexSem(hmtxFiltering);
 #     ifdef FORTIFY
       Fortify_LeaveScope();
 #     endif
