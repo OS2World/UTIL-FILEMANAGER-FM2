@@ -4,12 +4,13 @@
 
   exception handlers
 
-  Copyright (c) 2008 Steven H. Levine
+  Copyright (c) 2008, 2015 Steven H. Levine
 
   Write to exceptq .trp file or ?:\fm2_trap.log
   where ? is boot volume
 
-  06 Dec 08 SHL Baseline (Ticket #26)
+  2008-12-06 SHL Baseline (Ticket #26)
+  2015-04-03 SHL HandleException: check for ignore before checking for cascade
 
 ************************************************************/
 
@@ -137,17 +138,6 @@ ULONG HandleException(PEXCEPTIONREPORTRECORD pReport,
   static unsigned working;
   static PSZ pszExcpMsg = "Caught exception %lx in process %lx (%lu) thread %u at %.24s";
 
-  // Try to report cascading exceptions in handler only once
-  // This simple test can get confused if multiple threads trap at same time
-  if (++working > 1) {
-    if (working == 2) {
-      DbgMsg(pszSrcFile, __LINE__, "Caught exception %lx at %p while handler active",
-	     ex, pContext->ctx_RegEip);
-    }
-    working--;
-    return XCPT_CONTINUE_SEARCH;
-  }
-
   // Bypass exceptions we don't handle or exceptions we ignore
   // Keep in sync with exceptq selections since exceptq will ignore anyway
   if ((pReport->fHandlerFlags & (EH_UNWINDING | EH_NESTED_CALL)) ||
@@ -159,6 +149,16 @@ ULONG HandleException(PEXCEPTIONREPORTRECORD pReport,
       ex == XCPT_BREAKPOINT ||
       ex == XCPT_SINGLE_STEP)
   {
+    return XCPT_CONTINUE_SEARCH;
+  }
+
+  // Try to report cascading exceptions in handler only once
+  // This simple test can get confused if multiple threads trap at same time
+  if (++working > 1) {
+    if (working == 2) {
+      DbgMsg(pszSrcFile, __LINE__, "Caught exception %lx at %p while handler active",
+	     ex, pContext->ctx_RegEip);
+    }
     working--;
     return XCPT_CONTINUE_SEARCH;
   }
