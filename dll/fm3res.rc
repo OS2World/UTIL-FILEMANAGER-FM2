@@ -3107,7 +3107,7 @@ STRINGTABLE
     IDS_MVMTTEXT                          "Multi-value multi-type data (%u entr%s, %u bytes%s)"
     IDS_ALLTEXTTEXT                       ", all text"
     IDS_MIXEDTYPESTEXT                    ", mixed types"
-    IDS_BINARYBYTESTEXT                   "%sBinary data (%u bytes)"
+    IDS_BINARYBYTESTEXT                   "Binary data (%u bytes)"
     IDS_BITMAPBYTESTEXT                   "Bitmap data (%u bytes)"
     IDS_METAFILEBYTESTEXT                 "Metafile data (%u bytes)"
     IDS_ICONBYTESTEXT                     "Icon data (%u bytes)"
