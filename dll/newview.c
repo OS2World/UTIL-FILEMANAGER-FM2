@@ -43,6 +43,7 @@
   30 Aug 14 GKY Added isemailaddress to try to eliminate lines being falsely identified as
                 containing an email. Fixed the mailto code to avoid a buffer over run (trap)
                 and to cut trailing punctuation marks from the address
+  04 Apr 15 GKY Have https:// recognized as a url. Strip trailing punctuation from urls.
 
 ***********************************************************************/
 
@@ -199,23 +200,21 @@ static BOOL IgnoreHTTP = FALSE;
 static BOOL IgnoreMail = FALSE;
 static FATTRS Fattrs;
 
-// mailstr checks for a designated character in a string then cuts the string
-//to the first word that contains the character then prepends <mailto: and appends >
-
 BOOL isemailaddress(PSZ pszLine)
 {
   CHAR *tmp;
-  CHAR *p, *pp;
+  CHAR *p, *pp, *q;
 
   tmp = xmallocz(strlen(pszLine) + 1, pszSrcFile, __LINE__);
   if (!tmp)
     return FALSE;
   memcpy(tmp, pszLine, strlen(pszLine));
   tmp[strlen(pszLine) + 1] = 0;
+  chop_at_crnl(tmp);
   bstripcr(tmp);
   p = tmp;
   p++;
-  p = strchr(p, '@');
+  q = p = strchr(p, '@');
   if (!p) {
     free(tmp);
     return FALSE;
@@ -230,10 +229,12 @@ BOOL isemailaddress(PSZ pszLine)
     if (isalnum(*p) || *p == '-')
       continue;
     else if (*p == '{') {
-      if (!strchr(p ,'}') || pp - p > 4) {
+      if (q != p - 1 || !strchr(p ,'}')) {
         free(tmp);
         return FALSE;
       }
+      else // probable IP address literal user will need to decide if it is valid
+        break;
     }
     else  {
       free(tmp);
@@ -244,7 +245,8 @@ BOOL isemailaddress(PSZ pszLine)
   free(tmp);
   return TRUE;
 }
-
+// mailstr checks for a designated character in a string then cuts the string
+//to the first word that contains the character then prepends <mailto: and appends >
 PSZ mailstr(CHAR *pszSrc, CHAR *pszFindChar, LONG StrLens)
 {
   CHAR *pszCharCounter;
@@ -316,18 +318,19 @@ MRESULT EXPENTRY UrlDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       e = urld->line + urld->len + 1;
       p = urld->line;
       do {
-	p = strnstr(p, "http://", e - p);
+        p = strnstr(p, "http://", e - p) ? strnstr(p, "http://", e - p) : strnstr(p, "https://", e - p);
 	if (p) {
 	  strncpy(urld->url, p, min(e - p, SEARCHSTRINGLEN - 1));
 	  urld->url[min(e - p, SEARCHSTRINGLEN - 1)] = 0;
 	  pp = urld->url;
-	  while (*pp && *pp != ' ' && *pp != '\r' && *pp != '\n' &&
+	  while (*pp && *pp != ' ' && *pp != '\r' && *pp != '\n' && *pp != '\t' &&
 		 *pp != '\"')
 	    pp++;
-	  *pp = 0;
+          *pp = 0;
+          strip_trail_char(",.;:'>", urld->url);
 	  WinSendDlgItemMsg(hwnd, URL_LISTBOX, LM_INSERTITEM,
 			    MPFROM2SHORT(LIT_END, 0), MPFROMP(urld->url));
-	  p++;
+	 p++;
 	}
       }
       while (p && *p && p < e);
@@ -338,12 +341,13 @@ MRESULT EXPENTRY UrlDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  strncpy(urld->url, p, min(e - p, SEARCHSTRINGLEN - 1));
 	  urld->url[min(e - p, SEARCHSTRINGLEN - 1)] = 0;
 	  pp = urld->url;
-	  while (*pp && *pp != ' ' && *pp != '\r' && *pp != '\n' &&
+	  while (*pp && *pp != ' ' && *pp != '\r' && *pp != '\n' && *pp != '\t' &&
 		 *pp != '\"')
 	    pp++;
-	  *pp = 0;
+          *pp = 0;
+          strip_trail_char(",.;:'>", urld->url);
 	  WinSendDlgItemMsg(hwnd, URL_LISTBOX, LM_INSERTITEM,
-			    MPFROM2SHORT(LIT_END, 0), MPFROMP(urld->url));
+	        	    MPFROM2SHORT(LIT_END, 0), MPFROMP(urld->url));
 	  p++;
 	}
       }
@@ -351,13 +355,14 @@ MRESULT EXPENTRY UrlDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       p = urld->line;
       if (isemailaddress(p)) {
         memcpy(szUrlString, urld->line, SEARCHSTRINGLEN - 1);
-	mailstr(szUrlString, "@", e - p);
-        memcpy(urld->url, szUrlString, strlen( szUrlString) + 1);
+        mailstr(szUrlString, "@", e - p);
+        p = strrchr(szUrlString, '.');
+        memcpy(urld->url, szUrlString, (p + 4) - &szUrlString);//strlen( szUrlString) + 1);
         urld->url[strlen(szUrlString) + 1] = 0;
         if (pp = strchr(urld->url, '>'))
           *pp = 0;
 	WinSendDlgItemMsg(hwnd, URL_LISTBOX, LM_INSERTITEM,
-			  MPFROM2SHORT(LIT_END, 0), MPFROMP(urld->url));
+	        	  MPFROM2SHORT(LIT_END, 0), MPFROMP(urld->url));
       }
       *urld->url = 0;
       count = (SHORT) WinSendDlgItemMsg(hwnd, URL_LISTBOX, LM_QUERYITEMCOUNT,
@@ -412,7 +417,7 @@ MRESULT EXPENTRY UrlDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      MPFROM2SHORT(select, sizeof(urld->url)),
 			      MPFROMP(urld->url));
 	    if (*urld->url) {
-	      if (!strncmp(urld->url, "http://", 7)) {
+	      if (!strncmp(urld->url, "http://", 7) || !strncmp(urld->url, "https://", 8)) {
 		WinDismissDlg(hwnd, 1);
 		break;
 	      }
@@ -883,8 +888,8 @@ static VOID PaintLine(HWND hwnd, HPS hps, ULONG whichline, ULONG topline,
 	  if (ad->httpin && whichline != ad->cursored - 1
 	      && (!ad->markedlines
 		  || !(ad->markedlines[whichline] & (VF_SELECTED | VF_FOUND)))
-	      && strnstr(ad->lines[whichline], "http://",
-			 e - ad->lines[whichline])) {
+              && (strnstr(ad->lines[whichline], "http://", e - ad->lines[whichline]) ||
+             strnstr(ad->lines[whichline], "https://", e - ad->lines[whichline]))) {
 	    GpiSetColor(hps, standardcolors[ad->colors[COLORS_HTTPFORE]]);
 	    GpiSetBackColor(hps, standardcolors[ad->colors[COLORS_HTTPBACK]]);
 	  }
@@ -948,7 +953,8 @@ static VOID PaintLine(HWND hwnd, HPS hps, ULONG whichline, ULONG topline,
 	  if (ad->httpin && whichline != ad->cursored - 1
 	      && (!ad->markedlines
 		  || !(ad->markedlines[whichline] & (VF_SELECTED | VF_FOUND)))
-	      && strnstr(ad->lines[whichline], "http://",e - ad->lines[whichline])) {
+              && (strnstr(ad->lines[whichline], "http://",e - ad->lines[whichline]) ||
+             strnstr(ad->lines[whichline], "https://",e - ad->lines[whichline]))) {
 	    GpiSetColor(hps, standardcolors[ad->colors[COLORS_HTTPFORE]]);
 	    GpiSetBackColor(hps, standardcolors[ad->colors[COLORS_HTTPBACK]]);
 	  }
@@ -1440,7 +1446,7 @@ static VOID ReLineThread(VOID * args)
 		  strstr(ad->text, "ftp://"))
 		ad->ftpin = TRUE;
 	      if ((*httprun || fHttpRunWPSDefault) && !ad->ignorehttp &&
-		  strstr(ad->text, "http://"))
+		  (strstr(ad->text, "http://") || strstr(ad->text, "https://")))
 		ad->httpin = TRUE;
 	      if (*mailrun && !ad->ignoremail && isemailaddress(ad->text))
 		ad->mailin = TRUE;
@@ -2498,7 +2504,8 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
             goto NoAdd;
 
 	  if ((ad->httpin && (*httprun || fHttpRunWPSDefault) &&
-	       strnstr(ad->lines[whichline], "http://", width)) ||
+               (strnstr(ad->lines[whichline], "http://", width) ||
+               strnstr(ad->lines[whichline], "https://", width))) ||
 	      (ad->ftpin && (*ftprun || fFtpRunWPSDefault) &&
 	       strnstr(ad->lines[whichline], "ftp://", width)) ||
 	      (ad->mailin && *mailrun && isemailaddress(ad->lines[whichline]))) {
@@ -3419,7 +3426,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       ad->ignorehttp = (ad->ignorehttp) ? FALSE : TRUE;
       ad->httpin = FALSE;
       if (ad->text && (*httprun || fHttpRunWPSDefault) && !ad->ignorehttp &&
-	  strstr(ad->text, "http://"))
+	  (strstr(ad->text, "http://") || strstr(ad->text, "https://")))
 	ad->httpin = TRUE;
       IgnoreHTTP = ad->ignorehttp;
       PrfWriteProfileData(fmprof, appname, "Viewer.IgnoreHTTP",
