@@ -16,6 +16,8 @@
   12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   28 Jun 14 GKY Fix errors identified with CPPCheck;
+  02 May 15 GKY Changes to allow a JAVA executable object to be created using "Real object"
+                menu item on a jar file.
 
 ***********************************************************************/
 
@@ -42,6 +44,9 @@
 #include "wrappers.h"			// xmalloc
 #include "fortify.h"
 #include "init.h"			// Data declaration(s)
+#include "notebook.h"			// Data declaration(s)
+#include "getnames.h"                   // insert_filename
+#include "srchpath.h"                   // SearchMultiplePathsForFile
 
 #pragma data_seg(DATA1)
 
@@ -52,6 +57,8 @@ static HOBJECT CreateDataObject(CHAR * objtitle, CHAR * location, CHAR * path,
 static HOBJECT CreateFolderObject(CHAR * objtitle, CHAR * cnr);
 
 static HOBJECT CreateProgramObject(CHAR * objtitle, CHAR * location, CHAR * path,
+                                   CHAR * cnr);
+static HOBJECT CreateJAVAProgramObject(CHAR * objtitle, CHAR * location, CHAR * path,
 			    CHAR * cnr);
 static HOBJECT CreateShadowObject(CHAR * objtitle, CHAR * location, CHAR * path,
 			   BOOL executable, CHAR * cnr);
@@ -61,11 +68,16 @@ HOBJECT CreateProgramObject(CHAR * objtitle, CHAR * location, CHAR * path,
 {
   HOBJECT obj = (HOBJECT) 0;
   CHAR *s;
+  CHAR objecttmp[CCHMAXPATH];
 
   if (!cnr)
     return obj;
+  strcpy(objecttmp, objtitle);
+  s = strchr(objecttmp, '.');
+  if (s)
+    *s = 0;
   obj = WinCreateObject((CHAR *) WPProgram,
-			objtitle,
+			objecttmp,
 			"NODELETE=NO;TEMPLATE=NO;NOCOPY=NO;NOMOVE=NO",
 			(location) ? location : cnr, CO_FAILIFEXISTS);
   if (obj) {
@@ -77,6 +89,61 @@ HOBJECT CreateProgramObject(CHAR * objtitle, CHAR * location, CHAR * path,
 	      (path) ? PCSZ_BACKSLASH : NullStr,
 	      objtitle,
 	      (path) ? ";STARTUPDIR=" : NullStr, (path) ? path : NullStr, objtitle);
+      WinSetObjectData(obj, s);
+      free(s);
+    }
+  }
+  return obj;
+}
+
+HOBJECT CreateJAVAProgramObject(CHAR * objtitle, CHAR * location, CHAR * path,
+			    CHAR * cnr)
+{
+  HOBJECT obj = (HOBJECT) 0;
+  CHAR *s;
+  CHAR objecttmp[CCHMAXPATH];
+  CHAR javaexe[CCHMAXPATH] = {0};
+  CHAR icon[CCHMAXPATH] = {0};
+  //PSZ env = 0;
+  //FILESTATUS3 fsa;
+
+  if (!cnr)
+    return obj;
+  if (!PrfQueryProfileString(fmprof, appname, "JavaExe", NULL, javaexe, CCHMAXPATH - 1)) {
+    strcpy(javaexe, PCSZ_STARDOTEXE);
+    if (insert_filename(HWND_DESKTOP, javaexe, TRUE, FALSE) &&
+        *javaexe && !strchr(javaexe, '*') && !strchr(javaexe, '?'))
+      PrfWriteProfileString(fmprof, appname, "JavaExe", javaexe);
+    else
+      return obj;
+  }
+  strcpy(objecttmp, objtitle);
+  s = strchr(objecttmp, '.');
+  if (s)
+    *s = 0;
+  strcpy(icon, path);
+  strcat(icon, "\\*.ico");
+  insert_filename(HWND_DESKTOP, icon, TRUE, FALSE);
+  obj = WinCreateObject((CHAR *) WPProgram,
+			objecttmp,
+			"NOPRINT=YES;DEFAULTVIEW=RUNNING",
+			(location) ? location : cnr, CO_FAILIFEXISTS);
+  if (obj) {
+    s = xmalloc(5192, pszSrcFile, __LINE__);
+    if (s) {
+      sprintf(s,
+              "%s%s;EXENAME=%s%s%s;PARAMETERS= %s%s%s%s %%*;%sOBJECTID=<FM2_%s>",
+              "ICONFILE=",
+              icon,
+              javaexe,
+              (path) ? ";STARTUPDIR=" : NullStr,
+              (path) ? path : NullStr,
+              "-jar ",
+	      (path) ? path : NullStr,
+	      (path) ? PCSZ_BACKSLASH : NullStr,
+              objtitle,
+              "PROGTYPE=PM;",
+	      objecttmp);
       WinSetObjectData(obj, s);
       free(s);
     }
@@ -188,6 +255,7 @@ VOID MakeShadows(HWND hwnd, CHAR ** list, ULONG Shadows, CHAR * cnr,
   CHAR szBuff[CCHMAXPATH + 8];
   HOBJECT obj = (HOBJECT) 0;
   FILESTATUS3 fsa;
+  BOOL JAVA = FALSE;
 
   *szBuff = 0;
   if (foldername)
@@ -232,7 +300,9 @@ VOID MakeShadows(HWND hwnd, CHAR ** list, ULONG Shadows, CHAR * cnr,
 	if (p) {
           if (!stricmp(p, PCSZ_DOTBAT) || !stricmp(p, PCSZ_DOTCMD) ||
               !stricmp(p, PCSZ_DOTBTM))
-	    apt |= FAPPTYP_BOUND;
+            apt |= FAPPTYP_BOUND;
+          else if(!stricmp(p, ".jar"))
+            JAVA = TRUE;
 	}
 	*szBuffer = 0;
 	p = strrchr(list[x], '\\');
@@ -261,7 +331,10 @@ VOID MakeShadows(HWND hwnd, CHAR ** list, ULONG Shadows, CHAR * cnr,
 	else
 	  *szBuffer = 0;
 	if ((fsa.attrFile & FILE_DIRECTORY) || Shadows)
-	  CreateShadowObject(p, (obj) ? szBuffer : NULL, szDir, 0, cnr);
+          CreateShadowObject(p, (obj) ? szBuffer : NULL, szDir, 0, cnr);
+        else if (JAVA)
+          if (CreateJAVAProgramObject(p, (obj) ? szBuffer : NULL, szDir, cnr))
+            apt |= FAPPTYP_BOUND;
         else if (!(apt & (FAPPTYP_NOTWINDOWCOMPAT | FAPPTYP_WINDOWCOMPAT | FAPPTYP_WINDOWAPI |
                           FAPPTYP_BOUND | FAPPTYP_DOS | FAPPTYP_WINDOWSREAL |
                           FAPPTYP_WINDOWSPROT | 0x1000)))	// not an executable app?

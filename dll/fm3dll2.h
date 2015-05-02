@@ -38,6 +38,8 @@
   15 Feb 14 GKY Improvements to saymsg2 some code cleanup
   16 Feb 14 GKY Rework readonly check on delete code so it actually works in a logical way
                 and so it works with move to trashcan inabled.
+  02 May 15 GKY Changes to allow a JAVA executable object to be created using "Real object"
+                menu item on a jar file.
 
   Align with spaces only - no tabs please
 
@@ -407,6 +409,7 @@
 #define IDM_OPENDIRTREE     1168
 #define IDM_OPENDIRWINDOW   1169
 #define IDM_UNLOCKFILE      1170
+#define IDM_JAVAEXE         1171
 
 #define SM2_DIALOG          1234
 #define SM2_YES                1

@@ -5,7 +5,7 @@
 .* fm/2 help - Troubleshooting
 .*
 .* Copyright (c) 1993-98 M. Kimes
-.* Copyright (c) 2002-2014 Steven H.Levine
+.* Copyright (c) 2002-2015 Steven H.Levine
 .*
 .* 06 Apr 07 GKY Added drag limit information
 .* 24 Jun 07 GKY Added change from VAC to open Watcom notes and Global issue with 4OS2.
@@ -15,7 +15,7 @@
 .* 01 Jan 13 GKY Removed GBM.DLL note as the problem has been fixed.
 .* 01 Jan 13 GKY Removed reference to install.cmd which is no longer in the FM/2 package
 .* 23 Mar 14 GKY Add known problems with starting with redirection and inability to copy
-.*               from "completed" windows. Fixed some typos
+.*             from "completed" windows. Fixed some typos
 .*
 .***********************************************************************
 .*

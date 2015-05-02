@@ -40,6 +40,8 @@
   22 Feb 14 GKY Fix wipeallf to recurss properly
   22 Feb 14 GKY Fix warn readonly yes don't ask to work when recursing directories.
   19 Jul 14 GKY Fix redundant error message following selection of no for unlocking a file
+  02 May 15 GKY Changes to R/O check to eliminate redundant checks and error messages
+  02 May 15 GKY Limit unlock attempts to exes and dlls.
 
 ***********************************************************************/
 
@@ -688,7 +690,7 @@ INT make_deleteable(CHAR * filename, INT error, BOOL Dontcheckreadonly)
 {
   APIRET rc;
   INT ret = -1;
-  INT retrn;
+  INT retrn = SM2_YES;
   FILESTATUS3 fsi;
 
   //DbgMsg(pszSrcFile, __LINE__, "error %i ", error);
@@ -714,11 +716,13 @@ INT make_deleteable(CHAR * filename, INT error, BOOL Dontcheckreadonly)
         fsi.attrFile = 0;
         DosError(FERR_DISABLEHARDERR);
         if (!xDosSetPathInfo(filename, FIL_STANDARD, &fsi, sizeof(fsi), 0))
-          ret = 0;
+          ret = SM2_YES;
       }
     }
   }
-  if (error ==  ERROR_SHARING_VIOLATION && fUnlock) {
+  if (error ==  ERROR_SHARING_VIOLATION && fUnlock &&
+      (retrn == SM2_YES || retrn == SM2_DONTASK)   &&
+      (strstr(strlwr(filename), ".dll") || strstr(strlwr(filename), ".exe"))) {
     retrn = saymsg(MB_YESNO | MB_DEFBUTTON2,
                  HWND_DESKTOP,
                  GetPString(IDS_LOCKEDFILEWARNINGTITLE),

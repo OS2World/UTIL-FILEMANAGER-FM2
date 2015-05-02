@@ -63,6 +63,8 @@
   22 Feb 14 GKY Cleanup of readonly check code suppress spurious error on blocked directory
                 delete and eliminated the check on additional temp file deletes
   22 Feb 14 GKY Fix warn readonly yes don't ask to work when recursing directories.
+  02 May 15 GKY Changes to allow a JAVA executable object to be created using "Real object"
+                menu item on a jar file.
 
 ***********************************************************************/
 
@@ -128,6 +130,7 @@
 #include "wrappers.h"			// xfopen
 #include "fortify.h"
 #include "excputil.h"			// 06 May 08 SHL added
+#include "getnames.h"                   // insert_filename
 
 // Data definitions
 #pragma data_seg(GLOBAL2)
@@ -1559,7 +1562,18 @@ VOID MassAction(VOID * args)
 			  objectpath, NULL);
 	      AddNote(GetPString(IDS_MADEOBJSTEXT));
 	    }
-	    break;
+            break;
+
+          case IDM_JAVAEXE:
+            {
+            CHAR javaexe[CCHMAXPATH] = {0};
+
+            strcpy(javaexe, PCSZ_STARDOTEXE);
+            if (insert_filename(HWND_DESKTOP, javaexe, TRUE, FALSE) &&
+                *javaexe && !strchr(javaexe, '*') && !strchr(javaexe, '?'))
+              PrfWriteProfileString(fmprof, appname, "JavaExe", javaexe);
+            }
+            break;
 
 	  case IDM_PRINT:
 	    if (WinDlgBox(HWND_DESKTOP,
@@ -1793,12 +1807,9 @@ VOID MassAction(VOID * args)
                 }
                 //DbgMsg(pszSrcFile, __LINE__, "error %i retrn %i", error, retrn);
                 if (fWarnReadOnly && error ==  ERROR_FILE_EXISTS) {
-                  error = ERROR_ACCESS_DENIED;
                   retrn = SM2_NO;
                 }
-                if (error && (error != ERROR_ACCESS_DENIED ||
-                              (error == ERROR_ACCESS_DENIED &&
-                               (retrn == SM2_YES || retrn == SM2_DONTASK || retrn == 0)))) {
+                if (error && (retrn == SM2_YES || retrn == SM2_DONTASK))  {
 		  if (LogFileHandle)
 		    fprintf(LogFileHandle,
 			    GetPString(IDS_DELETEFAILED1TEXT),

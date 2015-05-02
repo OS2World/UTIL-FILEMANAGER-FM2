@@ -75,6 +75,8 @@
                 Use the test archive string from the first working archive description.
                 Enhance the error message. Ticket 502
   30 Aug 14 GKY Use saymsg2 for Suggest dialog
+  02 May 15 GKY Changes to allow a JAVA executable object to be created using "Real object"
+                menu item on a jar file.
   
 ***********************************************************************/
 
@@ -1271,6 +1273,7 @@ MENU FILE_POPUP
 	 MENUITEM "~Shadows...",     IDM_SHADOW
 	 MENUITEM "~Real objects...",IDM_OBJECT
 	 MENUITEM "~Shadows in folder...",IDM_SHADOW2
+         MENUITEM "~Change JAVA executable", IDM_JAVAEXE
   }
   SUBMENU "Save Lists to clipboard/file",         IDM_SAVESUBMENU
   {
@@ -1567,6 +1570,7 @@ MENU COLLECTORFILE_POPUP
 	 MENUITEM "~Shadows...",     IDM_SHADOW
 	 MENUITEM "~Real objects...",IDM_OBJECT
 	 MENUITEM "~Shadows in folder...",IDM_SHADOW2
+         MENUITEM "~Change JAVA executable", IDM_JAVAEXE
   }
   SUBMENU "Save Lists to clipboard/file",         IDM_SAVESUBMENU
   {
@@ -2198,6 +2202,7 @@ MENU SEEALL_FRAME
 	 {
 		MENUITEM "~Shadows...",         IDM_SHADOW
 		MENUITEM "~Real objects...",    IDM_OBJECT
+                MENUITEM "~Change JAVA executable", IDM_JAVAEXE
 	 }
 	 MENUITEM "~Hide selected",        IDM_HIDEALL
          MENUITEM "~Unhide objects",   IDM_UNHIDEALL
@@ -2279,6 +2284,7 @@ MENU SEEALL_POPUP
   {
 	 MENUITEM "~Shadows...",         IDM_SHADOW
 	 MENUITEM "~Real objects...",    IDM_OBJECT
+         MENUITEM "~Change JAVA executable", IDM_JAVAEXE
   }
   MENUITEM "~Hide selected",        IDM_HIDEALL
   MENUITEM "~Unhide objects",   IDM_UNHIDEALL

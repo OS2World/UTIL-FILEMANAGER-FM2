@@ -61,6 +61,8 @@
   16 Feb 14 GKY Rework readonly check on delete code so it actually works in a logical way
                 and so it works with move to trashcan inabled.
   22 Feb 14 GKY Fix warn readonly yes don't ask to work when recursing directories.
+  02 May 15 GKY Changes to allow a JAVA executable object to be created using "Real object"
+                menu item on a jar file.
 
 ***********************************************************************/
 
@@ -4250,6 +4252,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     case IDM_UNLOCKFILE:
     case IDM_SHADOW:
     case IDM_OBJECT:
+    case IDM_JAVAEXE:
     case IDM_OPENSETTINGS:
     case IDM_OPENDEFAULT:
       if (!pAD->stopflag &&
@@ -4304,7 +4307,8 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	case IDM_ARCHIVE:
 	case IDM_EXTRACT:
 	case IDM_SHADOW:
-	case IDM_OBJECT:
+        case IDM_OBJECT:
+        case IDM_JAVAEXE:
 	case IDM_OPENSETTINGS:
 	case IDM_OPENDEFAULT:
         case IDM_UUDECODE:
@@ -4343,7 +4347,8 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
               case IDM_UUDECODE:
               case IDM_UNLOCKFILE:
 	      case IDM_OBJECT:
-	      case IDM_SHADOW:
+              case IDM_SHADOW:
+              case IDM_JAVAEXE:
 	      case IDM_OPENSETTINGS:
               case IDM_OPENDEFAULT:
                 if (SHORT1FROMMP(mp1) == IDM_DELETE)

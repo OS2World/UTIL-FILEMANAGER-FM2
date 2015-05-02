@@ -86,6 +86,8 @@
   16 Mar 15 GKY Add semaphore hmtxFiltering to prevent freeing dcd while filtering. Prevents
                 a trap when FM2 is shutdown or the container is closed while collector
                 container is still populating
+  02 May 15 GKY Changes to allow a JAVA executable object to be created using "Real object"
+                menu item on a jar file.
 
 ***********************************************************************/
 
@@ -636,6 +638,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
       case IDM_OBJECT:
       case IDM_SHADOW:
       case IDM_SHADOW2:
+      case IDM_JAVAEXE:
       case IDM_PRINT:
       case IDM_ATTRS:
       case IDM_DELETE:
@@ -2327,6 +2330,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_OBJECT:
       case IDM_SHADOW:
       case IDM_SHADOW2:
+      case IDM_JAVAEXE:
       case IDM_DELETE:
       case IDM_PERMDELETE:
       case IDM_PRINT:
@@ -2387,7 +2391,8 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      case IDM_ATTRS:
 	      case IDM_PRINT:
 	      case IDM_SHADOW:
-	      case IDM_SHADOW2:
+              case IDM_SHADOW2:
+              case IDM_JAVAEXE:
 	      case IDM_OBJECT:
 	      case IDM_VIEW:
 	      case IDM_VIEWTEXT:
