@@ -54,6 +54,7 @@
                 all entries have been tried. Added a check b/gzip exes for TAR.B/GZ archives.
                 Use the test archive string from the first working archive description.
                 Enhance the error message. Ticket 502
+  23 May 15 GKY Option to restart desktop to prevent icon loss from JAVA object
 
 ***********************************************************************/
 
@@ -911,9 +912,9 @@
 #define IDS_FM2LITETEXT                                       879
 #define IDS_CHANGECMDLINELENGTHDEFAULT                        880
 #define IDS_LZIPLIMITATION                                    881
-#define IDS_LZIPNOLIST                                        882 
-#define IDS_SPARE_883                                         883
-#define IDS_SPARE_884                                         884
+#define IDS_LZIPNOLIST                                        882
+#define IDS_RESTARTDESKTOP                                    883  // 23 May 2015 GKY
+#define IDS_SETTINGLOSEICON                                   884  // 23 May 2015 GKY
 #define IDS_SPARE_885                                         885
 #define IDS_SOURCEISATEXT                                     886
 #define IDS_DIRECTORYTEXT                                     887

@@ -18,6 +18,7 @@
   28 Jun 14 GKY Fix errors identified with CPPCheck;
   02 May 15 GKY Changes to allow a JAVA executable object to be created using "Real object"
                 menu item on a jar file.
+  23 May 15 GKY Option to restart desktop to prevent icon loss from JAVA object
 
 ***********************************************************************/
 
@@ -61,7 +62,8 @@ static HOBJECT CreateProgramObject(CHAR * objtitle, CHAR * location, CHAR * path
 static HOBJECT CreateJAVAProgramObject(CHAR * objtitle, CHAR * location, CHAR * path,
 			    CHAR * cnr);
 static HOBJECT CreateShadowObject(CHAR * objtitle, CHAR * location, CHAR * path,
-			   BOOL executable, CHAR * cnr);
+                                  BOOL executable, CHAR * cnr);
+BOOL32 EXPENTRY WinRestartWorkplace(VOID);
 
 HOBJECT CreateProgramObject(CHAR * objtitle, CHAR * location, CHAR * path,
 			    CHAR * cnr)
@@ -104,8 +106,6 @@ HOBJECT CreateJAVAProgramObject(CHAR * objtitle, CHAR * location, CHAR * path,
   CHAR objecttmp[CCHMAXPATH];
   CHAR javaexe[CCHMAXPATH] = {0};
   CHAR icon[CCHMAXPATH] = {0};
-  //PSZ env = 0;
-  //FILESTATUS3 fsa;
 
   if (!cnr)
     return obj;
@@ -333,8 +333,17 @@ VOID MakeShadows(HWND hwnd, CHAR ** list, ULONG Shadows, CHAR * cnr,
 	if ((fsa.attrFile & FILE_DIRECTORY) || Shadows)
           CreateShadowObject(p, (obj) ? szBuffer : NULL, szDir, 0, cnr);
         else if (JAVA)
-          if (CreateJAVAProgramObject(p, (obj) ? szBuffer : NULL, szDir, cnr))
+          if (CreateJAVAProgramObject(p, (obj) ? szBuffer : NULL, szDir, cnr)) {
+            ULONG ulResult;
+
             apt |= FAPPTYP_BOUND;
+            ulResult = saymsg(MB_OKCANCEL | MB_ICONQUESTION | MB_DEFBUTTON1, HWND_DESKTOP,
+                              GetPString(IDS_RESTARTDESKTOP),
+			      GetPString(IDS_SETTINGLOSEICON));
+            if (ulResult == MBID_OK){
+              WinRestartWorkplace();
+            }
+          }
         else if (!(apt & (FAPPTYP_NOTWINDOWCOMPAT | FAPPTYP_WINDOWCOMPAT | FAPPTYP_WINDOWAPI |
                           FAPPTYP_BOUND | FAPPTYP_DOS | FAPPTYP_WINDOWSREAL |
                           FAPPTYP_WINDOWSPROT | 0x1000)))	// not an executable app?

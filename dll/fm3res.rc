@@ -77,6 +77,7 @@
   30 Aug 14 GKY Use saymsg2 for Suggest dialog
   02 May 15 GKY Changes to allow a JAVA executable object to be created using "Real object"
                 menu item on a jar file.
+  23 May 15 GKY Option to restart desktop to prevent icon loss from JAVA object
   
 ***********************************************************************/
 
@@ -3413,6 +3414,8 @@ STRINGTABLE
     IDS_SNAPSHOTFILELOADFAILED            "The snapshot file %s failed to load"
     IDS_LZIPLIMITATION                    "Lzip Limitation"
     IDS_LZIPNOLIST                        "Lzip doesn't have a list files option"
+    IDS_RESTARTDESKTOP                    "Restart Desktop?"
+    IDS_SETTINGLOSEICON                   "If you don't restart the desktop before opening in settings view the icon will be lost"
 
 
     // Add strings that need to be combined by GetPString here
