@@ -332,7 +332,7 @@ VOID MakeShadows(HWND hwnd, CHAR ** list, ULONG Shadows, CHAR * cnr,
 	  *szBuffer = 0;
 	if ((fsa.attrFile & FILE_DIRECTORY) || Shadows)
           CreateShadowObject(p, (obj) ? szBuffer : NULL, szDir, 0, cnr);
-        else if (JAVA)
+        else if (JAVA) {
           if (CreateJAVAProgramObject(p, (obj) ? szBuffer : NULL, szDir, cnr)) {
             ULONG ulResult;
 
@@ -344,6 +344,7 @@ VOID MakeShadows(HWND hwnd, CHAR ** list, ULONG Shadows, CHAR * cnr,
               WinRestartWorkplace();
             }
           }
+        }
         else if (!(apt & (FAPPTYP_NOTWINDOWCOMPAT | FAPPTYP_WINDOWCOMPAT | FAPPTYP_WINDOWAPI |
                           FAPPTYP_BOUND | FAPPTYP_DOS | FAPPTYP_WINDOWSREAL |
                           FAPPTYP_WINDOWSPROT | 0x1000)))	// not an executable app?
