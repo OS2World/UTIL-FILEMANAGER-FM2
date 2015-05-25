@@ -26,7 +26,7 @@
 # 17 Feb 14 GKY Set FM2UTILS_VER to -1-1-1 to match the last version released.
 
 !ifndef FM2_VER                  # if defined on wmake command, use it
-FM2_VER=-3-22-0                  # default value
+FM2_VER=-3-23-0                  # default value
 !ifdef %FM2_VER                  # if defined via env. var.
 FM2_VER=$(%FM2_VER)              #     use the env. var.
 !endif

@@ -1,10 +1,34 @@
 New stuff at the top.  This list is not necessarily complete.
 
-3.23 (beta)
+3.23 
  o Rework FM/2 Lite Config menu.  Add drag&drop dialog toggle. (Steven)
  o Rework FM/2 Lite Config menu.  Add confirm delete toggle. (Steven)
  o Correct View, Sort and Filter button initialization. (Steven)
  o Rework FM/2 Config menu.  Add confirm delete toggle. (Steven)
+ o Fix hang on scanning in FM/2 lite when drive tree is hidden (Steven)
+ o Fixed code errors identified by CPPCheck (Gregg)
+ o Fixed archive directory failure retry code (Gregg)
+ o Stopped using FM2Play to open multimedia files since MMOS/2 misidentifies many
+   file types (caused by mmioMP3 ioproc which claims it can play most anything) 
+   Ticket 541 (Gregg)
+ o Unlock fixes (removed redundant error messages, now only try to unlock exes and dlls)
+   Ticket 549, 542 (Gregg)
+ o Suppress redundant error messages on answering no to deleting R/O files. Ticket 548
+   (Gregg)
+ o Update the dialog box type for "suggest dialog" Ticket 538 (Gregg)
+ o Newview mailto changes: improved identification of email addresses in text files;
+   fixed a buffer overflow trap; cut trailing punctuation from addresses; limited domain 
+   to 3 characters.  Tickets 543, 544 (Gregg)
+ o Newview now recognizes https:// as a url. Cut trailing punctuation from urls. (Gregg)  
+ o Fixed failure to remove leading quote from extract directory in some cases Ticket 495
+   (Gregg)
+ o Fixed details view column allocation for drives that failed drive check (Gregg)
+ o Fixed a trap in Filter occurring with rescan or close while scan was in progress. 
+   Ticket 535 (Gregg)
+ o Fixed rare tree container draw errors Ticket 545 (Gregg)
+ o JAVA objects can now be made by selection "Real object" on a .jar file. Ticket 37 (Gregg)
+ o Added support for critical EAs (Steven)
+ o Limited help auto open in quick settings to once per session. Ticket 520 (Gregg)
 
 3.22
  o Compare directories enhancements: 

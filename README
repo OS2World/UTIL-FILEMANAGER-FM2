@@ -4,6 +4,32 @@
  �       See end of document for contact info           �
  읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
 
+FM/2 3.23 provides several enhancements. Implemented creation of a JAVA executable
+object from a jar file. Select a jar file and "Real object" from the "Create 
+object" sub-menu. You will be prompted to select the JAVA exe you wish to use.
+Your choice will be recorded for use in the future. You will then be prompted
+to select an icon for the object. Once the object is created you will be prompted
+to restart the desktop. I highly recommend you do so. If you don't the object icon 
+will be lost if you open the object in settings view. Additionally, I have 
+experienced WPS hangs forcing a reboot when accessing the desktop or trashcan
+context menu following the icon loss described above. I have not had any problem
+if I restarted the desktop. We have added menu toggles for confirm delete and the 
+drag & drop dialog options. Newview now handles selecting and utilizing email 
+addresses and urls much better and more completely (https is supported) than 
+in previous versions. The EA editor now checks for EAs marked as critical and
+report this to the user.
+
+We have also fixed multiple defects including eliminating redundant error messages
+from unlock and read only checking code and now only trying to unlock exes or dlls.
+Fixed a string handling problem with the extract directory and a trap that sometimes
+occurred when closing or starting a rescan while scanning was in progress. Limited
+auto open of help to the first time the quick settings configuration page is open
+each session. Finally we stopped using FM2Play to open multimedia files. The 
+problem was caused by the fact that mmioMP3 would report it could handle most
+any thing (exes for example). This lead to FM2Play trying to play them. I have
+fixed and updated mmioMP3 and it should be available on Hobbes by the time you 
+read this. See the history file for more details. Please let us know if you find 
+a defect.
 
 FM/2 3.22 provides enhancements to compare directories, seek and scan and the 
 archive viewer. It fixes the check for readonly files on delete to work in all 

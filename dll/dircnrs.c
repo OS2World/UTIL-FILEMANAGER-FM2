@@ -3800,8 +3800,10 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
 	if (!dcd->hwndCnr) {
 	  Win_Error(hwndClient, hwndClient, pszSrcFile, __LINE__,
 		    PCSZ_WINCREATEWINDOW);
-	  PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
-	  free(dcd);
+          PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
+          DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
+          free(dcd);
+          DosReleaseMutexSem(hmtxFiltering);
 	  hwndFrame = (HWND) 0;
 	}
 	else {

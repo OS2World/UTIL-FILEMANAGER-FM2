@@ -8,7 +8,7 @@
 # 08 Dec 08 SHL Ticket 307: Add process dump support
 # 10 Dec 08 SHL Ticket 26: Add excepiton handler support
 
-option description '@#The Netlabs FM/2 team:3.22.0#@##1## 2014-04-06 03:22:00      TRESBOPEEP::EN:US:0:U:@@FM/2 Runtime DLL Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, 2014 Steven Levine and Associates, Inc. All rights reserved'
+option description '@#The Netlabs FM/2 team:3.23.0#@##1## 2015-05-25 03:23:00      TRESBOPEEP::EN:US:0:U:@@FM/2 Runtime DLL Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, 2015 Steven Levine and Associates, Inc. All rights reserved'
 segment class 'DATA' readwrite loadoncall nonshared
 segment class 'CODE' loadoncall
 option manyautodata
