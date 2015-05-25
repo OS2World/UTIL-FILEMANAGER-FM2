@@ -65,6 +65,7 @@
                 for delete of readonly files
   09 Feb 14 GKY Fix separate parameters. Moved to general page renamed separate settings
                 for apps.
+  25 May 15 GKY Auto open help only on first access of quick setting page during a session.
 
 ***********************************************************************/
 
@@ -3830,6 +3831,7 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   UINT uPageIndex;
   HAB hab;
   static HACCEL haccelCfg = NULLHANDLE;
+  static BOOL fShowedHelpThisSession = FALSE;
 
   switch (msg) {
   case WM_INITDLG:
@@ -3934,7 +3936,7 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     } // for pages
 
     // If quick settings page requested, assume request is for first time init
-    // Turn to cfg page and show help
+    // Turn to cfg page and show help; open help only the first yime in each session
     // Page will not be available if running fm/2 lite or if load error
     // 15 Feb 08 SHL fixme to do just once?
     if (mp2 == MPFROMLONG(IDM_QUICKSETTINGS) &&
@@ -3947,7 +3949,10 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PostMsg(WinWindowFromID(hwnd, CFG_NOTEBOOK),
 	      BKM_TURNTOPAGE, MPFROMLONG(np[x].ulPageId), MPVOID);
       PostMsg(hwnd, UM_FOCUSME, MPFROMLONG(np[x].hwnd), MPVOID);
-      PostMsg(np[x].hwnd, WM_COMMAND, MPFROM2SHORT(IDM_HELP, 0), MPVOID);
+      if (!fShowedHelpThisSession) {
+        PostMsg(np[x].hwnd, WM_COMMAND, MPFROM2SHORT(IDM_HELP, 0), MPVOID);
+        fShowedHelpThisSession = TRUE;
+      }
     }
     else if (uPageIndex >= x) {
       Runtime_Error(pszSrcFile, __LINE__, "uPageIndex corrupted (%u)",
