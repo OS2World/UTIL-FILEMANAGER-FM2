@@ -1,0 +1,3490 @@
+
+/***********************************************************************
+
+  $Id$
+
+  Command resources
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2003, 2014 Steven H. Levine
+
+  08 Feb 03 SHL Enable SYS_FRAME
+  17 Feb 07 GKY Add Make directory to white space directory container menu
+  17 Feb 07 GKY Additional drive type icons
+  15 Jun 07 SHL Update for OpenWatcom
+  05 Jul 07 GKY Fix menu removals for WORKPLACE_PROCESS=YES
+  06 Aug 07 GKY Fix Dirsizes accel key to be ctrl + z
+  30 Aug 07 SHL Add accelerator support to QuickList windows
+  05 Sep 07 SHL Small change for OpenWatcom wrc compat
+  26 Nov 07 GKY Added "Save as" to internal editor
+  12 Jan 08 SHL Rework Config menu
+  16 Jan 08 SHL Add sync updates toggle
+  19 Jan 08 GKY Rework Utilities menu
+  14 Feb 08 SHL Add settings submenu.  Use new settings submenu definitions
+  14 Jul 08 JBS Ticket 126: Add support for WPS open default & open settings in arccnrs
+  17 Jul 08 JBS Corrected a typo on the "Save state" context menu
+  19 Jul 08 JBS Ticket 197: Support accelerator keys in setting dialogs.
+  20 Jul 08 GKY Add save/append filename to clipboard.
+                Change menu wording to make these easier to find
+  21 Nov 08 JBS Ticket 297: Added STRINGTABLE with COPYRIGHT_STRING
+  26 Dec 08 GKY Rework MLE menus (add "view") so toggle word wrap isn't buried on a submenu.
+  27 Dec 08 GKY Add refresh removable media to tree container menus
+  28 Dec 08 GKY Added Databar to utilities menu
+  01 Jan 09 GKY Add Seek and Scan to drives & directory context menus pass drive/dir as search root
+  11 Jan 08 GKY Move strings that will need translating to stringtable from sting file cut to
+                255 where necessary
+  07 Feb 09 GKY Eliminate Win_Error2 by moving function names to PCSZs used in Win_Error
+  14 Mar 09 GKY Remove unused strings; remove trailing \32s replaced with spaces.
+  06 Jun 09 GKY Status line to show file sys/label not shown in tree; shortened to fit split status
+  06 Jul 09 SHL Error message for Refactor .LONGNAME and .SUBJECT EA fetch to FetchCommonEAs
+  22 Jul 09 GKY Drivebar enhancements add refresh removable, rescan all drives, drive button
+                loads drive root directory in directory container or expands drive tree
+                and rescans drive in tree container depending on container focus, grayed out
+                inappropriate menu context choices
+  12 Sep 09 GKY Add FM3.INI User ini and system ini to submenu for view ini
+  15 Sep 09 SHL Update for Thread notes text changes
+  15 Sep 09 SHL Add rescan progress messages
+  27 Sep 09 SHL Add more items to COMP_MENU
+  15 Nov 09 GKY Add ZEROBYTETEXT
+  22 Nov 09 GKY Add LVM.EXE to partition submenu
+  21 Dec 09 GKY Added 20 new hot keys for commands.
+  21 Dec 09 GKY Allow command menu reorder without changing the "ID" or hot key for a command.
+                Added load_inicommand to load the IDs from the ini file.(new error strings)
+  26 Dec 09 GKY Fixed some missing or duplicate mnemonics on the "Save Lists to clipboard/file"
+                submenu.
+  27 Dec 09 GKY Strings for command.c changes
+  09 MAY 10 JBS Ticket 434: Message box text improvements.
+  23 Oct 10 GKY Add menu items for opening directory cnrs based on path of selected item
+                including the option to use walk directories to select path
+  23 Oct 10 GKY Changes to populate and utilize a HELPTABLE for context specific help.
+  21 Nov 10 GKY Check if archiver.bb2 has been changed on disk before editing
+  04 Aug 12 GKY Changes to use Unlock to unlock files if Unlock.exe is in path both from menu/toolbar and as part of
+                copy, move and delete operations
+  05 Sep 12 SHL Sync collector menu with docs
+  30 Dec 12 GKY Enhance target directory drop to give the option of changing the directory or carrying out an
+                operation to the current target; Added an error message for target = None;
+  06 Jan 13 GKY Added EA compare option to compare dir Ticket 80
+  10 Mar 13 GKY Improvrd readonly check on delete to allow cancel and don't ask again options
+                Added saymsg2 for this purpose
+  28 May 13 SHL Correct typos
+  15 Feb 14 GKY Improvements to saymsg2 added accel keys
+  23 Feb 14 GKY Undated one of the error messages in runemf2 to provide the calling line
+                and file.
+  01 Mar 14 GKY Fixed error checking in FillArcCnr only to report missing archivers after
+                all entries have been tried. Added a check b/gzip exes for TAR.B/GZ archives.
+                Use the test archive string from the first working archive description.
+                Enhance the error message. Ticket 502
+  30 Aug 14 GKY Use saymsg2 for Suggest dialog
+  02 May 15 GKY Changes to allow a JAVA executable object to be created using "Real object"
+                menu item on a jar file.
+  23 May 15 GKY Option to restart desktop to prevent icon loss from JAVA object
+  
+***********************************************************************/
+
+#include <os2.h>
+
+#include "fm3dll2.h"
+#include "fm3dlg.h"
+#include "copyright.h"
+#include "fm3str.h"
+
+ICON        MAIN_FRAME          ..\icons\FM3.ICO
+ICON        MAIN2_FRAME         ..\icons\FM4.ICO
+ICON        DIR_FRAME           icons\DIR.ICO
+ICON        ARC_FRAME           icons\ARCCNR.ICO
+ICON        TREE_FRAME          ..\icons\TREE.ICO
+ICON        MLE_FRAME           icons\EDITOR.ICO
+ICON        INI_FRAME           ..\icons\INI.ICO
+ICON        COLLECTOR_FRAME     ..\icons\COLLECT.ICO
+ICON        SEEALL_FRAME        ..\icons\GLOBAL.ICO
+ICON        NEWVIEW_FRAME       ..\icons\VIEW3.ICO
+ICON        COMPARE_ICON        icons\COMPARE.ICO
+ICON        DIRSIZE_ICON        ..\icons\DIRSIZE.ICO
+ICON        NOTE_FRAME          icons\THRDNOTE.ICO
+ICON        KILL_FRAME          ..\icons\KILLPROC.ICO
+ICON        UNDEL_FRAME         ..\icons\UNDEL.ICO
+ICON        SYS_FRAME           ..\icons\SYSINFO.ICO
+ICON        EA_FRAME            ..\icons\EAS.ICO
+ICON        VINF_FRAME          ..\icons\VIEWINFS.ICO
+
+ICON        SKULL0_ICON         icons\SKULL0.ICO
+ICON        SKULL1_ICON         icons\SKULL1.ICO
+ICON        SKULL2_ICON         icons\SKULL2.ICO
+ICON        SKULL3_ICON         icons\SKULL3.ICO
+ICON        SKULL4_ICON         icons\SKULL4.ICO
+ICON        SKULL5_ICON         icons\SKULL5.ICO
+ICON        SKULL6_ICON         icons\SKULL6.ICO
+ICON        SKULL7_ICON         icons\SKULL7.ICO
+ICON        SKULL8_ICON         icons\SKULL8.ICO
+ICON        SKULL9_ICON         icons\SKULL9.ICO
+
+ICON        REMOVABLE_ICON      icons\REMOVABL.ICO
+ICON        CDROM_ICON          icons\CDROM.ICO
+ICON        REMOTE_ICON         icons\REMOTE.ICO
+ICON        FLOPPY_ICON         icons\FLOPPY.ICO
+ICON        FILE_ICON           icons\FILE.ICO
+ICON        ENV_ICON            icons\ENV.ICO
+ICON        LASTITEM_ICON       icons\LASTITEM.ICO
+ICON        FINGER_ICON         icons\FINGER.PTR
+ICON        FINGER2_ICON        icons\GLOVE1.PTR
+ICON        APP_ICON            icons\APP.ICO
+ICON        DUNNO_ICON          icons\DUNNO.ICO
+ICON        FILE_SYSTEM_ICON    icons\FSYS.ICO
+ICON        FILE_HIDDEN_ICON    icons\FHID.ICO
+ICON        FILE_READONLY_ICON  icons\FRED.ICO
+ICON        DRIVE_ICON          icons\DRIVE.ICO
+ICON        ZIPSTREAM_ICON      icons\ZIPSTRM.ICO
+ICON        ART_ICON            icons\ART.ICO
+ICON        RAMDISK_ICON        icons\RAMDISK.ICO
+ICON        VIRTUAL_ICON        icons\VIRTUAL.ICO
+
+ICON        ID_STICK1           icons\STICK1.ICO
+ICON        ID_STICK2           icons\STICK2.ICO
+ICON        ID_STICK3           icons\STICK3.ICO
+ICON        ID_STICK4           icons\STICK4.ICO
+ICON        ID_STICK5           icons\STICK5.ICO
+ICON        ID_STICK12          icons\STICK12.ICO
+ICON        ID_STICK22          icons\STICK22.ICO
+ICON        ID_STICK32          icons\STICK32.ICO
+ICON        ID_STICK42          icons\STICK42.ICO
+ICON        ID_STICK52          icons\STICK52.ICO
+
+
+ACCELTABLE INI_FRAME
+{
+  VK_F1,       IDM_HELP,          VIRTUALKEY
+  VK_F3,       SC_CLOSE,          SYSCOMMAND,VIRTUALKEY
+  VK_F5,       IDM_FINDFIRST,     VIRTUALKEY
+  VK_F6,       IDM_FINDNEXT,      VIRTUALKEY
+  VK_TAB,      IDM_NEXTWINDOW,    VIRTUALKEY
+  VK_BACKTAB,  IDM_PREVWINDOW,    SHIFT,VIRTUALKEY
+  "a",         INI_ADDENTRY,      CONTROL
+  "C",         INI_COPYAPP,       SHIFT,CONTROL
+  "c",         INI_COPYKEY,       CONTROL
+  "D",         INI_DELETEAPP,     SHIFT,CONTROL
+  "d",         INI_DELETEKEY,     CONTROL
+  "e",         INI_EDITENTRY,     CONTROL
+  "F",         IDM_FILTER,        SHIFT,CONTROL
+  "f",         INI_REFRESH,       CONTROL
+  "o",         INI_OTHERPROFILE,  CONTROL
+  "R",         INI_RENAMEAPP,     SHIFT,CONTROL
+  "r",         INI_RENAMEKEY,     CONTROL
+  "s",         INI_SYSTEMPROFILE, CONTROL
+  "u",         INI_USERPROFILE,   CONTROL
+}
+
+MENU  INI_FRAME
+{
+  SUBMENU "~Files",                               IDM_FILESMENU
+  {
+	 MENUITEM "~Refresh\tCtrl + f",                INI_REFRESH
+	 MENUITEM "~User profile\tCtrl + u",           INI_USERPROFILE
+	 MENUITEM "~System profile\tCtrl + s",         INI_SYSTEMPROFILE
+	 MENUITEM "~Other profile...\tCtrl + o",       INI_OTHERPROFILE
+  }
+  SUBMENU  "~Entries",                            -1
+  {
+	 MENUITEM "~Filter appnames...",               IDM_FILTER
+	 MENUITEM "",                                  -1,   MIS_SEPARATOR
+	 MENUITEM "~Edit entry...\tCtrl + e",          INI_EDITENTRY
+	 MENUITEM "~Add entry...\tCtrl + a",           INI_ADDENTRY
+	 MENUITEM "",                                  -1,   MIS_SEPARATOR
+	 MENUITEM "~Delete application\tCtrl + D",     INI_DELETEAPP
+	 MENUITEM "Delete ~keyname\tCtrl + d",         INI_DELETEKEY
+	 MENUITEM "",                                  -1,   MIS_SEPARATOR
+	 MENUITEM "~Rename application...\tCtrl + R",  INI_RENAMEAPP
+	 MENUITEM "Rename ke~yname...\tCtrl + r",      INI_RENAMEKEY
+	 MENUITEM "",                                  -1,   MIS_SEPARATOR
+	 MENUITEM "~Copy application...\tCtrl + C",    INI_COPYAPP
+	 MENUITEM "Copy key~name...\tCtrl + c",        INI_COPYKEY
+	 MENUITEM "",                                 -1,    MIS_SEPARATOR
+	 MENUITEM "Find ~first...\tF5",                IDM_FINDFIRST
+	 MENUITEM "Find ne~xt\tF6",                    IDM_FINDNEXT
+  }
+  SUBMENU "~Utilities",                           -1
+  {
+	 MENUITEM "~Backup profile...",                INI_BACKUPINI
+	 MENUITEM "~Change system profiles...",        INI_CHANGEINI
+	 MENUITEM "~Replace system profiles...",       INI_SWAPINI
+  }
+  SUBMENU "~Config",                              -1
+  {
+	 MENUITEM "Confirm ~delete",                   INI_CONFIRM
+  }
+  SUBMENU "~Help",                                -1
+  {
+	 MENUITEM "~Help\tF1",                  IDM_HELP
+	 MENUITEM "~About",                            IDM_ABOUT
+  }
+}
+
+MENU INI_APPMENU
+{
+  MENUITEM "~Filter appnames...",               IDM_FILTER
+  MENUITEM "~Edit entry...\tCtrl + e",          INI_EDITENTRY
+  MENUITEM "~Add entry...\tCtrl + a",           INI_ADDENTRY
+  MENUITEM "~Delete application\tCtrl + D",     INI_DELETEAPP
+  MENUITEM "~Rename application...\tCtrl + R",  INI_RENAMEAPP
+  MENUITEM "~Copy application...\tCtrl + C",    INI_COPYAPP
+}
+
+MENU INI_KEYMENU
+{
+  MENUITEM "~Edit entry...\tCtrl + e",          INI_EDITENTRY
+  MENUITEM "~Add entry...\tCtrl + a",           INI_ADDENTRY
+  MENUITEM "Delete ~keyname\tCtrl + d",         INI_DELETEKEY
+  MENUITEM "Rename ke~yname...\tCtrl + r",      INI_RENAMEKEY
+  MENUITEM "Copy key~name...\tCtrl + c",        INI_COPYKEY
+}
+
+MENU DEFMENU
+{
+  MENUITEM "n/a",               -1,             MIS_STATIC
+}
+
+
+MENU  MAIN_FRAME
+{
+  SUBMENU "~Files",               IDM_FILESMENU
+  {
+  }
+  SUBMENU "~Views",               IDM_VIEWSMENU
+  {
+  }
+  SUBMENU "~Utilities",           IDM_UTILITIESMENU
+  {
+	 MENUITEM "~Open directory container\tCtrl + O",IDM_OPENWALK
+	 MENUITEM "",                  -1,               MIS_SEPARATOR
+	 MENUITEM "~Collector\tF2",    IDM_COLLECTOR
+	 MENUITEM "~Seek & scan files",IDM_GREP
+	 MENUITEM "See ~all files",    IDM_SEEALL
+	 MENUITEM "Compar~e directories...",IDM_COMPARE
+         MENUITEM "DataBar",           IDM_DATABAR
+	 MENUITEM "",                  -1,               MIS_SEPARATOR
+	 SUBMENU "~INI viewer", IDM_INIVIEWERSUBMENU
+         {
+                MENUITEM "OS/2 ~User INI",    IDM_INIVIEWER
+                MENUITEM "OS/2 ~Sys INI",     IDM_INIVIEWERSYS
+                MENUITEM "~FM2 INI",          IDM_INIVIEWERFM2
+         }
+	 MENUITEM "~Kill processes",   IDM_KILLPROC
+	 MENUITEM "I~nstant CMD file", IDM_INSTANT
+	 SUBMENU  "~Bookshelf",        IDM_BOOKSELFSUBMENU
+	 {
+		MENUITEM "~View bookshelf",   IDM_VIEWINFS
+		MENUITEM "View ~helpfiles",   IDM_VIEWHELPS
+	 }
+	 MENUITEM "",                  -1,               MIS_SEPARATOR
+	 SUBMENU  "Command ~line",         IDM_COMMANDLINESUBMENU
+	 {
+		MENUITEM "OS/2 command ~line\tF9",IDM_COMMANDLINE
+		MENUITEM "~DOS command line",  IDM_DOSCOMMANDLINE
+		MENUITEM "~Win-OS/2 full screen",IDM_WINFULLSCREEN
+	 }
+	 SUBMENU  "S~ystem",           IDM_SYSTEMSUBMENU
+	 {
+		MENUITEM "System ~clock",     IDM_SYSTEMCLOCK
+		MENUITEM "System ~setup",     IDM_SYSTEMSETUP
+#ifdef NEVER
+		MENUITEM "System ~information",IDM_SYSINFO
+#endif
+	 }
+  }
+  SUBMENU "~Config",              IDM_CONFIGMENU
+  {
+	 SUBMENU "~Settings notebook", IDM_NOTEBOOKSUBMENU
+	 {
+		MENUITEM "Directory container settings",	IDM_DIRCNRSETTINGS
+		MENUITEM "Directory view settings",			IDM_DIRVIEWSETTINGS
+		MENUITEM "Directory sort settings",			IDM_DIRSORTSETTINGS
+		MENUITEM "Collector view settings",			IDM_COLLECTORVIEWSETTINGS
+		MENUITEM "Collector sort settings",			IDM_COLLECTORSORTSETTINGS
+		MENUITEM "Archive container settings",		IDM_ARCHIVERSETTINGS
+		MENUITEM "Tree container view settings",	IDM_TREECNRVIEWSETTINGS
+		MENUITEM "Tree container sort settings",	IDM_TREECNRSORTSETTINGS
+		MENUITEM "Viewer settings",					IDM_VIEWERSETTINGS
+		MENUITEM "Viewer settings 2",					IDM_VIEWERSETTINGS2
+		MENUITEM "Compare settings",					IDM_COMPARESETTINGS
+		MENUITEM "Monolithic settings",				IDM_MONOLITHICSETTINGS
+		MENUITEM "General settings",					IDM_GENERALSETTINGS
+		MENUITEM "Scan settings",						IDM_SCANSETTINGS
+		MENUITEM "Bubbles settings",					IDM_BUBBLESSETTINGS
+		MENUITEM "Quick settings",						IDM_QUICKSETTINGS
+	 }
+	 MENUITEM "Set tar~get directory...\tCtrl + T",IDM_SETTARGET
+	 SUBMENU "~Toolbar",           IDM_TOOLSUBMENU
+	 {
+		MENUITEM "~Toggle toolbar", IDM_TOOLBAR
+		MENUITEM "Te~xt toolbar",   IDM_TEXTTOOLS
+		MENUITEM "Toolbar t~itles", IDM_TOOLTITLES
+	 }
+	 SUBMENU "A~utoview",          IDM_AUTOVIEWSUBMENU
+	 {
+		MENUITEM "Toggle ~autoview window\tF4",IDM_AUTOVIEW
+		MENUITEM "See ~file contents\tCtrl + F4",IDM_AUTOVIEWFILE
+		MENUITEM "See .~COMMENTS EA\tCtrl + Shift + F4",IDM_AUTOVIEWCOMMENTS
+	 }
+	 MENUITEM "Toggle ~quicklists\tF8",IDM_USERLIST
+	 MENUITEM "Toggle ~bottom buttons\tCtrl + F8",IDM_MOREBUTTONS
+	 MENUITEM "Toggle dri~vebar\tCtrl + Shift + F8",IDM_DRIVEBAR
+	 MENUITEM "Toggle ~confirm deletes",IDM_CONFIRMDELETE		// 2014-05-17 SHL
+	 MENUITEM "Toggle ~drag&drop prompting",IDM_TOGGLEDRAGDIALOG	// 12 Jan 08 SHL
+	 MENUITEM "Toggle ~immediate updates",IDM_SYNCUPDATES		// 16 Jan 08 SHL
+	 MENUITEM "",                  -1,           MIS_SEPARATOR
+	 SUBMENU "~Edit",		IDM_CFGEDITSUBMENU
+	 {
+		MENUITEM "Edit ~associations...",IDM_EDITASSOC
+		MENUITEM "Edit ~commands...", IDM_EDITCOMMANDS
+		MENUITEM "Edit an archi~ver...",IDM_EDITANYARCHIVER
+	 }
+	 SUBMENU "~Palette",		IDM_CFGPALETTESUBMENU
+	 {
+		 MENUITEM "~Font palette",     IDM_FONTPALETTE
+		 MENUITEM "~Color palette",    IDM_COLORPALETTE
+		 MENUITEM "~Hi-res color palette",IDM_HICOLORPALETTE
+	 }
+  }
+  SUBMENU "~Windows",             IDM_WINDOWSMENU
+  {
+	 SUBMENU  "~Tile",             IDM_TILEMENU
+	 {
+		MENUITEM "~Tile\tCtrl + t", IDM_TILE
+		MENUITEM "",                -1,           MIS_SEPARATOR
+		MENUITEM "~Autotile",       IDM_AUTOTILE
+		MENUITEM "Tile ~horizontal",IDM_TILEBACKWARDS
+	 }
+	 MENUITEM "~Cascade",          IDM_CASCADE
+	 MENUITEM "~Arrange icons",    IDM_ARRANGEICONS
+	 MENUITEM "~Dialog\tCtrl + W", IDM_WINDOWDLG
+	 MENUITEM "",                  -1,         MIS_SEPARATOR
+	 MENUITEM "~Restore",          IDM_RESTORE
+	 MENUITEM "~Minimize",         IDM_MINIMIZE
+	 MENUITEM "",                  -1,         MIS_SEPARATOR
+  }
+  SUBMENU "~Help",                -1
+  {
+	 MENUITEM "~Contents\tF1",        IDM_HELPCONTENTS
+	 MENUITEM "~General help",               IDM_HELPGENERAL
+	 MENUITEM "~Keys help\tCtrl + k",       IDM_HELPKEYS
+	 MENUITEM "~Mouse help",                 IDM_HELPMOUSE
+	 MENUITEM "~Tutorials",                  IDM_HELPTUTOR
+	 MENUITEM "~Hints and troubleshooting",  IDM_HELPHINTS
+	 MENUITEM "~Window layouts",             IDM_HELPPIX
+	 MENUITEM "Conte~xt menus",              IDM_HELPCONTEXT
+	 MENUITEM "",                            -1,         MIS_SEPARATOR
+	 MENUITEM "~About",                      IDM_ABOUT
+  }
+}
+
+MENU  MAIN2_FRAME
+{
+  SUBMENU "~Files",               IDM_FILESMENU
+  {
+	 MENUITEM "~Rename...\tCtrl + r",    IDM_RENAME
+	 MENUITEM "~Copy\tCtrl + c",         IDM_COPY
+	 MENUITEM "~Move...\tCtrl + m",      IDM_MOVE
+	 MENUITEM "~View\tCtrl + v",         IDM_VIEW
+	 MENUITEM "~Info...\tCtrl + i",      IDM_INFO
+	 MENUITEM "~Edit\tCtrl + e",         IDM_EDIT
+	 MENUITEM "~Attributes...\tCtrl + a",IDM_ATTRS
+	 MENUITEM "E~xtended attributes...\tCtrl + E",IDM_EAS
+	 MENUITEM "~Print\tCtrl + p",        IDM_PRINT
+	 SUBMENU "Comma~nds",                IDM_COMMANDSMENU
+	 {
+		MENUITEM "~Do it yourself...\tCtrl + F5",IDM_DOITYOURSELF
+	 }
+	 MENUITEM "Arc~hive...\tCtrl + A",   IDM_ARCHIVE
+	 MENUITEM "~Delete\tCtrl + d",       IDM_DELETE
+  }
+  SUBMENU "~Views",                     IDM_VIEWSMENU
+  {
+	 MENUITEM "~Icon view",              IDM_ICON
+	 MENUITEM "~Name view",              IDM_NAME
+	 MENUITEM "~Details view",           IDM_DETAILS
+	 MENUITEM "~Text view",              IDM_TEXT
+	 MENUITEM "",                  -1,                 MIS_SEPARATOR
+	 SUBMENU  "D~etails Setup",          IDM_DETAILSSETUP
+	 {
+		MENUITEM "To~ggle details titles",IDM_DETAILSTITLES
+		MENUITEM "Show ~icons",           IDM_SHOWICON      ,,MIA_NODISMISS
+		MENUITEM "Show ~longnames",       IDM_SHOWLNAMES    ,,MIA_NODISMISS
+		MENUITEM "Show ~subjects",        IDM_SHOWSUBJECT   ,,MIA_NODISMISS
+		MENUITEM "Show ~EAs",             IDM_SHOWEAS       ,,MIA_NODISMISS
+		MENUITEM "Show si~zes",           IDM_SHOWSIZE      ,,MIA_NODISMISS
+		MENUITEM "Show ~attributes",      IDM_SHOWATTR      ,,MIA_NODISMISS
+		MENUITEM "Show LW ~date",         IDM_SHOWLWDATE    ,,MIA_NODISMISS
+		MENUITEM "Show LW ~time",         IDM_SHOWLWTIME    ,,MIA_NODISMISS
+		MENUITEM "Show LA date",          IDM_SHOWLADATE    ,,MIA_NODISMISS
+		MENUITEM "Show LA time",          IDM_SHOWLATIME    ,,MIA_NODISMISS
+		MENUITEM "Show create date",      IDM_SHOWCRDATE    ,,MIA_NODISMISS
+		MENUITEM "Show create time",      IDM_SHOWCRTIME    ,,MIA_NODISMISS
+	 }
+	 MENUITEM "~Mini icons",             IDM_MINIICONS
+	 MENUITEM "",                  -1,                 MIS_SEPARATOR
+	 MENUITEM "~Filter\tCtrl + f",       IDM_FILTER
+         MENUITEM "",                -1,       MIS_SEPARATOR
+	 MENUITEM "~Rescan\tCtrl + R",       IDM_RESCAN
+         MENUITEM "Refresh Remo~vable Media",  IDM_REFRESHREMOVABLES
+	 MENUITEM "",                  -1,                 MIS_SEPARATOR
+	 MENUITEM "~.Parent\tCtrl + .",      IDM_PARENT
+	 MENUITEM "~Previous dir\tCtrl + >", IDM_PREVIOUS
+	 MENUITEM "",                  -1,                 MIS_SEPARATOR
+	 MENUITEM "Si~zes...\tCtrl + z",   IDM_SIZES
+	 MENUITEM "~Make directory...\tCtrl + M",IDM_MKDIR
+	 MENUITEM "",                        -1,                 MIS_SEPARATOR
+	 SUBMENU "Select\tCtrl + F8",        IDM_SELECTSUBMENU
+	 {
+		MENUITEM "Select ~all",           IDM_SELECTALL
+		MENUITEM "Select all ~files\tCtrl + /",IDM_SELECTALLFILES
+		MENUITEM "Select all ~dirs\tShift + Ctrl + ?",IDM_SELECTALLDIRS
+		MENUITEM "Select ~mask...\tCtrl + =",IDM_SELECTMASK
+		MENUITEM "Select ~clipboard\tCtrl + ]",IDM_SELECTCLIP
+		MENUITEM "Select ~list",          IDM_SELECTLIST
+		MENUITEM "",                  -1,               MIS_SEPARATOR
+		MENUITEM "~Deselect all\tCtrl + \\", IDM_DESELECTALL
+		MENUITEM "Deselect all files",    IDM_DESELECTALLFILES
+		MENUITEM "Deselect all dirs\tShift + Ctrl + |",IDM_DESELECTALLDIRS
+		MENUITEM "Deselect mask...\tCtrl + +",IDM_DESELECTMASK
+		MENUITEM "Deselect clipboard\tShift + Ctrl + }",IDM_DESELECTCLIP
+		MENUITEM "",                  -1,               MIS_SEPARATOR
+		MENUITEM "~Reselect\tCtrl + '",   IDM_RESELECT
+		MENUITEM "~Invert selection\tCtrl + ;",IDM_INVERT
+	 }
+	 SUBMENU "Comparison selections",      IDM_SELECTCOMPAREMENU
+	 {
+		MENUITEM "Select if in ~all",       IDM_SELECTBOTH
+		MENUITEM "Select if in ~one",       IDM_SELECTONE
+		MENUITEM "Select ~newest",          IDM_SELECTNEWER
+		MENUITEM "Select ol~dest",          IDM_SELECTOLDER
+		MENUITEM "Select ~largest",         IDM_SELECTBIGGER
+		MENUITEM "Select ~smallest",        IDM_SELECTSMALLER
+		MENUITEM "",                        -1,               MIS_SEPARATOR
+		MENUITEM "Deselect if in all",      IDM_DESELECTBOTH
+		MENUITEM "Deselect if in one",      IDM_DESELECTONE
+		MENUITEM "Deselect newest",         IDM_DESELECTNEWER
+		MENUITEM "Deselect oldest",         IDM_DESELECTOLDER
+		MENUITEM "Deselect largest",        IDM_DESELECTBIGGER
+		MENUITEM "Deselect smallest",       IDM_DESELECTSMALLER
+	 }
+	 MENUITEM "",                  -1,                 MIS_SEPARATOR
+	 SUBMENU "Sort\tCtrl + F7",            IDM_SORTSUBMENU
+	 {
+		MENUITEM "None",            IDM_SORTNONE
+		MENUITEM "~Pathname",       IDM_SORTNAME
+		MENUITEM "~Filename",       IDM_SORTFILENAME
+		MENUITEM "~Size",           IDM_SORTSIZE
+		MENUITEM "~EA size",        IDM_SORTEASIZE
+		MENUITEM "F~irst extension",IDM_SORTFIRST
+		MENUITEM "~Last extension", IDM_SORTLAST
+		MENUITEM "L~W date",        IDM_SORTLWDATE
+		MENUITEM "L~A date",        IDM_SORTLADATE
+		MENUITEM "C~reate date",    IDM_SORTCRDATE
+		MENUITEM "Sub~ject",        IDM_SORTSUBJECT
+		MENUITEM "",                -1,                 MIS_SEPARATOR
+		MENUITEM "Dirs first",      IDM_SORTDIRSFIRST
+		MENUITEM "Dirs last",       IDM_SORTDIRSLAST
+		MENUITEM "Re~verse",        IDM_SORTREVERSE
+	 }
+	 MENUITEM "Res~ort",           IDM_RESORT
+	 MENUITEM "",                  -1,                 MIS_SEPARATOR
+	 MENUITEM "Change one directory...\tCtrl + w", IDM_WALKDIR
+	 MENUITEM "Change both directories...\tCtrl + W",IDM_TWODIRS
+  }
+  SUBMENU "~Utilities",           IDM_UTILITIESMENU
+  {
+	 MENUITEM "~Collector...\tF2", IDM_COLLECTOR
+	 MENUITEM "~Seek & scan files...",IDM_GREP
+	 MENUITEM "See ~all files...", IDM_SEEALL
+	 MENUITEM "~Remap drives...",   IDM_REMAP
+	 SUBMENU "~Partition disks", IDM_PARTITIONSMENU
+{
+		  MENUITEM "~MiniLVM", IDM_PARTITION
+		  MENUITEM "~DFSee",   IDM_PARTITIONDF
+		  MENUITEM "~LVMGUI", IDM_PARTITIONLVMG
+                  MENUITEM "~LVMEXE", IDM_PARTITIONLVM
+		  MENUITEM "~FDisk", IDM_PARTITIONFD
+}
+	 MENUITEM "",                  -1,   MIS_SEPARATOR
+	 MENUITEM "Compar~e directories...",IDM_COMPARE
+	 MENUITEM "",                  -1,   MIS_SEPARATOR
+	 SUBMENU  "Command ~line",         IDM_COMMANDLINESUBMENU
+	 {
+		MENUITEM "OS/2 command ~line\tF9",IDM_COMMANDLINE
+		MENUITEM "~DOS command line",  IDM_DOSCOMMANDLINE
+		MENUITEM "~Win-OS/2 full screen",IDM_WINFULLSCREEN
+	 }
+  }
+  SUBMENU "~Config",              IDM_CONFIGMENU
+  {
+	 SUBMENU "~Settings notebook", IDM_NOTEBOOKSUBMENU
+	 {
+		MENUITEM "Directory container settings",	IDM_DIRCNRSETTINGS
+		MENUITEM "Directory view settings",			IDM_DIRVIEWSETTINGS
+		MENUITEM "Directory sort settings",			IDM_DIRSORTSETTINGS
+		MENUITEM "Collector view settings",			IDM_COLLECTORVIEWSETTINGS
+		MENUITEM "Collector sort settings",			IDM_COLLECTORSORTSETTINGS
+		MENUITEM "Archive container settings",		IDM_ARCHIVERSETTINGS
+		MENUITEM "Tree container view settings",	IDM_TREECNRVIEWSETTINGS
+		MENUITEM "Tree container sort settings",	IDM_TREECNRSORTSETTINGS
+		MENUITEM "Viewer settings",					IDM_VIEWERSETTINGS
+		MENUITEM "Viewer settings 2",					IDM_VIEWERSETTINGS2
+		MENUITEM "Compare settings",					IDM_COMPARESETTINGS
+		MENUITEM "Monolithic settings",				IDM_MONOLITHICSETTINGS
+		MENUITEM "General settings",					IDM_GENERALSETTINGS
+		MENUITEM "Scan settings",						IDM_SCANSETTINGS
+		MENUITEM "Bubbles settings",					IDM_BUBBLESSETTINGS
+	 }
+	 MENUITEM "Set tar~get directory...\tCtrl + T",IDM_SETTARGET
+	 MENUITEM "",                  -1,   MIS_SEPARATOR
+	 SUBMENU "~Toolbar",           IDM_TOOLSUBMENU
+	 {
+		MENUITEM "~Toggle toolbar", IDM_TOOLBAR
+		MENUITEM "Te~xt toolbar",   IDM_TEXTTOOLS
+		MENUITEM "Toolbar t~itles", IDM_TOOLTITLES
+	 }
+	 MENUITEM "Toggle ~confirm deletes",IDM_CONFIRMDELETE		// 2014-05-17 SHL
+	 MENUITEM "Toggle ~drag&drop prompting",IDM_TOGGLEDRAGDIALOG	// 2014-05-15 SHL
+	 MENUITEM "Toggle ~autoview window\tF4",IDM_AUTOVIEW
+	 MENUITEM "",                  -1,   MIS_SEPARATOR
+	 MENUITEM "Edit ~associations...",IDM_EDITASSOC
+	 MENUITEM "Edit ~commands...", IDM_EDITCOMMANDS
+  }
+  SUBMENU "~Windows",             IDM_WINDOWSMENU
+  {
+	 MENUITEM "Tile hori~zontal",  IDM_TILEBACKWARDS
+	 MENUITEM "~Drive tree",       IDM_VTREE
+  }
+  SUBMENU "~Help",                -1
+  {
+	 MENUITEM "~Contents\tF1",        IDM_HELPCONTENTS
+	 MENUITEM "~General help",               IDM_HELPGENERAL
+	 MENUITEM "~Keys help\tCtrl + k",      IDM_HELPKEYS
+	 MENUITEM "~Mouse help",                 IDM_HELPMOUSE
+	 MENUITEM "~Tutorials",                  IDM_HELPTUTOR
+	 MENUITEM "~Hints and troubleshooting",  IDM_HELPHINTS
+	 MENUITEM "~Window layouts",             IDM_HELPPIX
+	 MENUITEM "Conte~xt menus",              IDM_HELPCONTEXT
+	 MENUITEM "",                            -1,         MIS_SEPARATOR
+	 MENUITEM "~About",                      IDM_ABOUT
+  }
+}
+
+MENU IDM_AUTOVIEW
+{
+  MENUITEM "~View",                     IDM_VIEW
+  MENUITEM "~Info",                     IDM_INFO
+  MENUITEM "~Edit",                     IDM_EDIT
+  MENUITEM "",                          -1,           MIS_SEPARATOR
+  MENUITEM ".~COMMENTS EA\tCtrl + Shift + F4",IDM_AUTOVIEWCOMMENTS
+  MENUITEM "",                          -1,           MIS_SEPARATOR
+  MENUITEM "Close ~autoview window\tF4",IDM_AUTOVIEW
+}
+
+MENU IDM_AUTOVIEWMLE
+{
+  MENUITEM "~View",                     IDM_VIEW
+  MENUITEM "~Info",                     IDM_INFO
+  MENUITEM "~Edit EAs",                 IDM_EAS
+  MENUITEM "",                          -1,           MIS_SEPARATOR
+  MENUITEM "~Restore original .COMMENTS EA",IDM_RESCAN
+  MENUITEM "",                          -1,           MIS_SEPARATOR
+  MENUITEM "~File contents\tCtrl + F4", IDM_AUTOVIEWFILE
+  MENUITEM "",                          -1,           MIS_SEPARATOR
+  MENUITEM "Close ~autoview window\tF4",IDM_AUTOVIEW
+}
+
+MENU MAIN_POPUP
+{
+	 MENUITEM "~Settings notebook...", IDM_NOTEBOOK
+	 SUBMENU "~Toolbar",               IDM_TOOLSUBMENU
+	 {
+		MENUITEM "~Toggle toolbar",     IDM_TOOLBAR
+		MENUITEM "Te~xt toolbar",       IDM_TEXTTOOLS
+		MENUITEM "Toolbar t~itles",     IDM_TOOLTITLES
+	 }
+	 SUBMENU "A~utoview",              IDM_AUTOVIEWSUBMENU
+	 {
+		MENUITEM "Toggle ~autoview window\tF4",IDM_AUTOVIEW
+		MENUITEM "See ~file contents\tCtrl + F4",IDM_AUTOVIEWFILE
+		MENUITEM "See .~COMMENTS EA\tCtrl + Shift + F4",IDM_AUTOVIEWCOMMENTS
+	 }
+	 MENUITEM "Toggle ~quicklists",IDM_USERLIST
+	 MENUITEM "Toggle ~bottom buttons",IDM_MOREBUTTONS
+	 MENUITEM "Edit ~associations...",IDM_EDITASSOC
+	 MENUITEM "Edit ~commands...", IDM_EDITCOMMANDS
+	 MENUITEM "Edit an archi~ver...",IDM_EDITANYARCHIVER
+	 MENUITEM "Set tar~get directory...\tCtrl + T",IDM_SETTARGET
+	 MENUITEM "",                  -1,           MIS_SEPARATOR
+	 MENUITEM "~Font palette",     IDM_FONTPALETTE
+	 MENUITEM "Color ~palette",    IDM_COLORPALETTE
+	 MENUITEM "Hi-~res color palette",IDM_HICOLORPALETTE
+	 MENUITEM "",                  -1,         MIS_SEPARATOR
+	 MENUITEM "~Tile windows\tCtrl + t",  IDM_TILE
+	 MENUITEM "~Cascade windows\tCtrl + C",IDM_CASCADE
+	 MENUITEM "~Arrange icons",     IDM_ARRANGEICONS
+	 MENUITEM "~Window dialog\tCtrl + W", IDM_WINDOWDLG
+}
+
+ACCELTABLE  MAIN_FRAME
+{
+  "1",        IDM_COMMANDNUM0,        CONTROL
+  "2",        IDM_COMMANDNUM1,        CONTROL
+  "3",        IDM_COMMANDNUM2,        CONTROL
+  "4",        IDM_COMMANDNUM3,        CONTROL
+  "5",        IDM_COMMANDNUM4,        CONTROL
+  "6",        IDM_COMMANDNUM5,        CONTROL
+  "7",        IDM_COMMANDNUM6,        CONTROL
+  "8",        IDM_COMMANDNUM7,        CONTROL
+  "9",        IDM_COMMANDNUM8,        CONTROL
+  "0",        IDM_COMMANDNUM9,        CONTROL
+  "!",        IDM_COMMANDNUM10,       SHIFT,CONTROL
+  "@",        IDM_COMMANDNUM11,       SHIFT,CONTROL
+  "#",        IDM_COMMANDNUM12,       SHIFT,CONTROL
+  "$",        IDM_COMMANDNUM13,       SHIFT,CONTROL
+  "%",        IDM_COMMANDNUM14,       SHIFT,CONTROL
+  94,         IDM_COMMANDNUM15,       CHAR,SHIFT,CONTROL
+  "&",        IDM_COMMANDNUM16,       SHIFT,CONTROL
+  "*",        IDM_COMMANDNUM17,       SHIFT,CONTROL
+  "(",        IDM_COMMANDNUM18,       SHIFT,CONTROL
+  ")",        IDM_COMMANDNUM19,       SHIFT,CONTROL
+  "1",        IDM_COMMANDNUM20,       ALT
+  "2",        IDM_COMMANDNUM21,       ALT
+  "3",        IDM_COMMANDNUM22,       ALT
+  "4",        IDM_COMMANDNUM23,       ALT
+  "5",        IDM_COMMANDNUM24,       ALT
+  "6",        IDM_COMMANDNUM25,       ALT
+  "7",        IDM_COMMANDNUM26,       ALT
+  "8",        IDM_COMMANDNUM27,       ALT
+  "9",        IDM_COMMANDNUM28,       ALT
+  "0",        IDM_COMMANDNUM29,       ALT
+  "!",        IDM_COMMANDNUM30,       SHIFT,ALT
+  "@",        IDM_COMMANDNUM31,       SHIFT,ALT
+  "#",        IDM_COMMANDNUM32,       SHIFT,ALT
+  "$",        IDM_COMMANDNUM33,       SHIFT,ALT
+  "%",        IDM_COMMANDNUM34,       SHIFT,ALT
+  94,         IDM_COMMANDNUM35,       CHAR,SHIFT,ALT
+  "&",        IDM_COMMANDNUM36,       SHIFT,ALT
+  "*",        IDM_COMMANDNUM37,       SHIFT,ALT
+  "(",        IDM_COMMANDNUM38,       SHIFT,ALT
+  ")",        IDM_COMMANDNUM39,       SHIFT,ALT
+  "k",        IDM_HELPKEYS,           CONTROL
+  "O",        IDM_OPENWALK,           CONTROL,SHIFT
+  "T",        IDM_SETTARGET,          CONTROL,SHIFT
+  "t",        IDM_TILE,               CONTROL
+  "W",        IDM_WINDOWDLG,          CONTROL,SHIFT
+  VK_F4,      SC_CLOSE,               SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
+  VK_F5,      SC_RESTORE,             SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
+  VK_F7,      SC_MOVE,                SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
+  VK_F8,      SC_SIZE,                SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
+  VK_F9,      SC_MINIMIZE,            SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
+  VK_F10,     SC_MAXIMIZE,            SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
+  VK_F11,     SC_HIDE,                SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
+//  VK_F1,      IDM_HELP,               VIRTUALKEY
+  VK_F2,      IDM_COLLECTOR,          VIRTUALKEY
+  VK_F3,      IDM_KILLME,             CONTROL,VIRTUALKEY
+  VK_F3,      SC_CLOSE,               SYSCOMMAND,VIRTUALKEY
+  VK_F3,      IDM_EXIT,               CONTROL,VIRTUALKEY
+  VK_F4,      IDM_AUTOVIEWCOMMENTS,   CONTROL,SHIFT,VIRTUALKEY
+  VK_F4,      IDM_AUTOVIEWFILE,       CONTROL,VIRTUALKEY
+  VK_F4,      IDM_AUTOVIEW,           VIRTUALKEY
+  VK_F5,      IDM_CLI,                VIRTUALKEY
+  VK_F6,      IDM_OPENDEFAULT,        VIRTUALKEY
+  VK_F7,      IDM_OPENSETTINGS,       VIRTUALKEY
+  VK_F8,      IDM_DRIVEBAR,           CONTROL,SHIFT,VIRTUALKEY
+  VK_F8,      IDM_MOREBUTTONS,        CONTROL,VIRTUALKEY
+  VK_F8,      IDM_USERLIST,           VIRTUALKEY
+  VK_F9,      IDM_COMMANDLINE,        VIRTUALKEY
+  VK_F10,     IDM_BEGINEDIT,          CONTROL,VIRTUALKEY
+  VK_F11,     IDM_ENDEDIT,            CONTROL,VIRTUALKEY
+  VK_BACKTAB, IDM_PREVWINDOW,         SHIFT,VIRTUALKEY
+  VK_TAB,     IDM_TOAUTOMLE,          CONTROL,VIRTUALKEY
+  VK_TAB,     IDM_NEXTWINDOW,         VIRTUALKEY
+}
+
+ACCELTABLE  MAIN2_FRAME
+{
+  "1",        IDM_COMMANDNUM0,        CONTROL
+  "2",        IDM_COMMANDNUM1,        CONTROL
+  "3",        IDM_COMMANDNUM2,        CONTROL
+  "4",        IDM_COMMANDNUM3,        CONTROL
+  "5",        IDM_COMMANDNUM4,        CONTROL
+  "6",        IDM_COMMANDNUM5,        CONTROL
+  "7",        IDM_COMMANDNUM6,        CONTROL
+  "8",        IDM_COMMANDNUM7,        CONTROL
+  "9",        IDM_COMMANDNUM8,        CONTROL
+  "0",        IDM_COMMANDNUM9,        CONTROL
+  "!",        IDM_COMMANDNUM10,       SHIFT,CONTROL
+  "@",        IDM_COMMANDNUM11,       SHIFT,CONTROL
+  "#",        IDM_COMMANDNUM12,       SHIFT,CONTROL
+  "$",        IDM_COMMANDNUM13,       SHIFT,CONTROL
+  "%",        IDM_COMMANDNUM14,       SHIFT,CONTROL
+  94,         IDM_COMMANDNUM15,       CHAR,SHIFT,CONTROL
+  "&",        IDM_COMMANDNUM16,       SHIFT,CONTROL
+  "*",        IDM_COMMANDNUM17,       SHIFT,CONTROL
+  "(",        IDM_COMMANDNUM18,       SHIFT,CONTROL
+  ")",        IDM_COMMANDNUM19,       SHIFT,CONTROL
+  "1",        IDM_COMMANDNUM20,       ALT
+  "2",        IDM_COMMANDNUM21,       ALT
+  "3",        IDM_COMMANDNUM22,       ALT
+  "4",        IDM_COMMANDNUM23,       ALT
+  "5",        IDM_COMMANDNUM24,       ALT
+  "6",        IDM_COMMANDNUM25,       ALT
+  "7",        IDM_COMMANDNUM26,       ALT
+  "8",        IDM_COMMANDNUM27,       ALT
+  "9",        IDM_COMMANDNUM28,       ALT
+  "0",        IDM_COMMANDNUM29,       ALT
+  "!",        IDM_COMMANDNUM30,       SHIFT,ALT
+  "@",        IDM_COMMANDNUM31,       SHIFT,ALT
+  "#",        IDM_COMMANDNUM32,       SHIFT,ALT
+  "$",        IDM_COMMANDNUM33,       SHIFT,ALT
+  "%",        IDM_COMMANDNUM34,       SHIFT,ALT
+  94,         IDM_COMMANDNUM35,       CHAR,SHIFT,ALT
+  "&",        IDM_COMMANDNUM36,       SHIFT,ALT
+  "*",        IDM_COMMANDNUM37,       SHIFT,ALT
+  "(",        IDM_COMMANDNUM38,       SHIFT,ALT
+  ")",        IDM_COMMANDNUM39,       SHIFT,ALT
+  "k",        IDM_HELPKEYS,           CONTROL
+  "T",        IDM_SETTARGET,          CONTROL,SHIFT
+  "W",        IDM_TWODIRS,            SHIFT,CONTROL
+  VK_F4,      SC_CLOSE,               SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
+  VK_F5,      SC_RESTORE,             SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
+  VK_F7,      SC_MOVE,                SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
+  VK_F8,      SC_SIZE,                SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
+  VK_F9,      SC_MINIMIZE,            SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
+  VK_F10,     SC_MAXIMIZE,            SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
+  VK_F11,     SC_HIDE,                SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
+  VK_F1,      IDM_HELP,               VIRTUALKEY
+  VK_F2,      IDM_COLLECTOR,          VIRTUALKEY
+  VK_F3,      IDM_KILLME,             CONTROL,VIRTUALKEY
+  VK_F3,      IDM_EXIT,               CONTROL,VIRTUALKEY
+  VK_F3,      SC_CLOSE,               SYSCOMMAND,VIRTUALKEY
+  VK_F4,      IDM_AUTOVIEWCOMMENTS,   CONTROL,SHIFT,VIRTUALKEY
+  VK_F4,      IDM_AUTOVIEWFILE,       CONTROL,VIRTUALKEY
+  VK_F4,      IDM_AUTOVIEW,           VIRTUALKEY
+  VK_F5,      IDM_TWODIRS,            CONTROL,SHIFT,VIRTUALKEY
+  VK_F5,      IDM_CLI,                VIRTUALKEY
+  VK_F6,      IDM_OPENDEFAULT,        VIRTUALKEY
+  VK_F7,      IDM_OPENSETTINGS,       VIRTUALKEY
+  VK_F9,      IDM_COMMANDLINE,        VIRTUALKEY
+  VK_F10,     IDM_BEGINEDIT,          CONTROL,VIRTUALKEY
+  VK_F11,     IDM_ENDEDIT,            CONTROL,VIRTUALKEY
+  VK_BACKTAB, IDM_PREVWINDOW,         SHIFT,VIRTUALKEY
+  VK_TAB,     IDM_TOAUTOMLE,          CONTROL,VIRTUALKEY
+  VK_TAB,     IDM_NEXTWINDOW,         VIRTUALKEY
+}
+
+MENU TREE_FRAME
+{
+  SUBMENU "~Files",               IDM_FILESMENU
+  {
+  }
+  SUBMENU "~Views",               IDM_VIEWSMENU
+  {
+  }
+  MENUITEM "~Help",               IDM_HELP
+}
+
+ACCELTABLE  TREE_FRAME
+{
+  "A",         IDM_ARCHIVE,           SHIFT,CONTROL
+  "a",         IDM_ATTRS,             CONTROL
+  "C",         IDM_COLLECT,           SHIFT,CONTROL
+  "c",         IDM_COPY,              CONTROL
+  "D",         IDM_PERMDELETE,        CONTROL,SHIFT
+  "d",         IDM_DELETE,            CONTROL
+  "E",         IDM_EAS,               CONTROL,SHIFT
+  "F",         IDM_FINDINTREE,        CONTROL,SHIFT
+  "f",         IDM_FILTER,            CONTROL
+  "G",         IDM_SHOWALLFILES,      SHIFT,CONTROL
+  "H",         IDM_DETACH,            SHIFT,CONTROL
+  "i",         IDM_INFO,              CONTROL
+  "M",         IDM_MKDIR,             CONTROL,SHIFT
+  "m",         IDM_MOVE,              CONTROL
+  "o",         IDM_OPENWINDOW,        CONTROL
+  "R",         IDM_RESCAN,            SHIFT,CONTROL
+  "r",         IDM_RENAME,            CONTROL
+  "S",         IDM_SAVETOLIST,        SHIFT,CONTROL
+  "s",         IDM_SUBJECT,           CONTROL
+  "T",         IDM_SETTARGET,         CONTROL,SHIFT
+  "u",         IDM_UPDATE,            CONTROL
+  "z",         IDM_SIZES,             CONTROL
+  "_",         IDM_COLLAPSEALL,       SHIFT,CONTROL
+  "-",         IDM_COLLAPSEALL,       SHIFT,CONTROL
+  "-",         IDM_COLLAPSE,          CONTROL
+  "+",         IDM_EXPAND,            SHIFT,CONTROL
+  "+",         IDM_EXPAND,            CONTROL
+  "{",         IDM_APPENDTOCLIP,      SHIFT,CONTROL
+  "{",         IDM_APPENDTOCLIPFILENAME, SHIFT,ALT
+  "[",         IDM_SAVETOCLIP,        CONTROL
+  "[",         IDM_SAVETOCLIPFILENAME, ALT
+  VK_F1,       IDM_HELP,              VIRTUALKEY
+  VK_F3,       SC_CLOSE,              SYSCOMMAND,VIRTUALKEY
+  VK_F5,       IDM_DOITYOURSELF,      CONTROL,VIRTUALKEY
+  VK_F6,       IDM_OPENDEFAULT,       VIRTUALKEY
+  VK_F7,       IDM_OPENSETTINGS,      VIRTUALKEY
+  VK_F7,       IDM_SHOWSORT,          CONTROL,VIRTUALKEY
+  VK_F8,       IDM_SHOWSELECT,        CONTROL,VIRTUALKEY
+  VK_F10,      IDM_CONTEXTMENU,       SHIFT,VIRTUALKEY
+}
+
+MENU DIR_SELECTED
+{
+  MENUITEM "Select ~all",           IDM_SELECTALL
+  MENUITEM "Select all ~files\tCtrl + /",IDM_SELECTALLFILES
+  MENUITEM "Select all ~dirs\tShift + Ctrl + ?",IDM_SELECTALLDIRS
+  MENUITEM "Select ~mask...\tCtrl + =",IDM_SELECTMASK
+  MENUITEM "Select ~clipboard\tCtrl + ]",IDM_SELECTCLIP
+  MENUITEM "Select ~list",          IDM_SELECTLIST
+  MENUITEM "",                  -1,               MIS_SEPARATOR
+  MENUITEM "Deselect all\tCtrl + \\", IDM_DESELECTALL
+  MENUITEM "Deselect all files",    IDM_DESELECTALLFILES
+  MENUITEM "Deselect all dirs\tShift + Ctrl + |",IDM_DESELECTALLDIRS
+  MENUITEM "Deselect mask...\tCtrl + +",IDM_DESELECTMASK
+  MENUITEM "Deselect clipboard\tShift + Ctrl + }",IDM_DESELECTCLIP
+  MENUITEM "",                  -1,               MIS_SEPARATOR
+  MENUITEM "~Reselect\tCtrl + '",   IDM_RESELECT
+  MENUITEM "~Invert selection\tCtrl + ;",IDM_INVERT
+}
+
+MENU DIR_MAX
+{
+  MENUITEM "Comparison selection menu",-1,              MIS_STATIC, MIA_FRAMED
+  MENUITEM "",                        -1,               MIS_SEPARATOR
+  MENUITEM "Select if in ~all",       IDM_SELECTBOTH
+  MENUITEM "Select if in ~more than one",IDM_SELECTMORE
+  MENUITEM "Select if in ~one",       IDM_SELECTONE
+  MENUITEM "Select ~newest",          IDM_SELECTNEWER
+  MENUITEM "Select ol~dest",          IDM_SELECTOLDER
+  MENUITEM "Select ~largest",         IDM_SELECTBIGGER
+  MENUITEM "Select ~smallest",        IDM_SELECTSMALLER
+  MENUITEM "",                        -1,               MIS_SEPARATOR
+  MENUITEM "Deselect if in all",      IDM_DESELECTBOTH
+  MENUITEM "Deselect if in more than one",IDM_DESELECTMORE
+  MENUITEM "Deselect if in one",      IDM_DESELECTONE
+  MENUITEM "Deselect newest",         IDM_DESELECTNEWER
+  MENUITEM "Deselect oldest",         IDM_DESELECTOLDER
+  MENUITEM "Deselect largest",        IDM_DESELECTBIGGER
+  MENUITEM "Deselect smallest",       IDM_DESELECTSMALLER
+}
+
+MENU DIR_VIEW
+{
+  MENUITEM "~Icon view",              IDM_ICON
+  MENUITEM "~Name view",              IDM_NAME
+  MENUITEM "~Details view",           IDM_DETAILS
+  MENUITEM "Te~xt view",              IDM_TEXT
+  MENUITEM "~Tree view",              IDM_TREEVIEW
+  MENUITEM "",                        -1,                 MIS_SEPARATOR
+  SUBMENU  "D~etails setup",          IDM_DETAILSSETUP
+  {
+	 MENUITEM "To~ggle details titles",IDM_DETAILSTITLES
+	 MENUITEM "Show ~icons",           IDM_SHOWICON      ,,MIA_NODISMISS
+	 MENUITEM "Show ~longnames",       IDM_SHOWLNAMES    ,,MIA_NODISMISS
+	 MENUITEM "Show ~subjects",        IDM_SHOWSUBJECT   ,,MIA_NODISMISS
+	 MENUITEM "Show ~EAs",             IDM_SHOWEAS       ,,MIA_NODISMISS
+	 MENUITEM "Show si~zes",           IDM_SHOWSIZE      ,,MIA_NODISMISS
+	 MENUITEM "Show ~attributes",      IDM_SHOWATTR      ,,MIA_NODISMISS
+	 MENUITEM "Show LW ~date",         IDM_SHOWLWDATE    ,,MIA_NODISMISS
+	 MENUITEM "Show LW ~time",         IDM_SHOWLWTIME    ,,MIA_NODISMISS
+	 MENUITEM "Show LA date",          IDM_SHOWLADATE    ,,MIA_NODISMISS
+	 MENUITEM "Show LA time",          IDM_SHOWLATIME    ,,MIA_NODISMISS
+	 MENUITEM "Show create date",      IDM_SHOWCRDATE    ,,MIA_NODISMISS
+	 MENUITEM "Show create time",      IDM_SHOWCRTIME    ,,MIA_NODISMISS
+  }
+  MENUITEM "",                       -1,                 MIS_SEPARATOR
+  MENUITEM "~Mini icons",             IDM_MINIICONS
+}
+
+MENU DIR_SORT
+{
+  MENUITEM "None",            IDM_SORTNONE
+  MENUITEM "~Pathname",       IDM_SORTNAME
+  MENUITEM "~Filename",       IDM_SORTFILENAME
+  MENUITEM "~Size",           IDM_SORTSIZE
+  MENUITEM "~EA size",        IDM_SORTEASIZE
+  MENUITEM "F~irst extension",IDM_SORTFIRST
+  MENUITEM "~Last extension", IDM_SORTLAST
+  MENUITEM "LW ~date",        IDM_SORTLWDATE
+  MENUITEM "L~A date",        IDM_SORTLADATE
+  MENUITEM "C~reate date",    IDM_SORTCRDATE
+  MENUITEM "Sub~ject",        IDM_SORTSUBJECT
+  MENUITEM "",                -1,                 MIS_SEPARATOR
+  MENUITEM "Dirs first",      IDM_SORTDIRSFIRST
+  MENUITEM "Dirs last",       IDM_SORTDIRSLAST
+  MENUITEM "Re~verse",        IDM_SORTREVERSE
+  MENUITEM "",                -1,                 MIS_SEPARATOR
+  MENUITEM "Res~ort",         IDM_RESORT
+}
+
+MENU DIR_FRAME
+{
+  SUBMENU "~Files",               IDM_FILESMENU
+  {
+  }
+  SUBMENU "~Views",               IDM_VIEWSMENU
+  {
+  }
+  MENUITEM "~Help",               IDM_HELP
+}
+
+ACCELTABLE  DIR_FRAME
+{
+  "A",         IDM_ARCHIVE,           SHIFT,CONTROL
+  "a",         IDM_ATTRS,             CONTROL
+  "C",         IDM_COLLECT,           SHIFT,CONTROL
+  "c",         IDM_COPY,              CONTROL
+  "D",         IDM_PERMDELETE,        CONTROL,SHIFT
+  "d",         IDM_DELETE,            CONTROL
+  "E",         IDM_EAS,               CONTROL,SHIFT
+  "e",         IDM_EDIT,              CONTROL
+  "F",         IDM_FINDINTREE,        CONTROL,SHIFT
+  "f",         IDM_FILTER,            CONTROL
+  "G",         IDM_SHOWALLFILES,      SHIFT,CONTROL
+  "g",         IDM_SHOWALLFILESCNR,   CONTROL
+  "i",         IDM_INFO,              CONTROL
+  "l",         IDM_MCIPLAY,           CONTROL
+  "M",         IDM_MKDIR,             CONTROL,SHIFT
+  "m",         IDM_MOVE,              CONTROL
+  "o",         IDM_OPENWINDOW,        CONTROL
+  "P",         IDM_PREVIOUS,          CONTROL,SHIFT
+  "p",         IDM_PRINT,             CONTROL
+  "Q",         IDM_QTREE,             CONTROL,SHIFT
+  "q",         IDM_TREE,              CONTROL
+  "R",         IDM_RESCAN,            SHIFT,CONTROL
+  "r",         IDM_RENAME,            CONTROL
+  "S",         IDM_SAVETOLIST,        SHIFT,CONTROL
+  "s",         IDM_SUBJECT,           CONTROL
+  "T",         IDM_SETTARGET,         CONTROL,SHIFT
+  "U",         IDM_UUDECODE,          SHIFT,CONTROL
+  "u",         IDM_UPDATE,            CONTROL
+  "V",         IDM_UNLOCKFILE,        SHIFT,CONTROL
+  "v",         IDM_VIEW,              CONTROL
+  "w",         IDM_WALKDIR,           CONTROL
+  "x",         IDM_EXTRACT,           CONTROL
+  "z",         IDM_SIZES,             CONTROL
+  ">",         IDM_PREVIOUS,          SHIFT,CONTROL
+  ".",         IDM_PARENT,            CONTROL
+  "+",         IDM_DESELECTMASK,      SHIFT,CONTROL
+  "=",         IDM_SELECTMASK,        CONTROL
+  "?",         IDM_SELECTALLDIRS,     SHIFT,CONTROL
+  "/",         IDM_SELECTALLFILES,    CONTROL
+  "|",         IDM_DESELECTALLDIRS,   SHIFT,CONTROL
+  "\\",        IDM_DESELECTALL,       CONTROL
+  "{",         IDM_APPENDTOCLIP,      SHIFT,CONTROL
+  "{",         IDM_APPENDTOCLIPFILENAME, SHIFT,ALT
+  "[",         IDM_SAVETOCLIP,        CONTROL
+  "[",         IDM_SAVETOCLIPFILENAME,ALT
+  "}",         IDM_DESELECTCLIP,      SHIFT,CONTROL
+  "]",         IDM_SELECTCLIP,        CONTROL
+  ";",         IDM_INVERT,            CONTROL
+  "'",         IDM_RESELECT,          CONTROL
+  VK_F1,       IDM_HELP,              VIRTUALKEY
+  VK_F3,       SC_CLOSE,              SYSCOMMAND,VIRTUALKEY
+  VK_F5,       IDM_DOITYOURSELF,      CONTROL,VIRTUALKEY
+  VK_F6,       IDM_OPENDEFAULT,       VIRTUALKEY
+  VK_F7,       IDM_OPENSETTINGS,      VIRTUALKEY
+  VK_F7,       IDM_SHOWSORT,          CONTROL,VIRTUALKEY
+  VK_F8,       IDM_SHOWSELECT,        CONTROL,VIRTUALKEY
+  VK_F10,      IDM_CONTEXTMENU,       SHIFT,VIRTUALKEY
+}
+
+MENU DIR_FOLDERICON
+{
+  MENUITEM "~Previous dir\tCtrl + >", IDM_PREVIOUS
+  MENUITEM "~Rescan\tCtrl + R",       IDM_RESCAN
+  MENUITEM "~.Parent\tCtrl + .",      IDM_PARENT
+  MENUITEM "~Walk dirs...\tCtrl + w", IDM_WALKDIR
+}
+
+MENU DIRCNR_POPUP
+{
+  MENUITEM "~Icon view",              IDM_ICON
+  MENUITEM "~Name view",              IDM_NAME
+  MENUITEM "~Details view",           IDM_DETAILS
+  MENUITEM "Te~xt view",              IDM_TEXT
+  MENUITEM "~Tree view",              IDM_TREEVIEW
+  MENUITEM "",                  -1,                 MIS_SEPARATOR
+  SUBMENU  "D~etails Setup",          IDM_DETAILSSETUP
+  {
+	 MENUITEM "To~ggle details titles",IDM_DETAILSTITLES
+	 MENUITEM "Show ~icons",           IDM_SHOWICON      ,,MIA_NODISMISS
+	 MENUITEM "Show ~longnames",       IDM_SHOWLNAMES    ,,MIA_NODISMISS
+	 MENUITEM "Show ~subjects",        IDM_SHOWSUBJECT   ,,MIA_NODISMISS
+	 MENUITEM "Show ~EAs",             IDM_SHOWEAS       ,,MIA_NODISMISS
+	 MENUITEM "Show si~zes",           IDM_SHOWSIZE      ,,MIA_NODISMISS
+	 MENUITEM "Show ~attributes",      IDM_SHOWATTR      ,,MIA_NODISMISS
+	 MENUITEM "Show LW ~date",         IDM_SHOWLWDATE    ,,MIA_NODISMISS
+	 MENUITEM "Show LW ~time",         IDM_SHOWLWTIME    ,,MIA_NODISMISS
+	 MENUITEM "Show LA date",          IDM_SHOWLADATE    ,,MIA_NODISMISS
+	 MENUITEM "Show LA time",          IDM_SHOWLATIME    ,,MIA_NODISMISS
+	 MENUITEM "Show create date",      IDM_SHOWCRDATE    ,,MIA_NODISMISS
+	 MENUITEM "Show create time",      IDM_SHOWCRTIME    ,,MIA_NODISMISS
+  }
+  MENUITEM "~Mini icons",             IDM_MINIICONS
+  MENUITEM "",                  -1,                 MIS_SEPARATOR
+  MENUITEM "~Filter\tCtrl + f",       IDM_FILTER
+  MENUITEM "Res~ort",                 IDM_RESORT
+  MENUITEM "~Rescan\tCtrl + R",       IDM_RESCAN
+  MENUITEM "",                  -1,                 MIS_SEPARATOR
+  MENUITEM "~.Parent\tCtrl + .",      IDM_PARENT
+  MENUITEM "~Previous dir\tCtrl + >", IDM_PREVIOUS
+  MENUITEM "~Walk dirs...\tCtrl + w", IDM_WALKDIR
+  MENUITEM "~Make directory...\tCtrl + M",IDM_MKDIR
+  MENUITEM "~Quick tree...\tCtrl + Q",IDM_QTREE
+  SUBMENU  "Open",                    IDM_OPENSUBMENU
+  {
+	 MENUITEM "~Icon",                 IDM_OPENICONME
+	 MENUITEM "~Details",              IDM_OPENDETAILSME
+	 MENUITEM "~Tree",                 IDM_OPENTREEME
+	 MENUITEM "~Settings",             IDM_OPENSETTINGSME
+  }
+  SUBMENU  "Miscellaneous",           IDM_MISCSUBMENU
+  {
+	 MENUITEM "Si~zes...\tCtrl + z",   IDM_SIZES
+	 MENUITEM "~Undelete files...",    IDM_UNDELETESPEC
+	 MENUITEM "~Find in drive tree\tCtrl + F",IDM_FINDINTREE
+	 MENUITEM "~Show all files...\tCtrl + g",IDM_SHOWALLFILESCNR
+  }
+  MENUITEM "",                        -1,                 MIS_SEPARATOR
+  SUBMENU "Select\tCtrl + F8",        IDM_SELECTSUBMENU
+  {
+	 MENUITEM "Select ~all",           IDM_SELECTALL
+	 MENUITEM "Select all ~files\tCtrl + /",IDM_SELECTALLFILES
+	 MENUITEM "Select all ~dirs\tShift + Ctrl + ?",IDM_SELECTALLDIRS
+	 MENUITEM "Select ~mask...\tCtrl + =",IDM_SELECTMASK
+	 MENUITEM "Select ~clipboard\tCtrl + ]",IDM_SELECTCLIP
+	 MENUITEM "Select ~list",          IDM_SELECTLIST
+	 MENUITEM "",                  -1,               MIS_SEPARATOR
+	 MENUITEM "Deselect all\tCtrl + \\", IDM_DESELECTALL
+	 MENUITEM "Deselect all files",    IDM_DESELECTALLFILES
+	 MENUITEM "Deselect all dirs\tShift + Ctrl + |",IDM_DESELECTALLDIRS
+	 MENUITEM "Deselect mask...\tCtrl + +",IDM_DESELECTMASK
+	 MENUITEM "Deselect clipboard\tShift + Ctrl + }",IDM_DESELECTCLIP
+	 MENUITEM "",                  -1,               MIS_SEPARATOR
+	 MENUITEM "~Reselect\tCtrl + '",   IDM_RESELECT
+	 MENUITEM "~Invert selection\tCtrl + ;",IDM_INVERT
+  }
+  SUBMENU "Comparison selections",      IDM_SELECTCOMPAREMENU
+  {
+	 MENUITEM "Select if in ~all",       IDM_SELECTBOTH
+	 MENUITEM "Select if in ~more than one",IDM_SELECTMORE
+	 MENUITEM "Select if in ~one",       IDM_SELECTONE
+	 MENUITEM "Select ~newest",          IDM_SELECTNEWER
+	 MENUITEM "Select ol~dest",          IDM_SELECTOLDER
+	 MENUITEM "Select ~largest",         IDM_SELECTBIGGER
+	 MENUITEM "Select ~smallest",        IDM_SELECTSMALLER
+	 MENUITEM "",                        -1,               MIS_SEPARATOR
+	 MENUITEM "Deselect if in all",      IDM_DESELECTBOTH
+	 MENUITEM "Deselect if in more than one",IDM_DESELECTMORE
+	 MENUITEM "Deselect if in one",      IDM_DESELECTONE
+	 MENUITEM "Deselect newest",         IDM_DESELECTNEWER
+	 MENUITEM "Deselect oldest",         IDM_DESELECTOLDER
+	 MENUITEM "Deselect largest",        IDM_DESELECTBIGGER
+	 MENUITEM "Deselect smallest",       IDM_DESELECTSMALLER
+  }
+  SUBMENU "Sort\tCtrl + F7",            IDM_SORTSUBMENU
+  {
+	 MENUITEM "None",            IDM_SORTNONE
+	 MENUITEM "~Pathname",       IDM_SORTNAME
+	 MENUITEM "~Filename",       IDM_SORTFILENAME
+	 MENUITEM "~Size",           IDM_SORTSIZE
+	 MENUITEM "~EA size",        IDM_SORTEASIZE
+	 MENUITEM "F~irst extension",IDM_SORTFIRST
+	 MENUITEM "~Last extension", IDM_SORTLAST
+	 MENUITEM "LW ~date",        IDM_SORTLWDATE
+	 MENUITEM "L~A date",        IDM_SORTLADATE
+	 MENUITEM "C~reate date",    IDM_SORTCRDATE
+	 MENUITEM "Sub~ject",        IDM_SORTSUBJECT
+	 MENUITEM "",                -1,                 MIS_SEPARATOR
+	 MENUITEM "Dirs first",      IDM_SORTDIRSFIRST
+	 MENUITEM "Dirs last",       IDM_SORTDIRSLAST
+	 MENUITEM "Re~verse",        IDM_SORTREVERSE
+  }
+  MENUITEM "",                  -1,                 MIS_SEPARATOR
+  MENUITEM "~Settings notebook...", IDM_DIRCNRSETTINGS   // 15 Feb 08 SHL was IDM_NOTEBOOK
+  MENUITEM "Set tar~get directory...\tCtrl + T",IDM_SETTARGET
+  MENUITEM "",                  -1,                 MIS_SEPARATOR
+  SUBMENU "Windows",            IDM_WINDOWSMENU
+  {
+  }
+}
+
+MENU TREECNR_POPUP
+{
+  MENUITEM "~Mini icons",       IDM_MINIICONS
+  MENUITEM "~Toggle icons",     IDM_TEXT
+  MENUITEM "",                -1,       MIS_SEPARATOR
+  MENUITEM "~Rescan\tCtrl + R",   IDM_RESCAN
+  MENUITEM "Refresh Remo~vable Media",  IDM_REFRESHREMOVABLES
+  MENUITEM "",                -1,       MIS_SEPARATOR
+  MENUITEM "~Filter...\tCtrl + f",IDM_FILTER
+  MENUITEM "Res~ort",           IDM_RESORT
+  MENUITEM "~Collapse\tCtrl + _",IDM_COLLAPSEALL
+  SUBMENU "~Sort\tCtrl + F7",   IDM_SORTSUBMENU
+  {
+	 MENUITEM "~Pathname",       IDM_SORTNAME
+	 MENUITEM "~Filename",       IDM_SORTFILENAME
+/*
+	 MENUITEM "~Size",           IDM_SORTSIZE
+*/
+	 MENUITEM "~EA size",        IDM_SORTEASIZE
+	 MENUITEM "F~irst extension",IDM_SORTFIRST
+	 MENUITEM "~Last extension", IDM_SORTLAST
+	 MENUITEM "LW ~date",        IDM_SORTLWDATE
+	 MENUITEM "L~A date",        IDM_SORTLADATE
+	 MENUITEM "C~reate date",    IDM_SORTCRDATE
+	 MENUITEM "",                -1,                 MIS_SEPARATOR
+/*
+	 MENUITEM "Dirs first",      IDM_SORTDIRSFIRST
+	 MENUITEM "Dirs last",       IDM_SORTDIRSLAST
+*/
+	 MENUITEM "Re~verse sort",   IDM_SORTREVERSE
+  }
+  MENUITEM "",                  -1,                 MIS_SEPARATOR
+  MENUITEM "~Settings notebook...", IDM_TREECNRVIEWSETTINGS // 15 Feb 08 SHL was IDM_NOTEBOOK
+  MENUITEM "Set tar~get directory...\tCtrl + T",IDM_SETTARGET
+  MENUITEM "",                  -1,                 MIS_SEPARATOR
+  MENUITEM "~Open directory container...\tCtrl + O",IDM_OPENWALK
+  MENUITEM "",                  -1,                 MIS_SEPARATOR
+  MENUITEM "~Remap drives...",   IDM_REMAP
+  MENUITEM "",                  -1,                 MIS_SEPARATOR
+  SUBMENU "~Partition disks", IDM_PARTITIONSMENU
+	  {
+		  MENUITEM "~MiniLVM", IDM_PARTITION
+		  MENUITEM "~DFSee",   IDM_PARTITIONDF
+		  MENUITEM "~LVMGUI", IDM_PARTITIONLVMG
+                  MENUITEM "~LVMEXE", IDM_PARTITIONLVM
+		  MENUITEM "~FDisk", IDM_PARTITIONFD
+		}
+  MENUITEM "",                  -1,                 MIS_SEPARATOR
+  SUBMENU "Windows",            IDM_WINDOWSMENU
+  {
+  }
+}
+
+MENU DIR_RESTORE
+{
+  MENUITEM "Select ~all",       IDM_SELECTALL
+  MENUITEM "Select ~mask...\tCtrl + =",IDM_SELECTMASK
+  MENUITEM "",                  -1,                   MIS_SEPARATOR
+  MENUITEM "Deselect all\tCtrl + \\", IDM_DESELECTALL
+  MENUITEM "Deselect mask....Ctrl + +",IDM_DESELECTMASK
+  MENUITEM "",                  -1,                   MIS_SEPARATOR
+  MENUITEM "~Reselect\tCtrl + '",     IDM_RESELECT
+  MENUITEM "~Invert selection\tCtrl + ;",IDM_INVERT
+}
+
+
+MENU ARCCNR_POPUP
+{
+  MENUITEM "~Rescan\tCtrl + R",    IDM_RESCAN
+  MENUITEM "~Filter...\tCtrl + f", IDM_FILTER
+  MENUITEM "Res~ort",           IDM_RESORT
+  MENUITEM "",                  -1,                   MIS_SEPARATOR
+  MENUITEM "~Test",             IDM_TEST
+	 MENUITEM "Extract all",       IDM_ARCEXTRACT
+	 MENUITEM "Extract all & close",IDM_ARCEXTRACTEXIT
+	 MENUITEM "Extract all w/ dirs",IDM_ARCEXTRACTWDIRS
+	 MENUITEM "Extract all w/ dirs & close",IDM_ARCEXTRACTWDIRSEXIT
+  MENUITEM "",                  -1,                   MIS_SEPARATOR
+  MENUITEM "~Walk to extract dir...\tCtrl + w",IDM_WALKDIR
+  MENUITEM "",                  -1,                   MIS_SEPARATOR
+  SUBMENU "Select\tCtrl + F8",    IDM_SELECTSUBMENU
+  {
+	 MENUITEM "Select ~all",       IDM_SELECTALL
+	 MENUITEM "Select ~mask...\tCtrl + =",IDM_SELECTMASK
+	 MENUITEM "",                  -1,                   MIS_SEPARATOR
+	 MENUITEM "Deselect all\tCtrl + \\", IDM_DESELECTALL
+	 MENUITEM "Deselect mask....Ctrl + +",IDM_DESELECTMASK
+	 MENUITEM "",                  -1,                   MIS_SEPARATOR
+	 MENUITEM "~Reselect\tCtrl + '",     IDM_RESELECT
+	 MENUITEM "~Invert selection\tCtrl + ;",IDM_INVERT
+  }
+  SUBMENU "Sort\tCtrl + F7",    IDM_SORTSUBMENU
+  {
+	 MENUITEM "~Filename",       IDM_SORTFILENAME
+	 MENUITEM "New ~size",       IDM_SORTEASIZE
+	 MENUITEM "~Old size",       IDM_SORTSIZE
+	 MENUITEM "F~irst extension",IDM_SORTFIRST
+	 MENUITEM "~Last extension", IDM_SORTLAST
+	 MENUITEM "~Date",           IDM_SORTLWDATE
+	 MENUITEM "",                -1,                 MIS_SEPARATOR
+	 MENUITEM "Re~verse sort",   IDM_SORTREVERSE
+  }
+  MENUITEM "",                  -1,                 MIS_SEPARATOR
+  MENUITEM "~Settings notebook...", IDM_ARCHIVERSETTINGS // 15 Feb 08 SHL was IDM_NOTEBOOK
+  MENUITEM "Folder after extract",IDM_FOLDERAFTEREXTRACT
+  SUBMENU "Windows",              IDM_WINDOWSMENU
+  {
+  }
+}
+
+MENU FILE_POPUP
+{
+  MENUITEM "~Rename...\tCtrl + r",    IDM_RENAME
+  SUBMENU  "~Copy",                   IDM_COPYMENU
+  {
+	 MENUITEM "~Copy...\tCtrl + c",    IDM_COPY
+	 MENUITEM "Copy and ~rename...",   IDM_WILDCOPY
+	 MENUITEM "Merge...",              IDM_MERGE
+	 MENUITEM "",                      -1,           MIS_SEPARATOR
+	 MENUITEM "~WPS copy...",           IDM_WPSCOPY
+  }
+  SUBMENU  "~Move",                   IDM_MOVEMENU
+  {
+	 MENUITEM "~Move...\tCtrl + m",    IDM_MOVE
+	 MENUITEM "Move and ~rename...",   IDM_WILDMOVE
+	 MENUITEM "",                      -1,           MIS_SEPARATOR
+	 MENUITEM "~WPS move...",           IDM_WPSMOVE
+  }
+  SUBMENU "~View",              IDM_VIEWSUBMENU
+  {
+	 MENUITEM "~Autoview\tCtrl + v",   IDM_VIEW
+	 MENUITEM "as ~text",        IDM_VIEWTEXT
+	 MENUITEM "as ~binary",      IDM_VIEWBINARY
+	 MENUITEM "as archive",      IDM_VIEWARCHIVE
+	 MENUITEM "",                -1,               MIS_SEPARATOR
+	 MENUITEM "~Info...\tCtrl + i",    IDM_INFO
+	 MENUITEM "",                -1,               MIS_SEPARATOR
+	 MENUITEM "U~pdate objects\tCtrl + u",IDM_UPDATE
+	 MENUITEM "~Hide objects",   IDM_HIDEALL
+         MENUITEM "~Unhide objects",   IDM_UNHIDEALL
+	 MENUITEM "",                -1,               MIS_SEPARATOR
+	 MENUITEM "~Multimedia\tCtrl + l", IDM_MCIPLAY
+  }
+  SUBMENU "~Edit",              IDM_EDITSUBMENU
+  {
+	 MENUITEM "~Autoedit\tCtrl + e",   IDM_EDIT
+	 MENUITEM "as ~text",        IDM_EDITTEXT
+	 MENUITEM "as ~binary",      IDM_EDITBINARY
+	 MENUITEM "",                -1,               MIS_SEPARATOR
+	 MENUITEM "~Attributes...\tCtrl + a",IDM_ATTRS
+	 MENUITEM "E~xtended attributes...\tCtrl + E",IDM_EAS
+	 MENUITEM "S~ubject...\tCtrl + s",   IDM_SUBJECT
+  }
+  MENUITEM "~Print\tCtrl + p",        IDM_PRINT
+  SUBMENU  "~Open",             IDM_OPENSUBMENU
+  {
+	 MENUITEM "Default\tF6",     IDM_OPENDEFAULT
+	 MENUITEM "~Settings\tF7",   IDM_OPENSETTINGS
+  }
+  MENUITEM "",                  -1,             MIS_SEPARATOR
+  SUBMENU "Create objects",     IDM_OBJECTSUBMENU
+  {
+	 MENUITEM "~Shadows...",     IDM_SHADOW
+	 MENUITEM "~Real objects...",IDM_OBJECT
+	 MENUITEM "~Shadows in folder...",IDM_SHADOW2
+         MENUITEM "~Change JAVA executable", IDM_JAVAEXE
+  }
+  SUBMENU "Save Lists to clipboard/file",         IDM_SAVESUBMENU
+  {
+	 MENUITEM "Save full path(s) to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
+         MENUITEM "Save filename(s) to clip~board\tAlt + [",IDM_SAVETOCLIPFILENAME
+	 MENUITEM "~Append full path(s)to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+         MENUITEM "Append file~name(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
+	 MENUITEM "Save to ~file...\tCtrl + S", IDM_SAVETOLIST
+  }
+  SUBMENU "Comma~nds",          IDM_COMMANDSMENU
+  {
+	 MENUITEM "Do it yourself...\tCtrl + F5",IDM_DOITYOURSELF
+  }
+  SUBMENU  "Collect",           IDM_COLLECTMENU
+  {
+	 MENUITEM "File(s)\tCtrl + C",IDM_COLLECT
+	 MENUITEM "List in file(s)",IDM_COLLECTFROMFILE
+  }
+  MENUITEM "",                  -1,             MIS_SEPARATOR
+  MENUITEM "Make ~directory...\tCtrl + M",IDM_MKDIR
+  MENUITEM "",                  -1,             MIS_SEPARATOR
+  MENUITEM "Archive...\tCtrl + A",IDM_ARCHIVE
+  MENUITEM "Extract...\tCtrl + x",IDM_EXTRACT
+  MENUITEM "UUDecode...\tCtrl + U", IDM_UUDECODE
+  MENUITEM "UnLock file...\tCtrl + V", IDM_UNLOCKFILE
+  MENUITEM "",                  -1,                   MIS_SEPARATOR
+  SUBMENU "~Delete",            IDM_DELETESUBMENU
+  {
+	 MENUITEM "~Delete\tCtrl + d",     IDM_DELETE
+	 MENUITEM "~Permanently delete\tCtrl + D",IDM_PERMDELETE
+  }
+}
+
+MENU DIR_POPUP
+{
+  MENUITEM "~Rename...\tCtrl + r",    IDM_RENAME
+  SUBMENU  "~Copy",                   IDM_COPYMENU
+  {
+	 MENUITEM "~Copy...\tCtrl + c",    IDM_COPY
+	 MENUITEM "Copy and ~rename...",   IDM_WILDCOPY
+	 MENUITEM "",                      -1,           MIS_SEPARATOR
+	 MENUITEM "~WPS copy...",           IDM_WPSCOPY
+	 MENUITEM "",                      -1,           MIS_SEPARATOR
+	 MENUITEM "Create ~shadows...",    IDM_SHADOW
+  }
+  SUBMENU  "~Move",                   IDM_MOVEMENU
+  {
+	 MENUITEM "~Move...\tCtrl + m",    IDM_MOVE
+	 MENUITEM "Move and ~rename...",   IDM_WILDMOVE
+	 MENUITEM "",                      -1,           MIS_SEPARATOR
+	 MENUITEM "~WPS move...",          IDM_WPSMOVE
+  }
+  SUBMENU "~View",                    IDM_VIEWSUBMENU
+  {
+	 MENUITEM "~Info...\tCtrl + i",    IDM_INFO
+	 MENUITEM "",                      -1,           MIS_SEPARATOR
+	 MENUITEM "Quick tree...\tCtrl + q",IDM_TREE
+	 MENUITEM "",                      -1,           MIS_SEPARATOR
+	 MENUITEM "U~pdate objects\tCtrl + u", IDM_UPDATE
+	 MENUITEM "~Hide objects",         IDM_HIDEALL
+         MENUITEM "~Unhide objects",   IDM_UNHIDEALL
+  }
+  SUBMENU "~Edit",              IDM_EDITSUBMENU
+  {
+	 MENUITEM "~Attributes...\tCtrl + a",IDM_ATTRS
+	 MENUITEM "E~xtended attributes...\tCtrl + E",IDM_EAS
+	 MENUITEM "S~ubject...\tCtrl + s", IDM_SUBJECT
+  }
+  SUBMENU    "~Open WPS object",           IDM_OPENSUBMENU
+  {
+	 MENUITEM "Default\tF6",     IDM_OPENDEFAULT
+	 MENUITEM "~Settings\tF7",   IDM_OPENSETTINGS
+	 MENUITEM "~Icon",           IDM_OPENICON
+	 MENUITEM "~Details",        IDM_OPENDETAILS
+	 MENUITEM "~Tree",           IDM_OPENTREE
+  }
+  MENUITEM "Open ~FM/2 Window\tCtrl + o",IDM_OPENWINDOW
+  MENUITEM "",                  -1,             MIS_SEPARATOR
+  SUBMENU "Save Lists to clipboard/file",         IDM_SAVESUBMENU
+  {
+	 MENUITEM "Save full path(s) to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
+         MENUITEM "Save filename(s) to clip~board\tAlt + [",IDM_SAVETOCLIPFILENAME
+	 MENUITEM "~Append full path(s) to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+         MENUITEM "Append file~name(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
+	 MENUITEM "Save to ~file...\tCtrl + S", IDM_SAVETOLIST
+  }
+  SUBMENU "Commands",           IDM_COMMANDSMENU
+  {
+	 MENUITEM "~Do it yourself...\tCtrl + F5",IDM_DOITYOURSELF
+  }
+  MENUITEM "",                  -1,             MIS_SEPARATOR
+  MENUITEM "Collect\tCtrl + C",   IDM_COLLECT
+  MENUITEM "Archive...\tCtrl + A",IDM_ARCHIVE
+  MENUITEM "Make ~directory...\tCtrl + M",IDM_MKDIR
+  SUBMENU "Miscellaneous",      IDM_MISCSUBMENU
+  {
+	 MENUITEM "Si~zes...\tCtrl + z",  IDM_SIZES
+	 MENUITEM "Show ~all files...\tCtrl + G",IDM_SHOWALLFILES
+         MENUITEM "~Seek & scan files",IDM_GREP
+	 MENUITEM "~Undelete...",     IDM_UNDELETE
+  }
+  MENUITEM "",                  -1,                   MIS_SEPARATOR
+  SUBMENU "~Delete",            IDM_DELETESUBMENU
+  {
+	 MENUITEM "~Delete\tCtrl + d",     IDM_DELETE
+	 MENUITEM "~Permanently delete\tCtrl + D",IDM_PERMDELETE
+  }
+}
+
+MENU TREE_POPUP
+{
+  MENUITEM "~Info...\tCtrl + i",      IDM_INFO
+  SUBMENU "~Edit",              IDM_EDITSUBMENU
+  {
+	 MENUITEM "~Attributes...\tCtrl + a",IDM_ATTRS
+	 MENUITEM "E~xtended attributes...\tCtrl + E",IDM_EAS
+	 MENUITEM "S~ubject...\tCtrl + s", IDM_SUBJECT
+	 MENUITEM "~Drive flags...",       IDM_DRVFLAGS
+  }
+  SUBMENU    "~Open WPS object",           IDM_OPENSUBMENU
+  {
+	 MENUITEM "Default\tF6",     IDM_OPENDEFAULT
+	 MENUITEM "~Settings\tF7",   IDM_OPENSETTINGS
+	 MENUITEM "~Icon",           IDM_OPENICON
+	 MENUITEM "~Details",        IDM_OPENDETAILS
+	 MENUITEM "~Tree",           IDM_OPENTREE
+  }
+  MENUITEM "Open ~FM/2 Window\tCtrl + o",IDM_OPENWINDOW
+  MENUITEM "Create ~shadows...",IDM_SHADOW
+  MENUITEM "",                  -1,             MIS_SEPARATOR
+  SUBMENU "Save ~Lists to clipboard/file",        IDM_SAVESUBMENU
+  {
+	 MENUITEM "Save full path(s) to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
+         MENUITEM "Save filename(s) to clip~board\tAlt + [",IDM_SAVETOCLIPFILENAME
+	 MENUITEM "~Append full paths to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+         MENUITEM "Append file~name(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
+	 MENUITEM "Save to ~file...\tCtrl + S", IDM_SAVETOLIST
+  }
+  SUBMENU "Comma~nds",          IDM_COMMANDSMENU
+  {
+	 MENUITEM "~Do it yourself...\tCtrl + F5",IDM_DOITYOURSELF
+  }
+  MENUITEM "",                  -1,             MIS_SEPARATOR
+  MENUITEM "~Collect\tCtrl + C",  IDM_COLLECT
+  MENUITEM "~Archive...\tCtrl + A",IDM_ARCHIVE
+  MENUITEM "Make ~directory...\tCtrl + M",IDM_MKDIR
+  MENUITEM "",                -1,       MIS_SEPARATOR
+  MENUITEM "~Rescan",           IDM_UPDATE
+  MENUITEM "Refresh Remo~vable Media",  IDM_REFRESHREMOVABLES
+  MENUITEM "",                -1,       MIS_SEPARATOR
+  SUBMENU  "E~xpand/Collapse",  IDM_EXPANDSUBMENU
+  {
+	 MENUITEM "~Expand\tCtrl + +",  IDM_EXPAND
+	 MENUITEM "~Collapse\tCtrl + -",IDM_COLLAPSE
+  }
+  SUBMENU "~Miscellaneous",     IDM_MISCSUBMENU
+  {
+	 MENUITEM "Si~zes...\tCtrl + z",IDM_SIZES
+	 MENUITEM "~Show all files...\tCtrl + G",IDM_SHOWALLFILES
+	 MENUITEM "~Seek & scan files",IDM_GREP
+	 MENUITEM "~Undelete...",    IDM_UNDELETE
+	 MENUITEM "",                -1,       MIS_SEPARATOR
+	 MENUITEM "~Check disk...",  IDM_CHKDSK
+	 MENUITEM "~Format disk...", IDM_FORMAT
+	 MENUITEM "~Optimize...",    IDM_OPTIMIZE
+	 SUBMENU "~Partition disks", IDM_PARTITIONSMENU
+	 {
+		MENUITEM "~MiniLVM", IDM_PARTITION
+		MENUITEM "~DFSee",   IDM_PARTITIONDF
+		MENUITEM "~LVMGUI", IDM_PARTITIONLVMG
+                MENUITEM "~LVMEXE", IDM_PARTITIONLVM
+		MENUITEM "~FDisk", IDM_PARTITIONFD
+	 }
+	 MENUITEM "",                -1,       MIS_SEPARATOR
+	 MENUITEM "De~tach\tCtrl + H",IDM_DETACH
+	 MENUITEM "~Eject",          IDM_EJECT
+#ifdef NEVER
+	 MENUITEM "Close tray",      IDM_CLOSETRAY
+#endif
+	 MENUITEM "~Lock",           IDM_LOCK
+	 MENUITEM "U~nlock",         IDM_UNLOCK
+  }
+}
+
+MENU MAIN_DRIVES
+{
+  MENUITEM "~Info...\tCtrl + i",IDM_INFO
+  MENUITEM "~Drive flags...", IDM_DRVFLAGS
+  MENUITEM "Si~zes...\tCtrl + z",IDM_SIZES
+  MENUITEM "~Make directory...\tCtrl + M",IDM_MKDIR
+  MENUITEM "~Show all files...\tCtrl + G",IDM_SHOWALLFILES
+  MENUITEM "~Undelete...",    IDM_UNDELETE
+  MENUITEM "",                -1,       MIS_SEPARATOR
+  MENUITEM "~Check disk...",  IDM_CHKDSK
+  MENUITEM "~Format disk...", IDM_FORMAT
+  MENUITEM "~Optimize...",    IDM_OPTIMIZE
+  MENUITEM "",                -1,       MIS_SEPARATOR
+//  MENUITEM "De~tach",         IDM_DETACH
+  MENUITEM "~Eject",          IDM_EJECT
+#ifdef NEVER
+  MENUITEM "Close tray",      IDM_CLOSETRAY
+#endif
+  MENUITEM "~Lock",           IDM_LOCK
+  MENUITEM "U~nlock",         IDM_UNLOCK
+  MENUITEM "",                -1,       MIS_SEPARATOR
+  MENUITEM "Re~scan all drives",           IDM_RESCAN
+  MENUITEM "Refresh Remo~vable Media",  IDM_REFRESHREMOVABLES
+}
+
+
+MENU COMP_CNRMENU
+{
+  MENUITEM "Show ~EAs",       IDM_SHOWEAS
+  MENUITEM "Show si~zes",     IDM_SHOWSIZE
+  MENUITEM "Show ~attributes",IDM_SHOWATTR
+  MENUITEM "Show LW ~date",   IDM_SHOWLWDATE
+  MENUITEM "Show LW ~time",   IDM_SHOWLWTIME
+  MENUITEM "Show ~LA date",   IDM_SHOWLADATE
+  MENUITEM "Show L~A time",   IDM_SHOWLATIME
+  MENUITEM "Show ~create date", IDM_SHOWCRDATE
+  MENUITEM "Show c~reate time", IDM_SHOWCRTIME
+  MENUITEM "Show ~status",    IDM_SHOWSUBJECT
+  MENUITEM "",                -1,             MIS_SEPARATOR
+  MENUITEM "~Filter...",      IDM_FILTER
+  MENUITEM "",                -1,             MIS_SEPARATOR
+  MENUITEM "L~oad listfile",  IDM_LOADLISTFILE
+  MENUITEM "S~ave listfile",  IDM_SAVELISTFILE
+}
+
+MENU COMP_MENU {
+  MENUITEM "~Compare...",     IDM_COMPARE
+  MENUITEM "~Delete...",      IDM_DELETE
+}
+
+MENU COLLECTORFILE_POPUP
+{
+  MENUITEM "~Rename...\tCtrl + r",    IDM_RENAME
+  SUBMENU  "~Copy",                   IDM_COPYMENU
+  {
+	 MENUITEM "~Copy...\tCtrl + c",    IDM_COPY
+	 MENUITEM "Copy and ~rename...",   IDM_WILDCOPY
+	 MENUITEM "Copy and ~preserve...", IDM_COPYPRESERVE
+	 MENUITEM "Merge...",              IDM_MERGE
+	 MENUITEM "",                      -1,           MIS_SEPARATOR
+	 MENUITEM "~WPS oopy...",           IDM_WPSCOPY
+  }
+  SUBMENU  "~Move",                   IDM_MOVEMENU
+  {
+	 MENUITEM "~Move...\tCtrl + m",    IDM_MOVE
+	 MENUITEM "Move and ~rename...",   IDM_WILDMOVE
+	 MENUITEM "Move and ~preserve...", IDM_MOVEPRESERVE
+	 MENUITEM "",                      -1,           MIS_SEPARATOR
+	 MENUITEM "~WPS move...",           IDM_WPSMOVE
+  }
+  SUBMENU "~View",              IDM_VIEWSUBMENU
+  {
+    MENUITEM "~Autoview\tCtrl + v",   IDM_VIEW
+    MENUITEM "as ~text",        IDM_VIEWTEXT
+    MENUITEM "as ~binary",      IDM_VIEWBINARY
+    MENUITEM "as archive",      IDM_VIEWARCHIVE
+    MENUITEM "",                -1,               MIS_SEPARATOR
+    MENUITEM "~Info...\tCtrl + i",    IDM_INFO
+    MENUITEM "",                -1,               MIS_SEPARATOR
+    MENUITEM "U~pdate objects\tCtrl + u", IDM_UPDATE
+    MENUITEM "~Hide objects",   IDM_HIDEALL
+    MENUITEM "~Unhide objects",   IDM_UNHIDEALL
+    MENUITEM "",                  -1,                 MIS_SEPARATOR
+    MENUITEM "~Multimedia\tCtrl + l", IDM_MCIPLAY
+  }
+  SUBMENU "~Edit",              IDM_EDITSUBMENU
+  {
+	 MENUITEM "~Autoedit\tCtrl + e",   IDM_EDIT
+	 MENUITEM "as ~text",        IDM_EDITTEXT
+	 MENUITEM "as ~binary",      IDM_EDITBINARY
+	 MENUITEM "",                -1,               MIS_SEPARATOR
+	 MENUITEM "~Attributes...\tCtrl + a",IDM_ATTRS
+	 MENUITEM "E~xtended attributes...\tCtrl + E",IDM_EAS
+	 MENUITEM "S~ubject...\tCtrl + s",   IDM_SUBJECT
+  }
+  MENUITEM "~Print\tCtrl + p",        IDM_PRINT
+  MENUITEM "",                  -1,             MIS_SEPARATOR
+  SUBMENU  "~Open",             IDM_OPENSUBMENU
+  {
+	 MENUITEM "~Default\tF6",              IDM_OPENDEFAULT
+	 MENUITEM "~Settings\tF7",            IDM_OPENSETTINGS
+         MENUITEM "~Open directory container", IDM_OPENDIRWINDOW
+         MENUITEM "~Walk to open",             IDM_WALKDIR
+	 MENUITEM "WPS directory ~Icon",       IDM_OPENDIRICON
+	 MENUITEM "WPS directory D~etails",    IDM_OPENDIRDETAILS
+	 MENUITEM "WPS directory ~Tree",       IDM_OPENDIRTREE
+  }
+  SUBMENU "Create objects",     IDM_OBJECTSUBMENU
+  {
+	 MENUITEM "~Shadows...",     IDM_SHADOW
+	 MENUITEM "~Real objects...",IDM_OBJECT
+	 MENUITEM "~Shadows in folder...",IDM_SHADOW2
+         MENUITEM "~Change JAVA executable", IDM_JAVAEXE
+  }
+  SUBMENU "Save Lists to clipboard/file",         IDM_SAVESUBMENU
+  {
+	 MENUITEM "Save full path(s) to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
+         MENUITEM "Save filename(s) to clip~board\tAlt + [",IDM_SAVETOCLIPFILENAME
+	 MENUITEM "~Append full path(s) to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+         MENUITEM "Append file~name(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
+	 MENUITEM "Save to ~file...\tCtrl + S", IDM_SAVETOLIST
+  }
+  SUBMENU "Comma~nds",          IDM_COMMANDSMENU
+  {
+	 MENUITEM "~Do it yourself...\tCtrl + F5",IDM_DOITYOURSELF
+  }
+  MENUITEM "",                  -1,                   MIS_SEPARATOR
+  MENUITEM "Collect from list file(s)",IDM_COLLECTFROMFILE
+  MENUITEM "Archive...\tCtrl + A",  IDM_ARCHIVE
+  MENUITEM "Extract...\tCtrl + x",  IDM_EXTRACT
+  MENUITEM "UUDecode...\tCtrl + U", IDM_UUDECODE
+  MENUITEM "UnLock file...\tCtrl + V", IDM_UNLOCKFILE
+  MENUITEM "",                  -1,                   MIS_SEPARATOR
+  SUBMENU "~Delete",            IDM_DELETESUBMENU
+  {
+	 MENUITEM "~Delete\tCtrl + d",     IDM_DELETE
+	 MENUITEM "~Permanently delete\tCtrl + D",IDM_PERMDELETE
+  }
+}
+
+MENU COLLECTORDIR_POPUP
+{
+  MENUITEM "~Info...\tCtrl + i",    IDM_INFO
+  MENUITEM "~Rename...\tCtrl + r",    IDM_RENAME
+  SUBMENU  "~Copy",                   IDM_COPYMENU
+  {
+	 MENUITEM "~Copy...\tCtrl + c",    IDM_COPY
+	 MENUITEM "Copy and ~rename...",   IDM_WILDCOPY
+	 MENUITEM "",                      -1,           MIS_SEPARATOR
+	 MENUITEM "~WPS copy...",          IDM_WPSCOPY
+	 MENUITEM "",                      -1,           MIS_SEPARATOR
+	 MENUITEM "Create ~shadows...",    IDM_SHADOW
+  }
+  SUBMENU  "~Move",             IDM_MOVEMENU
+  {
+	 MENUITEM "~Move...\tCtrl + m",    IDM_MOVE
+	 MENUITEM "Move and ~rename...",IDM_WILDMOVE
+	 MENUITEM "",                      -1,           MIS_SEPARATOR
+	 MENUITEM "~WPS move...",           IDM_WPSMOVE
+  }
+  SUBMENU "~Edit",            IDM_EDITSUBMENU
+  {
+	 MENUITEM "~Attributes...\tCtrl + a",IDM_ATTRS
+	 MENUITEM "E~xtended attributes...\tCtrl + E",IDM_EAS
+	 MENUITEM "S~ubject...\tCtrl + s", IDM_SUBJECT
+  }
+  SUBMENU    "~Open WPS object",           IDM_OPENSUBMENU
+  {
+	 MENUITEM "Default\tF6",     IDM_OPENDEFAULT
+	 MENUITEM "~Settings\tF7",   IDM_OPENSETTINGS
+	 MENUITEM "~Icon",           IDM_OPENICON
+	 MENUITEM "~Details",        IDM_OPENDETAILS
+	 MENUITEM "~Tree",           IDM_OPENTREE
+  }
+  MENUITEM "Open ~FM/2 Window\tCtrl + o",IDM_OPENWINDOW
+  MENUITEM "",                  -1,             MIS_SEPARATOR
+  SUBMENU "Save Lists to clipboard/file",         IDM_SAVESUBMENU
+  {
+	 MENUITEM "Save full path(s) to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
+         MENUITEM "Save filename(s) to clip~board\tAlt + [",IDM_SAVETOCLIPFILENAME
+	 MENUITEM "~Append full path(s) to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+         MENUITEM "Append file~name(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
+	 MENUITEM "Save to ~file...\tCtrl + S", IDM_SAVETOLIST
+  }
+  SUBMENU "Comma~nds",          IDM_COMMANDSMENU
+  {
+	 MENUITEM "~Do it yourself...\tCtrl + F5",IDM_DOITYOURSELF
+  }
+  MENUITEM "",                  -1,                 MIS_SEPARATOR
+  MENUITEM "Archive...\tCtrl + A",IDM_ARCHIVE
+  MENUITEM "Make ~directory...\tCtrl + M",IDM_MKDIR
+  SUBMENU  "Miscellaneous",     IDM_MISCSUBMENU
+  {
+	 MENUITEM "Si~zes...\tCtrl + z",IDM_SIZES
+	 MENUITEM "Undelete...",     IDM_UNDELETE
+	 MENUITEM "~Show all files...\tCtrl + G",IDM_SHOWALLFILES
+    MENUITEM "",                -1,               MIS_SEPARATOR
+    MENUITEM "U~pdate objects\tCtrl + u", IDM_UPDATE
+    MENUITEM "~Hide objects",   IDM_HIDEALL
+    MENUITEM "~Unhide objects",   IDM_UNHIDEALL
+  }
+  MENUITEM "",                  -1,                   MIS_SEPARATOR
+  SUBMENU "~Delete",            IDM_DELETESUBMENU
+  {
+	 MENUITEM "~Delete\tCtrl + d",     IDM_DELETE
+	 MENUITEM "~Permanently delete\tCtrl + D",IDM_PERMDELETE
+  }
+}
+
+MENU COLLECTORCNR_POPUP
+{
+  MENUITEM "~Icon view",        IDM_ICON
+  MENUITEM "~Name view",        IDM_NAME
+  MENUITEM "~Details view",     IDM_DETAILS
+  MENUITEM "~Text view",        IDM_TEXT
+  MENUITEM "",                  -1,                 MIS_SEPARATOR
+  SUBMENU  "Details Setup",     IDM_DETAILSSETUP
+  {
+	 MENUITEM "To~ggle details titles",IDM_DETAILSTITLES
+	 MENUITEM "Show ~icons",     IDM_SHOWICON      ,,MIA_NODISMISS
+	 MENUITEM "Show ~longnames", IDM_SHOWLNAMES    ,,MIA_NODISMISS
+	 MENUITEM "Show ~subjects",  IDM_SHOWSUBJECT   ,,MIA_NODISMISS
+	 MENUITEM "Show ~EAs",       IDM_SHOWEAS       ,,MIA_NODISMISS
+	 MENUITEM "Show si~zes",     IDM_SHOWSIZE      ,,MIA_NODISMISS
+	 MENUITEM "Show ~attributes",IDM_SHOWATTR      ,,MIA_NODISMISS
+	 MENUITEM "Show LW ~date",   IDM_SHOWLWDATE    ,,MIA_NODISMISS
+	 MENUITEM "Show LW ~time",   IDM_SHOWLWTIME    ,,MIA_NODISMISS
+	 MENUITEM "Show LA date",    IDM_SHOWLADATE    ,,MIA_NODISMISS
+	 MENUITEM "Show LA time",    IDM_SHOWLATIME    ,,MIA_NODISMISS
+	 MENUITEM "Show create date", IDM_SHOWCRDATE    ,,MIA_NODISMISS
+	 MENUITEM "Show create time", IDM_SHOWCRTIME    ,,MIA_NODISMISS
+  }
+  MENUITEM "Mini icons",        IDM_MINIICONS
+  MENUITEM "",                  -1,                 MIS_SEPARATOR
+  MENUITEM "~Filter\tCtrl + f",       IDM_FILTER
+  MENUITEM "",                  -1,                 MIS_SEPARATOR
+  SUBMENU  "Collect",           IDM_COLLECTMENU
+  {
+	 MENUITEM "From ~clipboard",IDM_COLLECTFROMCLIP
+	 MENUITEM "From a ~list file",IDM_COLLECTSELECT
+  }
+  MENUITEM "",                  -1,                 MIS_SEPARATOR
+  MENUITEM "Clear collector container",   IDM_CLEARCNR
+  MENUITEM "~Remove objects from collector", IDM_REMOVE
+  MENUITEM "~Hide objects",   IDM_HIDEALL
+  MENUITEM "~Unhide objects",   IDM_UNHIDEALL
+  MENUITEM "",                  -1,                 MIS_SEPARATOR
+  MENUITEM "Seek & scan files\tCtrl + g",   IDM_GREP
+  MENUITEM "Stop seek & scan\tEsc",DID_CANCEL
+  MENUITEM "",                  -1,                 MIS_SEPARATOR
+  MENUITEM "~See all files...", IDM_SEEALL
+  MENUITEM "U~pdate objects\tCtrl + u", IDM_UPDATE
+  MENUITEM "",                  -1,                 MIS_SEPARATOR
+  SUBMENU "Select\tCtrl + F8",    IDM_SELECTSUBMENU
+  {
+	 MENUITEM "Select ~all",       IDM_SELECTALL
+	 MENUITEM "Select all ~files\tCtrl + /",IDM_SELECTALLFILES
+	 MENUITEM "Select all ~dirs\tShift + Ctrl + ?",IDM_SELECTALLDIRS
+	 MENUITEM "Select ~mask...\tCtrl + =",IDM_SELECTMASK
+	 MENUITEM "Select ~clipboard\tCtrl + ]",IDM_SELECTCLIP
+	 MENUITEM "Select ~list",      IDM_SELECTLIST
+	 MENUITEM "",                  -1,               MIS_SEPARATOR
+	 MENUITEM "Deselect all\tCtrl + \\", IDM_DESELECTALL
+	 MENUITEM "Deselect all files",IDM_DESELECTALLFILES
+	 MENUITEM "Deselect all dirs\tShift + Ctrl + |",IDM_DESELECTALLDIRS
+	 MENUITEM "Deselect mask...",  IDM_DESELECTMASK
+	 MENUITEM "DeSelect clipboard\tShift + Ctrl + }",IDM_DESELECTCLIP
+	 MENUITEM "",                  -1,               MIS_SEPARATOR
+	 MENUITEM "~Reselect\tCtrl + '",     IDM_RESELECT
+	 MENUITEM "~Invert selection\tCtrl + ;",IDM_INVERT
+  }
+  SUBMENU "Sort\tCtrl + F7",    IDM_SORTSUBMENU
+  {
+	 MENUITEM "None",            IDM_SORTNONE
+	 MENUITEM "~Pathname",       IDM_SORTNAME
+	 MENUITEM "~Filename",       IDM_SORTFILENAME
+	 MENUITEM "~Size",           IDM_SORTSIZE
+	 MENUITEM "~EA size",        IDM_SORTEASIZE
+	 MENUITEM "F~irst extension",IDM_SORTFIRST
+	 MENUITEM "~Last extension", IDM_SORTLAST
+	 MENUITEM "LW ~date",        IDM_SORTLWDATE
+	 MENUITEM "L~A date",        IDM_SORTLADATE
+	 MENUITEM "C~r date",        IDM_SORTCRDATE
+	 MENUITEM "Sub~ject",        IDM_SORTSUBJECT
+	 MENUITEM "",                -1,                 MIS_SEPARATOR
+	 MENUITEM "Dirs first",      IDM_SORTDIRSFIRST
+	 MENUITEM "Dirs last",       IDM_SORTDIRSLAST
+	 MENUITEM "Re~verse",        IDM_SORTREVERSE
+  }
+  MENUITEM "",                  -1,                 MIS_SEPARATOR
+  MENUITEM "~Settings notebook...", IDM_COLLECTORVIEWSETTINGS // 15 Feb 08 SHL was IDM_NOTEBOOK
+  MENUITEM "Set tar~get directory...\tCtrl + T",IDM_SETTARGET
+}
+
+MENU COLLECTOR_FRAME
+{
+  SUBMENU "~Files",               IDM_FILESMENU
+  {
+  }
+  SUBMENU "~Views",               IDM_VIEWSMENU
+  {
+  }
+  MENUITEM "~Help",               IDM_HELP
+  MENUITEM "#1047",               IDM_GREP,       MIS_BITMAP
+  MENUITEM "#1067",               IDM_SEEALL,     MIS_BITMAP
+  MENUITEM "#1044",               IDM_CLEARCNR,   MIS_BITMAP
+  MENUITEM "#1043",               IDM_REMOVE,     MIS_BITMAP
+}
+
+ACCELTABLE  COLLECTOR_FRAME
+{
+  "A",         IDM_ARCHIVE,           SHIFT,CONTROL
+  "a",         IDM_ATTRS,             CONTROL
+  "C",         IDM_COLLECT,           SHIFT,CONTROL
+  "c",         IDM_COPY,              CONTROL
+  "D",         IDM_PERMDELETE,        CONTROL,SHIFT
+  "d",         IDM_DELETE,            CONTROL
+  "E",         IDM_EAS,               CONTROL,SHIFT
+  "e",         IDM_EDIT,              CONTROL
+  "f",         IDM_FILTER,            CONTROL
+  "g",         IDM_GREP,              CONTROL
+  "G",         IDM_SHOWALLFILES,      CONTROL,SHIFT
+  "i",         IDM_INFO,              CONTROL
+  "l",         IDM_MCIPLAY,           CONTROL
+  "M",         IDM_MKDIR,             CONTROL,SHIFT
+  "m",         IDM_MOVE,              CONTROL
+  "o",         IDM_OPENWINDOW,        CONTROL
+  "p",         IDM_PRINT,             CONTROL
+  "r",         IDM_RENAME,            CONTROL
+  "S",         IDM_SAVETOLIST,        SHIFT,CONTROL
+  "s",         IDM_SUBJECT,           CONTROL
+  "T",         IDM_SETTARGET,         CONTROL,SHIFT
+  "U",         IDM_UUDECODE,          SHIFT,CONTROL
+  "u",         IDM_UPDATE,            CONTROL
+  "V",         IDM_UNLOCKFILE,        SHIFT,CONTROL
+  "v",         IDM_VIEW,              CONTROL
+  "x",         IDM_EXTRACT,           CONTROL
+  "z",         IDM_SIZES,             CONTROL
+  "=",         IDM_SELECTMASK,        CONTROL
+  "?",         IDM_SELECTALLDIRS,     SHIFT,CONTROL
+  "/",         IDM_SELECTALLFILES,    CONTROL
+  "|",         IDM_DESELECTALLDIRS,   SHIFT,CONTROL
+  "\\",        IDM_DESELECTALL,       CONTROL
+  "{",         IDM_APPENDTOCLIP,      SHIFT,CONTROL
+  "{",         IDM_APPENDTOCLIPFILENAME, SHIFT,ALT
+  "[",         IDM_SAVETOCLIP,        CONTROL
+  "}",         IDM_DESELECTCLIP,      SHIFT,CONTROL
+  "]",         IDM_SELECTCLIP,        CONTROL
+  "[",         IDM_SAVETOCLIPFILENAME,ALT
+  ";",         IDM_INVERT,            CONTROL
+  "'",         IDM_RESELECT,          CONTROL
+  VK_F1,       IDM_HELP,              VIRTUALKEY
+  VK_F3,       SC_CLOSE,              SYSCOMMAND,VIRTUALKEY
+  VK_F5,       IDM_DOITYOURSELF,      CONTROL,VIRTUALKEY
+  VK_F7,       IDM_SHOWSORT,          CONTROL,VIRTUALKEY
+  VK_F7,       IDM_OPENSETTINGS,      VIRTUALKEY
+  VK_F8,       IDM_SHOWSELECT,        CONTROL,VIRTUALKEY
+  VK_ESC,      DID_CANCEL,            VIRTUALKEY
+  VK_F10,      IDM_CONTEXTMENU,       SHIFT,VIRTUALKEY
+}
+
+
+MENU ARC_POPUP
+{
+  SUBMENU "~View",                IDM_VIEWSUBMENU
+  {
+	 MENUITEM "~Autoview\tCtrl + v",IDM_VIEW
+	 MENUITEM "as ~text",          IDM_VIEWTEXT
+	 MENUITEM "as ~binary",        IDM_VIEWBINARY
+	 MENUITEM "as archive",        IDM_VIEWARCHIVE
+	 MENUITEM "as multimedia\tCtrl + l",IDM_MCIPLAY
+  }
+  MENUITEM "E~xec\tCtrl + E",           IDM_EXEC
+  MENUITEM "~Print\tCtrl + p",          IDM_PRINT
+  MENUITEM "~Delete\tCtrl + d",         IDM_DELETE
+  MENUITEM "~Find\tCtrl + i",           IDM_FIND
+  SUBMENU  "~Open",             IDM_OPENSUBMENU
+  {
+	 MENUITEM "Default\tF6",     IDM_OPENDEFAULT
+	 MENUITEM "~Settings\tF7",   IDM_OPENSETTINGS
+  }
+  MENUITEM "",                    -1,                   MIS_SEPARATOR
+  SUBMENU "~Edit",                IDM_EDITSUBMENU
+  {
+	 MENUITEM "~Autoedit\tCtrl + e",     IDM_EDIT
+	 MENUITEM "as ~text",          IDM_EDITTEXT
+	 MENUITEM "as ~binary",        IDM_EDITBINARY
+  }
+  MENUITEM "Refresh",             IDM_REFRESH
+  MENUITEM "",                    -1,                   MIS_SEPARATOR
+  MENUITEM "~Test\tCtrl + T",           IDM_TEST
+  MENUITEM "Virus scan\tCtrl + V",      IDM_VIRUSSCAN
+  MENUITEM "",                    -1,                   MIS_SEPARATOR
+	 MENUITEM "~Extract\tCtrl + x",      IDM_EXTRACT
+	 MENUITEM "Extract ~w/ Dirs\tCtrl + X",IDM_EXTRACTWDIRS
+	 MENUITEM "Extract all",       IDM_ARCEXTRACT
+	 MENUITEM "Extract all & close",IDM_ARCEXTRACTEXIT
+	 MENUITEM "Extract all w/ dirs",IDM_ARCEXTRACTWDIRS
+	 MENUITEM "Extract all w/ dirs & close",IDM_ARCEXTRACTWDIRSEXIT
+  MENUITEM "",                  -1,               MIS_SEPARATOR
+  MENUITEM "~Walk to extract dir...\tCtrl + w",IDM_WALKDIR
+  MENUITEM "Folder after extract",IDM_FOLDERAFTEREXTRACT
+}
+
+MENU ARC_FRAME
+{
+  SUBMENU "~Files",               IDM_FILESMENU
+  {
+  }
+  SUBMENU "~Views",               IDM_VIEWSMENU
+  {
+  }
+  MENUITEM "~Help",               IDM_HELP
+  MENUITEM "#1023",               IDM_VIEW,       MIS_BITMAP
+  MENUITEM "#1006",               IDM_DELETE,     MIS_BITMAP
+  MENUITEM "#1040",               IDM_EXEC,       MIS_BITMAP
+  MENUITEM "#1030",               IDM_EXTRACT,    MIS_BITMAP
+  MENUITEM "#1036",               IDM_TEST,       MIS_BITMAP
+  MENUITEM "#1039",               IDM_VIRUSSCAN,  MIS_BITMAP
+  MENUITEM "#1068",               IDM_RESCAN,     MIS_BITMAP
+  MENUITEM "#10002",              IDM_WALKDIR,    MIS_BITMAP
+  MENUITEM "#5001",               IDM_FILTER,     MIS_BITMAP
+}
+
+ACCELTABLE  ARC_FRAME
+{
+  "d",        IDM_DELETE,           CONTROL
+  "E",        IDM_EXEC,             SHIFT,CONTROL
+  "e",        IDM_EDIT,             CONTROL
+  "X",        IDM_EXTRACTWDIRS,     CONTROL,SHIFT
+  "x",        IDM_EXTRACT,          CONTROL
+  "f",        IDM_FILTER,           CONTROL
+  "i",        IDM_FIND,             CONTROL
+  "l",        IDM_MCIPLAY,          CONTROL
+  "p",        IDM_PRINT,            CONTROL
+  "R",        IDM_RESCAN,           CONTROL,SHIFT
+  "T",        IDM_TEST,             CONTROL,SHIFT
+  "V",        IDM_VIRUSSCAN,        CONTROL,SHIFT
+  "v",        IDM_VIEW,             CONTROL
+  "w",        IDM_WALKDIR,          CONTROL
+  "x",        IDM_EXEC,             CONTROL
+  "+",        IDM_DESELECTMASK,     SHIFT,CONTROL
+  "=",        IDM_SELECTMASK,       CONTROL
+  "/",        IDM_SELECTALLFILES,   CONTROL
+  "\\",       IDM_DESELECTALL,      CONTROL
+  ";",        IDM_INVERT,           CONTROL
+  "'",        IDM_RESELECT,         CONTROL
+  VK_TAB,     IDM_NEXTWINDOW,       VIRTUALKEY
+  VK_BACKTAB, IDM_PREVWINDOW,       SHIFT,VIRTUALKEY
+  VK_F1,      IDM_HELP,             VIRTUALKEY
+  VK_F3,      SC_CLOSE,             SYSCOMMAND,VIRTUALKEY
+  VK_F6,      IDM_OPENDEFAULT,      VIRTUALKEY
+  VK_F7,      IDM_OPENSETTINGS,     VIRTUALKEY
+  VK_F7,      IDM_SHOWSORT,         CONTROL,VIRTUALKEY
+  VK_F8,      IDM_SHOWSELECT,       CONTROL,VIRTUALKEY
+  VK_F10,     IDM_CONTEXTMENU,      SHIFT,VIRTUALKEY
+}
+
+MENU MINI_FRAME
+ {
+  MENUITEM "~Show drives\t2-clk B3",MINI_SHOW
+  MENUITEM "~Include remote drives",MINI_INCLREMOTE
+  MENUITEM "~Boring drive display", MINI_BORING
+  MENUITEM "",                    -1,             MIS_SEPARATOR
+  MENUITEM "~Float to top\t2-clk B2",MINI_FLOAT
+  MENUITEM "",                    -1,             MIS_SEPARATOR
+  MENUITEM "~Help",               IDM_HELP
+  MENUITEM "",                    -1,             MIS_SEPARATOR
+  MENUITEM "~Close window\t2-clk B1",MINI_CLOSE
+  MENUITEM "",                    -1,             MIS_SEPARATOR
+  MENUITEM "~OS/2 command line",  IDM_COMMANDLINE
+  MENUITEM "~DOS command line",   IDM_DOSCOMMANDLINE
+  MENUITEM "~Win-OS/2 full screen",IDM_WINFULLSCREEN
+ }
+
+MENU MLE_FRAME
+ {
+  SUBMENU "~Files",                         MLE_FILEMENU
+	 {
+		MENUITEM "~Load file...\tCtrl + l",         MLE_LOADFILE
+		MENUITEM "~Insert file...\tCtrl + i",       MLE_INSERTFILE
+		MENUITEM "~Save file...\tCtrl + s",         MLE_EXPORTFILE
+		MENUITEM "Save ~as...\tCtrl + e",           MLE_EXPORTAS
+		MENUITEM "~Change filename...\tCtrl + c",   MLE_SETEXPORTFILE
+		MENUITEM "",                          -1,     MIS_SEPARATOR
+		MENUITEM "~New file",                 MLE_NEWFILE
+	 }
+  SUBMENU "~Edit",                          MLE_EDITMENU
+	 {
+		MENUITEM "~Undo\tCtrl + u",                 MLE_UNDO
+		MENUITEM "",                          -1,     MIS_SEPARATOR
+		MENUITEM "~Copy to clipboard\tCtrl + Insert",  MLE_COPYCLIP
+		MENUITEM "Copy to ~file\tCtrl + W",         MLE_WRITEBLOCK
+		MENUITEM "~Append to clipboard\tCtrl + a",  MLE_APPENDCLIP
+		MENUITEM "Cu~t to clipboard\tCtrl + Delete",   MLE_CUTCLIP
+		MENUITEM "~Paste from clipboard\tShift + Insert",MLE_PASTECLIP
+		MENUITEM "C~lear selection\tDelete",     MLE_CLEAR
+		MENUITEM "D~elete line to clipboard\tCtrl + y",  MLE_CUTLINE
+		MENUITEM "",                          -1,     MIS_SEPARATOR
+		MENUITEM "~Select all\tCtrl + /",           MLE_SELECTALL
+		MENUITEM "~Deselect all\tCtrl + \\",        MLE_DESELECTALL
+		MENUITEM "",                          -1,     MIS_SEPARATOR
+		SUBMENU "~Block operations",          MLE_BLOCKMENU
+		  {
+			 MENUITEM "~Uppercase block",      MLE_UPPERCASE
+			 MENUITEM "Lo~wercase block",      MLE_LOWERCASE
+			 MENUITEM "To~ggle case block",    MLE_TOGGLECASE
+			 MENUITEM "~Rot13 block",          MLE_ROT13
+			 MENUITEM "~XOR block",            MLE_XOR
+			 MENUITEM "~Format block",         MLE_FORMAT
+		  }
+	 }
+  SUBMENU "~Search",                    -1
+	 {
+		MENUITEM "~Find first...\tCtrl + f",    MLE_FINDFIRST
+		MENUITEM "Find ~next\tCtrl + n",        MLE_FINDNEXT
+		MENUITEM "",                      -1,   MIS_SEPARATOR
+		MENUITEM "~Insensitive\tCtrl + I",      MLE_SENSITIVE
+		MENUITEM "",                      -1,   MIS_SEPARATOR
+		MENUITEM "~Jump to line #\tCtrl + j",   MLE_JUMP
+	 }
+  SUBMENU "~View",                      -1
+	 {
+		MENUITEM "Set ~font...\tF2",        MLE_SETFONT
+		MENUITEM "Set ~code page...",       MLE_CODEPAGE
+		MENUITEM "",                        -1,    MIS_SEPARATOR
+		MENUITEM "~Wrap on\tCtrl + w",      MLE_TOGWRAP
+		MENUITEM "Co~lors...",              IDM_COLORPALETTE
+	 }
+  SUBMENU "~Config",                      -1
+	 {
+	        MENUITEM "~Tab width...",         MLE_TAB
+		MENUITEM "~Expand tabs...",       MLE_EXPANDTABS
+		MENUITEM "",                      -1,     MIS_SEPARATOR
+		MENUITEM "~Strip trailing blanks",MLE_STRIPTRAILBLANKS
+		MENUITEM "Stri~p trailing lines", MLE_STRIPTRAILLINES
+	 }
+  SUBMENU "~Help",                      -1
+	 {
+		MENUITEM "~Help\tF1",              IDM_HELP
+		MENUITEM "~About",                  MLE_ABOUT
+	 }
+ }
+
+MENU MLE_POPUP
+{
+  MENUITEM "~Undo\tCtrl + u",                 MLE_UNDO
+  MENUITEM "",                          -1,     MIS_SEPARATOR
+  MENUITEM "~Copy to clipboard\tCtrl + Insert",  MLE_COPYCLIP
+  MENUITEM "Copy to ~file\tCtrl + W",         MLE_WRITEBLOCK
+  MENUITEM "~Append to clipboard\tCtrl + a",  MLE_APPENDCLIP
+  MENUITEM "Cu~t to clipboard\tCtrl + Delete",   MLE_CUTCLIP
+  MENUITEM "~Paste from clipboard\tShift + Insert",MLE_PASTECLIP
+  MENUITEM "C~lear selection\tDelete",     MLE_CLEAR
+  MENUITEM "",                          -1,     MIS_SEPARATOR
+  MENUITEM "~Select all\tCtrl + /",           MLE_SELECTALL
+  MENUITEM "~Deselect all\tCtrl + \\",        MLE_DESELECTALL
+  MENUITEM "",                          -1,     MIS_SEPARATOR
+  SUBMENU "~Block operations",          MLE_BLOCKMENU
+	 {
+		MENUITEM "~Uppercase block",      MLE_UPPERCASE
+		MENUITEM "Lo~wercase block",      MLE_LOWERCASE
+		MENUITEM "To~ggle case block",    MLE_TOGGLECASE
+		MENUITEM "~Rot13 block",          MLE_ROT13
+		MENUITEM "~XOR block",            MLE_XOR
+		MENUITEM "~Format block",         MLE_FORMAT
+	 }
+  SUBMENU "Search",                    -1
+	 {
+		MENUITEM "~Find first...\tCtrl + f",    MLE_FINDFIRST
+		MENUITEM "Find ~next\tCtrl + n",        MLE_FINDNEXT
+		MENUITEM "",                      -1,     MIS_SEPARATOR
+		MENUITEM "~Insensitive\tCtrl + I",      MLE_SENSITIVE
+		MENUITEM "",                      -1,     MIS_SEPARATOR
+		MENUITEM "~Jump to line #\tCtrl + j",   MLE_JUMP
+	 }
+  SUBMENU "~View",                      -1
+	 {
+		MENUITEM "Set ~font...\tF2",        MLE_SETFONT
+		MENUITEM "Set ~code page...",       MLE_CODEPAGE
+		MENUITEM "",                        -1,    MIS_SEPARATOR
+		MENUITEM "~Wrap on\tCtrl + w",      MLE_TOGWRAP
+		MENUITEM "Co~lors...",              IDM_COLORPALETTE
+	 }
+  SUBMENU "~Config",                      -1
+	 {
+	        MENUITEM "~Tab width...",         MLE_TAB
+		MENUITEM "~Expand tabs...",       MLE_EXPANDTABS
+		MENUITEM "",                      -1,     MIS_SEPARATOR
+		MENUITEM "~Strip trailing blanks",MLE_STRIPTRAILBLANKS
+		MENUITEM "Stri~p trailing lines", MLE_STRIPTRAILLINES
+	 }
+	 MENUITEM "View as http",          MLE_VIEWHTTP
+	 MENUITEM "View as ftp",           MLE_VIEWFTP
+}
+
+ACCELTABLE MLE_FRAME
+{
+	"a",      MLE_APPENDCLIP,            CONTROL
+	"R",      MLE_TOGGLEREADONLY,        CONTROL,SHIFT
+	"s",      MLE_EXPORTFILE,            CONTROL
+	"e",      MLE_EXPORTAS,              CONTROL
+	"f",      MLE_FINDFIRST,             CONTROL
+	"I",      MLE_SENSITIVE,             SHIFT,CONTROL
+	"j",      MLE_JUMP,                  CONTROL
+	"n",      MLE_FINDNEXT,              CONTROL
+	"i",      MLE_INSERTFILE,            CONTROL
+	"c",      MLE_SETEXPORTFILE,         CONTROL
+	"q",      MLE_QUIT,                  CONTROL
+	"u",      MLE_UNDO,                  CONTROL
+	"W",      MLE_WRITEBLOCK,            SHIFT,CONTROL
+	"w",      MLE_TOGWRAP,               CONTROL
+	"y",      MLE_CUTLINE,               CONTROL
+	"/",      MLE_SELECTALL,             CONTROL
+	"\\",     MLE_DESELECTALL,           CONTROL
+	VK_F1,    IDM_HELP,                  VIRTUALKEY
+	VK_F2,    MLE_SETFONT,               VIRTUALKEY
+	VK_F3,    MLE_END,                   VIRTUALKEY
+	VK_ESC,   DID_CANCEL,                VIRTUALKEY
+	VK_TAB,   IDM_NEXTWINDOW,            VIRTUALKEY
+}
+
+MENU FLE_FRAME
+{
+  MENUITEM "~Set system pointer",   IDM_SELECTALL
+  MENUITEM "~Reset system pointer", IDM_DESELECTALL
+}
+
+MENU ID_BUTTONMENU
+{
+  MENUITEM "Show all buttons",        IDM_SHOWTOOLS
+  MENUITEM "Hide button",             IDM_HIDETOOL
+  MENUITEM "Hide any button...",      IDM_HIDEANYTOOL
+  MENUITEM "",                        -1,           MIS_SEPARATOR
+  MENUITEM "Delete button",           IDM_DELETETOOL
+  MENUITEM "Delete any button...",    IDM_DELETEANYTOOL
+  MENUITEM "",                        -1,           MIS_SEPARATOR
+  MENUITEM "Add button...",           IDM_ADDTOOL
+  MENUITEM "Edit button...",          IDM_EDITTOOL
+  MENUITEM "Edit any button...",      IDM_EDITANYTOOL
+  MENUITEM "Reorder buttons...",      IDM_REORDERTOOLS
+  MENUITEM "",                        -1,           MIS_SEPARATOR
+  MENUITEM "Save toolbar...",         IDM_SAVETOOLS
+  MENUITEM "Load toolbar...",         IDM_LOADTOOLS
+  MENUITEM "",                        -1,           MIS_SEPARATOR
+  MENUITEM "Help",                    IDM_HELP
+}
+
+ACCELTABLE  MAIN_DRIVELIST
+{
+  VK_F4,       DID_CANCEL,             ALT,VIRTUALKEY
+  VK_F4,       SC_CLOSE,               SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
+}
+
+MENU MAIN_SETUPLIST
+{
+  MENUITEM "S~ave state as name\tCtrl + a",  IDM_SAVEDIRCNRSTATE
+  MENUITEM "~Delete state name\tCtrl + d",   IDM_DELETEDIRCNRSTATE
+  MENUITEM "",                        -1,    MIS_SEPARATOR
+  MENUITEM "~Help",                          IDM_HELPUSERLIST
+}
+
+ACCELTABLE  MAIN_SETUPLIST
+{
+  "a",         IDM_SAVEDIRCNRSTATE,    CONTROL
+  "d",         IDM_DELETEDIRCNRSTATE,  CONTROL
+  VK_F4,       DID_CANCEL,             ALT,VIRTUALKEY
+  VK_F4,       SC_CLOSE,               SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
+  VK_F10,      IDM_CONTEXTMENU,        SHIFT,VIRTUALKEY
+}
+
+ACCELTABLE  MAIN_CMDLIST
+{
+  VK_F4,       DID_CANCEL,             ALT,VIRTUALKEY
+  VK_F4,       SC_CLOSE,               SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
+  VK_F10,      IDM_CONTEXTMENU,        SHIFT,VIRTUALKEY
+}
+
+MENU MAIN_USERLIST
+{
+  MENUITEM "~Add pathname\tCtrl + a",     IDM_ADDTOUSERLIST
+  MENUITEM "~Delete pathname\tCtrl + d",  IDM_DELETEFROMUSERLIST
+  MENUITEM "",                        -1, MIS_SEPARATOR
+  MENUITEM "~Help",                       IDM_HELPUSERLIST
+}
+
+ACCELTABLE  MAIN_USERLIST
+{
+  "a",         IDM_ADDTOUSERLIST,      CONTROL
+  "d",         IDM_DELETEFROMUSERLIST, CONTROL
+  VK_F4,       DID_CANCEL,             ALT,VIRTUALKEY
+  VK_F4,       SC_CLOSE,               SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
+  VK_F10,      IDM_CONTEXTMENU,        SHIFT,VIRTUALKEY
+}
+
+ACCELTABLE  MAIN_BUTTONLIST
+{
+  VK_F4,       DID_CANCEL,             ALT,VIRTUALKEY
+  VK_F4,       SC_CLOSE,               SYSCOMMAND,CONTROL,ALT,VIRTUALKEY
+  VK_F10,      IDM_CONTEXTMENU,        SHIFT,VIRTUALKEY
+}
+
+MENU SEEALL_FRAME
+{
+  SUBMENU "~Files",                   IDM_FILESMENU
+  {
+	 MENUITEM "~Rename selected...\tCtrl + r",IDM_RENAME
+	 SUBMENU  "~Copy selected",        IDM_COPYMENU
+	 {
+		MENUITEM "~Copy...\tCtrl + c",  IDM_COPY
+		MENUITEM "Copy and ~rename...", IDM_WILDCOPY
+		MENUITEM "Copy and ~preserve...",IDM_COPYPRESERVE
+	 }
+	 SUBMENU  "~Move selected",        IDM_MOVEMENU
+	 {
+		MENUITEM "~Move...\tCtrl + m",  IDM_MOVE
+		MENUITEM "Move and ~rename...", IDM_WILDMOVE
+		MENUITEM "Move and ~preserve",  IDM_MOVEPRESERVE
+	 }
+	 MENUITEM "Modify selected ~attributes\tCtrl + a",IDM_ATTRS
+	 MENUITEM "~Info on selected\tCtrl + i", IDM_INFO
+	 MENUITEM "E~xtended attributes...\tCtrl + E",IDM_EAS
+	 MENUITEM "S~ubject...\tCtrl + s",       IDM_SUBJECT
+	 MENUITEM "~Print selected\tCtrl + p",   IDM_PRINT
+	 MENUITEM "Archive selected\tCtrl + A",  IDM_ARCHIVE
+	 MENUITEM "Extract from selected...\tCtrl + x",IDM_EXTRACT
+	 MENUITEM "UUDecode selected...\tCtrl + U",IDM_UUDECODE
+         MENUITEM "UnLock file...\tCtrl + V", IDM_UNLOCKFILE
+	 MENUITEM "Co~llect selected\tCtrl + C", IDM_COLLECT
+	 MENUITEM "Save full path(s) to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
+         MENUITEM "Save filename(s) to clip~board\tAlt + [",IDM_SAVETOCLIPFILENAME
+	 MENUITEM "~Append full path(s) to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+         MENUITEM "Append file~name(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
+	 MENUITEM "Save selected to listfile\tCtrl + S",IDM_SAVETOLIST
+	 MENUITEM "Duplicates...",         IDM_DUPES
+	 SUBMENU  "~Open selected",        IDM_OPENSUBMENU
+	 {
+		MENUITEM "Default\tF6",         IDM_OPENDEFAULT
+		MENUITEM "~Settings\tF7",       IDM_OPENSETTINGS
+	 }
+	 SUBMENU "Create objects",         IDM_OBJECTSUBMENU
+	 {
+		MENUITEM "~Shadows...",         IDM_SHADOW
+		MENUITEM "~Real objects...",    IDM_OBJECT
+                MENUITEM "~Change JAVA executable", IDM_JAVAEXE
+	 }
+	 MENUITEM "~Hide selected",        IDM_HIDEALL
+         MENUITEM "~Unhide objects",   IDM_UNHIDEALL
+	 MENUITEM "Remo~ve selected\tCtrl + r",  IDM_REMOVE
+	 SUBMENU "~Delete",                IDM_DELETESUBMENU
+	 {
+		MENUITEM "~Delete selected\tCtrl + d",IDM_DELETE
+		MENUITEM "~Permanently delete selected\tCtrl + D",IDM_PERMDELETE
+	 }
+  }
+  SUBMENU "~View",                    IDM_VIEWSMENU
+  {
+	 MENUITEM "~Show full names",      IDM_SHOWLNAMES
+	 MENUITEM "F~ont change...",       IDM_FONTPALETTE
+	 MENUITEM "~Code page",            IDM_CODEPAGE
+	 MENUITEM "Co~lors...",            IDM_COLORPALETTE
+	 MENUITEM "~Rescan\tCtrl + R",           IDM_RESCAN
+	 MENUITEM "",                      -1,               MIS_SEPARATOR
+	 MENUITEM "~Filter...\tCtrl + f",        IDM_FILTER
+  }
+  SUBMENU "S~elect",                  IDM_SELECTSUBMENU
+  {
+	 MENUITEM "~Select all\tCtrl + /",       IDM_SELECTALL
+	 MENUITEM "Select ~mask...\tCtrl + =",   IDM_SELECTMASK
+	 MENUITEM "~Deselect all\tCtrl + \\",    IDM_DESELECTALL
+	 MENUITEM "D~eselect mask...\tCtrl + +", IDM_DESELECTMASK
+	 MENUITEM "~Invert selection\tCtrl + ;", IDM_INVERT
+  }
+  SUBMENU "~Sort",                    IDM_SORTSUBMENU
+  {
+	 MENUITEM "~Pathname",             IDM_SORTNAME
+	 MENUITEM "File~name",             IDM_SORTFILENAME
+	 MENUITEM "~Extension",            IDM_SORTFIRST
+	 MENUITEM "Si~ze",                 IDM_SORTSIZE
+	 MENUITEM "~Date",                 IDM_SORTLWDATE
+	 MENUITEM "",                      -1,               MIS_SEPARATOR
+	 MENUITEM "Re~verse",              IDM_SORTREVERSE
+  }
+  MENUITEM "~Help",                   IDM_HELP
+}
+
+MENU SEEALL_POPUP
+{
+  MENUITEM "~Rename selected...\tCtrl + r",IDM_RENAME
+  SUBMENU  "~Copy selected",         IDM_COPYMENU
+  {
+	 MENUITEM "~Copy...\tCtrl + c",   IDM_COPY
+	 MENUITEM "Copy and ~rename...",  IDM_WILDCOPY
+	 MENUITEM "Copy and ~preserve...",IDM_COPYPRESERVE
+  }
+  SUBMENU  "~Move selected",         IDM_MOVEMENU
+  {
+	 MENUITEM "~Move...\tCtrl + m",   IDM_MOVE
+	 MENUITEM "Move and ~rename...",  IDM_WILDMOVE
+	 MENUITEM "Move and ~preserve...",IDM_MOVEPRESERVE
+  }
+  MENUITEM "Modify selected attributes\tCtrl + a",IDM_ATTRS
+  MENUITEM "Info on selected\tCtrl + i",  IDM_INFO
+  MENUITEM "E~xtended attributes...\tCtrl + E",IDM_EAS
+  MENUITEM "S~ubject...\tCtrl + s",       IDM_SUBJECT
+  MENUITEM "~Print selected\tCtrl + p",   IDM_PRINT
+  MENUITEM "Archive selected...\tCtrl + A",IDM_ARCHIVE
+  MENUITEM "Extract from selected...\tCtrl + x",IDM_EXTRACT
+  MENUITEM "UUDecode selected...\tCtrl + U",IDM_UUDECODE
+  MENUITEM "UnLock file...\tCtrl + V", IDM_UNLOCKFILE
+  MENUITEM "Co~llect selected\tCtrl + C", IDM_COLLECT
+  MENUITEM "Save full path(s) to ~clipboard\tCtrl + [",IDM_SAVETOCLIP
+  MENUITEM "Save filename(s) to clip~board\tAlt + [",IDM_SAVETOCLIPFILENAME
+  MENUITEM "~Append full path(s) to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+  MENUITEM "Append file~name(s) to clipboard\tAlt + {",IDM_APPENDTOCLIPFILENAME
+  MENUITEM "Save selected to listfile\tCtrl + S",IDM_SAVETOLIST
+  MENUITEM "Duplicates...",         IDM_DUPES
+  SUBMENU  "~Open selected",        IDM_OPENSUBMENU
+  {
+	 MENUITEM "Default\tF6",         IDM_OPENDEFAULT
+	 MENUITEM "~Settings\tF7",       IDM_OPENSETTINGS
+  }
+  SUBMENU "Create objects",         IDM_OBJECTSUBMENU
+  {
+	 MENUITEM "~Shadows...",         IDM_SHADOW
+	 MENUITEM "~Real objects...",    IDM_OBJECT
+         MENUITEM "~Change JAVA executable", IDM_JAVAEXE
+  }
+  MENUITEM "~Hide selected",        IDM_HIDEALL
+  MENUITEM "~Unhide objects",   IDM_UNHIDEALL
+  MENUITEM "Remo~ve selected",      IDM_REMOVE
+  SUBMENU "~Delete",                IDM_DELETESUBMENU
+  {
+	 MENUITEM "~Delete selected\tCtrl + d",IDM_DELETE
+	 MENUITEM "~Permanently delete selected\tCtrl + D",IDM_PERMDELETE
+  }
+  MENUITEM "",                      -1,             MIS_SEPARATOR
+  MENUITEM "Select all\tCtrl + /",        IDM_SELECTALL
+  MENUITEM "Select mask...\tCtrl + =",    IDM_SELECTMASK
+  MENUITEM "Deselect all\tCtrl + \\",     IDM_DESELECTALL
+  MENUITEM "Deselect mask...\tCtrl + +",  IDM_DESELECTMASK
+  MENUITEM "Invert selection\tCtrl + ;",  IDM_INVERT
+  MENUITEM "",                      -1,             MIS_SEPARATOR
+  MENUITEM "~Filter\tCtrl + f",           IDM_FILTER
+}
+
+ACCELTABLE SEEALL_FRAME
+{
+  "A",         IDM_ARCHIVE,           SHIFT,CONTROL
+  "a",         IDM_ATTRS,             CONTROL
+  "C",         IDM_COLLECT,           SHIFT,CONTROL
+  "c",         IDM_COPY,              CONTROL
+  "D",         IDM_PERMDELETE,        SHIFT,CONTROL
+  "d",         IDM_DELETE,            CONTROL
+  "E",         IDM_EAS,               SHIFT,CONTROL
+  "f",         IDM_FILTER,            CONTROL
+  "i",         IDM_INFO,              CONTROL
+  "l",         IDM_MCIPLAY,           CONTROL
+  "m",         IDM_MOVE,              CONTROL
+  "p",         IDM_PRINT,             CONTROL
+  "R",         IDM_RESCAN,            SHIFT,CONTROL
+  "r",         IDM_RENAME,            CONTROL
+  "S",         IDM_SAVETOLIST,        SHIFT,CONTROL
+  "s",         IDM_SUBJECT,           CONTROL
+  "U",         IDM_UUDECODE,          SHIFT,CONTROL
+  "V",         IDM_UNLOCKFILE,        SHIFT,CONTROL
+  "x",         IDM_EXTRACT,           CONTROL
+  "+",         IDM_DESELECTMASK,      SHIFT,CONTROL
+  "=",         IDM_SELECTMASK,        CONTROL
+  "/",         IDM_SELECTALL,         CONTROL
+  "\\",        IDM_DESELECTALL,       CONTROL
+  ";",         IDM_INVERT,            CONTROL
+  "{",         IDM_APPENDTOCLIP,      SHIFT,CONTROL
+  "{",         IDM_APPENDTOCLIPFILENAME, SHIFT,ALT
+  "[",         IDM_SAVETOCLIP,        CONTROL
+  "[",         IDM_SAVETOCLIPFILENAME,ALT
+  VK_F1,       IDM_HELP,              VIRTUALKEY
+  VK_F3,       SC_CLOSE,              SYSCOMMAND,VIRTUALKEY
+  VK_F6,       IDM_OPENDEFAULT,       VIRTUALKEY
+  VK_F7,       IDM_OPENSETTINGS,      VIRTUALKEY
+}
+
+MENU NEWVIEW_FRAME
+{
+  SUBMENU "~View",                  IDM_VIEWSMENU
+  {
+	 MENUITEM "~Font change...",     IDM_FONTPALETTE
+	 MENUITEM "~Code page...",       IDM_CODEPAGE
+	 MENUITEM "C~olors...",          IDM_COLORPALETTE
+	 MENUITEM "",                    -1,               MIS_SEPARATOR
+	 MENUITEM "~Hex mode\tCtrl + h", IDM_HEXMODE
+	 MENUITEM "~Line wrap\n",        IDM_WRAP
+	 MENUITEM "",                    -1,               MIS_SEPARATOR
+	 MENUITEM "~Ignore http://",     IDM_IGNOREHTTP
+	 MENUITEM "I~gnore ftp://",      IDM_IGNOREFTP
+	 MENUITEM "Ignore ~mail",        IDM_IGNOREMAIL
+	 MENUITEM "",                    -1,               MIS_SEPARATOR
+	 MENUITEM "~Edit this file\tCtrl + e",IDM_EDIT
+  }
+  SUBMENU "~Clipboard",             IDM_FILESMENU
+  {
+	 MENUITEM "Sa~ve selected to clipboard\tCtrl + [",IDM_SAVETOCLIP
+	 MENUITEM "~Append selected to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+	 MENUITEM "~Write selected to file\tCtrl + w",IDM_SAVETOLIST
+	 MENUITEM "",                    -1,               MIS_SEPARATOR
+	 MENUITEM "Save bookmarks to clipboard",IDM_SAVETOCLIP2
+	 MENUITEM "Append bookmarks to clipboard",IDM_APPENDTOCLIP2
+	 MENUITEM "Write bookmarks to file",IDM_SAVETOLIST2
+  }
+  SUBMENU "~Search",                IDM_SEARCHMENU
+  {
+	 MENUITEM "~Find text...\tCtrl + f",   IDM_FINDFIRST
+	 MENUITEM "~Next found line\tCtrl + n",IDM_FINDNEXT
+	 MENUITEM "~Previous found line\tCtrl + p",IDM_FINDPREV
+	 MENUITEM "",                    -1,               MIS_SEPARATOR
+	 MENUITEM "Ne~xt blank line\tF11",     IDM_NEXTBLANKLINE
+	 MENUITEM "Pre~vious blank line\tF12", IDM_PREVBLANKLINE
+	 MENUITEM "",                    -1,               MIS_SEPARATOR
+	 MENUITEM "~Jump to line #...\tCtrl + j", IDM_GOTOLINE
+	 MENUITEM "Jump to ~offset #...\tCtrl + o",IDM_GOTOOFFSET
+  }
+  SUBMENU "S~elect",                IDM_SELECTSUBMENU
+  {
+	 MENUITEM "~Select all\tCtrl + /",     IDM_SELECTALL
+	 MENUITEM "~Deselect all\tCtrl + \\",  IDM_DESELECTALL
+	 MENUITEM "~Invert selection\tCtrl + ;",IDM_INVERT
+	 MENUITEM "",                    -1,               MIS_SEPARATOR
+	 MENUITEM "Select ~found",       IDM_SELECTFOUND
+	 MENUITEM "D~eselect found",     IDM_DESELECTFOUND
+	 MENUITEM "",                    -1,               MIS_SEPARATOR
+	 MENUITEM "~Next selected line\tCtrl + N",IDM_NEXTSELECTED
+	 MENUITEM "~Previous selected line\tCtrl + P",IDM_PREVSELECTED
+  }
+  MENUITEM "~Help",                 IDM_HELP
+  MENUITEM "#1097",                 IDM_FINDFIRST,       MIS_BITMAP
+  MENUITEM "#1098",                 IDM_FINDNEXT,        MIS_BITMAP
+  MENUITEM "#1104",                 IDM_FINDPREV,        MIS_BITMAP
+  MENUITEM "#1027",                 IDM_SAVETOCLIP,      MIS_BITMAP
+
+}
+
+MENU NEWVIEW_POPUP
+{
+  MENUITEM "Sa~ve selected to clipboard\tCtrl + [",IDM_SAVETOCLIP
+  MENUITEM "~Append selected to clipboard\tCtrl + {",IDM_APPENDTOCLIP
+  MENUITEM "~Write selected to file\tCtrl + w",IDM_SAVETOLIST
+  MENUITEM "",                      -1,             MIS_SEPARATOR
+  MENUITEM "Se~lect all\tCtrl + /",       IDM_SELECTALL
+  MENUITEM "~Deselect all\tCtrl + \\",    IDM_DESELECTALL
+  MENUITEM "~Invert selection\tCtrl + ;", IDM_INVERT
+  MENUITEM "Select ~found",         IDM_SELECTFOUND
+  MENUITEM "D~eselect found",       IDM_DESELECTFOUND
+  MENUITEM "~Next selected line\tCtrl + N",IDM_NEXTSELECTED
+  MENUITEM "~Previous selected line\tCtrl + P",IDM_PREVSELECTED
+  MENUITEM "",                      -1,             MIS_SEPARATOR
+  MENUITEM "View current as file\tCtrl + v",IDM_VIEW
+  MENUITEM "",                      -1,             MIS_SEPARATOR
+  MENUITEM "~Find text...\tCtrl + f",     IDM_FINDFIRST
+  MENUITEM "~Next found line\tCtrl + n",  IDM_FINDNEXT
+  MENUITEM "~Previous found line\tCtrl + p",IDM_FINDPREV
+  MENUITEM "~Jump to line #...\tCtrl + j",IDM_GOTOLINE
+  MENUITEM "Jump to ~offset #...\tCtrl + o",IDM_GOTOOFFSET
+}
+
+ACCELTABLE NEWVIEW_FRAME
+{
+  "e",         IDM_EDIT,              CONTROL
+  "f",         IDM_FINDFIRST,         CONTROL
+  "h",         IDM_HEXMODE,           CONTROL
+  "j",         IDM_GOTOLINE,          CONTROL
+  "N",         IDM_NEXTSELECTED,      SHIFT,CONTROL
+  "n",         IDM_FINDNEXT,          CONTROL
+  "o",         IDM_GOTOOFFSET,        CONTROL
+  "P",         IDM_PREVSELECTED,      SHIFT,CONTROL
+  "p",         IDM_FINDPREV,          CONTROL
+  "v",         IDM_VIEW,              CONTROL
+  "w",         IDM_SAVETOLIST,        CONTROL
+  "/",         IDM_SELECTALL,         CONTROL
+  "\\",        IDM_DESELECTALL,       CONTROL
+  ";",         IDM_INVERT,            CONTROL
+  "{",         IDM_APPENDTOCLIP,      SHIFT,CONTROL
+  "[",         IDM_SAVETOCLIP,        CONTROL
+  VK_TAB,      IDM_NEXTWINDOW,        VIRTUALKEY
+  VK_BACKTAB,  IDM_PREVWINDOW,        SHIFT,VIRTUALKEY
+  VK_F1,       IDM_HELP,              VIRTUALKEY
+  VK_F3,       SC_CLOSE,              SYSCOMMAND,VIRTUALKEY
+  VK_F6,       IDM_OBJECT,            VIRTUALKEY
+  VK_F11,      IDM_NEXTBLANKLINE,     VIRTUALKEY
+  VK_F12,      IDM_PREVBLANKLINE,     VIRTUALKEY
+  VK_ESC,      SC_CLOSE,              SYSCOMMAND,VIRTUALKEY
+}
+
+ACCELTABLE  CFG_FRAME
+{
+  VK_F3,      DID_OK,                 VIRTUALKEY
+  VK_ENTER,   DID_OK,                 VIRTUALKEY
+  VK_NEWLINE, DID_OK,                 VIRTUALKEY
+  VK_ESC,     DID_CANCEL,             VIRTUALKEY
+}
+
+STRINGTABLE
+  BEGIN
+    IDS_COPYRIGHT                         COPYRIGHT_STRING
+    IDS_OPENBUTTONHELP                    "Click this button to open a Directory\rContainer for the highlighted directory\rin the Drive Tree below.  Or click B2 to\rWalk to a directory to open.  Or drop an\robject here to open its directory."
+    IDS_OPENDROPHELP                      "Dropping here will open a Directory container for the item."
+    IDS_IDEALBUTTONHELP                   "Click this button to set FM/2's window\rsize to an ""ideal"" size."
+    IDS_LEDHELP                           "This control indicates how\rmany background threads\rare currently active.\rB1 = show list of active threads\rB2 = close list of active threads\rB3 or chord = FM/2 open windows dialog"
+    IDS_WALKBUTTONHELP                    "B1 = Open new directory\rB2 = Change directories\rB3 = Tile child windows"
+    IDS_QUICKBUTTONHELP                   "B1 = Toggle quicklists\rB2 = Toggle toolbar\rB3 = Toggle drive buttons\r"
+    IDS_ATTRSBUTTONHELP                   "This window shows the current\ritem's attributes.\rClick to change date\rand/or attributes."
+    IDS_INFOBUTTONHELP                    "This window shows the current\ritem's date and time.\rClick to get detailed\rinformation on item."
+    IDS_NAMEBUTTONHELP                    "This window shows the current\ritem's name.\rClick to rename."
+    IDS_STATUS2HELP                       "Click me for a\rmini command line."
+    IDS_CMDLISTHELP                       "Pick a command to run from the list or B2 to edit commands."
+    IDS_SETUPLISTHELP                     "Pick a name from the state list or get a popup menu."
+    IDS_USERLISTHELP                      "Pick a directory from the list or get a popup menu."
+    IDS_DRIVELISTHELP                     "Pick a drive from the list."
+    IDS_BUTTONLISTHELP                    "Pick a toolbar from the list."
+    IDS_USERLISTDROPHELP                  "Dropping here will add the directory to the list."
+    IDS_TOOLDROPHELP                      "You're dragging %lu object(s) over the toolbar."
+    IDS_NEWDIRECTORYTEXT                  "<New directory>"
+    IDS_COMMONDIRTEXT                     "Common directories"
+    IDS_TOOLBARTEXT                       "Toolbars"
+    IDS_STATETEXT                         "States"
+    IDS_COMMANDSTEXT                      "Commands"
+    IDS_TREETEXT                          " Drive Tree"
+    IDS_NUMDRIVESTEXT                     " %lu Drives"
+    IDS_FREETEXT                          "free"
+    IDS_ATTRTEXT                          "[@]"
+    IDS_SWAPFILETEXT                      "Swapfile:"
+    IDS_DTTEXT                            "DT:"
+    IDS_ALLTEXT                           "<All>"
+    IDS_DRAGROOTTEXT                      " Dragging root directory..."
+    IDS_DRAGDIRTEXT                       " Dragging directory..."
+    IDS_DRAGFILETEXT                      " Dragging file..."
+    IDS_RESCANSUGTEXT                     " Drive is invalid -- rescan if required."
+    IDS_ERRORTEXT                         "Error!"
+    IDS_CANTSTARTTEXT                     "Can't start %s %s"
+    IDS_EXCEEDPMDRGLMT                    "Your Drag request exceeds the PM limit\n (For compatibility with 16 bit apps)\n The unprocessed objects are still selected in the\n source directory for additional processing\n See Drag & Drop in the help file for additional information"
+    IDS_SHUTDOWNSTATE_WARNING             """%s"" is the state name used by ""Save directory container state"". Any changes to this state will last only until FM/2 closes or this setting is disabled. Proceed with this change?"
+    IDS_YOUAREHERETEXT                    " You are here --> x"
+    IDS_FORCINGCOPYTEXT                   "Move not allowed - forcing copy"
+    IDS_OUTOFMEMORY                       "Memory allocation failed!!!"
+    IDS_DROPONMETEXT                      "\rYou can drop on me!"
+    IDS_DRIVEDROPHELP                     "Dropping here will copy or move to this drive."
+    IDS_IDEALMENUTEXT                     "~Ideal size"
+    IDS_HIDEMENUTEXT                      "Hi~de menu"
+    IDS_UNHIDEMENUTEXT                    "Unh~ide Menu"
+    IDS_HIDETEXT                          "Hide"
+    IDS_DELETETEXT                        "Delete"
+    IDS_EDITTEXT                          "Edit"
+    IDS_NOTPROTECTONLYEXE                 "The file %s is a Dos or Windows executable, however Dos and WinOS2 are not currently activated on this system."
+    IDS_INIFAILURETEXT                    "Check INI header failed will attempt to replace with backup if backup fails or not found will open with new ini"
+    IDS_DUPLICATEHOTKEYTEXT               "The hotkey you selected is in use by another command.\n Yes assigns it to this command and sets the other's to None.\n No sets this command to the next unused hotkey.\n Cancel returns you to the dialog to select a different HotKey."
+    IDS_HELPCMDTEXT                       "/HELP"
+    IDS_ZEROBYTETEXT                      "Zero byte file do you wish to open it in an editor (No cancels)"
+    IDS_DETACHREQUESTTEXT                 "Detach Request"
+    IDS_DIRCNRTOTALHELP                   "This window tells you how many objects\rand how many bytes are in the container.\rYou can drag me (this dir), or drag onto\rme (into this dir)."
+    IDS_DIRCNRSELECTEDHELP                "This window tells you how many objects\rand how many bytes are selected.\rDrag me and you drag this directory.\rDrop on me and you drop into this\rdirectory (this is container whitespace).\rB1 = Select menu\rB2 = Compare select menu"
+    IDS_DIRCNRVIEWHELP                    "Click to change view type."
+    IDS_DIRCNRSORTHELP                    "Click to change sort type."
+    IDS_DIRCNRFILTERHELP                  "Click to change filter."
+    IDS_DIRCNRMAXHELP                     "Click this button to maximize or restore\rthis directory container."
+    IDS_DIRCNRFOLDERHELP                  "This is the ""Folder button.""\rB1 = Move back one directory in tree (to parent)\rB2 = Menu or previous directory (as configured)\rB3 or chord = Rescan directory\rDrop on me to change directory"
+    IDS_DIRCNRFOLDERDROPHELP              "Dropping here can change the directory into which the container ""looks."""
+    IDS_SCANNINGTEXT                      "Scanning..."
+    IDS_SELECTFILTERTEXT                  "FM/2:  Select filter"
+    IDS_DESELECTFILTERTEXT                "FM/2:  Deselect filter"
+    IDS_STATUSSIZETEXT                    " Size:  %s%s%s%s"
+    IDS_CREATETEXT                        "Enter the name of the file to create in this directory."
+    IDS_CREATEPROMPTTEXT                  "Filename to create:"
+    IDS_CREATETITLETEXT                   "FM/2:  Create new file"
+    IDS_CREATEERRORTEXT                   "Couldn't create ""%s"""
+    IDS_DROPERRORTEXT                     "Can't access draginfo.\rThis help function broken by Warp, sorry -- complain to IBM."
+    IDS_DROPHELPHDRTEXT                   "Drop help"
+    IDS_DROPHELPTEXT                      "You were dragging %lu object%s.\r\rYou had %s%sobject %s%stargetted.\r\rThe action requested was %s."
+    IDS_NOTEXT                            "no"
+    IDS_COPYTEXT                          "Copy"
+    IDS_MOVETEXT                          "Move"
+    IDS_LINKTEXT                          "Link"
+    IDS_DRAGFILEOBJTEXT                   " Dragging file system object(s)..."
+    IDS_RESCANSUGGESTEDTEXT               " [Rescan suggested]"
+    IDS_DRIVESMENUTEXT                    "Dri~ves..."
+    IDS_DRIVESPACELIMITED                 "The target path %s will have less then %s bytes of space remaining following this operation. Do you wish to continue?"
+    IDS_TMPDRIVESPACELIMITED              "The TMP directory %s has limited space remaining. Do you wish to use the FM/2 save directory for temporary files? In any case you should free some space on this drive"
+    IDS_SAVETMPDRIVESPACELIMITED          "The TMP directory %s & the FM/2 save directory %s both have limited space remaining. You should free some space on these drives"
+    IDS_SAVEDRIVESPACELIMITED             "The FM2 save directory %s has limited space remaining. You should free some space on this drive"
+    IDS_DRIVESPACELIMITEDTMPSAVE          "FM/2's TMP and/or save directory has limited space remaining. You should free some space on this drive immediately"
+    IDS_DRIVESPACEEXCEEDED                "The target path %s has inadequate space remaining for the operation requested. Free some space and try again."
+    IDS_ARCTMPDRIVESPACELIMITED           "The TMP directory %s has limited space remaining. This will limit your ability to view large files. You should free some space on this drive"
+    IDS_OPENCMDTEXT                       "/OPEN"
+    IDS_CLOSECMDTEXT                      "/CLOSE"
+    IDS_SAVECMDTEXT                       "/SAVE"
+    IDS_NOSAVECMDTEXT                     "/NOSAVE"
+    IDS_KEEPCMDTEXT                       "/KEEP"
+    IDS_NOKEEPCMDTEXT                     "/NOKEEP"
+    IDS_FILTERCMDTEXT                     "/FILTER"
+    IDS_FM2CMDHELPHDRTEXT                 "FM/2 mini-command line help"
+    IDS_MISSINGTEXT                       "Some text is missing"
+    IDS_TOOLHELPTEXTBLANK                 "You need to provide both button text & help."
+    IDS_COMMANDSLIMITTITLETEXT            "Commands Limit Has Been Reached"
+    IDS_COMMANDSLIMITREACHEDTEXT          "You have used all the IDs (300) available for user added commands. You must delete an existing command before adding a new one."
+    IDS_COLSELECTEDHELP                   "This window shows you how many objects\rand how many bytes are selected.\rDrop on me to collect objects.\rClick me for the select menu."
+    IDS_COLTOTALSHELP                     "This window shows you how many objects\rand how many bytes are in the Collector.\rDrop on me to collect objects."
+    IDS_COLLECTINGTEXT                    "Collecting..."
+    IDS_COLLECTNOLISTHDRTEXT              "File may not be a list.\r"
+    IDS_COLLECTNOLISTTEXT                 "Continue to try to Collect from %s?"
+    IDS_INSEEKSCANTEXT                    "Seek & scan in progress."
+    IDS_COLLECTORTEXT                     "Collector"
+    IDS_COLLECTORTITLETEXT                "FM/2:  Collector"
+    IDS_COLMENUSEEKSCANHELP               "Seek and scan files"
+    IDS_COLMENUSEEALLHELP                 "See all files"
+    IDS_COLMENUCLEARCNRHELP               "Clear the container contents (Nothing gets deleted)"
+    IDS_COLMENUREMOVECNRHELP              "Remove the selected files from the container (Nothing gets deleted)"
+    IDS_ARCHIVERREPORTTEXT                "  **Archiver report:\n\n\n"
+    IDS_SAYWHATTEXT                       "Say what?"
+    IDS_SHAMETEXT                         "Shame, shame, shame..."
+    IDS_BUNGEDUPTEXT                      "Probably bunged-up archiver information."
+    IDS_ARCERRORINFOTEXT                  "An error occured when trying to obtain information from the archiver about %s.  Errors noted (bad start-of-list can cause all):%s%s%s %s"
+    IDS_NOGOTSTARTTEXT                    "  *Start-of-list string not found."
+    IDS_NOARCFILESFOUNDTEXT               "  *No file lines found."
+    IDS_NOENDOFLISTTEXT                   "  *End-of-list string not found."
+    IDS_COMPRESSEDSIZEMENUTEXT            "Compr~essed size"
+    IDS_DATEMENUTEXT                      "~Date"
+    IDS_ARCCNRTOTALSHELPTEXT              "This window tells you how many objects\rand how many bytes are in the container.\rDrop on me to drop into archive."
+    IDS_ARCCNRSELECTEDHELPTEXT            "This window tells you how many objects\rand how many bytes are selected.\rDrop on me to drop into archive.\rClick me for select menu."
+    IDS_ARCCNRVIEWHELPTEXT                "Click to change view type.\r(Not yet implemented)"
+    IDS_ARCCNRFOLDERHELPTEXT              "Click to change extract directory\r(or enter a new directory into the\rentry field at the bottom of the\rwindow).  Or drop on me."
+    IDS_ARCCNRFOLDERDROPHELPTEXT          "Dropping here can change the extract directory."
+    IDS_ARCCNRDELREFTEXT                  "You have elected to %s the object%s above from archive ""%s"".  Unhighlight any objects which you do not wish to %s."
+    IDS_ARCNOTEST                         "Archiver doesn't support full archive testing"
+    IDS_ARCMISSINGEXE                     "Missing executable"
+    IDS_ARCMISSINGEXEVERBOSE              "None of the executable files identified in ARCHIVER.BB2 for this archive type were found on the PATH"
+    IDS_DELETELOWERTEXT                   "delete"
+    IDS_REFRESHLOWERTEXT                  "refresh"
+    IDS_REPLACEWARNTEXT                   "The following member%s of archive ""%s"" exist%s in the extract directory ""%s"".  Unhighlight any you do not want to replace existing files."
+    IDS_EXECARCFILETITLETEXT              "FM/2:  Execute archive file"
+    IDS_VIRUSSCANARCHIVETITLETEXT          "FM/2:  Virus scan archive"
+    IDS_FILENAMECOLTEXT                   "Filename"
+    IDS_OLDSIZECOLTEXT                    "Old size"
+    IDS_NEWSIZECOLTEXT                    "New size"
+    IDS_DATETIMECOLTEXT                   "Date/time"
+    IDS_DATECOLTEXT                       "Date"
+    IDS_TIMECOLTEXT                       "Time"
+    IDS_WARNINGTEXT                       "Warning:"
+    IDS_SPECIFYDRIVETEXT                  "It's a good idea to specify the drive."
+    IDS_ARCCNRDROPHELPTEXT                "Dropping here will copy the objects into the archive ""%s"".  If an object by the same name already exists in the archive, it'll be overwritten."
+    IDS_DRAGARCMEMTEXT                    " Dragging archive member(s)..."
+    IDS_DRAGARCFILETEXT                   " Dragging archive file..."
+    IDS_WALKDEFAULTHELPTEXT               "Click Help for detailed info."
+    IDS_WALKRECENTDIRSTEXT                "Recently used dirs"
+    IDS_WALKCURRDIRTEXT                   "This is the 'current' directory -- type in a new one."
+    IDS_WALKRECENTDIRSHELPTEXT            "This is a list of recently used directories."
+    IDS_WALKUSERDIRSHELPTEXT              "This is a list of user-defined directories -- Add, Delete or double-click one."
+    IDS_WALKDRIVELISTHELPTEXT             "This is a list of drives.  Double-click one to switch to it."
+    IDS_WALKDIRLISTHELPTEXT               "This is a list of directories.  Double-click one to 'walk' into it."
+    IDS_WALKCOPYDLGTEXT                   "FM/2: Select a directory -- copy target"
+    IDS_WALKMOVEDLGTEXT                   "FM/2: Select a directory -- move target"
+    IDS_WALKEXTRACTDLGTEXT                "FM/2: Select a directory -- extract"
+    IDS_WALKCOMPAREDLGTEXT                "FM/2: Select directories to compare"
+    IDS_WALKSETDIRSDLGTEXT                "FM/2: Set directories"
+    IDS_GREPDUPETEXT                      "Find dups reading files"
+    IDS_GREPSCANTEXT                      "Grep searching for files"
+    IDS_GREPINSERTINGTEXT                 "Inserting..."
+    IDS_GREPDUPESORTINGTEXT               "Find dups sorting..."
+    IDS_GREPDUPECOMPARINGTEXT             "Find dups comparing..."
+    IDS_GREPDUPECHECKPROGTEXT             "Checked %lu of %lu for dups"
+    IDS_HELPTEXT                          "Help"
+    IDS_ENTERTEXTHELPTEXT                 "Enter the desired text, then click Okay."
+    IDS_PICKCODEPAGETEXT                  "Pick codepage:"
+    IDS_ARCDEFAULTHELPTEXT                "Click the Help button for more info."
+    IDS_ARCARCNAMEHELPTEXT                "This is the name of the archive file."
+    IDS_ARCCMDHELPTEXT                    "This is the command that will be sent to the archiver."
+    IDS_ARCMASKHELPTEXT                   "List the semicolon separated filemasks you wish to extract."
+    IDS_ARCEXECHELPTEXT                   "FM/2: Show archiver help screen"
+    IDS_EXTDROPHELPTEXT                   "Dropping here can change the extract directory."
+    IDS_EXTVARIOUSTEXT                    "<Various>"
+    IDS_EXTEXTRACTDIRHELPTEXT             "This is the directory to which files will be extracted."
+    IDS_COMPCOMPARETEXT                   "Compare ""%s"""
+    IDS_COMPTOTEXT                        " to ""%s""..."
+    IDS_COMPDIFSIZESTEXT                  "The files are different sizes."
+    IDS_COMPVSBYTESTEXT                   "%lu bytes vs. %lu bytes"
+    IDS_COMPDONTMATCHTEXT                 "Files don't match."
+    IDS_COMPCOMPARINGTEXT                 "Comparing..."
+    IDS_COMPREADERRORTEXT                 "Read error after offset %lu (%08lx)"
+    IDS_COMPFILESMATCHTEXT                "Files appear to match."
+    IDS_COMPWONDERWHYTEXT                 "I wonder why...DOAH!"
+    IDS_COMPCOMPLETETEXT                  "Complete."
+    IDS_COMPMATCHREADERRORTEXT            "Matched read error after offset %lu (%08lx)"
+    IDS_COMPODDERRORTEXT                  "Odd error."
+    IDS_COMPMISMATCHERRORTEXT             "Mismatch @ offset %lu (%08lx)"
+    IDS_COMPCANTOPENTEXT                  "Can't open ""%s"""
+    IDS_COMPSILLYALERTTEXT                "Silliness alert"
+    IDS_COMPTOITSELFTEXT                  "You're trying to compare an object to itself."
+    IDS_COMPMOVEFAILEDTEXT                "Move of ""%s"" to ""%s"" failed."
+    IDS_COMPCOPYFAILEDTEXT                "Copy of ""%s"" to ""%s"" failed."
+    IDS_LARGERTEXT                        "Larger"
+    IDS_SMALLERTEXT                       "Smaller"
+    IDS_NEWERTEXT                         "Newer"
+    IDS_OLDERTEXT                         "Older"
+    IDS_EASDIFFERTEXT                     "EAs differ"
+    IDS_LONGNAMECOLTEXT                   "LName"
+    IDS_LADATECOLTEXT                     "LA Date"
+    IDS_LATIMECOLTEXT                     "LA Time"
+    IDS_CRDATECOLTEXT                     "Cr Date"
+    IDS_CRTIMECOLTEXT                     "Cr Time"
+    IDS_COMPHOLDBLDLISTTEXT               "Please wait -- building lists..."
+    IDS_COMPHOLDFILLCNRTEXT               "Please wait -- filling containers..."
+    IDS_COMPREADYFILTEREDTEXT             "Ready (%.60s)."
+    IDS_COMPREADYTEXT                     "Ready."
+    IDS_COMPHOLDREADDISKTEXT              "Please wait -- reading disk..."
+    IDS_COMPHOLDDELETINGTEXT              "Please wait -- deleting..."
+    IDS_COMPHOLDMOVINGTEXT                "Please wait -- moving... "
+    IDS_COMPHOLDCOPYINGTEXT               "Please wait -- copying..."
+    IDS_COMPHOLDFILTERINGTEXT             "Please wait -- filtering..."
+    IDS_COMPHOLDDESELTEXT                 "Please wait -- deselecting..."
+    IDS_COMPHOLDINVERTTEXT                "Please wait -- inverting..."
+    IDS_COMPHOLDSELTEXT                   "Please wait -- selecting..."
+    IDS_ASSOCDROPHELPTEXT                 "Dropping here can set the command line."
+    IDS_EXECASSOCTITLETEXT                "FM/2: Executing an Association"
+    IDS_UNKNOWNDOSPROCTEXT                "<Unknown DOS process>"
+    IDS_UNKNOWNPROCTEXT                   "<Unknown process>"
+    IDS_ARGHTEXT                          "Argh"
+    IDS_CANTRUNPSTATTEXT                  "Couldn't run PSTAT.EXE /C\n"
+    IDS_REDIRECTERRORTEXT                 "Redirection error"
+    IDS_ICHOKEDTEXT                       "I choked."
+    IDS_ISPSTATTHERETEXT                  "Is an English version of PSTAT.EXE available on your PATH?"
+    IDS_DOSQPROCSTATFAILEDTEXT            "DosQProcStat failed -- can't list processes."
+    IDS_DOSKILLFAILEDTEXT                 "DosKillProcess failed."
+    IDS_SORRYCANTSHOWTEXT                 "Sorry, can't seem to show that process."
+    IDS_KILLPROCHELPTITLETEXT             "Kill Process:"
+    IDS_ATTRLISTBOXHELPTEXT               "All highlighted files will be affected (CTRL-click to deselect)."
+    IDS_ATTRYEARHELPTEXT                  "The year for the file's new date."
+    IDS_ATTRMONTHHELPTEXT                 "The month for the file's new date."
+    IDS_ATTRDAYHELPTEXT                   "The day for the file's new date."
+    IDS_ATTRHOURHELPTEXT                  "The hour for the file's new time."
+    IDS_ATTRMINHELPTEXT                   "The minute for the file's new time."
+    IDS_ATTRSECHELPTEXT                   "The second for the file's new time."
+    IDS_ATTRREADONLYBTEXT                 "~Readonly"
+    IDS_ATTRSYSTEMBTEXT                   "~System"
+    IDS_ATTRHIDDENBTEXT                   "~Hidden"
+    IDS_ATTRARCHIVEDBTEXT                 "~Archived"
+    IDS_ONTEXT                            "on"
+    IDS_OFFTEXT                           "off"
+    IDS_UNCHANGEDTEXT                     "unchanged"
+    IDS_UHYOTEXT                          "Uh, yo ... hello, anybody home?"
+    IDS_ATTRADVANTAGETEXT                 "You might find it advantageous to check the Use Date checkbox or ungrey one of the attribute checkboxes so I'd have something to do..."
+    IDS_UNKNOWNUNUSABLETEXT               "<Unknown/Unusable>"
+    IDS_UNUSABLETEXT                      "<Unusable>"
+    IDS_NOINFOTOSAVETEXT                  "No info to save!"
+    IDS_NOTETEXT                          "Note:"
+    IDS_SAVEARCBB2TEXT                    "Saving new ARCHIVER.BB2 to default directory."
+    IDS_STARTLISTEMPTYTEXT                "Start list empty!\r"
+    IDS_ENDLISTEMPTYTEXT                  "End list empty.\r"
+    IDS_BOGUSNAMETEXT                     "Name field probably bogus.\r"
+    IDS_CANTOPENFILETEXT                  "<Can't open file>"
+    IDS_NOTAPPLICABLETEXT                 "<Not applicable>"
+    IDS_TEXTARCPRODUCEDTEXT               "The text (if applicable) that your archiver produced."
+    IDS_BZZZTTEXT                         "Bzzzzt."
+    IDS_NEEDENTRYTEXT                     "I need something in that field first (but thank you very much for playing)."
+    IDS_OOPSTEXT                          "Oops."
+    IDS_SELECTFROMLISTTEXT                "Select text from listbox first."
+    IDS_WARNINGSTEXT                      "Warnings:"
+    IDS_EANAMEEXISTSTEXT                  "EA name already exists."
+    IDS_EANAMERESERVEDTEXT                "EA name is reserved."
+    IDS_EAWRONGTYPETEXT                   "Wrong type for EA name."
+    IDS_FAKETEXT                          "Fake"
+    IDS_EANOEAS                           "No EAs."
+    IDS_EAFILENAMESHELPTEXT               "These are the files you can look at -- pick one."
+    IDS_EATYPESHELPTEXT                   "These are the EA types this object contains -- pick one."
+    IDS_EADATAHELPTEXT                    "This is the EA's data -- change it if you like."
+    IDS_MAYDAYTEXT                        "Mayday!"
+    IDS_ASKABOUTUNDELETEHELPTEXT          "\r\rWould you like help on UNDELETE?"
+    IDS_UNDELETETITLETEXT                 "FM/2: Undelete files drive %c:"
+    IDS_COULDNTSTARTTHREADTEXT            "Could not start thread."
+    IDS_UNDELETEHELPTITLETEXT             "Undelete:"
+    IDS_INIREADONLYTEXT                   "The FM/2 INI file \"%s\" can not be marked read/write."
+    IDS_FM2HELPTITLETEXT                  "FM/2: Help"
+    IDS_PROGRAMNOTFOUNDTEXT               "The program ""%s"" not found. Are the Path and Filename correct? Do you wish to save it anyway?"
+    IDS_PROGRAMNOTEXE2TEXT                """%s"" doesn't appear to exist as an exe, com, cmd, bat or bmt file and has no extension. FM2 requires an extension for executing a program."
+    IDS_PROGRAMNOTEXE3TEXT                """%s"" doesn't have a standard executable file extension.\nYes = Save as corrected ""%s""? (may be unchanged) \nNo = As entered \nCancel = Edit it"
+    IDS_QUOTESINARGSTEXT                  """%s"" has quoting in the program arguments which may or may not be correct."
+    IDS_TOACTONSELECTEDTEXT               "For a command to act on selected files it must be followed by ""%%a"". Should I add it?"
+    IDS_SEEALLTITLETEXT                   "FM/2: See all files"
+    IDS_UNTITLEDTEXT                      " <Untitled>"
+    IDS_INTERNALVIEWERTITLETEXT           " Internal Viewer"
+    IDS_FM2VIEWERTITLETEXT                "FM/2 Viewer"
+    IDS_EDCOLORS1TEXT                     "Foreground"
+    IDS_EDCOLORS2TEXT                     "Background"
+    IDS_EDCOLORSPROMPTTEXT                "FM/2: 'Editor' colors"
+    IDS_ARCHIVETEXT                       "archive"
+    IDS_ERRORACCESSTEXT                   "Error #%lu accessing ""%s"""
+    IDS_EMPTYREMOVETEXT                   " -- Empty or open removable drive?"
+    IDS_CDMUSICTEXT                       " -- CD-ROM drive with music disk?"
+    IDS_WRITEPROTECTTEXT                  " -- media is write protected."
+    IDS_DRIVELOCKEDTEXT                   " -- drive is locked by another process."
+    IDS_EMPTYFLOPPYTEXT                   " -- Empty diskette drive?"
+    IDS_UNFORMATEDTEXT                    " -- Unformatted diskette in diskette drive?"
+    IDS_PHANTOMTEXT                       " -- Phantom diskette drive (try excluding it with /%c)?"
+    IDS_DISKWRITEPROTEXTTEXT              " -- diskette is write protected."
+    IDS_DISKLOCKEDTEXT                    " -- diskette is locked by another process."
+    IDS_UUDNOBEGINTEXT                    "No begin line in ""%s"""
+    IDS_UUDCANTOPENFORTEXT                "Can't open ""%s"" for ""%s"""
+    IDS_SILLYERRORTEXT                    "Silly error"
+    IDS_MERGEWASTETEXT                    "Sort of a waste of time unless you pick something more than that to merge..."
+    IDS_MAKESHADOWPROMPTTEXT              "Name for new folder to contain objects:"
+    IDS_MAKESHADOWTITLETEXT               "FM/2: Folder name for new objects"
+    IDS_MAKESHADOWCREATEFAILEDTEXT        "Folder ""%s"" creation failed."
+    IDS_SYSERRORTEXT                      "System configuration error:"
+    IDS_ENVPATHERRORTEXT                  "Environment variable %s is not set.  This variable should be set in CONFIG.SYS to point to all directories containing %s files."
+    IDS_NOFILESFOUNDTEXT                  "No files found."
+    IDS_VIEWHELPFILESTEXT                 "FM/2: View HELP files"
+    IDS_DEBUG_STRING                      "Debug -- please report to author"
+    IDS_GENERR1TEXT                       "\nModule: %s Line number: %u"
+    IDS_GENERR2TEXT                       "Error Message Information"
+    IDS_DOSERR1TEXT                       "\nModule: %s Line number: %u\nOS/2 error: %d\nClass: %s\nAction: %s\nLocation: %s"
+    IDS_DOSERR2TEXT                       "OS/2 Error Message Information"
+    IDS_ERRCLASS1TEXT                     "Out of resource"
+    IDS_ERRCLASS2TEXT                     "Temporary situation"
+    IDS_ERRCLASS3TEXT                     "Authorization failed"
+    IDS_ERRCLASS4TEXT                     "Internal error"
+    IDS_ERRCLASS5TEXT                     "Device hardware failure"
+    IDS_ERRCLASS6TEXT                     "System failure"
+    IDS_ERRCLASS7TEXT                     "Probable application failure"
+    IDS_ERRCLASS8TEXT                     "Item not located"
+    IDS_ERRCLASS9TEXT                     "Bad format for call/data"
+    IDS_ERRCLASS10TEXT                    "Resource or data locked"
+    IDS_ERRCLASS11TEXT                    "Incorrect media, CRC check"
+    IDS_ERRCLASS12TEXT                    "Action already taken or done"
+    IDS_ERRCLASS13TEXT                    "Unclassified"
+    IDS_ERRCLASS14TEXT                    "Can't perform requested action"
+    IDS_ERRCLASS15TEXT                    "Timeout"
+    IDS_ERRCLASS16TEXT                    "Error in file ""Error.c"""
+    IDS_ERRCLASS17TEXT                    "Unknown"
+    IDS_ERRACTION1TEXT                    "Retry immediately"
+    IDS_ERRACTION2TEXT                    "Delay and retry"
+    IDS_ERRACTION3TEXT                    "Bad user input - get new values"
+    IDS_ERRACTION4TEXT                    "Terminate in an orderly manner"
+    IDS_ERRACTION5TEXT                    "Terminate immediately"
+    IDS_ERRACTION6TEXT                    "Ignore error"
+    IDS_ERRACTION7TEXT                    "Retry after user intervention"
+    IDS_ERRACTION8TEXT                    "Error in file ""Error.c"""
+    IDS_ERRACTION9TEXT                    "Unknown"
+    IDS_ERRLOCUS1TEXT                     "Unknown"
+    IDS_ERRLOCUS2TEXT                     "Random access device such as a disk"
+    IDS_ERRLOCUS3TEXT                     "Network"
+    IDS_ERRLOCUS4TEXT                     "Serial device"
+    IDS_ERRLOCUS5TEXT                     "Memory"
+    IDS_ERRLOCUS6TEXT                     "Error in file ""Error.c"""
+    IDS_ERRLOCUS7TEXT                     "Unknown"
+    IDS_NVSTATUS2HELPTEXT                 "Click me to go to a\rspecific line number."
+    IDS_NVSTATUS3HELPTEXT                 "Click me to go to a\rspecific offset."
+    IDS_NVDRAGHELPTEXT                    "Click me to toggle hex/text view,\ror drag me."
+    IDS_SEARCHINGTEXT                     " Searching..."
+    IDS_NOMATCHINGTEXT                    " No matching text found."
+    IDS_BUILDINGLINELISTTEXT              " Building list of selected lines..."
+    IDS_SAVETOCLIPTEXT                    " Saving to clipboard..."
+    IDS_APPENDTOCLIPTEXT                  " Appending to clipboard..."
+    IDS_WRITETOFILETEXT                   " Writing to file..."
+    IDS_CANTOPENFORWRITETEXT              "Can't open ""%s"" for write."
+    IDS_NVNOLINESSELTEXT                  " No lines selected..."
+    IDS_FORMATTINGTEXT                    " Formatting..."
+    IDS_ERRORREADINGTEXT                  "Error reading ""%s"""
+    IDS_ZEROLENGTHTEXT                    "File ""%s"" is zero length."
+    IDS_LOADINGTEXT                       " Loading..."
+    IDS_NVCOLORS1TEXT                     "Normal cursored background"
+    IDS_NVCOLORS2TEXT                     "Selected cursored background"
+    IDS_NVCOLORS3TEXT                     "Normal background"
+    IDS_NVCOLORS4TEXT                     "Selected background"
+    IDS_NVCOLORS5TEXT                     "Normal foreground"
+    IDS_NVCOLORS6TEXT                     "Found foreground"
+    IDS_NVCOLORS7TEXT                     "Selected foreground"
+    IDS_NVCOLORS8TEXT                     "Selected found foreground"
+    IDS_NVCOLORS9TEXT                     "http: background"
+    IDS_NVCOLORS10TEXT                    "http: foreground"
+    IDS_NVCOLORS11TEXT                    "ftp: background"
+    IDS_NVCOLORS12TEXT                    "ftp: foreground"
+    IDS_NVCOLORS13TEXT                    "Mail: backgroung"
+    IDS_NVCOLORS14TEXT                    "Mail: foreground"
+    IDS_NVCOLORSPROMPTTEXT                "FM/2: 'Viewer' colors"
+    IDS_SACOLORS1TEXT                     "Normal cursored background"
+    IDS_SACOLORS2TEXT                     "Selected cursored background"
+    IDS_SACOLORS3TEXT                     "Normal background"
+    IDS_SACOLORS4TEXT                     "Selected background"
+    IDS_SACOLORS5TEXT                     "Selected foreground"
+    IDS_SACOLORS6TEXT                     "Normal foreground"
+    IDS_SACOLORS7TEXT                     "Readonly foreground"
+    IDS_SACOLORS8TEXT                     "System/Hidden foreground"
+    IDS_SACOLORSPROMPTTEXT                "FM/2: 'See all files' colors"
+    IDS_BYTETEXT                          "byte"
+    IDS_LINETEXT                          "line"
+    IDS_NVNOLINESTEXT                     " No lines to display"
+    IDS_WORKINGTEXT                       " Working..."
+    IDS_LINECOLONTEXT                     " Line: "
+    IDS_SELECTEDPARENTEXT                 " selected)"
+    IDS_FOUNDPARENTEXT                    " found)"
+    IDS_OFFSETCOLONTEXT                   " Offset: "
+    IDS_UNTITLEDBRKTTEXT                  " <Untitled>"
+    IDS_NVLINEJUMPTEXT                    "Enter the number of the line to which you want to jump.\r\rClick Okay when complete, or Cancel to abort."
+    IDS_NVBYTEJUMPTEXT                    "Enter the byte offset from the start of the file to which you want to jump.\r\rClick Okay when complete, or Cancel to abort."
+    IDS_NVLINEJUMPTITLETEXT               "FM/2: Jump to line"
+    IDS_NVBYTEJUMPTITLETEXT               "FM/2: Jump to offset"
+    IDS_NVJUMPTEXT                        "Jump to %s number(%lu-%lu)?"
+    IDS_OFFSETTEXT                        "offset"
+    IDS_JANUARY                           "Jan"
+    IDS_FEBRUARY                          "Feb"
+    IDS_MARCH                             "Mar"
+    IDS_APRIL                             "Apr"
+    IDS_MAY                               "May"
+    IDS_JUNE                              "Jun"
+    IDS_JULY                              "Jul"
+    IDS_AUGUST                            "Aug"
+    IDS_SEPTEMBER                         "Sep"
+    IDS_OCTOBER                           "Oct"
+    IDS_NOVEMBER                          "Nov"
+    IDS_DECEMBER                          "Dec"
+    IDS_ADIDTEXT                          "A string identifying this archive type, for humans."
+    IDS_ADADDTEXT                         "The command that causes your archiver to add files."
+    IDS_ADMOVETEXT                        "The command that causes your archiver to move files."
+    IDS_ADEXTTEXT                         "The usual extension of this type of archive."
+    IDS_ADEXTRACTTEXT                     "The command that causes your archiver to extract files."
+    IDS_ADWDIRSTEXT                       "The command that causes your archiver to extract files w/ dirs."
+    IDS_ADSIGTEXT                         "The signature of this archive type (see help)."
+    IDS_ADLISTTEXT                        "The command that causes your archiver to list archive contents."
+    IDS_ADTESTTEXT                        "The command that causes your archiver to test archives."
+    IDS_ADADDWPATHSTEXT                   "The command that causes your archiver to add files w/ dirs."
+    IDS_ADMOVEWPATHSTEXT                  "The command that causes your archiver to move files w/ dirs."
+    IDS_ADADDRECURSETEXT                  "The command that causes your archiver to add files w/ dirs/recursion."
+    IDS_ADDELETETEXT                      "The command that causes your archiver to delete files."
+    IDS_ADSIGPOSTEXT                      "The position of the archive signature in an archive."
+    IDS_ADFNAMEPOSTEXT                    "The field of filenames in an archive listing."
+    IDS_ADOLDSZTEXT                       "The field of uncompressed sizes in an archive listing."
+    IDS_ADNUMDATEFLDSTEXT                 "The number of fields in a date in a listing."
+    IDS_ADDATEPOSTEXT                     "The first field of dates in an archive listing, date type."
+    IDS_ADNEWSZTEXT                       "The field of compressed sizes in an archiver listing."
+    IDS_ADSTARTLISTTEXT                   "The string that comes before files in a listing."
+    IDS_ADENDLISTTEXT                     "The string that comes after files in a listing."
+    IDS_ADCHANGESONDISKTEXT               "Archiverbb2 has changed on disk"
+    IDS_ADRELOADMEMTEXT                   "Do you wish to reload it"
+    IDS_ADCHANGESINMEMTEXT                "Changes recorded in memory."
+    IDS_ADREWRITETEXT                     "Rewrite ARCHIVER.BB2 file?%s"
+    IDS_NOTRECOMMENDTEXT                  "\r\r(Not recommended; errors present)"
+    IDS_DNDLISTBOXHELPTEXT                "Hint:  CTRL-click to deselect an item."
+    IDS_DNDHELPTEXT                       "Select an action to perform."
+    IDS_DNDTARGETHELPTEXT                 "This is the target for the action."
+    IDS_NEWTARGETTEXT                     "Enter new target filename"
+    IDS_CHANGETEXT                        "Change"
+    IDS_POSSIBLEERRORTEXT                 "Possible error"
+    IDS_MAYNOTBELISTTEXT                  "File ""%s"" may not be a list.\rContinue to try to select from it?"
+    IDS_COMPSEL2ORMORETEXT                " Compare selections require two or more Directory Containers to be open."
+    IDS_BUILDINGLISTSTEXT                 " Building lists..."
+    IDS_EASBUSYTEXT                       "Can't read EAs of ""%s"" right now; something else has access to it."
+    IDS_SUBJECTINPUTHELPTEXT              "Enter a description for this object (up to 40 characters).  This is the same ""Subject"" that's shown in a WPS object's notebook on the first File page (the standard .SUBJECT EA).  Click Okay when complete, or Cancel to abort."
+    IDS_SUBJECTINPUTPROMPTTEXT            "Description of object:"
+    IDS_ERRORSETTINGSUBJECTTEXT           "Error setting .SUBJECT EA on object ""%s"""
+    IDS_VIEWPOSSTUFFTEXT                  "len = %lu line = %lu pos = %lu offset = %lu"
+    IDS_INTERNALVIEWEREDITORTITLETEXT     " Internal Viewer/Editor"
+    IDS_UNDOTEXT                          "Undo"
+    IDS_KEYSTROKEMENUTEXT                 " keystroke(s)\t^u"
+    IDS_CUTTOCLIPMENUTEXT                 " cut to clipboard\t^u"
+    IDS_CLEARSELMENUTEXT                  " clear selection\t^u"
+    IDS_PASTEFROMCLIPMENUTEXT             " paste from clipboard\t^u"
+    IDS_REDOTEXT                          "Redo"
+    IDS_SYSMONOTEXT                       "System Monospaced "
+    IDS_SAVECHANGESTEXT                   "File has changed.  Save changes?"
+    IDS_LOADOVERTEXT                      "File has changed.  Load new file over it?"
+    IDS_TABSTOPHELPTEXT                   "Enter the # of pixels on which you want tabstops located.\r\rClick Okay when complete, or Cancel to abort."
+    IDS_TABSTOPPROMPTTEXT                 "Tabstops every # pixels?"
+    IDS_TABSTOPTITLETEXT                  "FM/2: Set visual tabstops"
+    IDS_EXTABHELPTEXT                     "Enter the # spaces to which you want tabs expanded.  Enter 0 if you want real tabs when saving.\r\rClick Okay when complete, or Cancel to abort."
+    IDS_EXTABPROMPTTEXT                   "Expand tabs to # spaces?"
+    IDS_EXTABTITLETEXT                    "FM/2: Set tabstop space equivalants"
+    IDS_VIEWABOUTTITLETEXT                "About This Thing"
+    IDS_VIEWABOUTTEXT                     "FM/2 Cheap Internal Viewer/Editor\r\rCopyright (c) 1993-98 M. Kimes\r(Barebones Software)\rCopyright (c) 2001, 2009 Steven Levine and Associates, Inc.\rAll Rights Reserved"
+    IDS_LANERRORTITLETEXT                 "LAN Error report"
+    IDS_LANERROR2TITLETEXT                "Don't forget"
+    IDS_LANERROR2TEXT                     "To notify your LAN supplier of their bug.  I can't guarantee FM/2 to work properly with broken FSDs.  If you are a user on a LAN, ask your system administrator to report the bug to the LAN supplier for you."
+    IDS_NOSUBDIRSTEXT                     "FM/2 found no subdirs in first %lu entries for %c:"
+    IDS_SEARCHERRORTEXT                   "  OS/2 returned error #%lu searching %s"
+    IDS_FSDERRORTITLETEXT                 "FSD Error report"
+    IDS_FSDERROR2TITLETEXT                "Don't forget"
+    IDS_FSDERROR2TEXT                     "To notify the FSD supplier of their bug.  I can't guarantee FM/2 to work properly with broken FSDs.  If the FSD supplier needs more information, please give them the addresses from the READ.ME file so they can get in touch with me."
+    IDS_RECORDINSERTFAILEDTEXT            "Record insert failed."
+    IDS_RECORDALLOCFAILEDTEXT             "Record allocate failure."
+    IDS_NOSUBDIRS2TEXT                    "FM/2 found no subdirs in first %lu entries for drive %c:%s"
+    IDS_NOSUBDIRS3TEXT                    ".  You may need to set the Remote Bug toggle in FM/2's internal Settings notebook."
+    IDS_LOCALTEXT                         "local"
+    IDS_REMOTETEXT                        "remote"
+    IDS_LOADINGMLETEXT                    "Loading... %d"
+    IDS_TEXTNULSTEXT                      "Text contains NULs.  Replace with spaces?"
+    IDS_OBEYTEXT                          "I hear and obey..."
+    IDS_LOADCANCELLEDTEXT                 "File load cancelled per user request."
+    IDS_WRITEERRORTEXT                    "Write error..."
+    IDS_ENTERSEARCHSTRINGTEXT             "Enter a search string%s"
+    IDS_REPLACESTRINGTEXT                 " and optional replace string."
+    IDS_STRINGNOTFOUNDTEXT                """%s"" not found."
+    IDS_CONFIRMREPLACETEXT                "Replace with ""%s""?"
+    IDS_NOPETEXT                          "Nope"
+    IDS_DRIVEISTEXT                       "Drive %c: is %s."
+    IDS_BEINGIGNOREDTEXT                  "being ignored."
+    IDS_INVALIDTEXT                       "invalid."
+    IDS_NOWRITETEXT                       "not writeable."
+    IDS_CONFIRMTEXT                       "Confirm:"
+    IDS_NODIRCREATEDIRTEXT                "Directory ""%s"" doesn't exist.  Create it?"
+    IDS_CREATEDIRFAILEDTEXT               "Creation of ""%s"" failed."
+    IDS_EXISTSNOTDIRTEXT                  """%s"" exists and isn't a directory."
+    IDS_MKDIRHELPTEXT                     "Enter the pathname of the directory that you'd like to create. This pathname can be several layers deep if desired; FM/2 will create the layers as required. Click Okay when ready to create directory, or Cancel to abort."
+    IDS_MKDIRPROMPTTEXT                   "Pathname for new directory:"
+    IDS_MKDIRTITLETEXT                    "FM/2:  Create directory"
+    IDS_DIRNAMEERRORTEXT                  "Name ""%s"" contains wildcards or is a file or is a root directory or other dumb stuff -- try again."
+    IDS_NAMEDEFHELPTEXT                   "Click the Help button for detailed info."
+    IDS_CLICKDRIVEHELPTEXT                "Click a drive to switch to it."
+    IDS_ENTERFILEORMASKHELPTEXT           "Enter a filename or a mask, then press [Enter]."
+    IDS_DBLCLKDIRSWITCHHELPTEXT           "Double-click a directory to switch to it."
+    IDS_DBLCLKFILEUSEHELPTEXT             "Double-click a filename to use it."
+    IDS_ENTERFILEINSERTTEXT               "Enter filename to insert"
+    IDS_INSERTTEXT                        "Insert"
+    IDS_ENTERFILELOADTEXT                 "Enter filename to load"
+    IDS_LOADTEXT                          "Load"
+    IDS_ENTERFILETEXT                     "Enter filename"
+    IDS_OKAYTEXT                          "Okay"
+    IDS_EXISTSBUTNOTFILETEXT              "%s exists but is not a normal file."
+    IDS_ISZEROLENGTHTEXT                  "%s is 0-length."
+    IDS_DOESNTEXISTTEXT                   "%s doesn't exist."
+    IDS_CREATENEWTEXT                     "Create new file?"
+    IDS_EXPORTNAMETITLETEXT               "FM/2: Enter export filename"
+    IDS_EXISTSERASETEXT                   "%s exists.  Erase?"
+    IDS_RETOOLTEXT                        "FM/2: Rearrange tools"
+    IDS_EDITTOOLTEXT                      "FM/2: Edit tool"
+    IDS_ADDTOOLQUICKHELPTEXT              "This is the quick help text."
+    IDS_ADDTOOLBUTTONTEXT                 "This is the button text."
+    IDS_ADDTOOLBUTTONIDTEXT               "This is the button ID -- click Help for list."
+    IDS_DUPLICATETEXT                     "Duplicate"
+    IDS_TOOLIDEXISTS                      "That ID already has a tool."
+    IDS_PICKTOOLTITLETEXT                 "FM/2: Pick tool to %0.81s"
+    IDS_LOADTOOLBARTITLETEXT              "FM/2: Load Toolbar"
+    IDS_CANTFINDDIRTEXT                   "OS/2 can't find directory ""%s""?"
+    IDS_NODIRSUNDERTEXT                   "There are no more directories under there..."
+    IDS_PMLIMITTEXT                       "PM limit encountered"
+    IDS_NOMOREFILESINLISTBOXTEXT          "Listbox is full.  No more filenames can be added."
+    IDS_INSTANTTITLETEXT                  "FM/2: Instant command file (path: %s)"
+    IDS_REXXCOMMENT                       "/* Instant CMD file via FM/2 -- REXX */"
+    IDS_INSTANTHELPTITLETEXT              "Instant Command:"
+    IDS_DOSSTARTSESSIONFAILEDTEXT         "DosStartSession failed to run ""%s %s""\n called from %s %d."
+    IDS_DOSEXECPGMFAILEDTEXT              "DosExecPgm failed for %s.\n called from %s %d."
+    IDS_BLURB1TEXT                        "A Quick Brown Fox Jumps Over The Lazy Dog."
+    IDS_ITALICTEXT                        "Italic"
+    IDS_OUTLINETEXT                       "Outline"
+    IDS_BOLDTEXT                          "Bold"
+    IDS_UNDERSCORETEXT                    "Underscore"
+    IDS_STRIKEOUTTEXT                     "Strikeout"
+    IDS_SETFONTTITLETEXT                  "FM/2: Set font"
+    IDS_SETVIEWERFONTTITLETEXT            "FM/2: Set Viewer Font"
+    IDS_INIOVERAPPNAMETEXT                "Application name ""%s"" exists in target INI file ""%s"".  Overwrite?"
+    IDS_INIOVERAPPKEYNAMETEXT             "Application name ""%s"" and key name ""%s"" exist in target INI file ""%s"".  Overwrite?"
+    IDS_INIDELETEMOVEDTEXT                "Delete moved data from source INI file ""%s""?"
+    IDS_INIBYTESTEXT                      "%ld byte%s"
+    IDS_MASKLISTNAMEHELPTEXT              "The name under which to save this mask list."
+    IDS_MASKLISTFILESHELPTEXT             "Files containing mask lists."
+    IDS_MASKLISTMASKSHELPTEXT             "Masks (one per line) of applnames to include/exclude."
+    IDS_FILTERINGTEXT                     "Filtering..."
+    IDS_INIWASTEXT                        "(Was ""%s"")"
+    IDS_INIRENAMEAPPTITLETEXT             "FM/2: Rename application"
+    IDS_INICOPYAPPTITLETEXT               "FM/2: Copy application"
+    IDS_INIRENAMEKEYTITLETEXT             "FM/2: Rename keyword"
+    IDS_INICOPYKEYTITLETEXT               "FM/2: Copy keyword"
+    IDS_INICANTOPENUSERTEXT               "Requested user profile ""%s"" can't be opened."
+    IDS_INICANTOPENSYSTEXT                "Requested system profile ""%s"" can't be opened."
+    IDS_INIPRFRESETFAILEDTEXT             "PrfReset failed."
+    IDS_INISWAPOS2INISTITLETEXT           "FM/2: Swap OS/2 INIs "
+    IDS_SUCCESSTEXT                       "Success!"
+    IDS_INIEDITINITITLETEXT               "FM/2: Edit INI entry"
+    IDS_INIAPPKEYEXISTSTEXT               "App/keyname pair already exists in the INI file."
+    IDS_APPLICATIONSTITLETEXT             "Applications:"
+    IDS_KEYWORDSTITLETEXT                 "Keywords:"
+    IDS_DATABYTESTITLETEXT                "Data bytes:"
+    IDS_INTERNALINIVIEWERTEXT             " Internal INI Viewer"
+    IDS_INICANTOPENINITEXT                "Can't open ""%s"" as an OS/2 INI file.\rNote:  If you receive a WIN 1302 error, it indicates that the INI file is corrupt."
+    IDS_INIDELETEKEYTEXT                  "Do you want to delete keyname ""%s""?"
+    IDS_INIDELETEAPPTEXT                  "Do you want to delete application ""%s""?"
+    IDS_INIABOUTTEXT                      "FM/2 Cheap Internal INI Viewer\r\rCopyright (c) 1993-98 M. Kimes\r(Barebones Software)\rCopyright (c) 2001, 2009 Steven Levine and Associates, Inc.\rAll Rights Reserved"
+    IDS_INITITLETEXT                      "FM/2: INI ""%s"""
+    IDS_INISEARCHHELPTEXT                 "Enter the characters to find.\r\rInput is case insensitive. Leading\rspaces are not stripped. Find\rnexts are made after the current\ritem, find firsts always start at\rthe top.  Beep means no (more)\rmatches."
+    IDS_INISEARCHPROMPTTEXT               "String to find:"
+    IDS_INISEARCHTITLETEXT                "FM/2: Find INI string"
+    IDS_TREEMEMTEXT                       "  Mem: "
+    IDS_CMDWIPEALLHELPTEXT                "Wipe all lines"
+    IDS_CMDDELHILITEHELPTEXT              "Delete highlighted line"
+    IDS_CMDHELPHELPTEXT                   """/HELP"""
+    IDS_CMDCLOSEBOXHELPTEXT               "Close listbox"
+    IDS_CMDOPENHELPTEXT                   """/OPEN """
+    IDS_CMDCLOSEHELPTEXT                  """/CLOSE """
+    IDS_CMDFILTERHELPTEXT                 """/FILTER """
+    IDS_CMDKEEPHELPTEXT                   "Toggle ""/KEEP"""
+    IDS_CMDSAVEHELPTEXT                   "Toggle ""/SAVE"""
+    IDS_CANTFINDFILETEXT                  "Can't find this file."
+    IDS_RUNTHRUCMDEXETEXT                 "Must be run through command processor (i.e. ""CMD.EXE /C ..."")"
+    IDS_NOTDIRECTEXETEXT                  "OS/2 says: Doesn't appear to be a directly executable type."
+    IDS_ACCEPTABLEAPPTEXT                 "Acceptable apptype"
+    IDS_DOSTEXT                           "DOS"
+    IDS_WINDOWSREALTEXT                   "Windows Real"
+    IDS_WINDOWSPROTTEXT                   "Windows Prot"
+    IDS_WINDOWSENHTEXT                    "Windows Enh"
+    IDS_PMTEXT                            "PM"
+    IDS_BOUNDTEXT                         "Bound"
+    IDS_VIOTEXT                           "VIO"
+    IDS_FULLSCREENTEXT                    "Full Screen"
+    IDS_32BITTEXT                         "32-Bit"
+    IDS_UNKNOWNDEFAULTTEXT                "Unknown/default"
+    IDS_CMDSELCMDHELPTEXT                 "Select a command line (press [Delete] to get rid of one)..."
+    IDS_TEXTTITLETEXT                     "Text:"
+    IDS_OFDRIVETEXT                       " of drive"
+    IDS_FILETEXT                          "file"
+    IDS_DIRSIZETITLETEXT                  "FM/2: Directory sizes ""%s"""
+    IDS_FREESPACETEXT                     "%s free  %s total  %s used on drive"
+    IDS_FREESPACEUTEXT                    "?? free  ?? total  ?? used"
+    IDS_PRINTERNOTREADYTEXT               "Printer not ready."
+    IDS_PRINTINGLISTTEXT                  "Printing a list of files."
+    IDS_PRINTINGTEXT                      "Printing ""%s"""
+    IDS_PRINTTITLETEXT                    "FM/2 Print"
+    IDS_PRINTEVENTEXT                     "Ready to print even pages of ""%s"" -- are you?"
+    IDS_PRINTCANTREOPENTEXT               "Unable to reopen %s for printing."
+    IDS_PRINTEDTEXT                       "Printed ""%s"""
+    IDS_PRINTEDLISTTEXT                   "List of files printed."
+    IDS_TWIDDLETEXT                       "(FM/2 twiddling thumbs)"
+    IDS_NOPRINTABLETEXT                   "Nothing printable selected."
+    IDS_FM2DROPHELPTEXT                   "FM/2 drop help"
+    IDS_CANTREADEATEXT                    "OS/2 won't let me query EA ""%s"" from ""%s"" because it can't get read/write access to it. That means the object is in use by another program or OS/2, or is a running program itself."
+    IDS_CANTWRITEEATEXT                   "OS/2 won't let me assign EA ""%s"" on object ""%s"" because it can't get read/write access to it. The object might be in use by another process or OS/2, or might itself be a running program."
+    IDS_ERRORWRITEEATEXT                  "Error setting EA ""%s"" on object ""%s"" offset %ld"
+    IDS_ERRORREADEATEXT                   "Error querying EA ""%s"""
+    IDS_AVVCHK1TEXT                       "%s%s%s%s%s%s\rNote that only the List, Create and Extract commands were checked."
+    IDS_AVVCHK2TEXT                       "List exe not found! Are path and filename right?\r"
+    IDS_AVVCHK3TEXT                       "OS/2 bombed checking list exe.\r"
+    IDS_AVVCHK4TEXT                       "Bad list exe!\r"
+    IDS_AVVCHK5TEXT                       "No list exe given!\r"
+    IDS_AVVCHK6TEXT                       "Create exe not found.\r"
+    IDS_AVVCHK7TEXT                       "OS/2 bombed checking create exe.\r"
+    IDS_AVVCHK8TEXT                       "Bad create exe.\r"
+    IDS_AVVCHK9TEXT                       "No create exe given.\r"
+    IDS_AVVCHK10TEXT                      "Extract exe not found!\r"
+    IDS_AVVCHK11TEXT                      "OS/2 bombed checking extract exe.\r"
+    IDS_AVVCHK12TEXT                      "Bad extract exe!\r"
+    IDS_AVVCHK13TEXT                      "No extract exe given!\r"
+    IDS_DIRBRKTTEXT                       "[Dir] "
+    IDS_DOESNTEXIST2TEXT                  "(Doesn't exist)"
+    IDS_DATAANDBYTESTEXT                  "%s data (%u bytes)"
+    IDS_TEXTTEXT                          "Text"
+    IDS_EAREFTEXT                         "EA reference"
+    IDS_MVSTTEXT                          "Multi-value single-type data (%u entr%s, %u bytes)"
+    IDS_YTEXT                             "y"
+    IDS_IESTEXT                           "ies"
+    IDS_MVMTTEXT                          "Multi-value multi-type data (%u entr%s, %u bytes%s)"
+    IDS_ALLTEXTTEXT                       ", all text"
+    IDS_MIXEDTYPESTEXT                    ", mixed types"
+    IDS_BINARYBYTESTEXT                   "%sBinary data (%u bytes)"
+    IDS_BITMAPBYTESTEXT                   "Bitmap data (%u bytes)"
+    IDS_METAFILEBYTESTEXT                 "Metafile data (%u bytes)"
+    IDS_ICONBYTESTEXT                     "Icon data (%u bytes)"
+    IDS_ASN1BYTESTEXT                     "ASN1 data (%u bytes)"
+    IDS_UNKNOWNBYTESTEXT                  "Unknown datatype 0x%04x (%u bytes)"
+    IDS_CRITICALEA                        "Critical EA - " // 2014-02-10 SHL
+    IDS_DATABARTITLETEXT                  "FM/2 Databar"
+    IDS_NTFSDRIVERFAILSTEXT               "The NTFS.IFS fails with a NO_MORE_FILES_ERROR on each subdirectory. We have not found a work around as yet."
+    IDS_SUNDAY                            "Sun"
+    IDS_MONDAY                            "Mon"
+    IDS_TUESDAY                           "Tue"
+    IDS_WEDNESDAY                         "Wed"
+    IDS_THURSDAY                          "Thu"
+    IDS_FRIDAY                            "Fri"
+    IDS_SATURDAY                          "Sat"
+    IDS_SWAPTITLETEXT                     "Swap:"
+    IDS_MEMTITLETEXT                      "Mem: "
+    IDS_PROCSTITLETEXT                    "Procs: "
+    IDS_THRDSTITLETEXT                    "Thrds: "
+    IDS_TASKSTITLETEXT                    "Tasks: "
+    IDS_ELAPSEDTITLETEXT                  "Elapsed: "
+    IDS_DAYTEXT                           "day"
+    IDS_TREEFILTERTITLETEXT               "FM/2:  Tree filter"
+    IDS_SELECTTYPEERRORTEXT               "You have disabled the ability to select more than one object at a time in Directory Containers, the Collector and Archive Containers.  If that's not what you intended, return to the Settings notebook's DirCnrs page and correct the mistake."
+    IDS_NOTEVIEWERS3TEXT                  "Viewers ~2"
+    IDS_NOTEVIEWERS4TEXT                  "Internet associations"
+    IDS_DEFDIRFILTERTITLETEXT             "FM/2: Default DirCnr filter"
+    IDS_DEFCOLFILTERTITLETEXT             "FM/2: Default Collector filter"
+    IDS_DONTFORGETTEXT                    "Don't forget..."
+    IDS_UNHIDEMENUWARNTEXT                "The System Menu contains the command to unhide the pulldown menu."
+    IDS_NOTEDIRCNRS1TEXT                  "~DirCnrs"
+    IDS_NOTEDIRCNRS2TEXT                  "Directory Container controls"
+    IDS_NOTEDIRVIEW1TEXT                  "Dir~View"
+    IDS_NOTEDIRVIEW2TEXT                  "Default Directory Container view settings"
+    IDS_NOTEDIRSORT1TEXT                  "Dir~Sort"
+    IDS_NOTEDIRSORT2TEXT                  "Default Directory Container sort settings"
+    IDS_NOTECOLVIEW1TEXT                  "~ColView"
+    IDS_NOTECOLVIEW2TEXT                  "Collector Container view settings"
+    IDS_NOTECOLSORT1TEXT                  "C~olSort"
+    IDS_NOTECOLSORT2TEXT                  "Collector Container sort settings"
+    IDS_NOTEARCHIVER1TEXT                 "~Archiver"
+    IDS_NOTEARCHIVER2TEXT                 "Archive Container controls"
+    IDS_NOTETREE1TEXT                     "~Tree"
+    IDS_NOTETREE2TEXT                     "Drive Tree controls"
+    IDS_NOTETREESORT1TEXT                 "Tr~eeSort"
+    IDS_NOTETREESORT2TEXT                 "Drive Tree view and sort controls"
+    IDS_NOTEVIEWERS1TEXT                  "Vie~wers"
+    IDS_NOTEVIEWERS2TEXT                  "Default viewers and related controls"
+    IDS_NOTECOMPARE1TEXT                  "Com~pare"
+    IDS_NOTECOMPARE2TEXT                  "Comparison controls"
+    IDS_NOTEMONOLITHIC1TEXT               "~Monolithic"
+    IDS_NOTEMONOLITHIC2TEXT               "Monolithic FM/2 controls"
+    IDS_NOTEGENERAL1TEXT                  "~General"
+    IDS_NOTEGENERAL2TEXT                  "General controls"
+    IDS_NOTESCANNING1TEXT                 "Sca~nning"
+    IDS_NOTESCANNING2TEXT                 "Scanning controls"
+    IDS_NOTEQUICK1TEXT                    "~Quick"
+    IDS_NOTEQUICK2TEXT                    "Quick configuration options"
+    IDS_AHEMTEXT                          "Ahem..."
+    IDS_SILLYMERGETEXT                    "Sorta silly to try to merge just one file, eh?"
+    IDS_MERGINGTEXT                       "Merging ""%s"" to ""%s""."
+    IDS_MERGECOMPLETETEXT                 "Merge of ""%s"" to ""%s"" complete."
+    IDS_MERGEERRORTEXT                    "Merge error"
+    IDS_CANTOPENOUTPUTTEXT                "Can't open ""%s"" for output."
+    IDS_CANTOPENINPUTTEXT                 "Can't open ""%s"" for input."
+    IDS_UUDECODINGTEXT                    "UUDecoding ""%s""."
+    IDS_UUDECODECOMPLETETEXT              "UUDecode of ""%s"" complete."
+    IDS_UUDECODEABORTEDTEXT               "UUDecode of ""%s"" aborted."
+    IDS_NOTWRITENOTARGETTEXT              "That drive is not writeable; can't be a target."
+    IDS_RENAMINGTEXT                      "Renaming"
+    IDS_MOVINGTEXT                        "Moving"
+    IDS_COPYINGTEXT                       "Copying"
+    IDS_RENAMETEXT                        "Rename"
+    IDS_RENAMEDTEXT                       "Renamed"
+    IDS_MOVEDTEXT                         "Moved"
+    IDS_COPIEDTEXT                        "Copied"
+    IDS_TOTEXT                            "to "
+    IDS_FITTINGTEXT                       "Fitting..."
+    IDS_COULDNTFITTEXT                    "Couldn't fit..."
+    IDS_DISKFULLTEXT                      "Disk is full"
+    IDS_ANOTHERDISKTEXT                   "Please insert another disk."
+    IDS_OFTEXT                            "of "
+    IDS_FAILEDTEXT                        "failed"
+    IDS_WPSMOVETEXT                       "WPS Move"
+    IDS_WPSCOPYTEXT                       "WPS Copy"
+    IDS_ARETEXT                           "are"
+    IDS_ISTEXT                            "is"
+    IDS_DOITYOURSELFTEXT                  "FM/2: Execute do-it-yourself command line"
+    IDS_MAKINGOBJSTEXT                    "Making objects..."
+    IDS_MADEOBJSTEXT                      "Made objects..."
+    IDS_DELPROMPT1TEXT                    "You have elected to %sdelete the object%s above."
+    IDS_DELPROMPT2TEXT                    "  %u of the objects %s %sdirector%s."
+    IDS_DELPROMPT3TEXT                    "  I smell %u possible system director%s!"
+    IDS_DELPROMPT4TEXT                    "  %u Readonly file%s %s present."
+    IDS_DELPROMPT5TEXT                    "  %u file%s marked Hidden and/or System %s present."
+    IDS_DELPROMPT6TEXT                    "  Unhighlight any objects which you do not wish to delete."
+    IDS_PERMANENTLYTEXT                   "permanently "
+    IDS_ATEXT                             "a "
+    IDS_DELETINGTEXT                      "Deleting ""%s""..."
+    IDS_DELETEFAILED1TEXT                 "*Delete of ""%s"" failed:  Error %lu\n"
+    IDS_DELETEFAILED2TEXT                 "Delete of ""%s"" failed"
+    IDS_DELETEDTEXT                       "Deleted ""%s""..."
+    IDS_OPSCOMPLETETEXT                   " %s operation%s %s%s %s complete."
+    IDS_FLREMOVABLETEXT                   "Removable"
+    IDS_FLNOTWRITEABLETEXT                "Not writeable"
+    IDS_FLIGNORETEXT                      "Ignore"
+    IDS_FLCDROMTEXT                       "CD-ROM"
+    IDS_FLNOLONGNAMESTEXT                 "No longnames"
+    IDS_FLREMOTETEXT                      "Remote"
+    IDS_FLBOOTTEXT                        "Boot"
+    IDS_FLINVALIDTEXT                     "Invalid"
+    IDS_FLNOPRESCANTEXT                   "NoPrescan"
+    IDS_FLZIPSTREAMTEXT                   "Zipstream"
+    IDS_FLNOLOADICONSTEXT                 "NoLoadIcons"
+    IDS_FLNOLOADSUBJSTEXT                 "NoLoadSubjs"
+    IDS_FLNOLOADLONGNAMESTEXT             "NoLoadLongnames"
+    IDS_FLSLOWTEXT                        "Slow"
+    IDS_FLINCLFILESTEXT                   "InclFiles"
+    IDS_FLVIRTUALTEXT                     "Virtual"
+    IDS_FLNOSTATSTEXT                     "No stats"
+    IDS_FLRAMDISKTEXT                     "Ram disk"
+    IDS_FLWRITEVERIFYOFFTEXT              "Write verify off"
+    IDS_FLRECURSESCANDONETEXT             "Recursive scan done"
+    IDS_CANTQUERYVOLTEXT                  " Can't query volume info drive %c:"
+    IDS_CANTQUERYALLOCTEXT                " Can't query allocation info drive %c:"
+    IDS_DRIVEINACCESSIBLETEXT             " Drive %c: inaccessible.  Flags:  %s"
+    IDS_DROPCHGICONHELPTEXT               "Dropping here can change the icon of the object."
+    IDS_DRIVEFLAGSTITLETEXT               "FM/2: Drive flags (drive %c:)"
+    IDS_SIZEINCLEASTEXT                   "%s + %s EAs = %s (%s) total"
+    IDS_ENVVARNAMES                       "PATH DPATH LIBPATH HELP BOOKSHELF LIB INCLUDE LOCPATH SMINCLUDE LPATH CODELPATH"
+    IDS_ENVVARSTEXT                       "%%Environment%%"
+    IDS_CHECKONETEXT                      "You must check at least one criterion or Cancel the operation."
+    IDS_FM2TROUBLETEXT                    "FM/2: Trouble..."
+    IDS_CANTLOADHELPTEXT                  "Can't load help.%s"
+    IDS_NOHELPACCEPTTEXT                  "  I'll continue, but you should find FM3.HLP and place it into FM/2's working directory."
+    IDS_MISMATCHTITLETEXT                 "EXE/DLL Mismatch warning!"
+    IDS_MISMATCHTEXT                      "The EXE file you're running is from a newer version than the DLL. Please reinstall _all_ the files from the warpin archive so that FM/2 can run properly (overwrite existing files, and be sure that no parts of FM/2 are running while you reinstall)."
+    IDS_CHECKSYSTEMCLOCKTEXT              "Check your system clock."
+    IDS_NOTICETITLETEXT                   "Requests Pending"
+    IDS_ARCCNRFILTERMENUHELP              "Filter archive contents"
+    IDS_ARCCNRWALKDIRMENUHELP             "Set extract directory"
+    IDS_ARCCNRRESCANMENUHELP              "Rescan archive"
+    IDS_ARCCNRVIRUSMENUHELP               "Check selected for viruses (requires an external virus checker)"
+    IDS_ARCCNRTESTMENUHELP                "Test selected files"
+    IDS_ARCCNREXTRACTMENUHELP             "Extract selected from archive"
+    IDS_ARCCNREXECMENUHELP                "Run executable"
+    IDS_ARCCNRDELETEMENUHELP              "Delete from archive"
+    IDS_ARCCNRVIEWMENUHELP                "View in default viewer"
+    IDS_FATALERRORTEXT                    "Fatal Error:"
+    IDS_EXTPATHNOTVALIDTEXT               "%s is not a valid directory\nDo you wish to delete it?"
+    IDS_VERSIONTEXT                       "Version:"
+    IDS_FM2LITETEXT                       "FM/2 Lite"
+    IDS_CHANGECMDLINELENGTHDEFAULT        "We previously set commandline length to 2048 in error. Do you wish to changed to our intended value of 1024?"
+    IDS_SOURCEISATEXT                     "Source is a %s.  "
+    IDS_DIRECTORYTEXT                     "directory"
+    IDS_SORRYTEXT                         "Sorry"
+    IDS_CANTCOMPARETEXT                   "Can't start comparison thread."
+    IDS_CANTACCESSSOURCETEXT              "Warning: Can't access source.  "
+    IDS_TARGETEXISTSISATEXT               "Target exists and is a %s.  "
+    IDS_CLICKOVERWRITETEXT                "Click Overwrite or enter new target name."
+    IDS_ENTERNEWTARGETTEXT                "Enter new target name."
+    IDS_SAMEDATETEXT                      "same date"
+    IDS_SAMESIZETEXT                      "same size"
+    IDS_SOURCEISTEXT                      "  **Source is %s and %s.**"
+    IDS_WASMOVEDTOTEXT                    """%s"" was moved to ""%s"""
+    IDS_EXISTSASATEXT                     """%s"" already exists as a %s -- try again."
+    IDS_LOGTOFAILEDTEXT                   "*%s of ""%s"" to ""%s"" failed:  Error %lu\n"
+    IDS_DUPECHECKINGOFTEXT                " Dupe checking #%lu of %lu"
+    IDS_SORTINGTEXT                       " Sorting..."
+    IDS_SELECTEDTEXT                      "selected"
+    IDS_FILTEREDTEXT                      " (Filtered)"
+    IDS_NOFILESPSTEXT                     "No files%s"
+    IDS_CURRTEXT                          "Curr:"
+    IDS_DRAGGINGFILESTEXT                 " Dragging selected files..."
+    IDS_2CLICKADDDRVMASKTEXT              "Double-click a drive to add a mask for it."
+    IDS_ADDSELDELMASKTEXT                 "Masks may be selected, added or deleted."
+    IDS_MASKSFINDTEXT                     "The mask(s) to filter files we look for."
+    IDS_TEXTFINDTEXT                      "Text for which we'll search in files."
+    IDS_MINSIZEFINDTEXT                   "Minimum size files can be."
+    IDS_MAXSIZEFINDTEXT                   "Maximum size files can be."
+    IDS_MAXAGEFINDTEXT                    "Maximum age in days of files."
+    IDS_MINAGEFINDTEXT                    "Minimum age in days of files."
+    IDS_LADATE                            "LA Date"
+    IDS_LATIME                            "LA Time"
+    IDS_CRDATE                            "Cr Date"
+    IDS_CRTIME                            "Cr Time"
+    IDS_LNAME                             "Longname"
+    IDS_ATTR                              "Attr"
+    IDS_ICON                              "Icon"
+    IDS_LWDATE                            "LW Date"
+    IDS_LWTIME                            "LW Time"
+    IDS_EA                                "EA"
+    IDS_SIZE                              "Size"
+    IDS_FILENAME                          "Filename"
+    IDS_STATUS                            "Status"
+    IDS_SUBJ                              "Subject"
+    IDS_FIRSTX                            "FirstX"
+    IDS_LASTX                             "LastX"
+    IDS_EASIZE                            "EASize"
+    IDS_CSIZE                             "CSize"
+    IDS_PATH                              "Path"
+    IDS_NONE                              "None"
+    IDS_NAME                              "Name"
+    IDS_TREE                              "Tree"
+    IDS_DETAIL                            "Detail"
+    IDS_TEXT                              "Text"
+    IDS_MINI                              "-Mini"
+    IDS_DATE                              "Date"
+    IDS_DROPCMDHELPTEXT                   "Dropping here can set the command line."
+    IDS_EXECCMDTITLETEXT                  "FM/2: Executing a Command"
+    IDS_UNKNOWNBRKTTEXT                   "<Unknown>"
+    IDS_ATTACHREQTEXT                     "Attach request"
+    IDS_DETACHREQTEXT                     "Detach request"
+    IDS_CANTSTARTNETUSETEXT               "Unable to start NET USE"
+    IDS_DETACHFAILEDTEXT                  "Detach of ""%s"" from ""%s"" failed."
+    IDS_ATTACHFAILEDTEXT                  "Attach of ""%s"" to ""%s"" failed."
+    IDS_REMAPNOTICETEXT                   "There are attach and/or detach requests pending -- you can use the window list to examine them."
+    IDS_ENTRYCNTRTEXT                     "; Entry #%d"
+    IDS_USERDEFDIRSTEXT                   "; FM/2 user-defined directories file, one full path per line\n"
+    IDS_LISTPATTERNTEXT                   "; FM/2 save-to-list pattern file, one pattern per line\n"
+    IDS_REMOTEFILETEXT                    "; FM/2 -- remote resource (UNC) file, one per line\n"
+    IDS_FILTERFILETEXT                    "; FM/2 filter mask file, one mask set per line\n"
+    IDS_COMMANDFILETEXT                   "; FM/2 commands file -- 3 lines: title, cmd line, flags\n"
+    IDS_COMMANDFILE2TEXT                  "; FM/2 command line file, one per line\n"
+    IDS_ASSOCFILETEXT                     "; FM/2 associations file -- 5 lines: mask, cmd line, sig, offset, flags\n;  For OS/2 associations only, uncomment following 5 lines:\n;*\n;<>\n;\n;0\n;0\n"
+    IDS_TOOLFILETEXT                      "; Fixed: Ticket 267\n;\n; This file contains definitions for an FM/2 toolbar.\n;\n; To edit this file manually, see ""Manual edit of toolbar files""\n; in the FM/2 help file.\n;\n;\n"
+    IDS_TREESTATUSSTARTTEXT               "%c:[%s] \"%s\" SN: %08lx%s"
+    IDS_TREESTATUSSTART1TEXT              "%c:%s \"%s\" SN: %08lx%s"
+    IDS_TREESTATUSSTART2TEXT              "%c:[%s] %s SN: %08lx%s"
+    IDS_GREPFILETEXT                      "; FM/2 seek and scan mask file, one mask set per line\n"
+    IDS_CMINSERTERRTEXT                   "Record insert failed"
+    IDS_CMALLOCRECERRTEXT                 "Record allocation failed"
+    IDS_FM3SAVEDIRERROR1TEXT              "Unable to find FM2.INI directory and current directory"
+    IDS_NOWINDOWTEXT                      "No window"
+    IDS_MAKEARCTITLETEXT                  "FM/2: Makearc                       "
+    IDS_MAKEARCUSAGETEXT                  "Usage:\r\rMAKEARC <file or directory to archive>\r"
+    IDS_FM3RESERROR1TEXT                  "Unable to load FM3RES.DLL"
+    IDS_FM3RESERROR2TEXT                  "FM3RES.DLL is %s.\r\r%lu %lu\r\r%lu %lu\r\r%lu"
+    IDS_FM3RESERROR3TEXT                  "older version than FM3DLL.DLL."
+    IDS_FM3RESERROR4TEXT                  "invalid."
+    IDS_FM3RESERROR5TEXT                  "unloadable."
+    IDS_RECENTHELPWHICHTEXT               "Recent dirs (%s)"
+    IDS_RECENTONLYTEXT                    "opened"
+    IDS_ALLONLYTEXT                       "all"
+    IDS_WALKTARGETDLGTEXT                 "FM/2: Walk to Target directory%s%s%s"
+    IDS_CLEARTARGETTITLETEXT              "Clear Target directory?"
+    IDS_CLEARTARGETTEXT                   "Do you want to clear the Target directory (in other words, have no preset Target directory)?"
+    IDS_TARGETDIRTITLETEXT                "Target: "
+    IDS_SUGGESTTITLETEXT                  "FM/2 startup suggestion:                    "
+    IDS_SUGGEST2TEXT                      " -- this includes one or more drives you had excluded, by the way"
+    IDS_NOTEBUBBLE1TEXT                   "~Bubbles"
+    IDS_NOTEBUBBLE2TEXT                   "Bubble help settings"
+    IDS_TOTARGETTEXT                      " (Target directory)"
+    IDS_CANTADDCOMMANDTEXT                "Can't add %s to command list"
+    IDS_CANTADDCOMMANDTEXTDUP             "Can't add %s to command list It has a duplicate title and/or hotkey"
+    IDS_CREATESEMFAILED                   "Create Semaphore failed"
+    IDS_POSTSEMFAILED                     "Post Semaphore failed"
+    IDS_CANTFINDDRIVETEXT                 "Can't find drive %s"
+    IDS_CANTDRAGROOTDIR                   "Can't drag root directory"
+    IDS_APPTYPEUNEXPECTEDTEXT             "apptype 0x%x unexpected for %s.\n called from %s %d."
+    IDS_PATHTODESKTOP                     "%c:\\DESKTOP"
+    IDS_DRIVEINFOTITLETEXT                "FM/2: Drive info ""%c:"""
+    IDS_UNITTEXT                          "unit"
+    IDS_SECTORSTEXT                       "%lu bytes/sector, %lu sector%s/unit"
+    IDS_STATSMEANINGLESSTEXT              "Stats not meaningful"
+    IDS_EDITREADONLYFILETEXT              "%s is marked Read Only\n You will need to change its name to save.\n Select: yes to continue, no to open in viewer"
+    IDS_EDITREADONLYFILETEXT2             "%s is marked Read Only\n You will need to change its name to save."
+    IDS_EDITREADONLYFILETEXT3             "File is readonly and has not been saved"
+    IDS_LENGTHEXCEEDSMAXPATHTEXT          "One or more of your files has a full path name that exceeds the OS/2 maximum"
+    IDS_STATEADDFAILEDTEXT                "\"%s\" state name add failed"
+    IDS_STATEDATASAVEFAILED               "State data save failed"
+    IDS_STATERESERVENAMETEXT              "\"%s\" is a reserved state name"
+    IDS_DRAGDROPDIALOGTEXT                "Drag & Drop Dialog"
+    IDS_ERROREATYPETEXT                   "EA type 0x%x unexpected for %.*s"
+    IDS_RESCANALLDRIVESTEXT               "Rescan all drives"
+    IDS_REFRESHREMOVABLESTEXT             "Refresh removable media"
+    IDS_PLEASEWAITSCANNINGTEXT            "Please wait -- scanning..."
+    IDS_PLEASEWAITCOUNTINGTEXT            "Please wait -- counting..."
+    IDS_INSUFFICIENTMEMORY                "Insufficient memory or %u items (%u)"
+    IDS_DOSQAPPTYPEFAILEDTEXT             "DosQAppType failed for %s\n called from %s %d."
+    IDS_DOSQAPPTYPEFAILEDTEXT2            "The program %s was not found on the PATH or is not an executable file type.\n runemf2 was called from %s %i"
+    IDS_DOSQAPPTYPEFAILEDTEXT3            "The drive specified in %s is locked or invalid."
+    IDS_LOCKEDFILEWARNING                 "The file %s is locked! Do you wish to unlock it and complete the requested operation"
+    IDS_LOCKEDFILEWARNINGTITLE            "Locked file!"
+    IDS_READONLYFILEWARNING               "The file %s is Read Only! Do you wish continue the requested operation?"
+    IDS_READONLYFILEWARNINGTITLE          "Read Only file!"
+    IDS_NOTARGETSET                       "A target directory has not been set"
+    IDS_LEFTRIGHTOUTOFSYNC                "pcil and pcir out of sync"
+    IDS_CONFIRMDELETE                     "Confirm Delete"
+    IDS_DOYOUWISHTODELETE                 "Do you wish to delete %s"
+    IDS_DROPSETSTARGET                    "Do you wish to use this directory as the new target directory? \nYes sets target\nNo proceeds with drag/drop operation to current target"
+    IDS_MB2DYES                           "~Yes"
+    IDS_MB2DYESDONTASK                    "Yes ~don't ask again"
+    IDS_MB2DNO                            "~No"
+    IDS_MB2DCANCELOP                      "~Cancel operation"
+    IDS_SNAPSHOTFILEBADFORMAT             "The snapshot file lists no files or is not formatted correctly"
+    IDS_SNAPSHOTFILELOADFAILED            "The snapshot file %s failed to load"
+    IDS_LZIPLIMITATION                    "Lzip Limitation"
+    IDS_LZIPNOLIST                        "Lzip doesn't have a list files option"
+    IDS_RESTARTDESKTOP                    "Restart Desktop?"
+    IDS_SETTINGLOSEICON                   "If you don't restart the desktop before opening in settings view the icon will be lost"
+
+
+    // Add strings that need to be combined by GetPString here
+    IDS_SUGGEST1TEXT1                     "Based on this scan of your drives, I would like to suggest the following parameters for your FM/2 program object. Each letter following the '/' character is a drive that probably should be excluded from viewing by FM/2 (see README), and the '%%*' on the"
+    IDS_SUGGEST1TEXT2                     " end enables drag-and-drop to the program object%s:\r\r""%s""\r\r"
+    IDS_ARCHIVERBB2TEXT1                  ";format for this archiver.bb2 file (each entry has 21 lines):\n;\n; 1st line:  ID of archiver (like ARC, LHARC, PKZIP, etc.; human consumption)\n; 2nd line:  normal extension for archives (like ZIP, ARC, LZH; note no period)\n; 3rd line:  offset into"
+    IDS_ARCHIVERBB2TEXT2                  " file to signature\n; 4th line:  list command\n; 5th line:  extract command\n; 6th line:  extract w/ directories command\n; 7th line:  test archive command\n; 8th line:  add/create command\n; 9th line: add/create w/ paths command\n;10th line: add/create"
+    IDS_ARCHIVERBB2TEXT3                  " & recurse command\n;11th line:  move command\n;12th line:  move w/ paths command\n;13th line:  delete command\n;14th line:  signature (case sensitive, leading spaces count!)\n;15th line:  startlist string\n;16th line:  endlist string\n;17th line:  old"
+    IDS_ARCHIVERBB2TEXT4                  " size position  (all positions 0-based, -1 = not available)\n;18th line:  new size position\n;19th line:  file date position,date type (see below)\n;20th line:  number of positions in dates (for \"03 June 92\" would be 3)\n;21st line: file name position"
+    IDS_ARCHIVERBB2TEXT5                  " (absolutely required, of course, -1 = last)[,name is last (1 = TRUE, n/a w/ -1 pos)[,name is next line (1 = TRUE)]]\n;\n;Refer to the ARCHIVER.BB2 included with FM/2 for more details.\n;\n;date types supported:\n;--------------------\n;no date sorting"
+    IDS_ARCHIVERBB2TEXT6                  " avail.        0\n;02-08-96  23:55:32            1\n; 8 Feb 96 23:55:32            2\n; 8 Feb 96  11:55p             3\n;96-02-08 23:55:32             4\n;\n;a semicolon denotes a comment.  they may appear at any point *except*\n;within the 21 lines of"
+    IDS_ARCHIVERBB2TEXT7                  " an archiver entry.\n;everything on the line after the semicolon is ignored.\n"
+    IDS_INIBINARYDATASKIPTEXT1            "Data appears to be binary. This control does not directly support binary. The data is probably not human-editable, but you can use \\-encoding if you know what you're doing. WARNING: Clicking Okay or pressing [Enter] can result in data loss."
+    IDS_INIBINARYDATASKIPTEXT2            " Press [Escape] to avoid possible loss!"
+    IDS_INSTANTHELPTEXT1                  "You are actually writing a command (batch) file that will be run once and then delete itself. The file will begin in directory ""%s%s"" and the line ""DEL %s%sFMTMP%d.CMD"" will be added at the end to clean up (so don't use EXIT)."
+    IDS_INSTANTHELPTEXT2                  " It will be run in a windowed command session, and can contain anything you'd normally put into a command file.  (Note this takes the default directory from the currently selected Tree directory object.)\r\rView OS/2 Command Help?"
+    IDS_FSDERRORTEXT1                     "The %s file system driver for drive %c: is broken.  Files were returned when requesting that only directories be returned.  Please report this error to IBM (or whoever wrote the broken FSD in question) and tell them that their FSD does not respond"
+    IDS_FSDERRORTEXT2                     " properly to DosFindFirst requests with MUST_HAVE_DIRECTORY set.\r\rClick No to stop this notice from showing again for awhile."
+    IDS_LANERRORTEXT1                     "Your LAN is broken -- it's returning files when directories are requested.  Compensating, but expect a slowdown.\r\rNote:  FM/2 is not responsible for fixing broken LANs.  Contact your LAN supplier and advise them that your LAN does not properly respond"
+    IDS_LANERRORTEXT2                     " to DosFindFirst requests with MUST_HAVE_DIRECTORY set.  If your LAN supplier would like more information on their bug, have them contact me at one of the addresses in the READ.ME file.\r\rClick No to stop this notice from showing again for awhile."
+    IDS_MAKESHADOWHELPTEXT1               "Enter the name to use for a folder object that will contain the other objects to be created.  The subfolder will be placed in the folder you specified.  You can move it elsewhere from there if desired.  Click Okay when complete, or Cancel to abort."
+    IDS_MAKESHADOWHELPTEXT2               " Leave blank if you don't want a subfolder to be created."
+    IDS_UNDELETEHELPTEXT1                 "Select files to undelete, then click the Okay button.  Click Cancel to exit without doing anything.  Change the mask in the entry field if desired, or select another drive from the dropdown listbox.\r\rNote this requires UNDELETE.COM to be on your PATH"
+    IDS_UNDELETEHELPTEXT2                 " (it is in the default installation) and the UNDELETE environment variable to be set for the drive in CONFIG.SYS.  Type HELP UNDELETE at a command line for more information."
+    IDS_KILLPROCHELPTEXT1                 "Select a process to kill, then click the Kill button to kill the process or Show to attempt to show it.  Click Cancel to exit without doing anything.  Note this requires an English version of PSTAT.EXE to be on your PATH (if not using DosQProcStat)."
+    IDS_KILLPROCHELPTEXT2                 "\r\rBe careful with this."
+    IDS_ARCNOTTHERETEXT1                  "The archive you were viewing (%s) has become inaccessible.  Possible reasons:\r\r1. It's been erased.\r  a. If you were viewing it as a subarchive, you may have closed the parent archive.\r\r2. Something else has it open and is denying access.\r\r"
+    IDS_ARCNOTTHERETEXT2                  "3. File system glitch (horrors) -- unlikely."
+    IDS_FM2CMDHELPTEXT1                   "Type ""/OPEN path"" to open a new Directory Container.\r\rType ""/CLOSE path"" to close a Directory Container.\r\rType ""/FILTER filter"" to filter a Directory Container.\r\rType ""/KEEP"" or ""/NOKEEP"" to set the type of cmd window (autoclose or not)."
+    IDS_FM2CMDHELPTEXT2                   "\r\rType ""/SAVE"" or ""/NOSAVE"" to save (or not) cmd lines between sessions.\r\r[Up arrow] or [down arrow] or [+] button for listbox of previous command lines, then [Delete] to remove one or [Enter] to reuse.\r\rOr type a command to be executed"
+    IDS_FM2CMDHELPTEXT3                   " (metastrings like %%a available.)\r\rDouble-click entry field to simulate hitting [Enter].\r\rF5 is the accelerator for this mini-command line."
+  END
+
+
+HELPTABLE ID_HELPTABLE
+{
+   HELPITEM MAIN_FRAME,      ID_HELPSUBTABLE,  HELP_MAIN
+   HELPITEM ASS_FRAME,       ID_HELPSUBTABLEB, HELP_ASSOC
+   HELPITEM EXEC_FRAME,      ID_HELPSUBTABLEB, HELP_CMDLINE
+   HELPITEM ASEL_FRAME,      ID_HELPSUBTABLEB, HELP_ARCHIVERS
+   HELPITEM ASEL_EDIT_FRAME, ID_HELPSUBTABLEA, HELP_EDITARC
+   HELPITEM FLE_FRAME,       ID_HELPSUBTABLEA, HELP_INFO
+   HELPITEM CMD_FRAME,       ID_HELPSUBTABLEA, HELP_COMMAND
+   HELPITEM EA_FRAME,        ID_HELPSUBTABLEB, HELP_EAS
+}
+
+HELPSUBTABLE ID_HELPSUBTABLE
+{
+   HELPSUBITEM COMMAND_LINE, HELP_HINTSCMD
+   HELPSUBITEM MAIN_SETUPLIST, HELP_USERLISTS
+   HELPSUBITEM MAIN_USERLIST , HELP_USERLISTS
+   HELPSUBITEM MAIN_DRIVELIST, HELP_USERLISTS
+   HELPSUBITEM MAIN_CMDLIST, HELP_USERLISTS
+   HELPSUBITEM MAIN_BUTTONLIST, HELP_USERLISTS
+
+}
+
+HELPSUBTABLE ID_HELPSUBTABLEA
+{
+   HELPSUBITEM FLE_NAME, HELP_INFO
+}
+
+HELPSUBTABLE ID_HELPSUBTABLEB
+{
+   HELPSUBITEM EA_MLE, HELP_EAS
+   HELPSUBITEM EA_LISTBOX, HELP_EAS
+   HELPSUBITEM EA_ENTRY, HELP_EAS
+}
+
+rcinclude fm3res.dlg
+
+/* The end */

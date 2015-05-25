@@ -1,0 +1,14 @@
+;
+;Sample quick toolbars for FM/2
+;
+cmds.tls
+utils.tls
+sort.tls
+select.tls
+config.tls
+files.tls
+views.tls
+fm3tools.dat
+;
+; $Id$
+

@@ -1,0 +1,813 @@
+ 旼컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴커
+ �  F(ile) M(anager)/2 is free software from Mark Kimes �
+ 쳐컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴캑
+ �       See end of document for contact info           �
+ 읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
+
+FM/2 3.23 provides several enhancements. Implemented creation of a JAVA executable
+object from a jar file. Select a jar file and "Real object" from the "Create 
+object" sub-menu. You will be prompted to select the JAVA exe you wish to use.
+Your choice will be recorded for use in the future. You will then be prompted
+to select an icon for the object. Once the object is created you will be prompted
+to restart the desktop. I highly recommend you do so. If you don't the object icon 
+will be lost if you open the object in settings view. Additionally, I have 
+experienced WPS hangs forcing a reboot when accessing the desktop or trashcan
+context menu following the icon loss described above. I have not had any problem
+if I restarted the desktop. We have added menu toggles for confirm delete and the 
+drag & drop dialog options. Newview now handles selecting and utilizing email 
+addresses and urls much better and more completely (https is supported) than 
+in previous versions. The EA editor now checks for EAs marked as critical and
+report this to the user.
+
+We have also fixed multiple defects including eliminating redundant error messages
+from unlock and read only checking code and now only trying to unlock exes or dlls.
+Fixed a string handling problem with the extract directory and a trap that sometimes
+occurred when closing or starting a rescan while scanning was in progress. Limited
+auto open of help to the first time the quick settings configuration page is open
+each session. Finally we stopped using FM2Play to open multimedia files. The 
+problem was caused by the fact that mmioMP3 would report it could handle most
+any thing (exes for example). This lead to FM2Play trying to play them. I have
+fixed and updated mmioMP3 and it should be available on Hobbes by the time you 
+read this. See the history file for more details. Please let us know if you find 
+a defect.
+
+FM/2 3.22 provides enhancements to compare directories, seek and scan and the 
+archive viewer. It fixes the check for readonly files on delete to work in all 
+cases. It fixes some problems with the installer. We have also fixed a number 
+of cosmetic issues and several traps. We no longer load FM/2 in high memory as 
+we determined that was causing some of the traps. We tried to improve the speed
+of drive scans and the responsiveness of the UI during long seek and scans.
+See the history file for more details. Please let us know if you find a defect.
+
+FM/2 3.21 has a few enhancement which we hope you will find useful. Since eCS 
+includes unlock.exe I have added unlock file to the file (directory container 
+context) menu so you can easily unlock a dll or exe file. Delete, copy and move 
+operations will open a dialog which allow you to unlock files as part of these 
+operations. An icon is included if you wish to add unlock to a toolbar button.
+(See the help file for the unlock id and instruction on adding a button).
+Search for duplicate files now sorts results by filename. Updated the help file 
+adding information on FM/2 as a WPS replacement. Enhance compare directories to 
+allow inclusion of subdirectories or use of a list file on opening and fixed 
+a list file load failure. Added a warning dialog for a delete, copy or move 
+operation which replaces/deletes a read only file. Finally,the "target 
+directory" is now a drop target for move/copy or conditionally to change the target.
+See the history file for more details. Please let us know if you find a defect.
+
+FM/2 3.20 mainly addresses things that were annoying me. The only new item
+is a new date type for ARCHIVER.BB2 which allows for the viewing of .tar.gz
+archives directly using Tar 1.15 or higher. You will need to either replace
+your ARCHIVER.BB2 with ARCHIVER.TMP from the package or replace/add Entry #10
+(tar.gz) from the .TMP file to your existing ARCHIVER.BB2. We don't do this
+automatically to avoid breaking any custom changes you may have made. We updated
+some of the help information, fixed several rare traps and little things like
+the failure to create a list file if it didn't already exist. See the history
+file for more details. Please let us know if you find a defect.
+
+FM/2 3.19.1 This is a bug fix release. Most of these have existed for a
+very long time but were only discovered recently. Included is a fixed
+FM/2 utilities wpi file. None of the utilities have been updated. The
+fix allows you to install the utilities without having to install FM/2.
+See the history file for more details. Please let us know if you find
+a defect.
+
+FM/2 3.19 I am dedicating this release of FM/2 to the memory of my
+parents Ralph and Helen Young both of whom passed away earlier  this
+year. It has been over a year since the last release. The FM/2 team has
+been busy with a lot of other projects. This release mostly fixes bugs.
+
+The major change is that this version uses high memory to
+load much of FM/2's code, data and resources. If your version of OS/2
+(Warp 4 pre about Fixpack 13 or Warp 3 pre about Fixpack 37) doesn't
+support high memory please contact me and I will provide a low memory
+version. If anyone contacts me, I will plan on both a high and low
+memory version (or a way to convert one to the other) for future
+releases.
+
+You can now open a directory container from an item in the collector and
+the EA editor now has a file open option. We also made some improvements
+to FM/2's handling of containers holding large numbers of files
+(greater than 64k). Please see the history file for more details.
+
+FM/2 3.18 This release removes high memory support at least for now.
+Changes made to the openwatcom compiler which adds large file support to the
+open file functions created a problem since DosOpenL doesn't work correctly
+with high memory. This change also fixes the paste failure in VIO windows
+when copying from FM/2.
+
+We have provided an archiver description for use with unzip ver 6. It is contained
+in ARCHIVER.TMP. The installer copies the description to ARCHIVER.BB2 (last entry).
+If you plan on using ver 6 as your default unzip you will need to activate this
+description. The instructions follow:
+
+- This archiver definition assumes that UNZIP v6
+  a) is named UNZIP.EXE
+  b) is on the PATH
+  c) precedes all other UNZIP.EXE versions on the PATH.
+  If any of these are not true, then either correct the problem listed above or:
+     1) Select the UNZIP v6 definition. (See below.)
+     2) Click on the "Edit" button
+     3) Modify all instances of UNZIP.EXE to include a full path for UNZIP.EXE v6.
+     4) Click on "OK", then "Close" and then "Yes" to exit and save your changes.
+     5) Restart FM/2
+
+- FM/2 will not use this entry unless
+  a) It is the only UNZIP definition; or
+  b) You select it manually; or
+  c) You move UNZIP v6 ahead of all the UNZIP's in the list of archivers.
+     In order to move UNZIP v6 ahead of the other UNZIP's:
+     1) Select the UNZIP v6 definition. (See below.)
+     2) Click on the "Up" button until the UNZIP v6 entry precedes all other
+        UNZIP definitions.(If you have never modified ARCHIVER.BB2 it will
+        need to be moved to the very top)
+     3) Click on "Close" and then "Yes" to exit and save your changes
+     4) Restart FM/2
+
+- Selecting the UNZIP v6 definition:
+     1) Start FM/2
+     2) Select the "Config" menu
+     3) Select the "Edit" submenu
+     4) Select the "Edit an archiver..." menu item
+     5) In the dialog that appears scroll the list, if necessary, and select
+        the UNZIP v6 definition
+
+We have made changes to the open files logic to correct some odd issues
+caused by MMPM when ogg, flac and/or mpg IOProcs are installed. MPGs are now
+recognized as media and zero byte files trigger a dialog offering to open
+them in the text editor. We now pass .wpi files to the WPS if no association
+is set for them. If you see FM/2 attempt to open non-media files as a media file
+or fails to open a media file recognized as such by OS/2 as media, let us know.
+
+We reworked the user commands. Doing so makes COMMANDS.DAT obsolete with the
+commands moving to FM3INI.INI. We did this to eliminate toolbar entry failures
+caused by reordering the commands. It also keeps the hotkey the same following
+a reorder and allows the user to select the hotkey they wish to use. The first
+time you run 3.18, it will copy the commands information from COMMANDS.DAT to
+the INI. COMMANDS.DAT isn't deleted or changed so you can revert to an earlier
+version without losing old commands. However, any commands you add or change
+with this version will not be seen by older versions.
+
+You can use Ctrl-click to select state or commonly used directory quicklist entries
+or walk dialog user list entries without activating them. This is handy for deleting
+entries without changing the window's state.Compare directories has been rework to
+enhance its speed, allow for quick cancel and provide the option of AND'ed
+selection (CTRL click). AND'ed selection selects from currently selected entries
+as opposed to all entries. See the help file for more information. We have fixed
+some rare traps and hangs and a few annoying bugs like the failure of the append
+checkbox in the list file dialog to append. Please see the history file for a more
+complete list of changes.
+
+FM/2 3.17: This release provides for loading FM/2 partially in high memory
+since this won't work on older systems (pre fixpack 13?) or you might have
+other reasons not to use it we provide a low memory version also. Some high
+loaded programs hang in the exit handler (i.e. don't close). We didn't
+experience this problem but if you do install the low memory version (3.17.0).
+The high memory version is 3.17.1.
+
+This release makes changes that should speed the scanning and
+container filling in FM/2. We have added some visual clues to let you know
+FM/2 is still working. The LED in the lower right hand corner now blinks
+while long operations are in progress or you can open the thread note
+window (click on the LED) for even more detailed information about an
+operation in progress. We also added a better "scanning" message.
+
+We have updated the look and functionality of the drivebar. It now has the
+drive letters superimposed over the drive icons allowing for larger icons.
+We have add a refresh removable media and rescan button to the beginning
+of the bar to make it a more complete replacement for the tree container
+in FM/2 lite. You can also show the file system type or drive label next
+to the drive letter in the tree container. See the Tree settings notebook
+page to try this option.
+
+The INI viewer option on the utilities menu now lets you choose to open
+the user INI, system INI or FM2's INI. We now allow LONGNAMES to be
+displayed for FAT & LAN drives and we  delete .LONGNAME EA if it becomes
+the filename on a copy or move. In addition to these we fixed 2 rare crashes
+and a hang associated with SMP. We also fixed a handful of interface problems.
+See the history file for more information.
+
+FM/2 3.16: This release makes changes that should allow FM/2 to be
+translated into different languages. It also adds date and number
+formatting based on the system locale settings. We now need to find
+some individuals who are interested in doing the translations.
+Currently, double bit character sets are not supported in FM/2.
+
+We have also fixed multiple minor annoyances such as improving
+detection of text verses binary files when opening viewers and
+filtering/(de)select mask now works for archives with pathnames.
+We added the ability to turn error/alert beeps on and off in the
+settings notebook (General page) and changes to the details switches
+in compare directories are now saved. See the history for more details.
+
+FM/2 3.15: This release turns on some new features by default
+don't panic they can all be turned off if you don't like them.
+The first is recursive scanning on start up. This slows the initial
+scan a bit but speeds expansion of the tree later. It is on for
+local hard drives and can be turned on for other drive types. The
+second new feature is an automatic rescan of the drive tree on
+eject of removable media keeping the tree container more current.
+Both of these features can be turn on or off on the scanning page
+of the notebook. The third new feature actually turns write verify
+off on a per drive basis. This is to address the fact that many
+USB removables fail or worse (hangs/traps) when write verify is on.
+We turn it off by default for removables other than standard floppies.
+If you want it on/off for a given drive edit that drive's drive flags
+accordingly. The global write verify selector is unchanged and the
+drive flags have no effect if it is off.
+
+We have some additional new items we hope you will find useful. We
+have added the ability to have the extract commands create a
+subdirectory based on the archive file name for the extraction target.
+Seek and Scan has been added to the drives and directories context
+menu and when selected from there will add the drive or directory as
+the root for the search. We also added refresh removable media so
+you can scan for newly inserted drives from the tree container
+We did some additional work on the main menus like adding Databar
+to the utilities menu and we now gray out items that are unavailable
+or inappropriate and un-grayed some items that were inappropriately
+turned off. We reorganized the internal editor menus as well.
+
+We made changes to the archiver code so that archivers that don't
+have specific start/end list strings will work (i.e. TAR.EXE). We
+have included the commands for .tar .tar.gz and .tar.bz in archiver.tmp
+(gzip.exe and/or bzip.exe must be in the path) These only work with tar 1.15
+or higher. We included a separate entry for TAR 1.10 but versions of TAR prior
+to 1.15 don't work for tar.gz/bz2 files. You can either replace archiver.bb2
+with the archiver.tmp or if you have made changes to archiver.bb2 you can cut
+and paste the new archiver definitions into an appropriate position in your
+existing archiver.bb2
+
+Numerous fixes to minor interface appearance and behavior issues are also include.
+We have added exceptq support to make it easier to track down defects. We
+also eliminated the cause of three rare traps including one associated with
+deleting directories. See the history file for more details.
+
+FM/2 3.14: This release updates many of the icons and bitmaps
+used in FM/2. In addition, more updates have been made to the
+toolbars to activate the new toolbars follow the instruction for
+using CFGMGR in the section about version 3.13. One other change
+may require some user intervention. Inadvertently the expected
+name of the filters data file was change in version 3.12 from
+filters.dat to filter.dat. We have corrected this, however, this
+means your filters may be spread across 2 different files or may
+seem to have disappeared. If they have disappeared go to the FM/2
+directory and rename the file filter.dat to filters.dat. This should
+restore your saved filters. If you find you have both filter.dat and
+filters.dat use a text editor to add the contents of filter.dat
+to filters.dat.
+
+This release also contains some menu changes with unformatted drives
+using the "drives" context menu, the elimination of more than one
+default on some submenus and menu items such as "format" being
+disabled for network drives and enabled for removables. Some of the
+changes should make FM/2 more responsive (Let us know if you notice
+a difference). We have also included some bug fixes.
+
+FM/2 3.13: Many of the changes in this release are related to
+the toolbars. A new feature is that the current toolbar, along
+with the current Target directory, are now saved and restored
+with states. Toolbar code and documentation has been improved, new
+toolbar button bitmaps have been added and bugs have been fixed.
+
+The installation of FM/2 will not replace existing user
+customization files like the toolbar files. So, if this is not
+your first installation of FM/2, some of these improvements will
+not be available because of the old, pre v3.13 toolbar files. It
+is therefore recommended that you run the following:
+
+        CFGMGR /INSTALL /DEFAULTS /TOOLBARSONLY /UNATTENDED
+
+CFGMGR is a REXX program located in the FM/2 installation directory.
+If run as given above it will copy your existing toolbar files into
+a "User_config_backup" subdirectory and then install FM/2 default
+toolbar files. If you have done some customizations of FM/2 toolbars
+you can use a text editor and/or file comparison utility like GFC
+to "merge" your changes, now found in the backup subdirectory,
+with the default files now found in the FM/2 directory. If you want
+more control over the operation of CFGMGR, then leave off the
+/UNATTENDED parameter. Without the /UNATTENDED parameter CFGMGR
+will ask your permission before replacing each file.
+
+The delete = move to trash can is off by default (turn it on on the
+General settings notebook page). FM/2 now checks for adequate disk
+space to avoid data loss.
+
+We also fixed some additional bugs and provide some performance
+enhancements. If you have had trouble with "broken pipe" errors
+copying to a Netdrive samba drive let me know if it now works
+better. I have built in some retries for this error but can't test
+it since I don't see the problem. Also please report back to us anytime
+you see the Debug error report to author box with as much detail about
+what you were doing as possible. Thanks
+
+FM/2 3.12 Fixes a bug introduced in 3.11 (trap when viewing
+multiple files from an archive at the same time). It also adds
+Open Default, Open Settings and via an accel key ctrl + l Open
+Multimedia (using FM2play.exe) to the archive viewer. FM/2 now
+uses the system TMP/TEMP directory for it temporary files and
+cleans up after a crash on the next restart. FM/2 creates a
+subdirectory of the pattern $FM2*.*. The settings notebook can
+now be closed using Esc, F3 or Enter; the last 2 save any
+changes that have been made. You can now select which environment
+variables to show when using show the environment in the drive
+tree. Just add or remove from the list on the "Tree" page of
+the notebook. It defaults initially to the current list. You can
+now save/append either a full pathname or just a filename or a
+list of either to the clipboard. We have changed the wording
+in the menus to make this easier to find. We fixed a few other
+minor issues see the history for more details.
+
+FM/2 3.11 adds the option of having delete move the objects
+to the Xworkplace trashcan. Undelete will open the trashcan
+so you can restore deleted files. The only short coming is you
+will need to rescan in order to see the restored file.
+We also added a reserved state which allows you to return
+FM/2 to the state it was in on start up (the shut down state).
+We have improved the filtering of file names that contain
+multiple periods and fixed FM/2's failure to always follow
+the details settings from the setup notebook. The primary
+task achieved for this release was the addition of fortify
+support which allowed us to fix a handful of memory usage
+related bugs. We fixed a few other minor issues see the
+history for more details.
+
+Fm/2 3.10 adds the ability to set the command line length
+to correspond to the command shell you are using. We have
+moved some menu items to submenus to reduce menu clutter
+while adding "unhide" to reveal previously hidden items and
+adding a settings notebook submenu to allow selection of the
+page you wish to visit. We have updated the look of several
+dialogs and containers including adding the ability to remember
+size location and presentation parameters. We have reworked
+the save state on close so it will save the different states
+of multiple directory containers and in greater detail. This
+state can also be restored at anytime during a session by
+selecting it from the "States" drop down. We have provided better
+progress indicators to update the progress of long operations.
+We now provide both the SYM & MAP files in a separate WarpIN
+package. This will allow interested individuals the tools needed
+to assist with analyzing any problem that may occur. This
+package is not needed to run FM/2. As always this update
+provides some performance enhancements and defect fixes.
+
+FM/2 3.09 adds "mailto:" so you can configure the ability to
+double click an email address in the new viewer and have it
+open a new email using that address. The viewer page in the
+settings notebook was split into 2 pages to facilitate the
+change. Additionally, We fixed some defects and enhanced
+performance in some areas such as commandline quoting.
+
+FM/2 3.08 has had changes to its file filtering logic.
+It now searches for the last extension if a mask like *.zip
+is used. This change was made to over come the problem with
+associations failing on files with multiple ".". You can
+also search for a complete string within the file names by
+using the pattern *stuff* (stuff can't contain an * or ?).
+If "stuff" contains an * or ? the old method of searching
+(character by character)is used.Large (>4GiB) file support
+has been added.
+
+FM/2 3.07 had changes made to its INI file structure.
+These changes mean that the INI file is not backward
+compatible. Please backup you FM3.INI file before installing
+so you can revert to an earlier version without losing some
+of your customizations. Please note you need to leave a copy
+of the fm3.ini file in the install directory in order to keep your
+customizations in 3.07. The temp file fm3.!!! will not update
+the new INI as it is only used when FM/2 is running.
+
+File Manager/2 (FM/2) starting with version 3.6 is being
+built with OpenWatcom. Changing compilers can introduce
+unexpected problem so you may want to backup your current
+install, or at minimum have a working copy of the FM/2
+version 3.5.9 WarpIN package available for reinstall if problems arise.
+To backup your current install simple zip up your install
+directory with its subdirectories or copy them to a different
+location.To restore simply copy the old FM/2 back to the
+its original location. Remember you can't use the new FM/2
+to do this since if it is running some files will be locked
+and won't be replaced. If you didn't backup and need to go
+back just install the 3.5.9 WarpIN package over the new
+install. It will warn you that the install is newer but just
+tell it to install anyway. The WarpIN install process is
+designed to save all your customizations. Don't delete the
+new install if you don't have a backup since this will result
+in the loss of any custom changes you have made. If you need
+to delete it to get the reinstall to work. Backup up the new
+install and then copy the *.bmp, *.tls, *.dat, *.cmd & *.ini
+files back to the install directory after the reinstall.
+Don't copy the *.str files as they are version specific.
+If you have problems be sure to report it (See Support
+at the end of this file).
+
+File Manager/2 (FM/2) is a free OS/2(Warp)/eCS Presentation
+Manager 32-bit file/directory/archive maintenance utility
+(a sort of super-Drives object, something midway between the
+Drives objects and a more traditional file manager) with plenty
+of bells, whistles and utilities, drag and drop, context menus,
+toolbars, bubble help and accelerator keys. If you know how
+to use OS/2, you already know how to use most of FM/2. You
+can easily glean the rest from the extensive online help,
+including tutorials.
+
+This document explains how to install FM/2, including
+upgrading from previous versions. It explains command line
+syntaxes (parameters in a program object) and how to get the
+program(s) running. The online help tells you how to
+actually use FM/2. I'll try to keep this brief.
+
+This program is free software; you can redistribute it
+and/or modify it under the terms of the GNU General Public
+License as published by the Free Software Foundation; either
+version 2 of the License, or (at your option) any later
+version.
+
+This program is distributed in the hope that it will be
+useful, but WITHOUT ANY WARRANTY; without even the implied
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE. See the GNU General Public License for more
+details.
+
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the Free
+Software Foundation, Inc., 59 Temple Place, Suite 330,
+Boston, MA 02111-1307 USA
+
+
+FM/2 3.x installation instructions:
+==================================
+
+Pre-requisite:
+   WarpIN 0.9.20 or higher must be installed.
+
+Install (or re-install) from a FM/2 ZIP file distribution
+---------------------------------------------------------
+
+1. Unpack the FM2*.ZIP archive in a private directory (for
+example, C:\TMP). (UNZIP.EXE works nicely to unpack the
+file.) Two WPI files, FM2.WPI and FM2UTILS.WPI will be
+unzipped.
+
+2. Follow the instructions for installing from WPI file(s)
+below.
+
+
+Install (or re-install) from a FM/2 WPI file distribution
+---------------------------------------------------------
+
+1. Open the WPS folder containing the WPI file(s).
+
+2. Double click on FM2.WPI. Since WarpIN associates itself
+with WPI files this will start WarpIN with FM2.WPI as the
+parameter.
+
+3, You may then install FM/2 to a directory of your choice
+and, if FM2UTILS.WPI is present, install FM/2 Utilities to
+a directory of your choice.
+
+NOTE: If you double click on FM2UTILS.WPI instead of
+FM2.WPI, you will only be able to install the FM/2
+Utilities. It is recommended that, even if you only want to
+install FM/2 Utilities, that you do so using FM2.WPI.
+
+
+Moving FM/2 and/or FM/2 Utilities:
+----------------------------------
+
+1. Copy your existing installation directory to the new
+location.
+
+2. If you have added your own icons to any of the FM/2
+folders, then you should move them elsewhere temporarily.
+
+3. Follow the instructions for de-installing below.
+
+4. Re-install the package using the installation
+instructions above. This will update the WarpIN database and
+reset your icons to the new locations.
+
+5. Move the icons you saved in step #2, back into the FM/2
+folders if you wish.
+
+
+De-installing FM/2 and/or FM/2 Utilities:
+-----------------------------------------
+
+1. Run WarpIN without parameters.
+
+2. Right click on a package you want to de-install and
+select "de-install all packages".
+
+3. Click on OK in the "De-install Packages" window that
+appears.
+
+
+=================
+First-time notes:
+=================
+
+Starting FM/2 -- how it works, customizing parameters:
+
+If you start File Manager/2 (filename FM3.EXE) with no
+parameters, it opens the Drive Tree window but no directory
+windows (unless the "Save state of dir windows" toggle is
+checked -- see online help).
+
+File Manager/2 optionally accepts names of directories in
+the parameters field of its program object; it'll open a
+directory window for each one. Hint: If you often do
+different specific things with FM/2, you might set up a WPS
+object customized to start up ideally for each activity. For
+example, if you wanted to maintain your BBS areas, you might
+have one object with parameters like: "D:\BBSDIR
+D:\BBSDIR\MAILIN D:\BBSDIR\MAILOUT", and if you also like to
+use FM/2 to set icons on files, you might have another
+object with parameters like: "E:\MYICONS D:\NEWFILES". The
+State quicklist can also be used for this within FM/2 itself
+-- see online help.
+
+You can exclude drives in the parameters by prefacing the
+drive letter with "/", and there can be more than one drive
+letter behind the "/" (i.e. "/BH" to exclude both drives B:
+and H:). Hint: Many people like to use /B to exclude
+"phantom" drive B: if they have a single-floppy system.
+Similarly, you can cause drives NOT to be prescanned by the
+Drive Tree by prefacing the drive letter with ";", drives
+NOT to load icons for objects by prefacing the drive letter
+with ",", drives NOT to load subjects for objects by
+prefacing the drive letter with "`" and drives NOT to load
+longnames for objects by prefacing the drive letter with
+"'". This can be handy if you have a very slow drive like a
+CD-ROM or Zip drive. FM/2 Lite recognizes these switches,
+too. See also the Drive Flags dialog in FM/2.
+
+If you place the plus sign "+" (alone, separated from
+anything else by spaces) in the parameters, FM/2 will log,
+to FM2.LOG, delete, rename, move and copy operations that
+are performed by drag-and-drop or with the menus. FM/2 Lite
+recognizes this switch, too.
+
+The parameter "-" (alone, separated from anything else by
+spaces) causes FM/2 to ignore, not load or save, the
+previous state of directory windows (see the "Save state of
+dir windows" toggle under Config Menu->Toggles in the online
+help) for that invocation.
+
+You can specify the name of an alternate INI file with
+"-<inifilename>" -- for example: "-C:\FM2\MYINI.INI".
+
+You can also specify the INI file location with the
+environment variable FM2INI -- for example:
+   SET FM2INI=C:\FM2\MYINI.INI.
+
+
+------------------------------
+How to get started using FM/2:
+-----------------------------
+Please read the following sections in the online help when
+you start FM/2 for the first time: "How to use FM/2's Help,"
+"Terminology" and "General Help," then "Hints." A peek at
+the labeled "Window Layouts" pictures would probably be a
+good idea, too. The rest you can browse as you get time/feel
+the need; for instance, if you want to know what a toggle
+does, read the help under Settings notebook for that page
+(each Settings notebook page has its own Help button).
+
+If you prefer hard copy help, print this file, run FM/2,
+press F1, click the "Print" button at the bottom (IBM View)
+or top (Newview)of the help window that appears and then print
+both the "Contents" and "All sections" (keep an eye on the printer,
+after page 100 of "All sections" as the Help Manager will
+begin printing its own help then -- you may want to abort
+printing at that point). Advanced and/or curious users may
+also want to print FM3TOOLS.DAT and ARCHIVER.BB2. Be sure
+you have plenty of paper and ink handy -- the package is
+well documented. You'll probably also want a three-ring
+binder and hole punch to get it bound, as staples aren't
+going through that puppy. You can, of course, print only the
+sections that are of particular interest to you.
+
+Additional documentation:
+------------------------
+  FM3.HLP:        FM/2's online help file.
+
+Look in the FM/2 Docs subfolder of the File Manager/2 folder
+for easy access to all documentation.
+
+
+Bonus programs:
+==============
+
+You'll note the extra objects that the Install program
+creates in the FM/2 Tools subfolder of the File Manager/2
+folder. FM/2 is modular, so that you can get directly to
+some of its components without running the entire ball of
+wax. This may allow you to enhance the behavior of some of
+your other applications in the WPS tradition. You don't
+_have_ to keep these around, of course -- FM/2 itself
+contains all their functionality.
+
+ARCHIVE VIEWER/2: Intended for drag-and-drop operation (or
+WPS association) with WPS objects or other applications.
+Drag an archive onto it, drop it, get an archive listing
+box. FM/2's installation program sets up some associations
+between archive files and this program by file extension.
+AV/2 will try to display whatever you give it as
+sensibly as it can. Filename AV2.EXE.
+
+EA VIEWER: Drag a file system object onto it and it'll show
+you the object's extended attributes. Filename EAS.EXE.
+
+INI VIEWER: Drag an .INI file onto it and it'll show you its
+contents. Filename INI.EXE.
+
+BOOKSHELF VIEWER: Shows all .INF files in a listbox and lets
+you pick the one(s) you want to view. If you give any
+command line argument, the .HLP files on the HELP path will
+be shown instead (the Helpfile Viewer object calls
+VIEWINFS.EXE with "dummy" for an argument, for example).
+Filename VIEWINFS.EXE.
+
+PROCESS KILLER: Lets you kill off renegade processes. An
+English version of PSTAT.EXE must be on your PATH. Filename
+KILLPROC.EXE.
+
+UNDELETE: Lets you undelete files (via interface with
+UNDELETE.COM). Drag a file system object onto it and it'll
+let you undelete files for that drive. Filename UNDEL.EXE.
+
+VISUAL TREE: Opens a Drive Tree window (like the WPS Drives
+object with more horsepower). Filename VTREE.EXE.
+
+VISUAL DIRECTORY: Opens a Directory Container window; drag a
+file system object onto it and this will open its directory
+(like a WPS directory Folder with more horsepower). Filename
+VDIR.EXE.
+
+COLLECTOR: Opens a Collector window. Filename VCOLLECT.EXE.
+Two other objects, "See all files" and "Seek and scan" are
+created which call up the Collector and go directly to
+dialogs for the appropriate purpose.
+
+GLOBAL VIEWER: Opens a global view of a drive or drives.
+Filename GLOBAL.EXE.
+
+DATABAR: Opens a databar showing some system information.
+Filename DATABAR.EXE.
+
+DIRSIZE: Shows where drive usage is concentrated. Filename
+DIRSIZE.EXE.
+
+FM/2 LITE: A simplified interface for "dummies." Filename
+FM4.EXE.
+
+FM/2's install creates FM2.CMD, AV2.CMD, VDIR.CMD,
+VTREE.CMD, VCOLLECT.CMD, UNDEL.CMD, KILLPROC.CMD, INI.CMD,
+EAS.CMD, DIRSIZE.CMD, VIEWINFS.CMD and VIEWHELP.CMD files
+for you in a directory "utils" off the install directory.
+You should add this directory to your PATH= statement in
+CONFIG.SYS (type HELP PATH at a command line for more info).
+If you prefer, FM/2's INSTALL builds a SETENV.CMD in the
+FM/2 directory which you can call to set the PATH for FM/2
+in any given session without modifying CONFIG.SYS.
+
+
+Troubleshooting:
+===============
+
+If FM/2 won't run, the probable culprit is CONFIG.SYS. Your
+LIBPATH statement should contain a ".;" entry. If yours
+doesn't, add it. It's standard for an OS/2 installation, but
+some buggy install programs knock it out because they
+translate entries to their full pathname before rewriting
+(so ".;" gets translated to whatever the current directory
+is for the buggy install program). What this ".;" entry does
+is allow a program to find and use .DLL files in the
+program's current directory -- obviously something you want
+programs to be able to do, otherwise you'd have to put every
+application's .DLLs into directories already on the LIBPATH,
+or add the directories of all applications to the LIBPATH, a
+rather huge pain in the, uh, neck.
+
+If things in FM/2 are suddenly acting strange after an
+upgrade, first check the integrity of the install using
+using WarpIN. If it shows a problem rerun the install
+package. If that fails try uninstalling with WarpIN and reinstalling.
+Backup your existing directory so you can save any changes
+you made to the template files then uninstall and reinstall.
+Once you have FM/2 working migrate the *.ini, *.dat, *.tls,
+*.bb2 and *.cmd from your old install/backup to recover your
+custom settings
+
+If the "FM/2 Online Help" object in the "FM/2 Docs"
+subfolder won't work properly, you've got a version of
+VIEW.EXE that won't directly display help (.HLP) files. Use
+SEEHELP.EXE from the FM/2 Utilities package to get around
+this problem (or upgrade your version of OS/2).
+
+Don't drag files over Netscape -- it will lock up if files
+(not WPS objects; there's a subtle difference) are dragged
+over it.
+
+If you get a popup dialog that needs to be reported to the
+maintainer, you can either take a screen shot or you can
+capture the information from STDERR with:
+
+  FM3 2>STDERR.LOG
+
+This technique works for FM/2, FM/2 Lite and all the
+standalone applets.
+
+If you are having trouble with Drag and Drop operations, try
+the + command line switch described above. The content of
+FM2.LOG may be helpful.
+
+
+Known problems/shortcomings:
+===========================
+
+- See the section of this name in the FM/2 help file (FM3.hlp).
+It is installed to the same directory as FM/2.
+
+- See http://svn.netlabs.org/fm2/report/1 for a complete list of
+currently active bugs
+
+
+About FM/2:
+==========
+
+FM/2 was originally written by:
+
+  Mark Kimes
+  <hectorplasmic@worldnet.att.net>
+
+He has kindly allowed me to take over maintenance and
+support of FM/2 and to release the program under the GNU GPL
+license. I'm sure he would appreciate a Thank You note for
+his generosity.
+
+
+Support:
+=======
+
+There is a Yahoo group devoted to fm/2 at:
+
+  http://groups.yahoo.com/group/fm2user/
+
+  This group is now closed but it still contains some useful information
+
+There is a new mailing list at:
+
+  fm2-user@netlabs.org
+
+  To subscribe send an email to:
+
+  fm2-user-subscribe@netlabs.org
+
+  The subject and body can be empty.
+
+  This group is mirrored on Gmane at:
+
+  http://dir.gmane.org/gmane.org.netlabs.fm2.user
+
+You will find lots of friendly folks ready to help.
+
+FM/2 has moved to Netlabs (thanks Adrian).
+
+Check it out at
+
+  http://svn.netlabs.org/fm2
+
+To create a ticket reporting a defect or requesting an enhancement.
+You must be logged into TRAC. Please login with your Netlabs login id.
+If you do not have a login id, you can request one at
+http://www.netlabs.org/en/site/member/member.xml.
+If you have troubles acquiring a Netlabs login id send an e-mail to
+Netlabs Community Mailing List <community@netlabs.org>.
+
+You can also browse the source at this site.
+
+To obtain the source from the SVN use something like the following to check out the trunk
+
+  mkdir fm2_workspace
+  cd fm2_workspace
+  svn checkout http://svn.netlabs.org/repos/fm2/trunk trunk
+
+If you wish commit access please contact us directly.
+
+You can reach us directly at:
+
+  Steven H. Levine
+  steve53@earthlink.net
+
+    or
+
+  Gregg Young
+  ygk@qwest.net
+
+We also monitor the comp.os.os2.apps newsgroup, several
+others in the comp.os.os2.* hierarchy and other groups where
+release announcements are made.
+
+Thanks and enjoy.
+
+$Id$

@@ -1,0 +1,70 @@
+;
+; $Id$
+;
+; This file is read by ReleaseEdit.cmd so that it can build the
+; "option description" lines from scratch.
+;
+; The format of this file should be fairly evident. The descriptions
+; (the last part of "option description", following the '@@') are of
+; the form:
+; 	desc.<relative-def-filename-without-.DEF>
+; So the description for av2.def starts with:
+;       desc.av2=
+; and the description for dll\fm3dll.def starts with:
+;       desc.dll\fm3dll=
+;
+; EVERY def file needs an entry for the description in this file.
+;
+; NOTE: In the copyright portion of the description, use the
+; string "copyright-year" as a placeholder for the current year.
+; ReleaseEdit with replace it with the current year.
+;
+; NOTE: If a description requires a '&', then ReleaseEdit.cmd
+; will have to be modified to use a different separator for the
+; SED find and replace strings! (Search for "sed_separator".)
+;
+; Lines which do not start with desc. are "global" (i.e. they will
+; apply to ALL def files. All of these "global" fields have defaults
+; which ReleaseEdit will use. Certain "global" fields in the option
+; description are omitted because their default values are unlikely
+; to change:
+;   asd_feature_id: <null>
+;   build/file version: 0
+;   fixpack_ver: <null>
+; These defaults can be overriddem by adding appropriate lines to this file.
+;
+; An value may be set to the current setting of an environment variable.
+; See "buildhost" below for an example.
+;
+; If there are duplicate entries (e.g. two desc.databar lines), then
+; the LAST one will be used. So keep these comments up front so they
+; will not be used mistakenly by ReleaseEdit.cmd.
+;
+; Case is significant to the right of the equals sign (except for
+; environment variable names) and insignificant to the left of the equals sign.
+;
+; Change Log
+;   21 Nov 08 JBS Initial version added to SVN repository
+;
+vendor=The Netlabs FM/2 team
+buildhost=%HOSTNAME%
+language_code=EN
+country_code=US
+processor_type=U
+desc.av2=FM/2 Archive Viewer MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.databar=FM/2 Databar MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.dirsize=FM/2 Directory Sizes MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.eas=FM/2 EA Editor MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.fm3=F(ile) M(anager)/2 Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.fm4=F(ile) M(anager)/2 Lite Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.global=FM/2 Global MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.ini=FM/2 INI Editor MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.killproc=FM/2 Kill Process MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.sysinfo=FM/2 SysInfo MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.undel=FM/2 Undelete MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.vcollect=FM/2 Collector MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.vdir=FM/2 View Directory MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.viewinfs=FM/2 View INFs MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.vtree=FM/2 Tree View MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.dll\fm3dll=FM/2 Runtime DLL Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved
+desc.dll\fm3res=FM/2 Runtime Resource DLL Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, copyright-year Steven Levine and Associates, Inc. All rights reserved

@@ -1,0 +1,126 @@
+;
+; $Id$
+;
+;  Change log:
+;	23 Feb 08 JBS: Added lines for debugging support package (#10)
+;	28 Oct 08 JBS: Added lines for new icons (ticket 294)
+;       04 Feb 09 SHL: Drop fm3res.str
+;
+;  This is a file which will be used to simplify the process of
+;     -  incorporating new files
+;     -  renaming files
+;     -  discontinuing obsolete files
+;     -  relocation of files within the build subtree
+;     -  relocation of files within the installation subtree
+;     -  incorporating new build subtree directories
+;     -  incorporating new installation subtree directories
+;     -  discontinuing obsolete installation subtree directories
+;     -  incorporating new packages
+;     -  renumbering packages
+;     -  discontinuing obsolete packages
+;  into the Warpin WPI file. All of these changes can be accomplished without
+;  modification of the warpin makefile. Just make any necessary changes within
+;  the build subtree and change this file accordingly. The next FM2.WPI created
+;  by NMAKE DIST will reflect these changes.
+;
+;  The format of this file is as follows:
+;     -  All blank lines are ignored
+;     -  For any lines which contain a semicolon (like all the lines so far),
+;        the semicolon and any text on the line following the semicolon are
+;        ignored (i.e. they are comments meant for humans reading the file)
+;     -  All lines which have non-blank text which does not follow a semicolon,
+;        must be in one of the following formats:
+;           FILE: <name>  <package-number> <src-dir> <dest-dir>
+;           NOFILESPACKAGE: <package-number>
+;        where
+;           <name> is a file name (without any path information>
+;           <package-number> is a package number
+;           <src-dir> is the directory, relative to the base (or top) of the build subtree.
+;              NOTE: If you run BLD_FM2_WPIDIRS using an unzipped distribution of FM/2
+;              instead of the FM/2 source code build subtree, then <src_dir> is ignored.
+;              (See BLD_FM2_WPI.README for how to use an unzipped distribution of FM/2.)
+;           <dest-dir> is the directory, relative to the base (or top) of the
+;              directory selected by the user during an install, into which this file
+;              should be installed.
+;        NOTE: There can be any number of spaces (except 0) between the various parameters
+;        NOTE: A dot, '.', for src-dir or dest-dir means the base/top directory of the
+;           subtree.
+;
+;     -  The order of the FILE and NOFILESPACKAGE lines is not important but it will
+;        facilitate future changes if files for each package are grouped together.
+;
+;     NOTE: Warpin scripts do not require that the package numbers are consecutive.
+
+FILE: file_id.diz                1  .        .
+FILE: fm3.exe                    1  .        .
+FILE: fm3.hlp                    1  dll\ipf  .
+FILE: fm3dll.dll                 1  dll      .
+FILE: fm3res.dll                 1  dll      .
+FILE: fm4.exe                    1  .        .
+FILE: cfgmgr.cmd                 1  .        .
+FILE: utilsmgr.cmd               1  .        .
+FILE: fm2dump.cmd                1  debugtools    .
+
+FILE: COPYING                    1  .        Docs
+
+FILE: HISTORY                    1  .        Docs
+FILE: README                     1  .        Docs
+
+FILE: docs.ico                   1  Icons    Icons
+FILE: docs2.ico                  1  Icons    Icons
+FILE: fm2fldr.ico                1  Icons    Icons
+FILE: fm2fldr2.ico               1  Icons    Icons
+FILE: toolbox.ico                1  Icons    Icons
+FILE: toolbox2.ico               1  Icons    Icons
+FILE: backup.ico                 1  Icons    Icons
+FILE: logging.ico                1  Icons    Icons
+FILE: restore.ico                1  Icons    Icons
+FILE: seekscan.ico               1  Icons    Icons
+FILE: viewhlps.ico               1  Icons    Icons
+
+FILE: av2.exe                    1  .  FM2Tools
+FILE: databar.exe                1  .  FM2Tools
+FILE: dirsize.exe                1  .  FM2Tools
+FILE: eas.exe                    1  .  FM2Tools
+FILE: global.exe                 1  .  FM2Tools
+FILE: ini.exe                    1  .  FM2Tools
+FILE: killproc.exe               1  .  FM2Tools
+FILE: sysinfo.exe                1  .  FM2Tools
+FILE: undel.exe                  1  .  FM2Tools
+FILE: vcollect.exe               1  .  FM2Tools
+FILE: vdir.exe                   1  .  FM2Tools
+FILE: viewinfs.exe               1  .  FM2Tools
+FILE: vtree.exe                  1  .  FM2Tools
+
+FILE: archiver.tmp               1  .  Tmplates
+FILE: assoc.tmp                  1  .  Tmplates
+FILE: cmds.tmp                   1  .  Tmplates
+FILE: commands.tmp               1  .  Tmplates
+FILE: config.tmp                 1  .  Tmplates
+FILE: example.tmp                1  .  Tmplates
+FILE: fatopt.tmp                 1  .  Tmplates
+FILE: files.tmp                  1  .  Tmplates
+FILE: filters.tmp                1  .  Tmplates
+FILE: fm3tools.tmp               1  .  Tmplates
+FILE: hpfsopt.tmp                1  .  Tmplates
+;FILE: install.cmd                1  .  Tmplates
+;FILE: install.dat                1  .  Tmplates
+FILE: jfsopt.tmp                 1  .  Tmplates
+FILE: quicktls.tmp               1  .  Tmplates
+FILE: select.tmp                 1  .  Tmplates
+FILE: sort.tmp                   1  .  Tmplates
+;FILE: uninstal.cmd               1  .  Tmplates
+FILE: utils.tmp                  1  .  Tmplates
+FILE: views.tmp                  1  .  Tmplates
+
+FILE: shdwmgr.cmd              1  .  Utils
+
+FILE: logfm2.cmd               10 .  Debug
+FILE: *.map                    10 .  Debug
+FILE: *.sym                    10 .  .
+FILE: *.xqs                    10 .  . 
+FILE: *.map                    10 dll  Debug
+FILE: *.sym                    10 dll  .
+FILE: *.xqs                    10 dll  .
+
+;NOFILESPACKAGE: 100

@@ -1,0 +1,164 @@
+
+The first Warpin installation of FM/2 is in development. In order to
+encourage others to assist in the development and testing of this
+Warpin installation, it is has been made possible for just about
+anyone to create the WPI file needed for a Warpin installation of FM/2:
+   1) REXX support is required.
+   2) Install Warpin, if it is not already installed
+   3) Install SVN software so you can download the FM/2 repository
+   4) Gather the files from an FM/2 distribution that will be added to
+      the WPI file.
+      a) Select a drive and directory into which you want the FM/2
+         repository downloaded. This drive must support long filenames.
+      b) Perform an initial SVN CHECKOUT to download the FM/2 repository.
+         (See http://svn.netlabs.org/fm2 for information on how to
+         download the repository.) This will
+         1) create a subdirectory, often named "trunk", into which the
+            repository is downloaded. This directory will be referred to
+            as <trunk-dir> below.
+         2) create a subdirectory named "warpin" into which the files
+            described below are downloaded
+      c) You now have the source files. You also need the binary files.
+         These can be obtained in two ways:
+         1) If you are a programmer and you have OpenWatcom C 1.9 then you will 
+            be referred to below as  <Developers>. <Developers> should run 
+            WMAKE ALL to build the FM/2 binary files.
+         2) For others, referred to below as <Others>, you should
+            a) Download a zipped distribution of FM/2 (e.g. fm2-3_08beta.zip)
+            b) Create a new (i.e. empty) directory. This directory will be
+               referred to as <unzipped-dir> below.
+            c) Unzip the FM/2 distribution into <unzipped-dir>
+            d) Perform the following COPY commands
+               COPY <trunk-dir>\cfgmgr.cmd <unzippped-dir>
+               COPY <trunk-dir>\shdwmgr.cmd <unzippped-dir>
+               COPY <trunk-dir>\utilsmgr.cmd <unzippped-dir>
+               COPY <trunk-dir>\readme <unzippped-dir>
+               COPY <trunk-dir>\debugtools\fm2dump.cmd <unzippped-dir>
+               COPY <trunk-dir>\debugtools\fm2dump2.cmd <unzippped-dir>
+               (NOTE: You may want to make a CMD file of these.)
+   5) You are now ready to create an FM/2 Warpin installation file: fm2.wpi
+      NOTE: The following BLD_FM2_WPI* commands use default values. See the
+      documentation below for each program to see what options are available.
+      a) <Developers>: From <trunk-dir>, run WMAKE DIST
+      b) <Others>    : Run <trunk-dir>\warpin\BLD_FM2_WPIDIRS SRC=<unzipped-dir>
+         <Others>    : Run <trunk-dir>\warpin\BLD_FM2_WPI
+   6) To test your new WPI file:
+      run <Warpin-installation-dir>\WARPIN <trunk-dir>\warpin\FM2.WPI
+   7) Periodically you should run SVN UPDATE from the <trunk-dir>. This will
+      ensure you have the latest versions of the files. If SVN UPDATE shows
+      that files have been added, deleted or updated, then
+      <Developers>:  From <trunk-dir>, run WMAKE ALL
+      <Others>    :  repeat the COPY commands from 4.c.2.d
+      <Others>    :  repeat the commands from 5.b
+
+If you want to help develop the Warpin install for FM/2:
+   1) Read the Warpin programmers guide. You will find an icon for it in your
+      Warpin folder.
+   2) Read the Warpin script (*.WIS), enclosed in this archive, to see what
+      the current beta script is trying to do.
+   3) Join the discussion  in the Yahoo group named "fm2user" to find out what
+      "needs to be done" and to coordinate your efforts with others.
+   4) Make changes. This might involve various combinations of
+      a) changes to the script
+      b) changes to the packages
+      c) changes to the files and subdirectories which are packaged into the
+         WPI file
+      IMPORTANT: Whatever changes you make, be sure to read the information
+      below regarding the BLD_FM2_WPIDIRS.TXT file and to read the
+      BLD_FM2_WPIDIRS.TXT file itself. Unless you make the appropriate
+      changes to this file, it is unlikely that your changed scripts or
+      packages will be built or function correctly!
+   5) To test your new WPI FILE either open the WPI file through the WPS or run:
+      <Warpin-installation-dir>\warpin <WPI-filename> from the command line.
+
+*****************************
+
+KEY FILES USED IN CREATING THE FM2 WARPIN INSTALLATION FILE: FM2.WPI
+
+BLD_FM2_WPIDIRS.TXT, a text file which contains information on
+   -  the files
+      -  which packages they are a part of
+      -  which they files can be found (to copy in preparation to
+         building the WPI file
+      -  which directories into which they should be installed (relative
+         to the FM/2 installation directory)
+   -  the packages, if any, which have no files
+   By defining this information outside of the programs that use it, this
+   file greatly simplifies future changes. This file, as distributed, is
+   customized for the script file (*.WIS) that is also included in this
+   archive.
+
+   *** IMPORTANT ***: If you want to test other scripts and any of the
+   package/file/directory information described above changes, then you
+   should edit this text file to match. The file contains comments which
+   should explain how to edit this file. (Forward questions to the author
+   through the fm2user Yahoo group (preferred) or through direct email.
+
+BLD_FM2_WPIDIRS.CMD, a program which
+   -  Ensures the existence of the subdirectories which are needed for
+      the creation of the Warpin WPI file.
+   -  Copies the files from the FM/2 build subtree (or from an unzipped
+      binary FM/2 distribution) into the subdirectories created above.
+   -  Optional parameters:
+      1) By default BLD_FM2_WPIDIRS assumes it should retrieve files from
+         a build subtree and that it resides in the Warpin subdirectory of
+         that build subtree. One way to tell BLD_FM2_WPIDIRS to use an
+         unzipped distribution of FM/2 instead of a build subtree is to
+         use the "SRC=" parameter. For example:
+            BLD_FM2_WPIDIRS SRC=C:\TMP\UNZIPPEDFM2
+      2) By default BLD_FM2_WPIDIRS.CMD reads BLD_FM2_WPIDIRS.TXT to obtain
+         required information on packages, files and directories.
+         You can have BLD_FM2_WPIDIRS.CMD read a different file by passing
+         the name of the file as a parameter. For example:
+            BLD_FM2_WPIDIRS <name-of-other-file-to-read>
+      NOTE: If needed, both parameters may be used and the order
+      they are specified is not important
+
+BLD_FM2_WPI.CMD, a program which
+   -  Automatically ensures that the Warpin WPI utility, WIC.EXE can be run
+   -  Builds the WPI file
+   -  Optional parameters:
+      -  BLD_FM2_WPI.CMD currently defaults to using a script file named
+         fm2.wis and it creates a WPI file named fm2.wpi. If you wish to
+         override these names, pass the preferred names on the command line.
+         (Currently there is no support for filenames with spaces.) The WPI
+         filename should be the first parameter and the WIS (script) file
+         should be second. For example:
+            BLD_FM2_WPI fm2-3-5-8.wpi my-test-script.wis
+   -  Customizing the operation of BLD_FM2_WPI:
+      -  Previously BLD_FM2_WPI.CMD used a crude method to archive previous WPI
+         files before creating a new one. If the new WPI filename matched the
+         name of an existing file, the existing file was renamed by appending
+         a 5-digit number representing the number of seconds since midnight.
+         If you want to re-enable this archiving, then open BLD_FM2_WPI.cmd in an
+         editor. At or around line 41 is the following:
+            archive_previous_WPI       = 0
+         Change the zero at the end to a one and save the file.
+      -  After creating the WPI file, BLD_FM2_WPI.CMD deletes the all files and
+         directories so don't be surprised when you find them empty and don't put any
+         files, including script files, in these subdirectories created by BLD_FM2_WPIDIRS.
+         (This cleanup is done to help ensure that obsolete or extraneous files are
+         not added to the next WPI file.) To disable this cleanup, find the line at
+         or around line 42:
+            delete_files_afterwards    = 1
+         Change the one at the end to a zero and save the file.
+   -  Possible problem and workaround:
+      BLD_FM2_WPI.CMD uses SysQueryExtLibpath and SysSetExtLibpath. These functions have
+      been available in both Classic REXX and Object REXX for many years. In the unlikely
+      event that your REXX is too old, you will experience problems related to these
+      functions and/or you will see errors like "The system cannot find the file WPIRTL".
+      To work around this problem you can do any of the following:
+         -  Manually execute "SET ENDLIBPATH=<Warpin-installation-dir>"
+            before running BLD_FM2_WPI.CMD. This is temporarily adds the Warpin
+            directory to the LIBPATH. This will need to be done once for each
+            session in which you want to build FM/2.
+         -  Run "<Warpin-installation-dir>\envwic" once per session in
+            which you want to build the WPI file.
+         -  Edit your CONFIG.SYS file and add the Warpin directory to the
+            LIBPATH and reboot. This permanently adds the directory to the LIBPATH.
+         -  Copy the WPITRL.DLL from the Warpin directory into the same
+            directory as BLD_FM2_WPI.CMD
+
+FM2.WIS, the current beta Warpin script file
+   -  used as the default script file for BLD_FM2_WPI.CMD.
+

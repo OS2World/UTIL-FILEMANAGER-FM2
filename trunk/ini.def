@@ -1,0 +1,9 @@
+# $Id$
+
+# Copyright (c) 2002, 2009 Steven H. Levine
+
+# 16 Jun 07 GKY Convert to OpenWatcom
+
+option description '@#The Netlabs FM/2 team:3.23.0#@##1## 2015-05-25 03:23:00      TRESBOPEEP::EN:US:0:U:@@FM/2 INI Editor MiniApp Copyright (c) 1993, 1998 M. Kimes, Copyright (c) 2001, 2015 Steven Levine and Associates, Inc. All rights reserved'
+
+option stack = 0x60000

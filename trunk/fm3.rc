@@ -1,0 +1,153 @@
+
+/***********************************************************************
+
+  $Id$
+
+  fm3 resources (fm/2 standard)
+
+  Copyright (c) 1993-98 M. Kimes
+  Copyright (c) 2005, 2008 Steven H. Levine
+
+  09 Aug 05 SHL Drop dup icon
+  21 Aug 06 SHL Add select and sort toolbar bitmaps
+  01 Sep 06 SHL Add more select and sort toolbar bitmaps
+  03 Sep 06 SHL Add more select and sort toolbar bitmaps from David
+  17 Feb 07 GKY Add more drive type bitmaps from David
+  16 Aug 07 SHL Document AUTHOR_PICTURE
+  04 Jan 08 SHL Sync with fm3dll.h mods
+  29 Aug 08 GKY Add bmps from David for the 7 predefined toolbars 
+  22 Jul 09 GKY Drivebar enhancements add refresh removable, rescan all drives, drive button
+                loads drive root directory in directory container or expands drive tree
+                and rescans drive in tree container depending on container focus, greyed out
+                inappropriate menu context choices
+  04 Aug 12 GKY Changes to use Unlock to unlock files if Unlock.exe is in path both from menu/toolbar and as part of
+                copy, move and delete operations
+
+***********************************************************************/
+
+#include "dll\fm3dll2.h"
+
+DEFAULTICON                 icons\FM3.ICO
+
+BITMAP  MAIN_TRASHCAN       bitmaps\TRASH.BMP
+
+BITMAP DIR_FRAME            bitmaps\FILE.BMP
+BITMAP DIR_FOLDERICON       bitmaps\PMAP.BMP
+BITMAP TREE_OPENCNR         bitmaps\OPENCONT.BMP
+BITMAP IDM_TOOLLEFT         bitmaps\TOOLLEFT.BMP
+BITMAP IDM_TOOLRIGHT        bitmaps\TOOLRT.BMP
+BITMAP IDM_INFO             bitmaps\INFO.BMP
+BITMAP IDM_DELETE           bitmaps\DELETE.BMP
+BITMAP IDM_VIEW             bitmaps\VIEW.BMP
+BITMAP IDM_EDIT             bitmaps\EDIT.BMP
+BITMAP IDM_EXEC             bitmaps\EXEC.BMP
+BITMAP IDM_TEST             bitmaps\TEST.BMP
+BITMAP IDM_VIRUSSCAN        bitmaps\VIRUS.BMP
+BITMAP IDM_ATTRS            bitmaps\ATTRLIST.BMP
+BITMAP IDM_RENAME           bitmaps\RENAME.BMP
+
+BITMAP IDM_SELECTALL        bitmaps\SELALL.BMP
+BITMAP IDM_SELECTALLFILES   bitmaps\SELECT.BMP
+BITMAP IDM_SELECTALLDIRS    bitmaps\SELDIRS.BMP
+BITMAP IDM_DESELECTALL      bitmaps\DESELECT.BMP
+BITMAP IDM_DESELECTALLFILES bitmaps\DESELFIL.BMP
+BITMAP IDM_DESELECTALLDIRS  bitmaps\DESELDIR.BMP
+BITMAP IDM_SELECTLIST       bitmaps\SELLIST.BMP
+BITMAP IDM_SELECTCLIP       bitmaps\SELCLIP.BMP
+BITMAP IDM_DESELECTCLIP     bitmaps\DSELCLIP.BMP
+BITMAP IDM_INVERT           bitmaps\INVRTSEL.BMP
+BITMAP IDM_RESELECT         bitmaps\RESLCT.BMP
+
+BITMAP IDM_ARCHIVE          bitmaps\ARCHIVE.BMP
+BITMAP IDM_EXTRACT          bitmaps\EXTRACT.BMP
+BITMAP IDM_MOVE             bitmaps\MOVER.BMP
+BITMAP IDM_COPY             bitmaps\COPIER.BMP
+BITMAP IDM_SHADOW           bitmaps\SHADOW.BMP
+BITMAP IDM_UNDELETE         bitmaps\UNDELETE.BMP
+BITMAP IDM_KILLPROC         bitmaps\KILLPROC.BMP
+BITMAP IDM_INSTANT          bitmaps\INSTANT.BMP
+BITMAP IDM_COMMANDLINE      bitmaps\CMDLINE.BMP
+BITMAP IDM_PRINT            bitmaps\PRINT.BMP
+BITMAP IDM_FILTER           bitmaps\FILTER.BMP
+BITMAP IDM_WALKDIR          bitmaps\WALK.BMP
+BITMAP IDM_EDITASSOC        bitmaps\ASSOC.BMP
+BITMAP IDM_EDITCOMMANDS     bitmaps\COMMAND.BMP
+BITMAP IDM_RESCAN           bitmaps\RESCAN.BMP
+BITMAP IDM_REFRESH          bitmaps\RESCAN.BMP
+BITMAP IDM_EAS              bitmaps\EA.BMP
+BITMAP IDM_INIVIEWER        bitmaps\INI.BMP
+BITMAP IDM_PERMDELETE       bitmaps\PERMDEL.BMP
+BITMAP IDM_SYSINFO          bitmaps\SYSINFO.BMP
+BITMAP IDM_SYSTEMCLOCK      bitmaps\SYSCLOCK.BMP
+BITMAP IDM_SAVETOCLIP       bitmaps\SAVECLIP.BMP
+BITMAP IDM_HELP             bitmaps\HELP.BMP
+BITMAP IDM_SAVETOLIST       bitmaps\SAVELIST.BMP
+BITMAP IDM_COLLECTOR        bitmaps\COLLECT.BMP
+BITMAP IDM_COLLECT          bitmaps\COLLECT.BMP
+BITMAP IDM_OBJECT           bitmaps\OBJECT.BMP
+BITMAP IDM_WINDOWDLG        bitmaps\WINDOW.BMP
+BITMAP IDM_MKDIR            bitmaps\MKDIR.BMP
+BITMAP IDM_VIEWINFS         bitmaps\VIEWINFS.BMP
+BITMAP IDM_MCIPLAY          bitmaps\PLAYMM.BMP
+BITMAP IDM_OPENDEFAULT      bitmaps\OPEND.BMP
+BITMAP IDM_COLLECTFROMFILE  bitmaps\COLLLIST.BMP
+BITMAP IDM_NOTEBOOK         bitmaps\NOTEBOOK.BMP
+BITMAP IDM_GREP             bitmaps\GREP.BMP
+BITMAP IDM_SEEALL           bitmaps\SEEALL.BMP
+BITMAP IDM_SELECTMASK       bitmaps\SELMASK.BMP
+BITMAP IDM_DESELECTMASK     bitmaps\DSELMASK.BMP
+BITMAP IDM_USERLIST         bitmaps\USERLIST.BMP
+BITMAP IDM_OPENWALK         bitmaps\WALK2.BMP
+BITMAP FLOPPY_ICON          bitmaps\FLOPPY.BMP
+BITMAP DRIVE_ICON           bitmaps\HDRIVE.BMP
+BITMAP REMOVABLE_ICON       bitmaps\REMOV.BMP
+BITMAP CDROM_ICON           bitmaps\CDROM.BMP
+BITMAP REMOTE_ICON          bitmaps\REMOTE.BMP
+BITMAP VIRTUAL_ICON         bitmaps\VIRTUAL.BMP
+BITMAP RAMDISK_ICON         bitmaps\RAMDISK.BMP
+BITMAP DONNO_ICON           bitmaps\DONNO.BMP
+BITMAP IDM_RESCANALL        bitmaps\rescanhd2.bmp
+BITMAP IDM_REFRESHREMOVABLE bitmaps\refremov.bmp
+BITMAP 65534                bitmaps\EMPTY.BMP
+BITMAP LEDON_BMP            bitmaps\LEDON.BMP
+BITMAP LEDOFF_BMP           bitmaps\LEDOFF.BMP
+BITMAP LEDON2_BMP           bitmaps\LEDON2.BMP
+BITMAP LEDOFF2_BMP          bitmaps\LEDOFF2.BMP
+BITMAP IDM_SIZES            bitmaps\DIRSIZE.BMP
+BITMAP IDM_FINDFIRST        bitmaps\FINDFRST.BMP
+BITMAP IDM_FINDNEXT         bitmaps\FINDNEXT.BMP
+BITMAP IDM_FINDPREV         bitmaps\FINDPREV.BMP
+BITMAP IDM_SETTARGET        bitmaps\TARGET.BMP
+BITMAP IDM_CLEARCNR         bitmaps\CLEARCNR.BMP
+BITMAP IDM_REMOVE           bitmaps\REMOVOBJ.BMP
+
+BITMAP IDM_SORTFILENAME     bitmaps\SORTNAM.BMP
+BITMAP IDM_SORTSIZE         bitmaps\SORTSIZ.BMP
+BITMAP IDM_SORTEASIZE       bitmaps\SORTEASZ.BMP
+BITMAP IDM_SORTFIRST        bitmaps\SORT1ST.BMP
+BITMAP IDM_SORTLAST         bitmaps\SORTLAST.BMP
+BITMAP IDM_SORTLWDATE       bitmaps\SORTDATE.BMP
+BITMAP IDM_SORTCRDATE       bitmaps\SORTCDAT.BMP
+BITMAP IDM_SORTREVERSE      bitmaps\SORTREV.BMP
+
+BITMAP IDM_COLORPALETTE     bitmaps\COLORPAL.BMP
+BITMAP IDM_FONTPALETTE      bitmaps\FNTPALET.BMP
+BITMAP IDM_KILLME           bitmaps\KILLME.BMP
+BITMAP IDM_MERGE            bitmaps\MERGE.BMP
+BITMAP IDM_HICOLORPALETTE   bitmaps\HICOLPAL.BMP
+BITMAP IDM_VIEWHELPS        bitmaps\VIEWHELP.BMP
+BITMAP IDM_WPSCOPY          bitmaps\WPSCOPYB.BMP
+BITMAP IDM_WPSMOVE          bitmaps\WPSMOVEB.BMP
+BITMAP IDM_UUDECODE         bitmaps\UDECODE.BMP
+BITMAP IDM_UNLOCKFILE       bitmaps\UNLOCK.BMP
+
+#define AUTHOR_PICTURE           26102               /* fm3dlg.h */
+BITMAP AUTHOR_PICTURE       bitmaps\HECTOR.BMP
+
+BITMAP IDM_CMDTOOLBAR       bitmaps\cmdstls.bmp
+BITMAP IDM_UTILSTOOLBAR     bitmaps\utilstls.bmp
+BITMAP IDM_SORTTOOLBAR      bitmaps\sorttls.bmp
+BITMAP IDM_SELECTTOOLBAR    bitmaps\selecttls.bmp
+BITMAP IDM_CONFIGTOOLBAR    bitmaps\configtls.bmp
+BITMAP IDM_FILESTOOLBAR     bitmaps\filestls.bmp
+BITMAP IDM_VIEWSTOOLBAR     bitmaps\viewstls.bmp

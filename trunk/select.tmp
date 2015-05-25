@@ -1,0 +1,116 @@
+; Fixed: Ticket 267
+;
+;This file contains some selecting definitions for the FM/2 toolbar.
+;
+;
+Select All
++All
+0
+10006
+;
+Deselect All
+-All
+8
+10007
+;
+Select Files
++Files
+0
+10008
+;
+Deselect Files
+-Files
+8
+10009
+;
+Select Dirs
++Dirs
+0
+10010
+;
+Deselect Dirs
+-Dirs
+8
+10011
+;
+Reselect
+Reslct
+0
+10027
+;
+Invert selections
+Invert
+8
+10014
+;
+Select List
++List
+0
+10033
+;
+Select Clipboard
++Clip
+0
+10028
+;
+Deselect Clipboard
+-Clip
+8
+10029
+;
+Select Mask
++Mask
+0
+10012
+;
+Deselect Mask
+-Mask
+8
+10013
+;
+Make Directory (Ctrl + M)
+MakeDir
+0
+1026
+;
+Rescan (Ctrl + R)
+Rescan
+0
+5021
+;
+Print Files (Ctrl + p)
+Print
+9
+1007
+;
+Exit FM2 (Ctrl + F3)
+Exit
+8
+1111
+;
+Commands toolbar
+Cmds
+0
+4900
+;
+Utility toolbar
+Utils
+0
+4901
+;
+Sort toolbar
+Sort
+0
+4902
+;
+Configuration toolbar
+Config
+0
+4904
+;
+Files toolbar
+Files
+8
+4905
+;
+; $Id$

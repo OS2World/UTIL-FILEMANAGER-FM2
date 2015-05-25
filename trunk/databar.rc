@@ -1,0 +1,43 @@
+
+/***********************************************************************
+
+  $Id$
+
+  databar resources
+
+  Copyright (c) 1993-02 M. Kimes
+  Copyright (c) 2003, 2008 Steven H.Levine
+
+  15 Oct 02 MK - Baseline
+  04 Nov 03 SHL - Drop extra default icon
+  04 Jan 08 SHL - Sync with fm3dll.h mods
+
+***********************************************************************/
+
+#include "dll\fm3dll2.h"
+
+DEFAULTICON                 icons\DATABAR.ICO
+
+BITMAP 65534                bitmaps\EMPTY.BMP
+BITMAP DIR_FOLDERICON       bitmaps\PMAP.BMP
+BITMAP DIR_FRAME            bitmaps\FILE.BMP
+BITMAP IDM_DELETE           bitmaps\DELETE.BMP
+BITMAP IDM_EXTRACT          bitmaps\EXTRACT.BMP
+BITMAP IDM_PRINT            bitmaps\PRINT.BMP
+BITMAP IDM_TEST             bitmaps\TEST.BMP
+BITMAP IDM_VIRUSSCAN        bitmaps\VIRUS.BMP
+BITMAP IDM_EXEC             bitmaps\EXEC.BMP
+BITMAP IDM_VIEW             bitmaps\VIEW.BMP
+BITMAP IDM_PERMDELETE       bitmaps\PERMDEL.BMP
+BITMAP IDM_RESCAN           bitmaps\RESCAN.BMP
+BITMAP IDM_REFRESH          bitmaps\RESCAN.BMP
+BITMAP IDM_FILTER           bitmaps\FILTER.BMP
+BITMAP IDM_WALKDIR          bitmaps\WALK.BMP
+BITMAP IDM_GREP             bitmaps\GREP.BMP
+BITMAP IDM_SEEALL           bitmaps\SEEALL.BMP
+BITMAP IDM_FINDFIRST        bitmaps\FINDFRST.BMP
+BITMAP IDM_FINDNEXT         bitmaps\FINDNEXT.BMP
+BITMAP IDM_FINDPREV         bitmaps\FINDPREV.BMP
+BITMAP IDM_CLEARCNR         bitmaps\CLEARCNR.BMP
+BITMAP IDM_REMOVE           bitmaps\REMOVOBJ.BMP
+

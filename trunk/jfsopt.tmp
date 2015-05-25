@@ -1,0 +1,17 @@
+@echo off
+rem $Id$
+
+rem
+rem This notice is just so users know what's going on and can change it...
+rem
+ECHO This is JFSOPT.CMD, which you can customize to use any JFS
+ECHO optimizing program you like.
+
+Defragfs.exe %1
+
+rem
+rem if there's an error or user abort, pause the display so the user
+rem can see what's happened.
+rem
+
+IF ERRORLEVEL == 1 PAUSE

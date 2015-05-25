@@ -1,0 +1,89 @@
+/************************************************************************
+ * Example of how a rexx file can operate on a list file created by     *
+ * FM/2 (the list file should contain filenames only, one per line).    *
+ *                                                                      *
+ * This example can be editted at the boxed comment area below and      *
+ * used with FM/2 Commands containing the %! metastring.                *
+ *                                                                      *
+ * Call as "%c /C <drive:\path\>EXAMPLE.CMD %!" (exclude quotes)        *
+ *  (for example:  %c /C e:\fm2\EXAMPLES.CMD %!)                        *
+ ************************************************************************/
+
+/* suppress echo from "batch" commands */
+'@Echo off'
+/* clear screen (GPs). */
+'@cls'
+
+/* get name of listfile from command line. */
+parse arg listfile
+
+/* if no listfile name was given, issue help and exit. */
+if listfile = '' then
+do
+  say 'Give the name of a listfile as an argument to this REXX script.'
+  exit
+end
+
+/* for debugging purposes: */
+say 'Name of our listfile is "'listfile'".'
+
+/* see if the listfile given exists -- exit with error message if not */
+rc = stream(listfile,'C','QUERY EXISTS')
+if rc = '' then
+do
+  say 'File "'listfile'" doesn''t exist.'
+  exit
+end
+
+/* attempt to open the listfile given on the command line */
+rc = stream(listfile,'C','OPEN')
+
+/* if open was successful, enter loop */
+if rc = 'READY:' then
+do
+  counter = 0     /* initialize counter (debugging aid) */
+
+  /* read each line of the listfile into filename */
+  do while lines(listfile) = 1
+    filename = linein(listfile)
+
+    /* remove any leading/trailing blanks */
+    filename = strip(filename,'b')
+
+    /* process only non-blank strings */
+    if filename \= '' then
+    do
+    /*************************************************************
+     * here you would do something to/with the file in filename. *
+     * since this is only an example, we'll just print the name. *
+     * note that you could do most anything to the file here --  *
+     * use your imagination.                                     *
+     *************************************************************/
+
+      say filename  /* replace with your command(s)! */
+
+    /*************************************************************
+     * end of area where you'd do your special processing.       *
+     *************************************************************/
+      counter = counter + 1 /* count files processed for debugging. */
+    end
+  end
+
+  /* close the listfile. */
+  rc = stream(listfile,'C','CLOSE')
+
+  /* remove the listfile -- checks to disallow wildcards in name (GPs). */
+  if (pos('*',listfile) = 0) & (pos('?',listfile) = 0) then
+  do
+    'del "'listfile'" 1>NUL 2>NUL'
+  end
+
+end
+else /* couldn't open listfile */
+do
+  say 'Error opening "'listfile'".'
+  exit
+end
+
+/* we're done -- issue count for debugging. */
+say '  **I processed 'counter' objects.'

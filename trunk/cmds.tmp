@@ -1,0 +1,125 @@
+; Fixed: Ticket 267
+;
+;This file contains some command definitions for the FM/2 toolbar.
+;
+View Files (Ctrl + v)
+View
+1
+1023
+;
+Edit Files (Ctrl + e)
+Edit
+1
+1024
+;
+Object Information (Ctrl + i)
+Info
+1
+1010
+;
+Delete Files/Directories (Ctrl + d)
+Delete
+1
+1004
+;
+Set Attributes and Date/Time of Files/Directories (Ctrl + a)
+Attribs
+1
+1009
+;
+Copy Files/Directories (Ctrl + c)
+Copy
+1
+1002
+;
+Move Files/Directories (Ctrl + m)
+Move
+9
+1001
+;
+Archive Files/Directories (Ctrl + A)
+Archive
+1
+1029
+;
+Extract From Archives (Ctrl + x)
+Extract
+1
+1030
+;
+Collect Files/Directories (Ctrl + C)
+Collect
+0
+1011
+;
+Play Multimedia (Ctrl + l)
+Play
+9
+1058
+;
+Filter Container (Ctrl + f)
+Filter
+0
+5001
+;
+Window Dialog (Ctrl + W)
+Windws
+0
+9010
+;
+Settings Notebook
+Setngs
+0
+3059
+;
+FM/2 Help
+Help
+8
+999
+;
+Make Directory (Ctrl + M)
+MkDir
+0
+1026
+;
+Rescan (Ctrl + R)
+Rescan
+0
+5021
+;
+Print Files (Ctrl + p)
+Print
+9
+1007
+;
+Exit FM2 (Ctrl + F3)
+Exit
+8
+1111
+;
+Utility toolbar
+Utils
+0
+4901
+;
+Sort toolbar
+Sort
+0
+4902
+;
+Select toolbar
+Select
+0
+4903
+;
+Configuration toolbar
+Config
+0
+4904
+;
+Files toolbar
+Files
+8
+4905
+;
+;     $Id$

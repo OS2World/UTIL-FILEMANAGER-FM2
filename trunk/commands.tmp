@@ -1,0 +1,67 @@
+; FM/2 commands file -- 3 lines: title, cmd line, flags
+;
+Unlock exe or dll
+unlock -v %a
+4096
+;
+Test a Zip file
+unzip.exe -t %a
+12288
+;
+Test an Lzh file
+lh.exe t %a
+12288
+;
+Test an Arc file
+arc.exe t %a
+12288
+;
+Test an Arj file
+unarj.exe t %a
+12288
+;
+Test a Zoo file
+zoo.exe -test %a
+12288
+;
+Diskcopy A: -> B:
+diskcopy.exe a: b:
+4096
+;
+Diskcopy B: -> A:
+diskcopy.exe b: a:
+4096
+;
+Create disk image from A:
+savedskf.exe a: /N
+6144
+;
+Rename files to uppercase
+rencase.exe /u /#%!
+0
+;
+Rename files to lowercase
+rencase.exe /l /#%!
+0
+;
+Rename files to mixedcase
+rencase.exe /m /#%!
+0
+;
+View image file
+image.exe %a
+8192
+;
+Iconify image files
+iconify.exe /#%!
+0
+;
+Wipe (erase, expunge) files
+wipe.exe /a /y /#%!
+0
+;
+Zap all EAs of files (careful!)
+ea.exe /d /y /h /$ /v /#%!
+0
+;
+; $Id$

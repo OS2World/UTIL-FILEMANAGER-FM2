@@ -1,0 +1,7 @@
+; FM/2 filter mask file, one mask set per line
+*
+*.zip;*.lzh;*.arc;*.arj;*.zoo;
+*.c;*.h;*.def;*.rc;*.dlg
+*.exe;*.com;*.cmd;*.bat
+*.old;*.bak
+*.log
