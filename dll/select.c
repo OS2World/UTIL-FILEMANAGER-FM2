@@ -30,6 +30,7 @@
   12 Jan 08 SHL Localize SpecialSelect in comp.c
   29 Feb 08 GKY Use xfree where appropriate
   31 May 11 SHL Ensure mask->pszMasks[1] initialize to NULL if not used
+  13 Jun 15 GKY Fixed compare selection replaced pszFileNames with pszDisplayNames
 
 ***********************************************************************/
 
@@ -618,7 +619,7 @@ static int CompSSNamesB(const void *s1, const void *s2)
 {
   struct SS *ss2 = (struct SS *)s2;
 
-  return stricmp((PSZ)s1, ss2->pci->pszFileName);
+  return stricmp((PSZ)s1, ss2->pci->pszDisplayName);
 }
 
 static int CompSSNames(const void *s1, const void *s2)
@@ -729,7 +730,7 @@ VOID SpecialSelect2(HWND hwndParent, INT action)
 	Cnrs[z].ss[x].largest = TRUE;
       for (w = 0; w < numwindows; w++) {
 	if (w != z && Cnrs[w].numfiles) {
-	  bsres = (struct SS *)bsearch(Cnrs[z].ss[x].pci->pszFileName,
+	  bsres = (struct SS *)bsearch(Cnrs[z].ss[x].pci->pszDisplayName,
 				       Cnrs[w].ss, Cnrs[w].numfiles,
 				       sizeof(struct SS), CompSSNamesB);
 	  if (bsres) {
