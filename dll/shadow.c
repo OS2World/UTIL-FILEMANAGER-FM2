@@ -19,6 +19,7 @@
   02 May 15 GKY Changes to allow a JAVA executable object to be created using "Real object"
                 menu item on a jar file.
   23 May 15 GKY Option to restart desktop to prevent icon loss from JAVA object
+  13 Jun 15 GKY Fix failure to generate multiple real objects
 
 ***********************************************************************/
 
@@ -256,6 +257,7 @@ VOID MakeShadows(HWND hwnd, CHAR ** list, ULONG Shadows, CHAR * cnr,
   HOBJECT obj = (HOBJECT) 0;
   FILESTATUS3 fsa;
   BOOL JAVA = FALSE;
+  BOOL fJavaMade = FALSE;
 
   *szBuff = 0;
   if (foldername)
@@ -334,15 +336,8 @@ VOID MakeShadows(HWND hwnd, CHAR ** list, ULONG Shadows, CHAR * cnr,
           CreateShadowObject(p, (obj) ? szBuffer : NULL, szDir, 0, cnr);
         else if (JAVA) {
           if (CreateJAVAProgramObject(p, (obj) ? szBuffer : NULL, szDir, cnr)) {
-            ULONG ulResult;
-
             apt |= FAPPTYP_BOUND;
-            ulResult = saymsg(MB_OKCANCEL | MB_ICONQUESTION | MB_DEFBUTTON1, HWND_DESKTOP,
-                              GetPString(IDS_RESTARTDESKTOP),
-			      GetPString(IDS_SETTINGLOSEICON));
-            if (ulResult == MBID_OK){
-              WinRestartWorkplace();
-            }
+            fJavaMade = TRUE;
           }
         }
         else if (!(apt & (FAPPTYP_NOTWINDOWCOMPAT | FAPPTYP_WINDOWCOMPAT | FAPPTYP_WINDOWAPI |
@@ -352,8 +347,18 @@ VOID MakeShadows(HWND hwnd, CHAR ** list, ULONG Shadows, CHAR * cnr,
 	else
 	  CreateProgramObject(p, (obj) ? szBuffer : NULL, szDir, cnr);
       }
+      JAVA = FALSE;
       x++;
       DosSleep(1);
+    } //while
+    if (fJavaMade) {
+      ULONG ulResult;
+
+      ulResult = saymsg(MB_OKCANCEL | MB_ICONQUESTION | MB_DEFBUTTON1, HWND_DESKTOP,
+                        GetPString(IDS_RESTARTDESKTOP),
+                        GetPString(IDS_SETTINGLOSEICON));
+      if (ulResult == MBID_OK)
+        WinRestartWorkplace();
     }
   }
 }
