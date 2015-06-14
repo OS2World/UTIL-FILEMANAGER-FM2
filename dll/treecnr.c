@@ -1017,9 +1017,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSendMsg(dcd->hwndCnr,
 		 UM_CLOSE, MPFROMLONG(dcd->dontclose != FALSE), MPVOID);
       WinSetWindowPtr(dcd->hwndCnr, QWL_USER, NULL);	// 13 Apr 10 SHL Set NULL before freeing dcd
-      DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
       free(dcd);
-      DosReleaseMutexSem(hmtxFiltering);
 #     ifdef FORTIFY
       Fortify_LeaveScope();
 #     endif
@@ -3309,7 +3307,7 @@ HWND StartTreeCnr(HWND hwndParent, ULONG flags)
 		  PCSZ_WINCREATEWINDOW);
 	PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
 	free(dcd);
-	dcd = 0;
+	dcd = NULL;
 	hwndFrame = (HWND) 0;
       }
       else {
