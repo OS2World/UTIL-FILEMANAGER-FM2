@@ -106,6 +106,7 @@
                 missing break and comments explaining the code structure.
   28 Jun 14 GKY Fix errors identified with CPPCheck
   30 Aug 14 GKY Use saymsg2 for Suggest dialog
+  19 Jun 15 JBS Ticket 514: Double free fix (which also fixes a memory leak)
 
 ***********************************************************************/
 
@@ -1857,66 +1858,14 @@ VOID FreeCnrItemData(PCNRITEM pci)
     pci->pszDisplayName = NULL;		// Catch illegal references
   }
 
-#if 0 // 26 Sep 09 SHL debug dup free complaints
-  if (!pci->pszFileName)
-    Runtime_Error(pszSrcFile, __LINE__, "FreeCnrItemData attempting to free %p data twice", pci);
-  else {
-    if (pci->pszFileName != NullStr)
+  if (pci->pszFileName) {
+    if (pci->pszFileName != NullStr) {
       free(pci->pszFileName);
-    pci->pszFileName = NULL;		// Catch illegal references
-  }
-#else
-  {
-    #define HIST_COUNT 50
-    static struct {
-      PCNRITEM pci;
-      PSZ pszFileName;
-    } history[HIST_COUNT];
-    static volatile UINT iHistNdx;
-    UINT i;
-
-    if (!pci->pszFileName) {
-      // Looks like pci was already freed
-      // Try to locate original file name in history buffer
-      for (i = 0; i < HIST_COUNT && pci != history[i].pci; i++) { }	// Scan
-      if (i < HIST_COUNT) {
-	Runtime_Error(pszSrcFile, __LINE__, "FreeCnrItemData attempting to free %p data twice, fileName was %.260s",
-		      pci, history[i].pszFileName);
-      }	else {
-	Runtime_Error(pszSrcFile, __LINE__, "FreeCnrItemData attempting to free %p data twice", pci);
-      }
     }
-    else {
-      PSZ psz;
-      PSZ *ppsz;
-      // Grab a history slot
-      // This should work well enoungh to prevent MT/SMP conflicts
-      for (;;) {
-	i = iHistNdx;
-	if (++i >= HIST_COUNT)
-	  i = 0;
-	if (++iHistNdx >= HIST_COUNT)
-	  iHistNdx = 0;
-	if (i == iHistNdx) break;
-      }
-      ppsz = &history[iHistNdx].pszFileName;
-      psz = *ppsz;
-      if (psz)
-	free(psz);
-      if (pci->pszFileName && pci->pszFileName != NullStr)
-	*ppsz = strdup(pci->pszFileName);
-      else
-	*ppsz = NULL;
-      history[iHistNdx].pci = pci;
-      if (pci->pszFileName != NullStr)
-	free(pci->pszFileName);
-      pci->pszFileName = NULL;		// Catch illegal references and dup free attempts
-    }
+    pci->pszFileName = NULL;		// Catch illegal references and dup free attempts
   }
 
-
-#endif
-
+// 26 Mar 14 JBS Twice on the longname?
   // 08 Sep 08 SHL Remove excess logic
   if (pci->pszLongName) {
     if (pci->pszLongName != NullStr)
@@ -1993,10 +1942,6 @@ VOID FreeCnrItemList(HWND hwnd, PCNRITEM pciFirst)
 INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
 {
   INT remaining = usCnt;
-  BOOL bIdlePrioritySet	= FALSE;
-// #define RCI_ITEMS_PER_TIMER_CHECK (10)
-// 10 seems a very conservative number
-//   USHORT usTimerCheckCountdown	= RCI_ITEMS_PER_TIMER_CHECK;
   PCNRITEM pci;
   ITIMER_DESC itdSleep = { 0 };		// 30 May 11 GKY
 
@@ -2021,24 +1966,27 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
       InitITimer(&itdSleep, 500);
       while (pci) {
 	FreeCnrItemData(pci);
-	pci = (PCNRITEM)pci->rc.preccNextRecord;
-	if (!pci)
-	  break;
         if (remaining && --remaining == 0)
           break;
-        if (!bIdlePrioritySet /* && --usTimerCheckCountdown == 0 */) {
-          bIdlePrioritySet = !IdleIfNeeded(&itdSleep, 30);
-//           usTimerCheckCountdown = RCI_ITEMS_PER_TIMER_CHECK;
+	pci = (PCNRITEM)WinSendMsg(hwnd, CM_QUERYRECORD, (MPARAM)pci,
+				   MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
+	if (pci && !IdleIfNeeded(&itdSleep, 30)) {
+          // Finishing in idle mode
+	  while (pci) {
+	    FreeCnrItemData(pci);
+	    if (remaining && --remaining == 0)
+	      break;
+	    pci = (PCNRITEM)WinSendMsg(hwnd, CM_QUERYRECORD, (MPARAM)pci,
+				   MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
+
+          }
+          priority_normal();
+	  break;
         }
       } // while
-      if (bIdlePrioritySet)
-        priority_normal();
-
       DosPostEventSem(CompactSem);
     }
   }
-
-  // DbgMsg(pszSrcFile, __LINE__, "RemoveCnrItems %p %u %s", pci, usCnt, pci->pszFileName);
 
   if (remaining != - 1) {
     remaining = (INT)WinSendMsg(hwnd, CM_REMOVERECORD, MPFROMP(&pciFirst), MPFROM2SHORT(usCnt, usFlags));
@@ -2046,7 +1994,6 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
       Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_REMOVERECORD hwnd %x pci %p cnt %u", hwnd, pciFirst, usCnt);
     }
   }
-
   return remaining;
 }
 
