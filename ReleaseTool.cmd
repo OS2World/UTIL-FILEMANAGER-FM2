@@ -649,7 +649,7 @@ SetDefaultAnnouncementText: procedure expose (globals)
    call lineout tempfile, ''
    call lineout tempfile, 'NETLABS'
    call lineout tempfile, 'Initially uploaded to:'
-   call lineout tempfile, '  <ftp://ftp.netlabs.org/incoming/' || release_file || '>'
+   call lineout tempfile, '  <ftp://ftp.netlabs.org/incoming/fm2' || release_file || '>'
    call lineout tempfile, 'Eventual location:'
    call lineout tempfile, '  <ftp://ftp.netlabs.org/pub/fm2/' || release_file || '>'
    call lineout tempfile, ''
