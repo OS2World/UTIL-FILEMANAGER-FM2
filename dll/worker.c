@@ -65,6 +65,8 @@
   22 Feb 14 GKY Fix warn readonly yes don't ask to work when recursing directories.
   02 May 15 GKY Changes to allow a JAVA executable object to be created using "Real object"
                 menu item on a jar file.
+  24 Jun 15 GKY Corrected failure to show error message when locked non-exe/dll file fails
+                delete
 
 ***********************************************************************/
 
@@ -1809,7 +1811,7 @@ VOID MassAction(VOID * args)
                 if (fWarnReadOnly && error ==  ERROR_FILE_EXISTS) {
                   retrn = SM2_NO;
                 }
-                if (error && (retrn == SM2_YES || retrn == SM2_DONTASK))  {
+                if (error && (retrn == SM2_YES || retrn == SM2_DONTASK || retrn == -1))  {
 		  if (LogFileHandle)
 		    fprintf(LogFileHandle,
 			    GetPString(IDS_DELETEFAILED1TEXT),
