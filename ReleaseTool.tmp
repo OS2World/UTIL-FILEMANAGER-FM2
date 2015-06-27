@@ -2,11 +2,12 @@
 ;  $Id$
 
 ;  Change log:
-;     11-07-23 JBS   Initial version (replaces obsolete ReleaseTool.CFG
-;                    in the repository.)
-;     11-88-05 JBS   -  Added comp.os.os2.announce and submit@os2voice.org
-;                       to proposed list of addressees
-;                    -  Updated the documentation
+;     23 Jul 11 JBS   Initial version (replaces obsolete ReleaseTool.CFG
+;                     in the repository.)
+;     05 Aug 11 JBS   -  Added comp.os.os2.announce and submit@os2voice.org
+;                        to proposed list of addressees
+;                     -  Updated the documentation
+;     27 Jun 15 JBS   Ticket #539: Added comments to encoursge use of "Full name" <user@domain.net> format for FROM addresses
 
 ;  This file is a sample of a file used by ReleaseTool to provide
 ;  various configuration data to ReleaseTool.cmd (RT).
@@ -145,14 +146,17 @@
 
 ;     PASSWORD note: Instead of recording passwords in this file, you may prefer to provide them as RT runs.
 
-;     TO/FROM note: Accepted email address formats:
+;     TO/FROM notes:
+;        - Accepted email address formats:
 ;           "Full name" <user@domain.net>
 ;           <user@domain.net>
 ;           user@domain.net
-;        If you plan to use the ##TO## or ##FROM## macros, then probably the third form would be the wisest choice
-;        because the other two forms have characters which can cause problems when used on a command line.
+;        - If you plan to use the ##TO## or ##FROM## macros, then probably the third form would be the wisest choice
+;          because the other two forms have characters which can cause problems when used on a command line.
 
-;     FROM note: For newsgroups you may want to use a disguised/false email address to avoid spam.
+;        FROM notes:
+;           - Try to use the "Full name" <user@domain.net> format for FROM addresses (Ticket #539)
+;           - For newsgroups you may want to use a disguised/false email address to avoid spam.
 
 
 [FTP]
