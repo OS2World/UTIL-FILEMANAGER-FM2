@@ -72,9 +72,18 @@
  *    11 Feb 14 JBS Ticket 462: Improved handling of missing cfg file.
  *    28 Feb 14 JBS Ticket 510: Improved handling cleaenup of temporary files
  *    30 Aug 14 GKY Add "pub" to front of Hobbes path to prevent deletion of upload
+ *    27 Jun 15 JBS Ticket #510:
+ *                - Improved email and nntp code
+ *                   - Improved error handling
+ *                   - Added support for "PLAIN" email authentication
+ *                   - Improved recognition for various email authentications
+ *                   - Added a descriptor to the start of the email screens which identifies the purpose of the email
+ *                - Support for all-at-once or one-at-a-time uploads
+ *                - Several minor improvements to user interface
+ *                - Corrected some typos and improved some wording
  *
  * To Do
- *    -  Better error handling for emails/NNTP
+ *    -  Research and implement ways to pass "Full name" <user@domain.net> addresses to external programs
  *    -  Support multiple description lines for SMTP/NNTP (to improve readabliity on verification screens)
  *    -  Make sure ##macro## key_values are filled before use?
  *    -  More flexibility for SMTP settings for the "Commit work" (to FM/2 developers)
@@ -93,8 +102,6 @@ signal on Error
 signal on Failure name Error
 signal on Notready name Error
 signal on Syntax name Error
-signal on Novalue name Error
-/* JBS: for debugging */
 signal on Novalue
 
 globals = 'cfg. ver. mainmenu. cmd. email. Hobbes. available. prev_user_choice currentSMTP'
@@ -405,12 +412,15 @@ select
                         call Email user_choice
                      end
                   else
-                     say 'Upload(s) failed. Email to Netlabs cancelled.'
+                     say 'Upload(s) failed (or aborted). Email to Netlabs canceled.'
                   prev_user_choice = user_choice
               end
             when user_choice = mainmenu.Announce_num then
                do /* Announce the release. */
                   call Email user_choice
+/*
+                  '@pause'
+*/
                   call AnnounceToNewsgroups
                   prev_user_choice = user_choice
               end
@@ -500,8 +510,8 @@ Email: procedure expose (globals)
    do until ((option = 'C') | (option = 'Q'))
       call SysCls
       say
-      say 'Email: Verify/edit content'
-      say
+      say 'Email:' page_title cfg.crlf
+      say 'Verify/edit content' cfg.crlf
       say 'Subject  :' email.subject
       say 'Text     :' _text
       say
@@ -547,8 +557,8 @@ Email: procedure expose (globals)
          do until ((option = 'C') | (option = 'Q'))
             call SysCls
             say
-            say 'Email: Verify/edit server-specific data for' cfg.SMTP.currentSMTP.description
-            say
+            say 'Email:' page_title cfg.crlf
+            say 'Verify/edit server-specific data for' cfg.SMTP.currentSMTP.host cfg.crlf
             say 'To       :' email.to_list
             say 'UserID   :' cfg.SMTP.currentSMTP.userid
             say 'Password :' cfg.SMTP.currentSMTP.password
@@ -589,51 +599,52 @@ Email: procedure expose (globals)
             end
          end
          if option = 'C' then
-            if cfg.SMTP.currentSMTP.command = '' then /* Use internal SMTP code */
-               rcx = SendEmail()
-            else                                      /* Use external command */
-               do
-                  say 'Using external command(s) to send email...'
-                  _command = cfg.SMTP.currentSMTP.Command
-                  do while pos('##TO##', _command) > 0
-                     parse var _command part1 '##TO##' part2
-                     _command = part1 || email.to_list || part2
+            do
+               if cfg.SMTP.currentSMTP.command = '' then /* Use internal SMTP code */
+                  rcx = SendEmail()
+               else                                      /* Use external command */
+                  do
+                     say 'Using external command(s) to send email...'
+                     _command = cfg.SMTP.currentSMTP.Command
+                     do while pos('##TO##', _command) > 0
+                        parse var _command part1 '##TO##' part2
+                        _command = part1 || email.to_list || part2
+                     end
+                     do while pos('##FROM##', _command) > 0
+                        parse var _command part1 '##FROM##' part2
+                        _command = part1 || cfg.SMTP.currentSMTP.from || part2
+                     end
+                     do while pos('##SUBJECT##', _command) > 0
+                        parse var _command part1 '##SUBJECT##' part2
+                        _command = part1 || email.subject || part2
+                     end
+                     do while pos('##MESSAGE_BODY_FILE##', _command) > 0
+                        parse var _command part1 '##MESSAGE_BODY_FILE##' part2
+                        _command = part1 || stream(email.body_file, 'c', 'query exists') || part2
+                     end
+                     do while pos('##HOST##', _command) > 0
+                        parse var _command part1 '##HOST##' part2
+                        _command = part1 || cfg.SMTP.currentSMTP.host || part2
+                     end
+                     do while pos('##PORT##', _command) > 0
+                        parse var _command part1 '##PORT##' part2
+                        _command = part1 || cfg.SMTP.currentSMTP.port || part2
+                     end
+                     do while pos('##USERID##', _command) > 0
+                        parse var _command part1 '##USERID##' part2
+                        _command = part1 || cfg.SMTP.currentSMTP.userid || part2
+                     end
+                     do while pos('##PASSWORD##', _command) > 0
+                        parse var _command part1 '##PASSWORD##' part2
+                        _command = part1 || cfg.SMTP.currentSMTP.password || part2
+                     end
+                     do while pos('##UTCOFFSET##', _command) > 0
+                        parse var _command part1 '##UTCOFFSET##' part2
+                        _command = part1 || cfg.SMTP.currentSMTP.UTCOffset || part2
+                     end
+                     rcx = ExecCmd(_command)
                   end
-                  do while pos('##FROM##', _command) > 0
-                     parse var _command part1 '##FROM##' part2
-                     _command = part1 || cfg.SMTP.currentSMTP.from || part2
-                  end
-                  do while pos('##SUBJECT##', _command) > 0
-                     parse var _command part1 '##SUBJECT##' part2
-                     _command = part1 || email.subject || part2
-                  end
-                  do while pos('##MESSAGE_BODY_FILE##', _command) > 0
-                     parse var _command part1 '##MESSAGE_BODY_FILE##' part2
-                     _command = part1 || stream(email.body_file, 'c', 'query exists') || part2
-                  end
-                  do while pos('##HOST##', _command) > 0
-                     parse var _command part1 '##HOST##' part2
-                     _command = part1 || cfg.SMTP.currentSMTP.host || part2
-                  end
-                  do while pos('##PORT##', _command) > 0
-                     parse var _command part1 '##PORT##' part2
-                     _command = part1 || cfg.SMTP.currentSMTP.port || part2
-                  end
-                  do while pos('##USERID##', _command) > 0
-                     parse var _command part1 '##USERID##' part2
-                     _command = part1 || cfg.SMTP.currentSMTP.userid || part2
-                  end
-                  do while pos('##PASSWORD##', _command) > 0
-                     parse var _command part1 '##PASSWORD##' part2
-                     _command = part1 || cfg.SMTP.currentSMTP.password || part2
-                  end
-                  do while pos('##UTCOFFSET##', _command) > 0
-                     parse var _command part1 '##UTCOFFSET##' part2
-                     _command = part1 || cfg.SMTP.currentSMTP.UTCOffset || part2
-                  end
-                  retval = ExecCmd(_command)
-                  '@pause'
-               end
+            end
          else
             rcx = -1
       end
@@ -649,7 +660,7 @@ SetDefaultAnnouncementText: procedure expose (globals)
    call lineout tempfile, ''
    call lineout tempfile, 'NETLABS'
    call lineout tempfile, 'Initially uploaded to:'
-   call lineout tempfile, '  <ftp://ftp.netlabs.org/incoming/fm2' || release_file || '>'
+   call lineout tempfile, '  <ftp://ftp.netlabs.org/incoming/fm2/' || release_file || '>'
    call lineout tempfile, 'Eventual location:'
    call lineout tempfile, '  <ftp://ftp.netlabs.org/pub/fm2/' || release_file || '>'
    call lineout tempfile, ''
@@ -686,7 +697,6 @@ return
 SendEmail: procedure expose (globals)
    retval = -2    /* Assume error of some sort */
    say "Using ReleaseTool's internal SMTP code to send email..."
-   say 'Connecting to mail server...'
    do 1
       socket = ConnectToMailServer(cfg.SMTP.currentSMTP.host, cfg.SMTP.currentSMTP.port)
       if socket < 0 then
@@ -709,8 +719,12 @@ SendEmail: procedure expose (globals)
             say reply
             leave
          end
+      parse value translate(translate(reply), ' ', '-') with . '250 AUTH ' auth_mechanisms (cfg.crlf) .
       select
-         when pos('AUTH LOGIN', reply) > 0 then
+         when auth_mechanisms = '' then
+            /* JBS: OK to assume no authorization? */
+            say 'AUTH not returned by server. Assuming no authentication required...'
+         when wordpos('LOGIN', auth_mechanisms) > 0 then
             do
                /* AUTH LOGIN login here */
                reply = SendDataAndGetServerReply(socket, 'AUTH LOGIN')
@@ -732,10 +746,11 @@ SendEmail: procedure expose (globals)
                      leave
                   end
             end
-         when pos('AUTH PLAIN', reply) > 0 then
+         when wordpos('PLAIN', auth_mechanisms) > 0 then
             do
-               /* JBS: Implment AUTH PLAIN here? */
                /*
+                * AUTH LOGIN login here
+                *
                 * "The mechanism consists of a single message from the client to the server.
                 * The client sends the authorization identity (identity to login as),
                 * followed by a US-ASCII NULL character, followed by the authentication
@@ -743,19 +758,47 @@ SendEmail: procedure expose (globals)
                 * NULL character, followed by the clear-text password. The client may leave the
                 * authorization identity empty to indicate that it is the same as the authentication identity."
                 */
-               say 'AUTH PLAIN not yet implemented!'
-               leave
+               msg = cfg.SMTP.currentSMTP.userid || '00'x || cfg.SMTP.currentSMTP.userid || '00'x || cfg.SMTP.currentSMTP.password
+               reply = SendDataAndGetServerReply(socket, 'AUTH PLAIN' EncodeB64(msg))
+               if left(reply, 3) \= '235' then
+                  do
+                     say 'Authorization failed (or unexpected response to authentication).' || cfg.crlf || reply
+                     leave
+                  end
             end
-         when pos('AUTH CRAM-MD5', reply) > 0 then
+         when wordpos('CRAM-MD5', auth_mechanisms) > 0 then
             do
-               /* JBS: Implment AUTH CRAM-MD5 here? */
+/*
+               The CRAM-MD5 protocol involves a single challenge and response cycle, and is initiated by the server:
+
+                   Challenge: The server sends a base64-encoded string to the client. Before encoding, it could be any random string, but the standard that currently defines CRAM-MD5 says that it is in the format of a Message-ID email header value (including angle brackets) and includes an arbitrary string of random digits, a timestamp, and the server's fully qualified domain name.
+                   Response: The client responds with a string created as follows.
+                       The challenge is base64-decoded.
+                       The decoded challenge is hashed using HMAC-MD5, with a shared secret (typically, the user's password, or a hash thereof) as the secret key.
+                       The hashed challenge is converted to a string of lowercase hex digits.
+                       The username and a space character are prepended to the hex digits.
+                       The concatenation is then base64-encoded and sent to the server
+                   Comparison: The server uses the same method to compute the expected response. If the given response and the expected response match, then authentication was successful.
+*/
+
+               /* JBS: Implement AUTH CRAM-MD5 here? */
                /* JBS: If implemented, move to top to become "preferred" authentication? */
                say 'AUTH CRAM-MD5 not yet implemented!'
                leave
             end
-         otherwise /* No or unknown authorization required */
-            /* JBS: OK to assume no authorization? */
-            say 'Assuming no authentication required...'
+         when wordpos('DIGEST-MD5', auth_mechanisms) > 0 then
+            do
+               /* JBS: Implement AUTH DIGEST-MD5 here? */
+               /* JBS: If implemented, move to top to become "preferred" authentication? */
+               say 'AUTH DIGEST-MD5 not yet implemented!'
+               leave
+            end
+         otherwise
+            do
+               /* Unknown authorization required */
+               say 'Unknown, unimplemented authorization mechanisms:' auth_mechanisms
+               leave
+            end
       end
       say 'Preparing data to send...'
       reply = SendDataAndGetServerReply(socket, 'MAIL FROM:<' || StrippedEmailAddress(cfg.SMTP.currentSMTP.from) || '>')
@@ -816,7 +859,7 @@ SendEmail: procedure expose (globals)
             if left(reply, 3) \= '250' then
                do
                   say 'Unexpected response to message send:' || cfg.crlf || reply
-                  leave
+                  retval = -1
                end
             else
                do
@@ -824,7 +867,6 @@ SendEmail: procedure expose (globals)
                   retval = 0
                end
          end
-      say 'Sending "QUIT" to server...'
       reply = SendDataAndGetServerReply(socket, 'QUIT')
       if left(reply, 3) \= '221' then
          do
@@ -895,18 +937,34 @@ ConnectToMailServer: procedure expose (globals)
    if strip(email_server_port) = '' then
       email_server_port = 25
 
+   say 'Retrieving this host''s name...'
    myIPaddr = SockGetHostid()
    rc = SockGetHostByAddr(myIPaddr, 'hoststem.')
    if rc = 0 then
       do
          say 'Error: SockGetHostByAddr'
+         say 'Error code:' SockSock_Errno()
+         call SockPSock_Errno 'Error text'
+         say 'Trying to use HOSTNAME command...'
+         '@hostname | rxqueue'
+         hn = ''
+         do while queued() > 0
+            parse pull cfg.myHostName
+         end
+         say 'Hostname output:' cfg.myHostName
+/*
          return (-1000)
+*/
       end
-   cfg.myHostName = hoststem.name
+   else
+      cfg.myHostName = hoststem.name
+   say 'Connecting to mail server...'
    rc = SockGetHostByName(email_server_name, 'hoststem.')
    if rc = 0 then
       do
-         say 'Error: SockGetHostByAddr'
+         say 'Error: SockGetHostByName'
+         say 'Error code:' SockSock_Errno()
+         call SockPSock_Errno('Error text')
          return (-1001)
       end
    serverIPaddr = hoststem.addr
@@ -1181,9 +1239,6 @@ return
 
 CfgInit: procedure expose (globals)
    cfg.            = ''
-/*
-   trace '?i'
-*/
    cfg.file        = 'ReleaseTool.cfg'
    cfg.file_exists = (stream(cfg.file, 'c', 'query exists') \= '')
    if  \cfg.file_exists then
@@ -1474,8 +1529,12 @@ BuildHobbesTxt: procedure expose (globals)
             else
                OKtoListEmail = 'yes'
       say;say
-      say 'Please enter the version of the zip file to be replaced:'
-      replaced_ver_zip = 'fm2-' || translate(linein(), '-', '.') || '.zip'
+      say 'Please enter the version of the zip file to be replaced (default:' ver.wpi || '):'
+      entry = strip(linein())
+      if entry = '' then
+         replaced_ver_zip = 'fm2-' || ver.wpi || '.zip'
+      else
+         replaced_ver_zip = 'fm2-' || translate(linein(), '-', '.') || '.zip'
       say;say
       say 'Data entered:'
       say '  Name of releaser   :' name
@@ -1483,7 +1542,7 @@ BuildHobbesTxt: procedure expose (globals)
       say '  OK to list email   :' OKtoListEmail
       say '  Zip to be replaced :' replaced_ver_zip
       say;say
-      call charout , 'OK to proceed with file write? (Y/n) '
+      call charout , 'OK to write Hobbes'' text file? (Y/n) '
       entry = translate(SysGetKey())
       say
    end
@@ -1820,6 +1879,7 @@ return
 
 UploadRelease: procedure expose (globals)
   rcx = 0
+  upload_count = 0
   select
     when (available.RXFTP = 0 | \cfg.file_exists) then
       do
@@ -1840,290 +1900,341 @@ UploadRelease: procedure expose (globals)
       end
     otherwise
       do
-         retval = 0
-         do u = 1 to cfg.FTP.0
-            say 'Uploading to' cfg.FTP.u.description || '...'
-            if cfg.FTP.u.command \= '' then
+         call SysCls
+         do until (choice = 'A' | choice = 'Q')
+            say
+            say 'Choose which uploads to perform:'
+            say
+            say 'A) Perform all uploads'
+            do u = 1 to cfg.FTP.0
+               say u || ') Upload to' cfg.ftp.u.description
+            end
+            say 'Q) Quit, perform no (more) uploads'
+            say
+            call charout , 'Enter the letter or number of your choice: '
+            choice = translate(SysGetKey())
+            say
+            select
+               when choice = 'A' then
+                  do
+                     startat = 1
+                     endat = cfg.FTP.0
+                  end
+               when choice = 'Q' then
+                  do
+                     startat = 10
+                     endat = 1
+                  end
+               when datatype(choice) = 'NUM' then
+                  if choice > cfg.FTP.0 then
+                     iterate
+                  else
+                     do
+                        startat = choice
+                        endat = choice
+                     end
+               otherwise
+                  iterate
+            end
+            say
+            do u = startat to endat
+               rcx = 0
+               say 'Uploading to' cfg.FTP.u.description || '...'
+               if cfg.FTP.u.command \= '' then
+                  do
+                     say 'Using external command(s) to upload...'
+                     _command = cfg.FTP.u.command
+                     do while pos('##HOST##', _command) > 0
+                        parse var _command part1 '##HOST##' part2
+                        _command = part1 || cfg.FTP.u.host || part2
+                     end
+                     do while pos('##PORT##', _command) > 0
+                        parse var _command part1 '##PORT##' part2
+                        _command = part1 || cfg.FTP.u.port || part2
+                     end
+                     do while pos('##USERID##', _command) > 0
+                        parse var _command part1 '##USERID##' part2
+                        _command = part1 || cfg.FTP.u.userid || part2
+                     end
+                     do while pos('##PASSWORD##', _command) > 0
+                        parse var _command part1 '##PASSWORD##' part2
+                        _command = part1 || cfg.FTP.u.password || part2
+                     end
+                     do while pos('[Release-zip]', _command) > 0
+                        parse var _command part1 '[Release-zip]' part2
+                        _command = part1 || 'warpin\fm2-' || ver.wpi || '.zip' || part2
+                     end
+                     do while pos('[Hobbes-text]', _command) > 0
+                        parse var _command part1 '[Hobbes-text]' part2
+                        _command = part1 || 'warpin\fm2-' || ver.wpi || '.txt' || part2
+                     end
+                     rcx = ExecCmd(_command)
+                     if rcx = 0 then
+                        upload_count = upload_count + 1
+                     say
+                  end
+               else
+                  do
+                     say '   Setting up logon data...'
+                     if cfg.FTP.u.password = '[Hobbes-email]' then
+                        if left(Hobbes.uploader_email_address, 3) = 'N/A' then
+                           cfg.FTP.u.password = ''
+                        else
+                           cfg.FTP.u.password = Hobbes.uploader_email_address
+                     if (cfg.FTP.u.userid = '' | cfg.FTP.u.password = '') then
+                        do
+                           say
+                           say '      The userid and/or password were not found in ReleaseTool.cfg.'
+                           say '      You will now be prompted for the missing data.'
+                           say
+                           if cfg.FTP.u.userid = '' then
+                              do
+                                 call charout , '      Please enter the userid for' cfg.FTP.u.descriptive_hostname ||': '
+                                 cfg.FTP.u.userid = strip(linein())
+                                 say
+                              end
+                           say
+                           if cfg.FTP.u.password = '' then
+                              do
+                                 call charout , '      Please enter the password for' cfg.FTP.u.descriptive_hostname ||': '
+                                 cfg.FTP.u.password  = strip(linein())
+                                 say
+                              end
+                           say '      In order to avoid being prompted in the future, edit the'
+                           say '      ReleaseTool.cfg file to include this data.'
+                           say
+                        end
+                     rcx = FtpSetUser( cfg.FTP.u.host, StripNotNeeded(cfg.FTP.u.userid), StripNotNeeded(cfg.FTP.u.password), '')
+                     if rcx \= 1 then
+                        say '      Unable to set user data. Unable to continue.'
+                     else
+                        do
+                           do d = 1 to cfg.FTP.u.directory.0
+                              if cfg.FTP.u.directory.d \= '' then
+                                 do
+                                    say '   Changing directory to:' cfg.FTP.u.directory.d
+                                    rcx = FtpChDir(cfg.FTP.u.directory.d)
+                                    if rcx \= 0 then
+                                       do
+                                          say '   Unable to change directory. FTP Error:' FTPERRNO
+                                          iterate
+                                       end
+                                 end
+                              do f = 1 to cfg.FTP.u.directory.d.file.0
+                                 select
+                                    when cfg.FTP.u.directory.d.file.f = '[Release-zip]' then
+                                       uploadfile = 'warpin\fm2-' || ver.wpi || '.zip'
+                                    when cfg.FTP.u.directory.d.file.f = '[Hobbes-text]' then
+                                       uploadfile = 'warpin\fm2-' || ver.wpi || '.txt'
+                                    otherwise
+                                       uploadfile = cfg.FTP.u.directory.d.file.f
+                                 end
+                                 say '   Uploading:' uploadfile
+                                 rcx = FtpPut(uploadfile, filespec('n', uploadfile), "Binary")
+                                 if rcx \= 0 then
+                                    do
+                                       say '   Unable to upload. FTP Error:' FTPERRNO
+                                       leave
+                                    end
+                                 else
+                                    upload_count = upload_count + 1
+                              end
+                           end
+                           say '   Logging off' cfg.FTP.u.descriptive_hostname || '...'
+                           call FtpLogoff
+                           say
+                        end
+                  end
+/*
+               if rcx \= 0 then
+                  leave
+*/
+            end
+         end
+      end
+   end
+   '@pause'
+   if upload_count = 0 then
+      return -100
+   else
+      return rcx
+
+AnnounceToNewsgroups: procedure expose (globals)
+   if \cfg.file_exists then
+     do
+       say 'Unable to post to newsgroups without the configuration file:' cfg.file
+       say
+       return
+     end
+   nntp_body_file = SysTempFilename('NNTPBody.???')
+   call SetDefaultAnnouncementText nntp_body_file
+   cfg.NNTP.subject = 'FM/2' ver.full 'has been released.'
+   _text = '<Standard>'
+   do until ((option = 'C') | (option = 'Q'))
+      call SysCls
+      say
+      say 'News: Verify/edit content'
+      say
+      say 'Subject  :' cfg.NNTP.subject
+      say 'Text     :' _text
+      say
+      say 'Type "C" to confirm the above and proceed.'
+      say '     "Q" to abort.'
+      say '     "S" to edit the subject.'
+      say '     "T" to edit the message text (in an editor).'
+      say
+      call charout, '==> '
+      option = translate(SysGetKey())
+      say
+      say
+      select
+         when ((option = 'C') | (option = 'Q')) then
+            nop
+         when option = 'S' then
+            do
+               say 'Enter the Subject (followed by the ENTER key):'
+               cfg.NNTP.subject = linein()
+            end
+         when option = 'T' then
+            do
+               b4_timestamp = SysGetFileDateTime(nntp_body_file)
+               say 'The current body of the newsgroup message will now be loaded into an editor.'
+               say 'Make desired changes, if any, and save the file.'
+               say
+               call charout, 'Press any key when ready to load the message body into an editor: '
+               call SysGetKey
+               say
+               call ExecCmd cmd.editor nntp_body_file
+               if b4_timestamp \= SysGetFileDateTime(nntp_body_file) then
+                  _text = '<Modified>'
+            end
+         otherwise
+            nop
+      end
+   end
+   if option = 'Q' then
+      rcx = -1      /* User aborted operation */
+   else
+      do s = 1 to cfg.NNTP.0
+         call SysCls
+         say
+         do until ((option = 'C') | (option = 'Q'))
+/*
+            call SysCls
+*/
+            say cfg.crlf cfg.crlf cfg.crlf
+            say 'News: Announce release to newsgroups' cfg.crlf
+            say 'Verify/edit server-specific data for' cfg.NNTP.s.host
+            say
+            say 'Host     :' cfg.NNTP.s.host
+            say 'To       :' cfg.NNTP.s.to
+            say 'From     :' cfg.NNTP.s.from
+            say 'UserID   :' cfg.NNTP.s.userid
+            say 'Password :' cfg.NNTP.s.password
+            say
+            say 'Type "C" to confirm the above and send.'
+            say '     "Q" to abort sending this email.'
+            say '     "H" to change the name of the host.'
+            say '     "T" to change the list of newsgroups.'
+            say '     "F" to change the From address.'
+            say '     "U" to change the Userid.'
+            say '     "P" to change the Password.'
+            say
+            call charout, '==> '
+            option = translate(SysGetKey())
+            say
+            say
+            say
+            select
+               when option = 'H' then
+                  do
+                     say 'Enter the newsgroup host to use (followed by the ENTER key).'
+                     cfg.NNTP.s.host = linein()
+                  end
+               when option = 'T' then
+                  do
+                     say 'Enter a comma=separated list of newagroup(s) (followed by the ENTER key).'
+                     cfg.NNTP.s.to = linein()
+                  end
+               when option = 'F' then
+                  do
+ /*
+                     say 'F.Y.I. The Hobbes email address is:' Hobbes.uploader_email_address
+                     say
+                  if reply \= '' then
+                     cfg.NNTP.s.from = reply
+                  else
+                     cfg.NNTP.s.from = Hobbes.uploader_email_address
+ */
+                     say 'Enter the From email address. (followed by the ENTER key).'
+                     say '(You may want to disguise the address to avoid spam.)'
+                     cfg.NNTP.s.from = linein()
+                  end
+               when option = 'U' then
+                  do
+                     say 'Enter the UserID (followed by the ENTER key):'
+                     cfg.NNTP.s.userid = linein()
+                  end
+               when option = 'P' then
+                  do
+                     say 'Enter the Password (followed by the ENTER key):'
+                     cfg.NNTP.s.password = linein()
+                  end
+               otherwise
+                  nop
+            end
+         end
+         if option = 'C' then
+           do
+            if cfg.NNTP.s.command \= '' then
                do
-                  say 'Using external command(s) to upload...'
-                  _command = cfg.FTP.u.command
+                  say 'Using external command(s) to post to newsgroup(s)...'
+                  _command = cfg.NNTP.s.command
                   do while pos('##HOST##', _command) > 0
                      parse var _command part1 '##HOST##' part2
-                     _command = part1 || cfg.FTP.u.host || part2
+                     _command = part1 || cfg.NNTP.s.host || part2
                   end
                   do while pos('##PORT##', _command) > 0
                      parse var _command part1 '##PORT##' part2
-                     _command = part1 || cfg.FTP.u.port || part2
+                     _command = part1 || cfg.NNTP.s.port || part2
                   end
                   do while pos('##USERID##', _command) > 0
                      parse var _command part1 '##USERID##' part2
-                     _command = part1 || cfg.FTP.u.userid || part2
+                     _command = part1 || cfg.NNTP.s.userid || part2
                   end
                   do while pos('##PASSWORD##', _command) > 0
                      parse var _command part1 '##PASSWORD##' part2
-                     _command = part1 || cfg.FTP.u.password || part2
+                     _command = part1 || cfg.NNTP.s.password || part2
                   end
-                  do while pos('[Release-zip]', _command) > 0
-                     parse var _command part1 '[Release-zip]' part2
-                     _command = part1 || 'warpin\fm2-' || ver.wpi || '.zip' || part2
+                  do while pos('##MESSAGE_BODY_FILE##', _command) > 0
+                     parse var _command part1 '##MESSAGE_BODY_FILE##' part2
+                     _command = part1 || stream(body_file, 'c', 'query exists') || part2
                   end
-                  do while pos('[Hobbes-text]', _command) > 0
-                     parse var _command part1 '[Hobbes-text]' part2
-                     _command = part1 || 'warpin\fm2-' || ver.wpi || '.txt' || part2
+                  do while pos('##FROM##', _command) > 0
+                     parse var _command part1 '##FROM##' part2
+                     _command = part1 || cfg.NNTP.s.from || part2
+                  end
+                  do while pos('##TO##', _command) > 0
+                     parse var _command part1 '##TO##' part2
+                     _command = part1 || cfg.NNTP.s.to || part2
                   end
                   rcx = ExecCmd(_command)
-                  say
                end
             else
                do
-                  say '   Setting up logon data...'
-                  if cfg.FTP.u.password = '[Hobbes-email]' then
-                     if left(Hobbes.uploader_email_address, 3) = 'N/A' then
-                        cfg.FTP.u.password = ''
-                     else
-                        cfg.FTP.u.password = Hobbes.uploader_email_address
-                  if (cfg.FTP.u.userid = '' | cfg.FTP.u.password = '') then
-                     do
-                        say
-                        say '      The userid and/or password were not found in ReleaseTool.cfg.'
-                        say '      You will now be prompted for the missing data.'
-                        say
-                        if cfg.FTP.u.userid = '' then
-                           do
-                              call charout , '      Please enter the userid for' cfg.FTP.u.descriptive_hostname ||': '
-                              cfg.FTP.u.userid = strip(linein())
-                              say
-                           end
-                        say
-                        if cfg.FTP.u.password = '' then
-                           do
-                              call charout , '      Please enter the password for' cfg.FTP.u.descriptive_hostname ||': '
-                              cfg.FTP.u.password  = strip(linein())
-                              say
-                           end
-                        say '      In order to avoid being prompted in the future, edit the'
-                        say '      ReleaseTool.cfg file to include this data.'
-                        say
-                     end
-                  rcx = FtpSetUser( cfg.FTP.u.host, StripNotNeeded(cfg.FTP.u.userid), StripNotNeeded(cfg.FTP.u.password), '')
-                  if rcx \= 1 then
-                     say '      Unable to set user data. Unable to continue.'
-                  else
-                     do
-                        do d = 1 to cfg.FTP.u.directory.0
-                           if cfg.FTP.u.directory.d \= '' then
-                              do
-                                 say '   Changing directory to:' cfg.FTP.u.directory.d
-                                 rcx = FtpChDir(cfg.FTP.u.directory.d)
-                                 if rcx \= 0 then
-                                    do
-                                       say '   Unable to change directory. FTP Error:' FTPERRNO
-                                       iterate
-                                    end
-                              end
-                           do f = 1 to cfg.FTP.u.directory.d.file.0
-                              select
-                                 when cfg.FTP.u.directory.d.file.f = '[Release-zip]' then
-                                    uploadfile = 'warpin\fm2-' || ver.wpi || '.zip'
-                                 when cfg.FTP.u.directory.d.file.f = '[Hobbes-text]' then
-                                    uploadfile = 'warpin\fm2-' || ver.wpi || '.txt'
-                                 otherwise
-                                    uploadfile = cfg.FTP.u.directory.d.file.f
-                              end
-                              say '   Uploading:' uploadfile
-                              rcx = FtpPut(uploadfile, filespec('n', uploadfile), "Binary")
-                              if rcx \= 0 then
-                                 do
-                                    say '   Unable to upload. FTP Error:' FTPERRNO
-                                    leave
-                                 end
-                           end
-                        end
-                        say '   Logging off' cfg.FTP.u.descriptive_hostname || '...'
-                        call FtpLogoff
-                        say
-                     end
+                  cfg.NNTP.message_body = ''
+                  do while lines(nntp_body_file) > 0
+                     cfg.NNTP.message_body = cfg.NNTP.message_body || linein(nntp_body_file) || cfg.crlf
+                  end
+                  call stream nntp_body_file, 'c', 'close'
+                  rcx = SendNNTP(s)
                end
-            if rcx \= 0 then
-               leave
-         end
+             if rcx \= 0 then 'pause'
+           end
+         else
+            rcx = -1 /* User aborted */
       end
-  end
-return rcx
-
-AnnounceToNewsgroups: procedure expose (globals)
-  if \cfg.file_exists then
-    do
-      say 'Unable to post to newsgroups without the configuration file:' cfg.file
-      say
-      return
-    end
-  nntp_body_file = SysTempFilename('NNTPBody.???')
-  call SetDefaultAnnouncementText nntp_body_file
-  cfg.NNTP.subject = 'FM/2' ver.full 'has been released.'
-  _text = '<Standard>'
-  do until ((option = 'C') | (option = 'Q'))
-     call SysCls
-     say
-     say 'News: Verify/edit content'
-     say
-     say 'Subject  :' cfg.NNTP.subject
-     say 'Text     :' _text
-     say
-     say 'Type "C" to confirm the above and proceed.'
-     say '     "Q" to abort.'
-     say '     "S" to edit the subject.'
-     say '     "T" to edit the message text (in an editor).'
-     say
-     call charout, '==> '
-     option = translate(SysGetKey())
-     say
-     say
-     select
-        when ((option = 'C') | (option = 'Q')) then
-           nop
-        when option = 'S' then
-           do
-              say 'Enter the Subject (followed by the ENTER key):'
-              cfg.NNTP.subject = linein()
-           end
-        when option = 'T' then
-           do
-              b4_timestamp = SysGetFileDateTime(nntp_body_file)
-              say 'The current body of the newsgroup message will now be loaded into an editor.'
-              say 'Make desired changes, if any, and save the file.'
-              say
-              call charout, 'Press any key when ready to load the message body into an editor: '
-              call SysGetKey
-              say
-              call ExecCmd cmd.editor nntp_body_file
-              if b4_timestamp \= SysGetFileDateTime(nntp_body_file) then
-                 _text = '<Modified>'
-           end
-        otherwise
-           nop
-     end
-  end
-  if option = 'Q' then
-     rcx = -1      /* User aborted operation */
-  else
-     do s = 1 to cfg.NNTP.0
-        call SysCls
-        say
-        do until ((option = 'C') | (option = 'Q'))
-           call SysCls
-           say
-           say 'News: Verify/edit server-specific data for' cfg.NNTP.s.description
-           say
-           say 'Host     :' cfg.NNTP.s.host
-           say 'To       :' cfg.NNTP.s.to
-           say 'From     :' cfg.NNTP.s.from
-           say 'UserID   :' cfg.NNTP.s.userid
-           say 'Password :' cfg.NNTP.s.password
-           say
-           say 'Type "C" to confirm the above and send.'
-           say '     "Q" to abort sending this email.'
-           say '     "H" to change the name of the host.'
-           say '     "T" to change the list of newsgroups.'
-           say '     "F" to change the From address.'
-           say '     "U" to change the Userid.'
-           say '     "P" to change the Password.'
-           say
-           call charout, '==> '
-           option = translate(SysGetKey())
-           say
-           say
-           say
-           select
-              when option = 'H' then
-                 do
-                    say 'Enter the newsgroup host to use (followed by the ENTER key).'
-                    cfg.NNTP.s.host = linein()
-                 end
-              when option = 'T' then
-                 do
-                    say 'Enter a comma=separated list of newagroup(s) (followed by the ENTER key).'
-                    cfg.NNTP.s.to = linein()
-                 end
-              when option = 'F' then
-                 do
-/*
-                    say 'F.Y.I. The Hobbes email address is:' Hobbes.uploader_email_address
-                    say
-                 if reply \= '' then
-                    cfg.NNTP.s.from = reply
-                 else
-                    cfg.NNTP.s.from = Hobbes.uploader_email_address
-*/
-                    say 'Enter the From email address. (followed by the ENTER key).'
-                    say '(You may want to disguise the address to avoid spam.)'
-                    cfg.NNTP.s.from = linein()
-                 end
-              when option = 'U' then
-                 do
-                    say 'Enter the UserID (followed by the ENTER key):'
-                    cfg.NNTP.s.userid = linein()
-                 end
-              when option = 'P' then
-                 do
-                    say 'Enter the Password (followed by the ENTER key):'
-                    cfg.NNTP.s.password = linein()
-                 end
-              otherwise
-                 nop
-           end
-        end
-        if option = 'C' then
-          do
-           if cfg.NNTP.s.command \= '' then
-              do
-                 say 'Using external command(s) to post to newsgroup(s)...'
-                 _command = cfg.NNTP.s.command
-                 do while pos('##HOST##', _command) > 0
-                    parse var _command part1 '##HOST##' part2
-                    _command = part1 || cfg.NNTP.s.host || part2
-                 end
-                 do while pos('##PORT##', _command) > 0
-                    parse var _command part1 '##PORT##' part2
-                    _command = part1 || cfg.NNTP.s.port || part2
-                 end
-                 do while pos('##USERID##', _command) > 0
-                    parse var _command part1 '##USERID##' part2
-                    _command = part1 || cfg.NNTP.s.userid || part2
-                 end
-                 do while pos('##PASSWORD##', _command) > 0
-                    parse var _command part1 '##PASSWORD##' part2
-                    _command = part1 || cfg.NNTP.s.password || part2
-                 end
-                 do while pos('##MESSAGE_BODY_FILE##', _command) > 0
-                    parse var _command part1 '##MESSAGE_BODY_FILE##' part2
-                    _command = part1 || stream(body_file, 'c', 'query exists') || part2
-                 end
-                 do while pos('##FROM##', _command) > 0
-                    parse var _command part1 '##FROM##' part2
-                    _command = part1 || cfg.NNTP.s.from || part2
-                 end
-                 do while pos('##TO##', _command) > 0
-                    parse var _command part1 '##TO##' part2
-                    _command = part1 || cfg.NNTP.s.to || part2
-                 end
-                 rcx = ExecCmd(_command)
-              end
-           else
-              do
-                 cfg.NNTP.message_body = ''
-                 do while lines(body_file) > 0
-                    cfg.NNTP.message_body = cfg.NNTP.message_body || linein(body_file) || cfg.crlf
-                 end
-                 call stream nntp_body_file, 'c', 'close'
-                 rcx = SendNNTP(s)
-              end
-            if rcx \= 0 then 'pause'
-          end
-        else
-           rcx = -1 /* User aborted */
-     end
-  call SysFileDelete nntp_body_file
+   call SysFileDelete nntp_body_file
 return rcx
 
 SendNNTP: procedure expose (globals)
@@ -2158,6 +2269,7 @@ SendNNTP: procedure expose (globals)
             do forever
                parse value NNTPReceive(socket, cfg.maxNNTPrecvbufsize) with rc server_reply
                if rc \= 0 then leave
+/*
                say 'NNTP: Sending initial POST...'
                rc = SockSend(socket, 'POST' || cfg.crlf)
                if rc < 0 then
@@ -2168,6 +2280,7 @@ SendNNTP: procedure expose (globals)
                say 'NNTP: Receiving response to initial POST...'
                parse value NNTPReceive(socket, cfg.maxNNTPrecvbufsize) with rc server_reply
                if pos('480', server_reply) > 0 then /* authentication required */
+*/
                   do
                      say 'NNTP: Sending userid...'
                      rc = SockSend(socket, 'AUTHINFO USER' StripNotNeeded(cfg.NNTP.1.userid) || cfg.crlf)
@@ -2215,23 +2328,27 @@ SendNNTP: procedure expose (globals)
                   end
                if pos('340', server_reply) > 0 then /* OK to send */
                   do
+                     parse var server_reply . '<' msg_id '>' .
                      say 'NNTP: Sending message...'
                      NNTPsig = ''
                      do i = 1 to cfg.NNTP.s.signature.0
                         NNTPsig = NNTPsig || cfg.NNTP.s.signature.i || cfg.crlf
                      end
-                     rc = SockSend(socket, 'From:' cfg.NNTP.s.from || cfg.crlf || ,
-                                           'Newsgroups:' cfg.NNTP.s.to || cfg.crlf || ,
-                                           'Subject:' cfg.NNTP.subject || cfg.crlf || ,
-                                           'User-Agent:' cfg.user_agent || cfg.crlf || ,
-                                           'MIME-version:' cfg.NNTP.mime_version || cfg.crlf || ,
-                                           'Content-Type:' cfg.NNTP.content_type || cfg.crlf || ,
-                                           'Content-Transfer-Encoding:' cfg.NNTP.content_transfer_encoding || cfg.crlf || ,
-                                           cfg.crlf || ,
-                                           cfg.NNTP.message_body || ,
-                                           cfg.NNTP.signature_preface || ,
-                                           NNTPsig || ,
-                                           cfg.closing || cfg.crlf)
+                     senddata = 'From:' cfg.NNTP.s.from || cfg.crlf || ,
+                                'Message-ID: <' || msg_id || '>' || cfg.crlf || ,
+                                'Newsgroups:' cfg.NNTP.s.to || cfg.crlf || ,
+                                'Subject:' cfg.NNTP.subject || cfg.crlf || ,
+                                'User-Agent:' cfg.user_agent || cfg.crlf || ,
+                                'MIME-version:' cfg.NNTP.mime_version || cfg.crlf || ,
+                                'Content-Type:' cfg.NNTP.content_type || cfg.crlf || ,
+                                'Content-Transfer-Encoding:' cfg.NNTP.content_transfer_encoding || cfg.crlf || ,
+                                'Headings: Year' || cfg.crlf || ,
+                                cfg.crlf || ,
+                                cfg.NNTP.message_body || ,
+                                cfg.NNTP.signature_preface || ,
+                                NNTPsig || ,
+                                cfg.closing || cfg.crlf
+                     rc = SockSend(socket, senddata)
                      if rc < 0 then
                         do
                            say 'NNTP: Send message failed.'
