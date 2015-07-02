@@ -78,15 +78,12 @@ if cfg.attended = 1 then
 /*
  *
  * The following code
- *    Installs default files if /DEFAUTLS is specified or if a cfg file is missing
+ *    Installs default files if /DEFAULTS is specified or if a cfg file is missing
  *    Handles all /DEINSTALL actions
  * It should precede the call to UpdateArchiverBB2
  *
  */
 
-/*
-trace '?i'
-*/
 do f = 1 to cfg.file.0
    file_exists = stream(cfg.file.f.name, 'c' , 'query exists')
    if cfg.operation = 'INSTALL' then
@@ -376,7 +373,7 @@ Init: procedure expose (globals)
  * Unused code
  *
    parse value SysTextScreenSize() with . cfg.screen_width
-   if cfg.screen_width = 0 then           /* for running in PMREXX */
+   if cfg.screen_width = 0 then           /* for running in PMREXX, EPM, etc. */
       cfg.screen_width = 80
 */
 
@@ -481,7 +478,7 @@ GetResponse: procedure
    call charout , prompt || ': '
    reply = translate(strip(SysGetKey()))
    say
-   return reply
+return reply
 
 FilesAreDifferent: procedure
    parse arg file.1, file.2
@@ -557,7 +554,7 @@ ProgramError: procedure expose (globals)
    say 'This file may have been altered in some way. Please re-install FM/2.'
    say
    say 'If this error continues after re-installing FM/2, contact FM/2 support'
-   say 'through the FM2USER group on Yahoo.'
+   say 'through the FM2_USER group on Netlabs.'
 exit
 
 CfgAction: procedure expose (globals)
@@ -767,8 +764,9 @@ return rc
 UpdateArchiverBB2: procedure expose (globals)
    myrc = 0
 
-   /* If CFGMGR was called with /DEFAULTS and/or /DEINSTALL parameters
-      then there is nothing to do here! */
+   /*
+    *    If CFGMGR was called with /DEFAULTS and/or /DEINSTALL parameters then there is nothing to do here!
+    */
    if cfg.defaults = 1 | cfg.operation = 'DEINSTALL' then
       return myrc
 
