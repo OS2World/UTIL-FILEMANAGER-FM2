@@ -105,9 +105,6 @@
                 or gzip.exe on TAR.B/GZ archives.
   06 Apr 14 GKY Removed all BZ/GZ checks
   28 Jun 14 GKY Fix errors identified with CPPCheck; Fix retry to create workdir code
-  16 Mar 15 GKY Add semaphore hmtxFiltering to prevent freeing dcd while filtering. Prevents
-                a trap when FM2 is shutdown or the container is closed while arc
-                container is still populating
 
 ***********************************************************************/
 
