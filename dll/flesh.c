@@ -37,6 +37,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+//#include <malloc.h>
 
 #define INCL_DOS
 #define INCL_DOSERRORS
@@ -60,6 +61,10 @@
 #include "notify.h"			// Notify
 #include "wrappers.h"			// xfree
 #include "excputil.h"			// xbeginthread
+#if 0
+#define  __PMPRINTF__
+#include "PMPRINTF.H"
+#endif
 
 // Data definitions
 #pragma data_seg(DATA1)
