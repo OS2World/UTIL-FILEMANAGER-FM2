@@ -48,6 +48,10 @@
 #include "wrappers.h"			// xDosFindFirst
 #include "misc.h"			// PostMsg
 #include "fortify.h"
+#if 0
+#define  __PMPRINTF__
+#include "PMPRINTF.H"
+#endif
 
 static PSZ pszSrcFile = __FILE__;
 

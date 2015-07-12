@@ -206,7 +206,10 @@
 #include "fortify.h"
 #include "excputil.h"			// xbeginthread
 #include "systemf.h"                    // runemf2
-
+#if 0
+#define  __PMPRINTF__
+#include "PMPRINTF.H"
+#endif
 extern int _CRT_init(void);
 extern void _CRT_term(void);
 
@@ -729,7 +732,10 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 	   GetPString(IDS_FM3RESERROR5TEXT), RVMajor, RVMinor, rcl, rcq, ret);
     return FALSE;
   }
-
+#if 0
+  PmPrintfDisplayInterfaceVersionInfo();
+  PmPrintfQueueNameThisProcess(NULL);
+#endif
   if (!*profile)
     strcpy(profile, PCSZ_FM3DOTINI);
   mypid = getpid();
