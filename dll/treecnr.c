@@ -787,7 +787,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		 MPFROMP(&cnri), MPFROMLONG(sizeof(CNRINFO)));
       if (cnri.cRecords) {
 	sprintf(s, GetPString(IDS_NUMDRIVESTEXT), cnri.cRecords);
-        if (pci && (INT) pci != -1 && pci->pszFileName) { //fixme? will try checking pci->pszFileName instead of the pointer
+        if (pci && (INT) pci != -1 && pci->pszFileName != NullStr) { //fixme? will try checking pci->pszFileName instead of the pointer
 	  if (!(driveflags[toupper(*pci->pszFileName) - 'A'] &
 		DRIVE_REMOVABLE) ||
 	      driveserial[toupper(*pci->pszFileName) - 'A'] != -1) {
