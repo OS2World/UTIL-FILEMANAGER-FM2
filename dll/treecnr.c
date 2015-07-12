@@ -98,6 +98,7 @@
                 container is still populating
   02 May 15 GKY Changes to allow a JAVA executable object to be created using "Real object"
                 menu item on a jar file.
+  12 Jul 15 GKY Fixed trap caused by pci->pszFileName being NullStr
 
 ***********************************************************************/
 
