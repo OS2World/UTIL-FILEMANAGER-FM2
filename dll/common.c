@@ -32,6 +32,10 @@
 		inappropriate menu context choices
   14 Sep 09 SHL Blink thread LEDs while threads working
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  12 Jul 15 GKY Fix CN_REALLOCPSZ file name editing code to: 1) Actually reallocate the buffer.
+                2) Point pci->pszDisplayName into the new buffer 3) Eliminate the possibility
+                of updating the container before CN_ENDEDIT is called. 4) Only call RemoveCnrItems
+                for tree container and collector.
 
 ***********************************************************************/
 
@@ -870,15 +874,15 @@ MRESULT EXPENTRY CommonCnrProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  MLEsetcurpos(WinWindowFromID(hwnd, CID_MLE), strlen((CHAR *)mp1));
       }
       else if (mp2) {
-	if ((INT) mp1 == -1) {
-	  PCNRITEM pci = (PCNRITEM) mp2;
-	  RemoveCnrItems(hwnd, pci, 1, CMA_FREE | CMA_INVALIDATE);
-	}
-	else {
+        if ((INT) mp1 == -1) {
+          PCNRITEM pci = (PCNRITEM) mp2;
+          RemoveCnrItems(hwnd, pci, 1, CMA_FREE | CMA_INVALIDATE);
+        }
+        else {
 	  Broadcast(WinQueryAnchorBlock(hwnd),
-		    dcd->hwndParent, UM_UPDATERECORD, mp2, MPVOID);
-	  free(mp2);
-	}
+                    dcd->hwndParent, UM_UPDATERECORD, mp2, MPVOID);
+          xfree(mp2, pszSrcFile, __LINE__);
+        }
       }
     }
     return 0;

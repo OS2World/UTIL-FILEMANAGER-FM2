@@ -71,6 +71,10 @@
                 xDosAlloc* wrappers.
   12 Nov 11 GKY Fixed HelpViewer's failure to open help files and subsequent failure with files with spaces.
   28 Jun 14 GKY Fix errors identified with CPPCheck
+  12 Jul 15 GKY Fix CN_REALLOCPSZ file name editing code to: 1) Actually reallocate the buffer.
+                2) Point pci->pszDisplayName into the new buffer 3) Eliminate the possibility
+                of updating the container before CN_ENDEDIT is called. 4) Only call RemoveCnrItems
+                for tree container and collector.
 
 ***********************************************************************/
 
@@ -117,6 +121,10 @@
 #include "i18nutil.h"			// CommaFmtULL
 #include "fortify.h"
 #include "info.h"                       // driveflags
+#if 0
+#define  __PMPRINTF__
+#include "PMPRINTF.H"
+#endif
 
 #define CONTAINER_COLUMNS       13	// Number of columns in details view
 #define MS_POPUP          0x00000010L
@@ -820,6 +828,10 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
 
 MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
+  static CHAR oldname[CCHMAXPATH];
+  static CHAR newname[CCHMAXPATH];
+  static BOOL fPostName = FALSE;
+
   switch (SHORT2FROMMP(mp1)) {
   case CN_BEGINEDIT:
     if (mp2) {
@@ -847,22 +859,21 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (mp2) {
       PFIELDINFO pfi = ((PCNREDITDATA) mp2)->pFieldInfo;
       PCNRITEM pci = (PCNRITEM) ((PCNREDITDATA) mp2)->pRecord;
-      CHAR szData[CCHMAXPATH], testname[CCHMAXPATH];
+      CHAR testname[CCHMAXPATH];
       HWND hwndMLE = WinWindowFromID(hwnd, CID_MLE);
       BOOL fResetVerify = FALSE;
+      PSZ psz;
+      LONG retlen;
+      APIRET rc;
 
       if (pci && (INT) pci != -1 && !IsRoot(pci->pszFileName)) {
 	if (pfi && pfi->offStruct == FIELDOFFSET(CNRITEM, pszSubject)) {
-
-	  APIRET rc;
 	  EAOP2 eaop;
 	  PFEA2LIST pfealist = NULL;
 	  CHAR szSubject[1048];
 	  ULONG ealen;
 	  USHORT len;
 	  CHAR *eaval;
-	  LONG retlen;
-	  PSZ psz;
 
 	  retlen = WinQueryWindowText(hwndMLE, sizeof(szSubject), szSubject);
 	  szSubject[retlen + 1] = 0;
@@ -878,7 +889,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
               if (psz)
                 pci->pszSubject = psz;
               else {
-                free(pci->pszSubject);
+                xfree(pci->pszSubject, pszSrcFile, __LINE__);
                 pci->pszSubject = NullStr;
                 return FALSE; // out of memory
               }
@@ -924,10 +935,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  return (MRESULT) TRUE;
 	}
 	else if (pfi && pfi->offStruct == FIELDOFFSET(CNRITEM, pszLongName)) {
-
 	  CHAR longname[CCHMAXPATHCOMP];
-	  LONG retlen;
-	  PSZ psz;
 
 	  *longname = 0;
 	  retlen = WinQueryWindowText(hwndMLE, sizeof(longname), longname);
@@ -946,7 +954,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
               if (psz)
                 pci->pszLongName = psz;
               else {
-                free(pci->pszLongName);
+                xfree(pci->pszLongName, pszSrcFile, __LINE__);
                 pci->pszLongName = NullStr;
                 return FALSE; // out of memory
               }
@@ -960,69 +968,85 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  return (MRESULT) WriteLongName(pci->pszFileName, longname);
 	}
         else {
-          PSZ psz;
-
-	  WinQueryWindowText(hwndMLE, sizeof(szData), szData);
-	  if (strchr(szData, '?') ||
-	      strchr(szData, '*') || IsRoot(pci->pszFileName))
+          WinQueryWindowText(hwndMLE, sizeof(testname), testname);
+          // fixme to check for other illegal chars? GKY 11 Jul 15
+	  if (strchr(testname, '?') || strchr(testname, '*'))
 	    return (MRESULT) FALSE;
 	  // If the text changed, rename the file system object.
-	  chop_at_crnl(szData);
-	  bstrip(szData);
-	  if (!IsFullName(szData))
+	  chop_at_crnl(testname);
+	  bstrip(testname);
+	  if (!IsFullName(testname))
 	    Runtime_Error(pszSrcFile, __LINE__, "bad name");
-	  else {
-	    if (DosQueryPathInfo(szData,
-				 FIL_QUERYFULLNAME,
-				 testname, sizeof(testname)))
+          else {
+            DIRCNRDATA *dcd;
+            FILEFINDBUF4L ffb;
+            HDIR hDir = HDIR_CREATE;
+            ULONG nm = 1;
+            CHAR *p;
+
+	    if (DosQueryPathInfo(testname, //Why does this return 0 when the file doesn't exist?
+				 FIL_QUERYFULLNAME, // No new directory creation?
+				 newname, sizeof(newname)))
 		return FALSE;
 	    if (DosQueryPathInfo(pci->pszFileName,
 				 FIL_QUERYFULLNAME,
-				 szData,
-				 sizeof(szData)))
-            {
-              psz = xrealloc(pci->pszFileName, sizeof(szData), pszSrcFile, __LINE__);
-              if (psz)
-                pci->pszFileName = psz;
-              else {
-                free(pci->pszFileName);
-                pci->pszFileName = NullStr;
-                return FALSE; // out of memory
-              }
-              strcpy(szData, pci->pszFileName);
+				 oldname, sizeof(oldname)))
+              strcpy(oldname, pci->pszFileName);
+            psz = xrealloc(pci->pszFileName, sizeof(oldname), pszSrcFile, __LINE__);
+            if (psz)
+              pci->pszFileName = psz;
+            else {
+              xfree(pci->pszFileName, pszSrcFile, __LINE__);
+              pci->pszFileName = NullStr;
+              return FALSE; // out of memory
             }
-	    WinSetWindowText(hwndMLE, szData);
-	    if (strcmp(szData, testname)) {
-              if (stricmp(szData, testname) && IsFile(testname) != -1) {
+            if (!dcd)    // Point pci->pszDisplayName into the realloc pci->pszFileName
+              dcd = INSTDATA(hwnd);
+            rc = xDosFindFirst(pci->pszFileName,
+                               &hDir,
+                               FILE_NORMAL | FILE_DIRECTORY |
+                               FILE_ARCHIVED | FILE_READONLY |
+                               FILE_HIDDEN | FILE_SYSTEM,
+                               &ffb, sizeof(ffb), &nm, FIL_QUERYEASIZEL);
+            if (!rc) {  // file exists
+              DosFindClose(hDir);
+              if (dcd->type == DIR_FRAME || dcd->type == TREE_FRAME) {
+                p = strrchr(pci->pszFileName, '\\');
+                if (!p) {
+                  p = strrchr(pci->pszFileName, ':');
+                  if (!p)
+                    p = pci->pszFileName;
+                  else
+                    p++;
+                }
+                else if ((dcd && dcd->type == TREE_FRAME) ||
+                         !(ffb.attrFile & FILE_DIRECTORY) || !*(p + 1))
+                  p++;
+                if (!*p)
+                  p = pci->pszFileName;
+              }
+              else
+                p = pci->pszFileName;
+              pci->pszDisplayName = p;
+            }
+            else
+              return FALSE; // nothing to rename
+	    WinSetWindowText(hwndMLE, oldname);
+	    if (strcmp(oldname, newname)) { 
+              if (stricmp(oldname, newname) && IsFile(newname) != -1) {
                 if (!fAlertBeepOff)
 		  DosBeep(50, 100);       
 		return (MRESULT) FALSE;    // exists; disallow
 	      }
-	      if (fVerify && (driveflags[toupper(*szData) - 'A'] & DRIVE_WRITEVERIFYOFF ||
-			      driveflags[toupper(*testname) - 'A'] & DRIVE_WRITEVERIFYOFF)) {
+	      if (fVerify && (driveflags[toupper(*oldname) - 'A'] & DRIVE_WRITEVERIFYOFF ||
+			      driveflags[toupper(*newname) - 'A'] & DRIVE_WRITEVERIFYOFF)) {
 		DosSetVerify(FALSE);
 		fResetVerify = TRUE;
 	      }
-	      if (docopyf(MOVE, szData, testname))
+	      if (docopyf(MOVE, oldname, newname))
 		Runtime_Error(pszSrcFile, __LINE__, "docopyf");
-	      else {
-		CHAR *filename;
-
-		filename = xstrdup(testname, pszSrcFile, __LINE__);
-		if (filename) {
-		  if (!PostMsg(hwnd,
-			       UM_FIXEDITNAME, MPVOID, MPFROMP(filename)))
-		    free(filename);
-		}
-		if (stricmp(testname, pci->pszFileName)) {
-		  PostMsg(hwnd, UM_FIXEDITNAME, MPFROMLONG(-1), MPFROMP(pci));
-		  filename = xstrdup(pci->pszFileName, pszSrcFile, __LINE__);
-		  if (filename) {
-		    if (!PostMsg(hwnd,
-				 UM_FIXEDITNAME, MPVOID, MPFROMP(filename)))
-		      free(filename);
-		  }
-		}
+              else {
+                fPostName = TRUE;
 	      }
 	      if (fResetVerify) {
 		DosSetVerify(fVerify);
@@ -1040,6 +1064,26 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PFIELDINFO pfi = ((PCNREDITDATA) mp2)->pFieldInfo;
       PCNRITEM pci = (PCNRITEM) ((PCNREDITDATA) mp2)->pRecord;
 
+      if (fPostName) {
+        CHAR *filename;
+        DIRCNRDATA *dcd;
+
+        if (!dcd)
+          dcd = INSTDATA(hwnd);
+        filename = xstrdup(oldname, pszSrcFile, __LINE__);
+        if (filename) {
+          if (!PostMsg(hwnd,UM_FIXEDITNAME, MPVOID, MPFROMP(filename)))
+            free(filename);
+        }
+        if (dcd && (dcd->type == TREE_FRAME || dcd->type == COLLECTOR_FRAME))
+          PostMsg(hwnd, UM_FIXEDITNAME, MPFROMLONG(-1), MPFROMP(pci));
+        filename = xstrdup(newname, pszSrcFile, __LINE__);
+        if (filename) {
+          if (!PostMsg(hwnd, UM_FIXEDITNAME, MPVOID, MPFROMP(filename)))
+            free(filename);
+        }
+        fPostName = FALSE;
+      }
       if (pci && (INT) pci != -1 && !IsRoot(pci->pszFileName)) {
 	WinSendMsg(hwnd,
 		   CM_INVALIDATERECORD,
