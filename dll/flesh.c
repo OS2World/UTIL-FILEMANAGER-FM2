@@ -281,7 +281,8 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
   ULONG flags;
   static BOOL brokenlan = FALSE, isbroken = FALSE;
 
-  if (!pciParent || !*pciParent->pszFileName || !hwndCnr)
+  if (!pciParent || !*pciParent->pszFileName
+      || pciParent->pszFileName == NullStr || !hwndCnr)
     return FALSE;
 
   len = strlen(pciParent->pszFileName);
