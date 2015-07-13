@@ -71,9 +71,8 @@
                 xDosAlloc* wrappers.
   12 Nov 11 GKY Fixed HelpViewer's failure to open help files and subsequent failure with files with spaces.
   28 Jun 14 GKY Fix errors identified with CPPCheck
-  12 Jul 15 GKY Fix CN_REALLOCPSZ file name editing code to: 1) Actually reallocate the buffer.
-                2) Point pci->pszDisplayName into the new buffer 3) Eliminate the possibility
-                of updating the container before CN_ENDEDIT is called. 4) Only call RemoveCnrItems
+  12 Jul 15 GKY Fix CN_REALLOCPSZ file name editing code to: 1) Eliminate the possibility of
+                updating the container before CN_ENDEDIT is called. 2) Don't call RemoveCnrItems
                 for tree container and collector.
 
 ***********************************************************************/
@@ -978,12 +977,6 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (!IsFullName(testname))
 	    Runtime_Error(pszSrcFile, __LINE__, "bad name");
           else {
-            DIRCNRDATA *dcd;
-            FILEFINDBUF4L ffb;
-            HDIR hDir = HDIR_CREATE;
-            ULONG nm = 1;
-            CHAR *p;
-
 	    if (DosQueryPathInfo(testname, //Why does this return 0 when the file doesn't exist?
 				 FIL_QUERYFULLNAME, // No new directory creation?
 				 newname, sizeof(newname)))
@@ -992,45 +985,6 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				 FIL_QUERYFULLNAME,
 				 oldname, sizeof(oldname)))
               strcpy(oldname, pci->pszFileName);
-            psz = xrealloc(pci->pszFileName, sizeof(oldname), pszSrcFile, __LINE__);
-            if (psz)
-              pci->pszFileName = psz;
-            else {
-              xfree(pci->pszFileName, pszSrcFile, __LINE__);
-              pci->pszFileName = NullStr;
-              return FALSE; // out of memory
-            }
-            if (!dcd)    // Point pci->pszDisplayName into the realloc pci->pszFileName
-              dcd = INSTDATA(hwnd);
-            rc = xDosFindFirst(pci->pszFileName,
-                               &hDir,
-                               FILE_NORMAL | FILE_DIRECTORY |
-                               FILE_ARCHIVED | FILE_READONLY |
-                               FILE_HIDDEN | FILE_SYSTEM,
-                               &ffb, sizeof(ffb), &nm, FIL_QUERYEASIZEL);
-            if (!rc) {  // file exists
-              DosFindClose(hDir);
-              if (dcd->type == DIR_FRAME || dcd->type == TREE_FRAME) {
-                p = strrchr(pci->pszFileName, '\\');
-                if (!p) {
-                  p = strrchr(pci->pszFileName, ':');
-                  if (!p)
-                    p = pci->pszFileName;
-                  else
-                    p++;
-                }
-                else if ((dcd && dcd->type == TREE_FRAME) ||
-                         !(ffb.attrFile & FILE_DIRECTORY) || !*(p + 1))
-                  p++;
-                if (!*p)
-                  p = pci->pszFileName;
-              }
-              else
-                p = pci->pszFileName;
-              pci->pszDisplayName = p;
-            }
-            else
-              return FALSE; // nothing to rename
 	    WinSetWindowText(hwndMLE, oldname);
 	    if (strcmp(oldname, newname)) { 
               if (stricmp(oldname, newname) && IsFile(newname) != -1) {
@@ -1075,8 +1029,6 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           if (!PostMsg(hwnd,UM_FIXEDITNAME, MPVOID, MPFROMP(filename)))
             free(filename);
         }
-        if (dcd && (dcd->type == TREE_FRAME || dcd->type == COLLECTOR_FRAME))
-          PostMsg(hwnd, UM_FIXEDITNAME, MPFROMLONG(-1), MPFROMP(pci));
         filename = xstrdup(newname, pszSrcFile, __LINE__);
         if (filename) {
           if (!PostMsg(hwnd, UM_FIXEDITNAME, MPVOID, MPFROMP(filename)))
