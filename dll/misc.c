@@ -1029,10 +1029,12 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
           if (!PostMsg(hwnd,UM_FIXEDITNAME, MPVOID, MPFROMP(filename)))
             free(filename);
         }
-        filename = xstrdup(newname, pszSrcFile, __LINE__);
-        if (filename) {
-          if (!PostMsg(hwnd, UM_FIXEDITNAME, MPVOID, MPFROMP(filename)))
-            free(filename);
+        if (strcmp(newname, NullStr)) {
+          filename = xstrdup(newname, pszSrcFile, __LINE__);
+          if (filename) {
+            if (!PostMsg(hwnd, UM_FIXEDITNAME, MPVOID, MPFROMP(filename)))
+              free(filename);
+          }
         }
         fPostName = FALSE;
       }
