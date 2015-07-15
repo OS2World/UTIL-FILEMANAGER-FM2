@@ -996,14 +996,14 @@ VOID Action(VOID * args)
 			  AddToList(wk->li->list[x],
 				    &files, &cFilesModified, &cItemsAllocated)))
 			Broadcast(hab2,
-				  wk->hwndCnr,
+                                  wk->li->type == IDM_RENAME ? wk->hwndParent : wk->hwndCnr,
 				  UM_UPDATERECORD,
 				  MPFROMP(wk->li->list[x]), MPVOID);
 		      if (!strcmp(realappname, "FM/4") ||
 			  (driveflags[*wk->li->targetpath - 'A'] & DRIVE_RSCANNED) &&
 			  AddToList(newname, &files, &cFilesModified, &cItemsAllocated))
 			Broadcast(hab2,
-				  wk->hwndCnr,
+				  wk->li->type == IDM_RENAME ? wk->hwndParent : wk->hwndCnr,
 				  UM_UPDATERECORD, MPFROMP(newname), MPVOID);
 		    }
 		  }
