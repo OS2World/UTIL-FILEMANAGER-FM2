@@ -96,6 +96,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
+//#include <malloc.h>			// _msize _heapchk
 // #include <process.h>			// _beginthread
 
 #define INCL_DOS
@@ -168,6 +169,10 @@
 #include "excputil.h"			// 06 May 08 SHL added
 #include "pathutil.h"			// AddBackslashToPath
 #include "copyf.h"			// ignorereadonly
+#if 0
+#define  __PMPRINTF__
+#include "PMPRINTF.H"
+#endif
 
 // Data definitions
 #pragma data_seg(GLOBAL1)
@@ -790,9 +795,11 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	sprintf(szFree, "  {%s %s}", tb, GetPString(IDS_FREETEXT));
       }
       else
-	*szFree = 0;
+        *szFree = 0;
+      DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
       commafmt(tf, sizeof(tf), dcd->totalfiles);
       CommaFmtULL(tb, sizeof(tb), dcd->ullTotalBytes, ' ');
+      DosReleaseMutexSem(hmtxFiltering);
       if (!fMoreButtons) {
 	sprintf(s, " [%s / %s]%s%s%s%s %s",
 		tf, tb, szFree,
@@ -872,8 +879,9 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       RemoveCnrItems(dcd->hwndCnr, NULL, 0, CMA_FREE | CMA_INVALIDATE | CMA_ERASE);
       AdjustCnrColsForFSType(dcd->hwndCnr, dcd->directory, &dcd->ds, FALSE);
-      dcd->ullTotalBytes = dcd->totalfiles =
-	dcd->selectedfiles = dcd->selectedbytes = 0;
+      DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
+      dcd->ullTotalBytes = dcd->totalfiles = dcd->selectedfiles = dcd->selectedbytes = 0;
+      DosReleaseMutexSem(hmtxFiltering);
       WinSetDlgItemText(dcd->hwndClient, DIR_TOTALS, "0 / 0k");
       WinSetDlgItemText(dcd->hwndClient, DIR_SELECTED, "0 / 0k");
       if (hwndStatus &&
@@ -1219,6 +1227,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSetWindowPtr(dcd->hwndCnr, QWL_USER, NULL);	// 13 Apr 10 SHL Set NULL before freeing dcd
       DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
       xfree(dcd, pszSrcFile, __LINE__);
+      dcd = NULL;
       DosReleaseMutexSem(hmtxFiltering);
       DosPostEventSem(CompactSem);
     }
@@ -1474,10 +1483,12 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		 MPFROMP(&cnri), MPFROMLONG(sizeof(CNRINFO)));
       cnri.pszCnrTitle = dcd->directory;
       WinSendMsg(hwnd,
-		 CM_SETCNRINFO, MPFROMP(&cnri), MPFROMLONG(CMA_CNRTITLE));
+                 CM_SETCNRINFO, MPFROMP(&cnri), MPFROMLONG(CMA_CNRTITLE));
+      DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
       dcd->totalfiles = cnri.cRecords;
       commafmt(tb, sizeof(tb), dcd->totalfiles);
       CommaFmtULL(tf, sizeof(tf), dcd->ullTotalBytes, 'K');
+      DosReleaseMutexSem(hmtxFiltering);
       sprintf(s, "%s / %s", tb, tf);
       WinSetDlgItemText(dcd->hwndClient, DIR_TOTALS, s);
       commafmt(tb, sizeof(tb), dcd->selectedfiles);
@@ -3257,9 +3268,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	  else {
 
-	    MRESULT mre;
+            MRESULT mre;
 
-	    mre = CnrDirectEdit(hwnd, msg, mp1, mp2);
+            mre = CnrDirectEdit(hwnd, msg, mp1, mp2);
 	    if (mre != (MRESULT) - 1)
 	      return mre;
 	  }
@@ -3303,7 +3314,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      WinSetDlgItemText(dcd->hwndClient, DIR_SELECTED, s);
 	    }
 	  }
-	  if (!dcd->suspendview && hwndMain &&
+	  if (!dcd->suspendview && hwndMain && pci->pszFileName != NullStr &&
 	      (pre->fEmphasisMask & CRA_CURSORED) &&
 	      (pci->rc.flRecordAttr & CRA_CURSORED) &&
 	      WinQueryActiveWindow(dcd->hwndParent) == dcd->hwndFrame) {
@@ -3512,7 +3523,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_CLOSE:
     WinSendMsg(hwnd, WM_SAVEAPPLICATION, MPVOID, MPVOID);
     if (LastDir == hwnd)
-      LastDir = (HWND) 0;
+        LastDir = (HWND) 0;
+    DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
     if (dcd) {
       dcd->stopflag++;
       if (!dcd->dontclose && ParentIsDesktop(dcd->hwndFrame, (HWND) 0))
@@ -3532,12 +3544,10 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			0,
                         SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
       FreeList(dcd->lastselection);
-      DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
-      free(dcd);
-      DosReleaseMutexSem(hmtxFiltering);
       WinSetWindowPtr(hwnd, QWL_USER, NULL);
       DosPostEventSem(CompactSem);
     }
+    DosReleaseMutexSem(hmtxFiltering);
     WinDestroyWindow(WinQueryWindow(WinQueryWindow(hwnd, QW_PARENT),
 				    QW_PARENT));
     return 0;
@@ -3554,6 +3564,10 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinDestroyWindow(FileMenu);
     DirMenu = DirCnrMenu = FileMenu = (HWND) 0;
     EmptyCnr(hwnd);
+    DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
+    xfree(dcd, pszSrcFile, __LINE__);
+    dcd = NULL;
+    DosReleaseMutexSem(hmtxFiltering);
 #   ifdef FORTIFY
     Fortify_LeaveScope();
 #   endif

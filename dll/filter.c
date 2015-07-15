@@ -23,6 +23,7 @@
   28 Jun 14 GKY Fix errors identified with CPPCheck;
   30 Aug 14 GKY Add semaphore hmtxFiltering to prevent freeing dcd while filtering. Prevents
                 a trap when FM2 is shutdown while directory containers are still populating
+  14 Jun 15 GKY Changes to prevent trap in Filter
 
 ***********************************************************************/
 
@@ -82,9 +83,7 @@ INT APIENTRY Filter(PMINIRECORDCORE rmini, PVOID arg)
   INT matched;
   CHAR *file;
 
-  DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
   if (!mask) {
-    DosReleaseMutexSem(hmtxFiltering);
     return TRUE;
   } // No mask data
 
@@ -93,7 +92,6 @@ INT APIENTRY Filter(PMINIRECORDCORE rmini, PVOID arg)
   // 2011-05-31 SHL fixme to know if this is correct
   if (!(*(pci->pszFileName + 3))
       || mask->fShowDirs && (pci->attrFile & FILE_DIRECTORY)) {
-    DosReleaseMutexSem(hmtxFiltering);
     return TRUE;
   }
 
@@ -102,7 +100,6 @@ INT APIENTRY Filter(PMINIRECORDCORE rmini, PVOID arg)
       (~mask->attrFile & FILE_READONLY && pci->attrFile & FILE_READONLY) ||
       (~mask->attrFile & FILE_ARCHIVED && pci->attrFile & FILE_ARCHIVED) ||
       (~mask->attrFile & FILE_DIRECTORY && pci->attrFile & FILE_DIRECTORY)) {
-    DosReleaseMutexSem(hmtxFiltering);
     return FALSE;
   }
 
@@ -111,12 +108,10 @@ INT APIENTRY Filter(PMINIRECORDCORE rmini, PVOID arg)
       (mask->antiattr & FILE_READONLY && ~pci->attrFile & FILE_READONLY) ||
       (mask->antiattr & FILE_ARCHIVED && ~pci->attrFile & FILE_ARCHIVED) ||
       (mask->antiattr & FILE_DIRECTORY && ~pci->attrFile & FILE_DIRECTORY)) {
-    DosReleaseMutexSem(hmtxFiltering);
     return FALSE;
   }
 
   if (mask && !*mask->szMask) {
-    DosReleaseMutexSem(hmtxFiltering);
     return TRUE;
   }// No masks
 
@@ -132,13 +127,12 @@ INT APIENTRY Filter(PMINIRECORDCORE rmini, PVOID arg)
   if (!mask->pszMasks[1]) { // Just one mask string
     BOOL wild = wildcard(strchr(mask->szMask, '\\') || strchr(mask->szMask, ':') ?
                          pci->pszFileName : file, mask->szMask,	FALSE);
-    DosReleaseMutexSem(hmtxFiltering);
     return wild;
   }
 
   // Have multiple mask strings
   matched = FALSE;
-  for (x = 0; mask->pszMasks[x]; x++) {
+  for (x = 0; x < 26 && mask->pszMasks[x]; x++) {
     if (*mask->pszMasks[x]) {
       if (*mask->pszMasks[x] != '/') {
 	if (wildcard((strchr(mask->pszMasks[x], '\\') ||
@@ -163,7 +157,6 @@ INT APIENTRY Filter(PMINIRECORDCORE rmini, PVOID arg)
       }
     }
   } // for
-  DosReleaseMutexSem(hmtxFiltering);
   return matched;
 }
 

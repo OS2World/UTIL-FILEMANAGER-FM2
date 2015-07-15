@@ -90,6 +90,7 @@
   10 Mar 13 GKY Improvrd readonly check on delete to allow cancel and don't ask again options
                 Added saymsg2 for this purpose
   10 Mar 13 GKY Fixes to snapshot file.
+  14 Jun 15 GKY Changes to prvenet access violations when cmp is freed
 
 ***********************************************************************/
 
@@ -943,8 +944,12 @@ static VOID SelectCnrsThread(VOID *args)
     Fortify_LeaveScope();
 #    endif
   }
-  else
+  else {
+    DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
     free(cmp);
+    cmp = NULL;
+    DosReleaseMutexSem(hmtxFiltering);
+  }
 }
 
 /**
@@ -1993,13 +1998,15 @@ static VOID FillCnrsThread(VOID *args)
 	    pcil->crdate.year = filesl[l]->crdate.year + 1980;
 	    pcil->crtime.seconds = filesl[l]->crtime.twosecs * 2;
 	    pcil->crtime.minutes = filesl[l]->crtime.minutes;
-	    pcil->crtime.hours = filesl[l]->crtime.hours;
-	    if (*cmp->dcd.mask.szMask) {
+            pcil->crtime.hours = filesl[l]->crtime.hours;
+            DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
+	    if (cmp && *cmp->dcd.mask.szMask) {
 	      if (!Filter((PMINIRECORDCORE)pcil, (PVOID)&cmp->dcd.mask)) {
 		pcil->rc.flRecordAttr |= CRA_FILTERED;
 		pcir->rc.flRecordAttr |= CRA_FILTERED;
-	      }
-	    }
+              }
+            }
+            DosReleaseMutexSem(hmtxFiltering);
 	  } // if on left
 
 	  if (x >= 0) {
@@ -2035,14 +2042,16 @@ static VOID FillCnrsThread(VOID *args)
 	    pcir->crtime.seconds = filesr[r]->crtime.twosecs * 2;
 	    pcir->crtime.minutes = filesr[r]->crtime.minutes;
 	    pcir->crtime.hours = filesr[r]->crtime.hours;
-	    // Bypass check if already filtered on left side
-	    if (~pcir->rc.flRecordAttr & CRA_FILTERED &&
+            // Bypass check if already filtered on left side
+            DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
+	    if (cmp && ~pcir->rc.flRecordAttr & CRA_FILTERED &&
 		*cmp->dcd.mask.szMask) {
 	      if (!Filter((PMINIRECORDCORE)pcir, (PVOID)&cmp->dcd.mask)) {
 		pcil->rc.flRecordAttr |= CRA_FILTERED;
 		pcir->rc.flRecordAttr |= CRA_FILTERED;
-	      }
-	    }
+              }
+            }
+            DosReleaseMutexSem(hmtxFiltering);
 	  } // if on right
 
 	  if (x == 0) {
@@ -2240,7 +2249,10 @@ static VOID FillCnrsThread(VOID *args)
     DecrThreadUsage();
     WinTerminate(hab);
   }
+  DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
   free(cmp);
+  cmp = NULL;
+  DosReleaseMutexSem(hmtxFiltering);
   DosPostEventSem(CompactSem);
 
 # ifdef FORTIFY
@@ -2565,7 +2577,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	pci = (PCNRITEM)pcown->pRecord;
 	// 01 Aug 07 SHL if field null or blank, we draw
 	// fixme to document why - probably to optimize and bypass draw?
-	if (pci && (INT)pci != -1 && !*pci->pszFileName)
+	if (pci && (INT)pci != -1 && !*pci->pszFileName && pci->pszFileName != NullStr)
 	  return MRFROMLONG(TRUE);
       }
     }
@@ -3541,7 +3553,10 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (!PostMsg(cmp->dcd.hwndObject, WM_CLOSE, MPVOID, MPVOID))
 	  WinSendMsg(cmp->dcd.hwndObject, WM_CLOSE, MPVOID, MPVOID);
       }
+      DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
       free(cmp);
+      cmp = NULL;
+      DosReleaseMutexSem(hmtxFiltering);
     }
     EmptyCnr(GetHwndLeft(hwnd));
     EmptyCnr(GetHwndRight(hwnd));

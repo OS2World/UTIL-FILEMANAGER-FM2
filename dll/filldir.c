@@ -106,6 +106,7 @@
                 missing break and comments explaining the code structure.
   28 Jun 14 GKY Fix errors identified with CPPCheck
   30 Aug 14 GKY Use saymsg2 for Suggest dialog
+  14 Jun 15 GKY Changes to prevent trap in Filter, heap corruption and traps associated with it
   19 Jun 15 JBS Ticket 514: Double free fix (which also fixes a memory leak)
 
 ***********************************************************************/
@@ -152,6 +153,10 @@
 #include "fm3dlg.h"			// INFO_LABEL
 #include "pathutil.h"			// AddBackslashToPath
 #include "tmrsvcs.h"			// ITIMER_DESC
+#if 0
+#define  __PMPRINTF__
+#include "PMPRINTF.H"
+#endif
 
 VOID StubbyScanThread(VOID * arg);
 
@@ -423,10 +428,11 @@ static VOID FetchCommonEAs(PCNRITEM pci)
   ULONG flags = driveflags[toupper(*pci->pszFileName) - 'A'];
   BOOL fLoadSubjectForDrive = fLoadSubject && ~flags & DRIVE_NOLOADSUBJS;
   BOOL fLoadLongNameForDrive = fLoadLongnames &&  //~flags & DRIVE_NOLONGNAMES &&
-			       ~flags & DRIVE_NOLOADLONGS;
+                               ~flags & DRIVE_NOLOADLONGS;
   if (fLoadSubjectForDrive || fLoadLongNameForDrive) {
     // Allocate space to hold GEA2s and .SUBJECT and .LONGNAME strings
-    PGEA2LIST pgealist = xmallocz(sizeof(GEA2LIST) + sizeof(GEA2) + 64, pszSrcFile, __LINE__);
+      PGEA2LIST pgealist = xmallocz(sizeof(GEA2LIST) + (sizeof(GEA2) * 2) + 32,
+                                    pszSrcFile, __LINE__);
     if (pgealist) {
       APIRET rc;
       PFEA2LIST pfealist;
@@ -465,9 +471,9 @@ static VOID FetchCommonEAs(PCNRITEM pci)
       pgealist->cbList = (PSZ)pgea - (PSZ)pgealist;
       //DbgMsg(pszSrcFile, __LINE__, "pgealist %p cbList %u", pgealist, pgealist->cbList);
 
-      pfealist = xmallocz(4096, pszSrcFile, __LINE__);
+      pfealist = xmallocz(65536, pszSrcFile, __LINE__);
       if (pfealist) {
-	pfealist->cbList = 4096;
+	pfealist->cbList = 65536;
 	eaop.fpGEA2List = pgealist;
 	eaop.fpFEA2List = pfealist;
 	eaop.oError = 0;
@@ -513,7 +519,7 @@ static VOID FetchCommonEAs(PCNRITEM pci)
 	      break;
 	    pfea = (PFEA2)((PSZ)pfea + pfea->oNextEntryOffset);
 	  } // while
-	}
+        }
 	free(pfealist);
       }
       free(pgealist);
@@ -687,16 +693,16 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
   pci->rc.pszIcon = pci->pszDisplayName;
   pci->rc.hptrIcon = hptr;
 
+
   // check to see if record should be visible
+  DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
   if (dcd && (*dcd->mask.szMask || dcd->mask.antiattr ||
 	      ((dcd->mask.attrFile &
 		(FILE_HIDDEN | FILE_SYSTEM | FILE_READONLY | FILE_ARCHIVED))
-	       !=
-	       (FILE_HIDDEN | FILE_SYSTEM | FILE_READONLY | FILE_ARCHIVED))))
-  {
+	       != (FILE_HIDDEN | FILE_SYSTEM | FILE_READONLY | FILE_ARCHIVED)))) {
     if (*dcd->mask.szMask || dcd->mask.antiattr) {
       if (!Filter((PMINIRECORDCORE) pci, (PVOID) & dcd->mask))
-	pci->rc.flRecordAttr |= CRA_FILTERED;
+        pci->rc.flRecordAttr |= CRA_FILTERED;
     }
     else if ((!(dcd->mask.attrFile & FILE_HIDDEN) &&
 	      (pci->attrFile & FILE_HIDDEN)) ||
@@ -709,6 +715,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
       pci->rc.flRecordAttr |= CRA_FILTERED;
     }
   }
+  DosReleaseMutexSem(hmtxFiltering);
 
   return pffb->cbFile + pci->easize;
 
@@ -850,6 +857,7 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
   pci->rc.pszIcon = pci->pszDisplayName;
   pci->rc.hptrIcon = hptr;
 
+  DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
   if (dcd &&
       (*dcd->mask.szMask || dcd->mask.antiattr ||
        ((dcd->mask.attrFile &
@@ -857,7 +865,7 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
 	(FILE_HIDDEN | FILE_SYSTEM | FILE_READONLY | FILE_ARCHIVED)))) {
     if (*dcd->mask.szMask || dcd->mask.antiattr) {
       if (!Filter((PMINIRECORDCORE) pci, (PVOID) & dcd->mask))
-	pci->rc.flRecordAttr |= CRA_FILTERED;
+        pci->rc.flRecordAttr |= CRA_FILTERED;
     }
     else if ((!(dcd->mask.attrFile & FILE_HIDDEN) &&
 	      (pci->attrFile & FILE_HIDDEN)) ||
@@ -869,6 +877,7 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
 	      (pci->attrFile & FILE_ARCHIVED)))
       pci->rc.flRecordAttr |= CRA_FILTERED;
   }
+  DosReleaseMutexSem(hmtxFiltering);
 
   return pfsa4->cbFile + pci->easize;
 
@@ -967,7 +976,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	  goto Abort;
 	pffbFile = paffbFound;
 	ulSelCnt = 0;
-	for (;;) {
+        for (;;) {
 	  if (!*pffbFile->achName ||
 	      (!filestoo && ~pffbFile->attrFile & FILE_DIRECTORY) ||
 	      (pffbFile->attrFile & FILE_DIRECTORY &&
@@ -988,7 +997,12 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	  // One or more entries selected
 	  if (stopflag && *stopflag)
 	    goto Abort;
-	  if (fSyncUpdates) {
+          if (fSyncUpdates) {
+            if (!WinIsWindow(WinQueryAnchorBlock(hwndCnr), hwndCnr)) {
+              ok = FALSE;
+	      ullTotalBytes = 0;
+	      break;
+	    }
 	    pciFirst = WinSendMsg(hwndCnr, CM_ALLOCRECORD,
 				  MPFROMLONG(EXTRA_RECORD_BYTES),
 				  MPFROMLONG(ulSelCnt));
@@ -1004,7 +1018,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	      ullTotalBytes = 0;
 	      // Finish filling pci items
 	      for (x = 0; x < ulSelCnt; x++) {
-		pffbFile = papffbSelected[x];
+                pffbFile = papffbSelected[x];
 		ullBytes = FillInRecordFromFFB(hwndCnr, pci, pszFileSpec,
 					       pffbFile, partial, dcd);
 		pci = (PCNRITEM) pci->rc.preccNextRecord;
@@ -1038,11 +1052,13 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	    }
 	    if (ok) {
 	      ullReturnBytes += ullTotalBytes;
-	      ulReturnFiles += ulSelCnt;
+              ulReturnFiles += ulSelCnt;
+              DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
 	      if (dcd) {
 		dcd->totalfiles += ulSelCnt;
 		dcd->ullTotalBytes += ullTotalBytes;
-	      }
+              }
+              DosReleaseMutexSem(hmtxFiltering);
 	    }
 	  } // if sync updates
 	  else {
@@ -1097,12 +1113,19 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	for (x = 0; x < cAffbTotal; x++) {
 	  ULONG ulRecsToInsert;
 
-	  if (pci ==NULL) {
+          if (pci ==NULL) {
+            if (!WinIsWindow(WinQueryAnchorBlock(hwndCnr), hwndCnr)) {
+              ok = FALSE;
+	      ullTotalBytes = 0;
+	      break;
+	    }
 	    ulRecsToInsert = cAffbTotal - x <  USHRT_MAX  ? cAffbTotal - x : USHRT_MAX;
 	    pciFirst = WinSendMsg(hwndCnr, CM_ALLOCRECORD,
 				  MPFROMLONG(EXTRA_RECORD_BYTES), MPFROMLONG(ulRecsToInsert));
 
-	    if (!pciFirst) {
+            if (!pciFirst) {
+              //ERRORID erridErrorCode = WinGetLastError(WinQueryAnchorBlock(hwndCnr));
+              //PmpfF(("Allocation failed %i", erridErrorCode));
 	      Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
 			GetPString(IDS_CMALLOCRECERRTEXT));
 	      ok = FALSE;
@@ -1117,30 +1140,34 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	      }
 	      pci = pciFirst;
 	    }
-	  }
+          }
 	  ullBytes = FillInRecordFromFFB(hwndCnr, pci, pszFileSpec,
 					 pffbFile, partial, dcd);
 	  pci = (PCNRITEM) pci->rc.preccNextRecord;
 	  ullTotalBytes += ullBytes;
-	  // 15 Sep 09 SHL allow timed updates to see
+          // 15 Sep 09 SHL allow timed updates to see
+          DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
 	  if (dcd) {
 	    dcd->totalfiles = x;
 	    dcd->ullTotalBytes = ullTotalBytes;
-	  }
+          }
+          DosReleaseMutexSem(hmtxFiltering);
 	  // Can not use offset since we have merged lists - this should be equivalent
 	  pffbFile = (PFILEFINDBUF4L)((PBYTE)pffbFile + sizeof(FILEFINDBUF4L));
 
-	  if (!IdleIfNeeded(&itdSleep, 30)) {
-	    for (x = x+1; x < cAffbTotal; x++) {
+          if (!IdleIfNeeded(&itdSleep, 30)) {
+            for (x = x+1; x < cAffbTotal; x++) {
 	      ullBytes = FillInRecordFromFFB(hwndCnr, pci, pszFileSpec,
 	                                  pffbFile, partial, dcd);
 	      pci = (PCNRITEM) pci->rc.preccNextRecord;
-	      ullTotalBytes += ullBytes;
+              ullTotalBytes += ullBytes;
+              DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
 	      if (dcd) {
 	        dcd->totalfiles = x;
 	        dcd->ullTotalBytes = ullTotalBytes;
-	      }
-	      pffbFile = (PFILEFINDBUF4L)((PBYTE)pffbFile + sizeof(FILEFINDBUF4L));
+              }
+              DosReleaseMutexSem(hmtxFiltering);
+              pffbFile = (PFILEFINDBUF4L)((PBYTE)pffbFile + sizeof(FILEFINDBUF4L));
 	      if (pci == NULL) {
 	        priority_normal();
 	        InitITimer(&itdSleep, 500);
@@ -1831,19 +1858,20 @@ VOID EmptyCnr(HWND hwnd)
 
 VOID FreeCnrItemData(PCNRITEM pci)
 {
+  
   if (pci->pszSubject) {
     if (pci->pszSubject != NullStr)
       free(pci->pszSubject);
     pci->pszSubject = NULL;		// Catch illegal references
   }
-
+  
   // 08 Sep 08 SHL Remove excess logic
   if (pci->pszLongName) {
     if (pci->pszLongName != NullStr)
       free(pci->pszLongName);
     pci->pszLongName = NULL;		// Catch illegal references
   }
-
+  
   // Bypass free if pszDisplayName points into pszFileName buffer
   // 05 Sep 08 SHL Correct pointer overlap compare logic
   if (pci->pszDisplayName) {
@@ -1852,20 +1880,72 @@ VOID FreeCnrItemData(PCNRITEM pci)
 	  pci->pszDisplayName < pci->pszFileName ||
 	  pci->pszDisplayName >= pci->pszFileName + _msize(pci->pszFileName))
       {
-	free(pci->pszDisplayName);
+        free(pci->pszDisplayName);
       }
     }
     pci->pszDisplayName = NULL;		// Catch illegal references
   }
 
-  if (pci->pszFileName) {
-    if (pci->pszFileName != NullStr) {
+#if 0 // 26 Sep 09 SHL debug dup free complaints
+  if (!pci->pszFileName)
+    Runtime_Error(pszSrcFile, __LINE__, "FreeCnrItemData attempting to free %p data twice", pci);
+  else {
+    if (pci->pszFileName != NullStr)
       free(pci->pszFileName);
+    pci->pszFileName = NULL;		// Catch illegal references
+  }
+#else
+  {
+    #define HIST_COUNT 50
+    static struct {
+      PCNRITEM pci;
+      PSZ pszFileName;
+    } history[HIST_COUNT];
+    static volatile UINT iHistNdx;
+    UINT i;
+
+    if (!pci->pszFileName) {
+      // Looks like pci was already freed
+      // Try to locate original file name in history buffer
+      for (i = 0; i < HIST_COUNT && pci != history[i].pci; i++) { }	// Scan
+      if (i < HIST_COUNT) {
+	Runtime_Error(pszSrcFile, __LINE__, "FreeCnrItemData attempting to free %p data twice, fileName was %.260s",
+		      pci, history[i].pszFileName);
+      }	else {
+	Runtime_Error(pszSrcFile, __LINE__, "FreeCnrItemData attempting to free %p data twice", pci);
+      }
     }
-    pci->pszFileName = NULL;		// Catch illegal references and dup free attempts
+    else {
+      PSZ psz;
+      PSZ *ppsz;
+      // Grab a history slot
+      // This should work well enoungh to prevent MT/SMP conflicts
+      for (;;) {
+	i = iHistNdx;
+	if (++i >= HIST_COUNT)
+	  i = 0;
+	if (++iHistNdx >= HIST_COUNT)
+	  iHistNdx = 0;
+	if (i == iHistNdx) break;
+      }
+      ppsz = &history[iHistNdx].pszFileName;
+      psz = *ppsz;
+      if (psz)
+	free(psz);
+      if (pci->pszFileName && pci->pszFileName != NullStr)
+	*ppsz = strdup(pci->pszFileName);
+      else
+	*ppsz = NULL;
+      history[iHistNdx].pci = pci;
+      if (pci->pszFileName != NullStr)
+	free(pci->pszFileName);
+      pci->pszFileName = NULL;		// Catch illegal references and dup free attempts
+    }
   }
 
-// 26 Mar 14 JBS Twice on the longname?
+
+#endif
+
   // 08 Sep 08 SHL Remove excess logic
   if (pci->pszLongName) {
     if (pci->pszLongName != NullStr)
@@ -1942,6 +2022,10 @@ VOID FreeCnrItemList(HWND hwnd, PCNRITEM pciFirst)
 INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
 {
   INT remaining = usCnt;
+  BOOL bIdlePrioritySet	= FALSE;
+// #define RCI_ITEMS_PER_TIMER_CHECK (10)
+// 10 seems a very conservative number
+//   USHORT usTimerCheckCountdown	= RCI_ITEMS_PER_TIMER_CHECK;
   PCNRITEM pci;
   ITIMER_DESC itdSleep = { 0 };		// 30 May 11 GKY
 
@@ -1965,28 +2049,25 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
       }
       InitITimer(&itdSleep, 500);
       while (pci) {
-	FreeCnrItemData(pci);
+        FreeCnrItemData(pci);
+	pci = (PCNRITEM)pci->rc.preccNextRecord;
+	if (!pci)
+	  break;
         if (remaining && --remaining == 0)
           break;
-	pci = (PCNRITEM)WinSendMsg(hwnd, CM_QUERYRECORD, (MPARAM)pci,
-				   MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
-	if (pci && !IdleIfNeeded(&itdSleep, 30)) {
-          // Finishing in idle mode
-	  while (pci) {
-	    FreeCnrItemData(pci);
-	    if (remaining && --remaining == 0)
-	      break;
-	    pci = (PCNRITEM)WinSendMsg(hwnd, CM_QUERYRECORD, (MPARAM)pci,
-				   MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
-
-          }
-          priority_normal();
-	  break;
+        if (!bIdlePrioritySet /* && --usTimerCheckCountdown == 0 */) {
+          bIdlePrioritySet = !IdleIfNeeded(&itdSleep, 30);
+//           usTimerCheckCountdown = RCI_ITEMS_PER_TIMER_CHECK;
         }
       } // while
+      if (bIdlePrioritySet)
+        priority_normal();
+
       DosPostEventSem(CompactSem);
     }
   }
+
+  // DbgMsg(pszSrcFile, __LINE__, "RemoveCnrItems %p %u %s", pci, usCnt, pci->pszFileName);
 
   if (remaining != - 1) {
     remaining = (INT)WinSendMsg(hwnd, CM_REMOVERECORD, MPFROMP(&pciFirst), MPFROM2SHORT(usCnt, usFlags));
@@ -1994,6 +2075,7 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
       Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_REMOVERECORD hwnd %x pci %p cnt %u", hwnd, pciFirst, usCnt);
     }
   }
+
   return remaining;
 }
 

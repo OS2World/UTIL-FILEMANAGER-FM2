@@ -88,6 +88,7 @@
                 container is still populating
   02 May 15 GKY Changes to allow a JAVA executable object to be created using "Real object"
                 menu item on a jar file.
+  14 Jun 15 GKY Changes to prevent trap in Filter
 
 ***********************************************************************/
 
@@ -747,13 +748,15 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 	      Runtime_Error(pszSrcFile, __LINE__, "pci NULL for list[%u]", x);
 	    }
 	    else {
-	      // Update OK
-	      if (Filter((PMINIRECORDCORE) pciUpd, (PVOID) & dcd->mask)) {
+              // Update OK
+              DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
+	      if (dcd && Filter((PMINIRECORDCORE) pciUpd, (PVOID) & dcd->mask)) {
 		pciUpd->rc.flRecordAttr &= ~CRA_FILTERED;	// Ensure visible
 		// 2011-05-29 SHL fixme to check fail
 		WinSendMsg(dcd->hwndCnr, CM_INVALIDATERECORD, MPVOID,
 			   MPFROM2SHORT(0, CMA_REPOSITION | CMA_ERASE));
-	      }
+              }
+              DosReleaseMutexSem(hmtxFiltering);
 	    }
 	    ulMaxFiles--;		// No insert needed
 	    checkToInsert = TRUE;
@@ -912,12 +915,14 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
 			      FALSE,
 			      TRUE)) {
 	      // Already in container
-	      pci = UpdateCnrRecord(dcd->hwndCnr, fullname, FALSE, dcd);
-	      if (Filter((PMINIRECORDCORE) pci, (PVOID) & dcd->mask)) {
+              pci = UpdateCnrRecord(dcd->hwndCnr, fullname, FALSE, dcd);
+              DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
+	      if (dcd && Filter((PMINIRECORDCORE) pci, (PVOID) & dcd->mask)) {
 		pci->rc.flRecordAttr &= ~CRA_FILTERED;
 		WinSendMsg(dcd->hwndCnr, CM_INVALIDATERECORD, MPVOID,
 			   MPFROM2SHORT(0, CMA_REPOSITION | CMA_ERASE));
-	      }
+              }
+              DosReleaseMutexSem(hmtxFiltering);
 	    }
 	    else if (IsFullName(fullname) &&
 		!IsRoot(fullname) &&
@@ -1167,6 +1172,7 @@ MRESULT EXPENTRY CollectorObjWndProc(HWND hwnd, ULONG msg,
       WinSetWindowPtr(dcd->hwndCnr, QWL_USER, NULL);	// 13 Apr 10 SHL Set NULL before freeing dcd
       DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
       free(dcd);
+      dcd = NULL;
       DosReleaseMutexSem(hmtxFiltering);
 #     ifdef FORTIFY
       Fortify_LeaveScope();
@@ -1424,9 +1430,11 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    if (pci->attrFile & FILE_DIRECTORY)
 	      p = pci->pszFileName;
 	    else {
-	      if (!pci->pszFileName)
-		Runtime_Error(pszSrcFile, __LINE__, "pci->pszFileName NULL for %p", pci);
-	      p = strrchr(pci->pszFileName, '\\');
+              if (!pci->pszFileName) {
+                Runtime_Error(pszSrcFile, __LINE__, "pci->pszFileName NULL for %p", pci);
+                return 0;
+              }
+              p = strrchr(pci->pszFileName, '\\');
 	      if (p) {
 		if (*(p + 1))
 		  p++;
@@ -2127,7 +2135,7 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	    empty = TRUE;
 	    // 2013-12-13 SHL Allow nul pszFileName
 	    pci = (PCNRITEM) CurrentRecord(hwnd);
-	    if (pci && pci->pszFileName && ~pci->attrFile & FILE_DIRECTORY) {
+	    if (pci && pci->pszFileName != NullStr && ~pci->attrFile & FILE_DIRECTORY) {
 	      p = strrchr(pci->pszFileName, '\\');
 	      if (p) {
 		p++;
@@ -2814,9 +2822,9 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case CN_REALLOCPSZ:
       case CN_ENDEDIT:
 	{
-	  MRESULT mre;
+          MRESULT mre;
 
-	  mre = CnrDirectEdit(hwnd, msg, mp1, mp2);
+          mre = CnrDirectEdit(hwnd, msg, mp1, mp2);
 	  if (mre != (MRESULT) - 1)
 	    return mre;
 	}
