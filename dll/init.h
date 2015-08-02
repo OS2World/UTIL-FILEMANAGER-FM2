@@ -40,6 +40,8 @@
                 or gzip.exe on TAR.B/GZ archives.
   30 Aug 14 GKY Add semaphore hmtxFiltering to prevent freeing dcd while filtering. Prevents
                 a trap when FM2 is shutdown while directory containers are still populating
+  02 Aug 15 GKY Serialize local hard drive scanning to reduce drive thrashing continue to scan
+                all other drive types in separate threads.
 
 ***********************************************************************/
 
@@ -237,6 +239,8 @@ extern ULONGLONG ullTmpSpaceNeeded;
 extern HMTX hmtxFM2Globals;
 extern HMTX hmtxFM2Delete;
 extern HMTX hmtxScanning;
+extern HMTX hmtxScanningLocalHD;
+extern HMTX hmtxScanningLocal;
 extern HMTX hmtxFiltering;
 extern HEV  hevTreeCnrScanComplete;
 #endif

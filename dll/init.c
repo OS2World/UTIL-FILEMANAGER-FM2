@@ -130,6 +130,8 @@
                 or gzip.exe on TAR.B/GZ archives.
   30 Aug 14 GKY Add semaphore hmtxFiltering to prevent freeing dcd while filtering. Prevents
                 a trap when FM2 is shutdown while directory containers are still populating
+  02 Aug 15 GKY Serialize local hard drive scanning to reduce drive thrashing continue to scan
+                all other drive types in separate threads.
 
 ***********************************************************************/
 
@@ -232,6 +234,8 @@ unsigned __MaxThreads = {48};
 HMTX hmtxFM2Delete;
 HMTX hmtxFM2Globals;
 HMTX hmtxScanning;
+HMTX hmtxScanningLocalHD;
+HMTX hmtxScanningLocal;
 HMTX hmtxFiltering;
 HEV  hevTreeCnrScanComplete;
 ULONG OS2ver[2];
@@ -1163,6 +1167,12 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
               PCSZ_DOSCREATEMUTEXSEM);
   if (DosCreateMutexSem(NULL, &hmtxScanning, 0L, TRUE))
+    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+              PCSZ_DOSCREATEMUTEXSEM);
+  if (DosCreateMutexSem(NULL, &hmtxScanningLocalHD, 0L, FALSE))
+    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+              PCSZ_DOSCREATEMUTEXSEM);
+    if (DosCreateMutexSem(NULL, &hmtxScanningLocal, 0L, FALSE))
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      PCSZ_DOSCREATEMUTEXSEM);
   if (DosCreateMutexSem(NULL, &hmtxFM2Delete, 0L, FALSE))

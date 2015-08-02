@@ -89,6 +89,8 @@
                 a trap when FM2 is shutdown while directory containers are still populating
   02 May 15 GKY Changes to allow a JAVA executable object to be created using "Real object"
                 menu item on a jar file.
+  02 Aug 15 GKY Remove unneed SubbyScan code and improve suppression of blank lines and
+                duplicate subdirectory name caused by running Stubby in worker threads.
 
 ***********************************************************************/
 
@@ -831,14 +833,18 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		       CM_QUERYRECORD,
 		       MPVOID, MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
       while (pci && (INT) pci != -1) {
+        if (!pci->pszFileName || !strcmp(pci->pszFileName, NullStr)) {
+          Runtime_Error(pszSrcFile, __LINE__, "pci->pszFileName NULL for %p", pci);
+          return 0;
+        }
 	if (pci->attrFile & FILE_DIRECTORY) {
 	  pciC = WinSendMsg(dcd->hwndCnr,
 			    CM_QUERYRECORD,
 			    MPFROMP(pci),
 			    MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
-	  if (!pciC) {
-	    Stubby(dcd->hwndCnr, pci);
-	  }
+          if (!pciC) {
+            Stubby(dcd->hwndCnr, pci);
+          }
 	}
 	pci = WinSendMsg(dcd->hwndCnr,
 			 CM_QUERYRECORD,
@@ -894,10 +900,10 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (hwndTree) {
 	if (fSwitchTreeOnDirChg) {
 	  // Keep drive tree in sync with directory container
-	  PSZ pszTempDir;
-	  while (fInitialDriveScan) {
-	    DosSleep(100);			// Allow to complete
-	  }
+          PSZ pszTempDir;
+	  while (fInitialDriveScan)
+            DosSleep(10);			// Allow to complete
+          DosSleep(50);
 	  pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
 	  if (pszTempDir) {
 	    if (hwndMain) {
@@ -1562,7 +1568,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       cnri.cb = sizeof(CNRINFO);
       WinSendMsg(hwnd,
 		 CM_QUERYCNRINFO,
-		 MPFROMP(&cnri), MPFROMLONG(sizeof(CNRINFO)));
+                 MPFROMP(&cnri), MPFROMLONG(sizeof(CNRINFO)));
       cnri.pSortRecord = (PVOID) SortDirCnr;
       WinSendMsg(hwnd,
 		 CM_SETCNRINFO, MPFROMP(&cnri), MPFROMLONG(CMA_PSORTRECORD));
@@ -1589,7 +1595,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	cnri.flWindowAttr &= (~(CV_TREE | CV_ICON | CV_DETAIL | CV_TEXT));
 	cnri.flWindowAttr |= (CV_NAME | CA_DETAILSVIEWTITLES | CV_MINI |
-			      CV_FLOW);
+                              CV_FLOW);
 	cnri.pSortRecord = (PVOID) SortDirCnr;
 
 	{
@@ -2121,7 +2127,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  else
 	    dcd->sortFlags |= SORT_REVERSE;
 	  break;
-	}
+        }
 	WinSendMsg(hwnd, CM_SORTRECORD, MPFROMP(SortDirCnr),
 		   MPFROMLONG(dcd->sortFlags));
 	SaySort(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),

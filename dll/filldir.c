@@ -108,6 +108,10 @@
   30 Aug 14 GKY Use saymsg2 for Suggest dialog
   14 Jun 15 GKY Changes to prevent trap in Filter, heap corruption and traps associated with it
   19 Jun 15 JBS Ticket 514: Double free fix (which also fixes a memory leak)
+  02 Aug 15 GKY Serialize local hard drive scanning to reduce drive thrashing continue to scan
+                all other drive types in separate threads.
+  02 Aug 15 GKY Remove unneed SubbyScan code and improve suppression of blank lines and
+                duplicate subdirectory name caused by running Stubby in worker threads.
 
 ***********************************************************************/
 
@@ -262,7 +266,7 @@ VOID StubbyScanThread(VOID * arg)
 	if (WinIsWindow((HAB)0, StubbyScan->hwndCnr)) {
 	  ULONG flags = driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'];
 
-	  if ((fRScanLocal && ~flags & DRIVE_REMOTE && ~flags & DRIVE_VIRTUAL) ||
+	  if ((fRScanLocal && flags & DRIVE_LOCALHD ) ||
 	       (fRScanRemote && flags & DRIVE_REMOTE) ||
 	       (fRScanVirtual && flags & DRIVE_VIRTUAL)) {
 	    if (!(flags & ((fRScanNoWrite ? 0 : DRIVE_NOTWRITEABLE) ||
@@ -275,7 +279,9 @@ VOID StubbyScanThread(VOID * arg)
 	  }
 	  else {
 	    Stubby(StubbyScan->hwndCnr, StubbyScan->pci);
-	  }
+          }
+          if (flags & DRIVE_LOCALHD)
+            DosReleaseMutexSem(hmtxScanningLocalHD);
 	}
 	WinDestroyMsgQueue(hmq);
       }
@@ -288,12 +294,7 @@ VOID StubbyScanThread(VOID * arg)
   // DbgMsg(pszSrcFile, __LINE__, "ProcessDirCount %i FixedVolume %i", ProcessDirCount, FixedVolume);
   if (ProcessDirCount >= FixedVolume) {
     DosReleaseMutexSem(hmtxScanning);
-    DosPostEventSem(hevTreeCnrScanComplete);
-    if (fInitialDriveScan && fSwitchTreeOnDirChg && hwndTree && fSaveState && pszFocusDir) {
-       // Keep drive tree in sync with directory container
-      if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszFocusDir), MPVOID))
-	free(pszFocusDir);
-    }
+    DosPostEventSem(hevTreeCnrScanComplete);    
     ProcessDirCount = 0;
     FixedVolume = 0;
   }
@@ -980,7 +981,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	  if (!*pffbFile->achName ||
 	      (!filestoo && ~pffbFile->attrFile & FILE_DIRECTORY) ||
 	      (pffbFile->attrFile & FILE_DIRECTORY &&
-	       pffbFile->achName[0] == '.' &&
+	       !pffbFile->achName[0] || pffbFile->achName[0] == '.' &&
 	       (!pffbFile->achName[1] ||
 		(pffbFile->achName[1] == '.' && !pffbFile->achName[2])))) {
 	    // ulFindCnt--;		// Got . or .. or file to be skipped
@@ -1020,7 +1021,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	      for (x = 0; x < ulSelCnt; x++) {
                 pffbFile = papffbSelected[x];
 		ullBytes = FillInRecordFromFFB(hwndCnr, pci, pszFileSpec,
-					       pffbFile, partial, dcd);
+                                               pffbFile, partial, dcd);
 		pci = (PCNRITEM) pci->rc.preccNextRecord;
 		ullTotalBytes += ullBytes;
 	      } // for
@@ -1142,7 +1143,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	    }
           }
 	  ullBytes = FillInRecordFromFFB(hwndCnr, pci, pszFileSpec,
-					 pffbFile, partial, dcd);
+                                         pffbFile, partial, dcd);
 	  pci = (PCNRITEM) pci->rc.preccNextRecord;
 	  ullTotalBytes += ullBytes;
           // 15 Sep 09 SHL allow timed updates to see
@@ -1250,10 +1251,14 @@ Abort:
     pci = WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pciParent),
 		     MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
     while (pci && (INT)pci != -1) {
+      if (!pci->pszFileName || !strcmp(pci->pszFileName, NullStr)) {
+        Runtime_Error(pszSrcFile, __LINE__, "pci->pszFileName NULL for %p", pci);
+        return;
+      }
       if ((pci->attrFile & FILE_DIRECTORY))
-	Stubby(hwndCnr, pci);
+        Stubby(hwndCnr, pci);
       pci = WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pci),
-		       MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
+                       MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
     }
   }
 
@@ -1680,12 +1685,24 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	  ULONG flags = driveflags[iDrvNum];	// Speed up
 	  if (~flags & DRIVE_INVALID &&
 	      ~flags & DRIVE_NOPRESCAN && (!fNoRemovableScan || ~flags & DRIVE_REMOVABLE)) {
-	    // DbgMsg(pszSrcFile, __LINE__, "Begin Thread %s", pci->pszFileName);
-	    if (xbeginthread(StubbyScanThread,
-			     65536,
-			     stubbyScan,
-			     pszSrcFile, __LINE__) == -1)
-	      xfree(stubbyScan, pszSrcFile, __LINE__);
+            // DbgMsg(pszSrcFile, __LINE__, "Begin Thread %s", pci->pszFileName);
+            if (flags & DRIVE_LOCALHD) {
+              DosRequestMutexSem(hmtxScanningLocalHD, SEM_INDEFINITE_WAIT );
+              if (xbeginthread(StubbyScanThread,
+                               65536,
+                               stubbyScan,
+                               pszSrcFile, __LINE__) == -1) {
+                DosReleaseMutexSem(hmtxScanningLocalHD);
+                xfree(stubbyScan, pszSrcFile, __LINE__);
+              }
+            }
+            else {
+              if (xbeginthread(StubbyScanThread,
+                               65536,
+                               stubbyScan,
+                               pszSrcFile, __LINE__) == -1)
+                xfree(stubbyScan, pszSrcFile, __LINE__);
+            }
 
 	  } // if drive needs to be scanned
 	}

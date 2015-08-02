@@ -114,6 +114,8 @@
   12 Aug 12 GKY Allow for selection of include subdirectories or a list file on initial startup of compare dirs
   30 Dec 12 GKY Enhance traget directory drop to give the option of changing the directory or carrying out an
                 operation to the current target; Added an error message for target = None;
+  02 Aug 15 GKY Remove unneed SubbyScan code and improve suppression of blank lines and
+                duplicate subdirectory name caused by running Stubby in worker threads.
 
 ***********************************************************************/
 
@@ -3552,8 +3554,6 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 	    RemoveOldCnrSwitches(szPrefix, x);
 	    continue;
 	  }
-	  if (x == 0 && fSwitchTreeOnDirChg)
-	    pszFocusDir = xstrdup(szDir, pszSrcFile, __LINE__);
 	  LoadDetailsSwitches(szKeyBase, &localdcd.ds, TRUE);
 	  hwndDir = (HWND) WinSendMsg(hwndClient,
 				      UM_SETDIR,

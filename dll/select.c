@@ -31,6 +31,8 @@
   29 Feb 08 GKY Use xfree where appropriate
   31 May 11 SHL Ensure mask->pszMasks[1] initialize to NULL if not used
   13 Jun 15 GKY Fixed compare selection replaced pszFileNames with pszDisplayNames
+  02 Aug 15 GKY Remove unneed SubbyScan code and improve suppression of blank lines and
+                duplicate subdirectory name caused by running Stubby in worker threads.
 
 ***********************************************************************/
 
@@ -62,6 +64,10 @@
 #include "strips.h"			// bstrip
 #include "stristr.h"			// findstring
 #include "fortify.h"
+#if 0
+#define  __PMPRINTF__
+#include "PMPRINTF.H"
+#endif
 
 static PSZ pszSrcFile = __FILE__;
 
@@ -571,9 +577,7 @@ VOID ExpandAll(HWND hwndCnr, BOOL expand, PCNRITEM pciParent)
       WinSendMsg(hwndCnr, CM_COLLAPSETREE, MPFROMP(pciParent), MPVOID);
     pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pciParent),
 				MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
-    if (pci)
-      DosSleep(0);
-    while (pci && (INT)pci != -1) {
+      while (pci && (INT)pci != -1) {
       ExpandAll(hwndCnr, expand, pci);
       pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pci),
 				  MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
