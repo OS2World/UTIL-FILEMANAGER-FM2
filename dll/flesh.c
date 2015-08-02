@@ -31,6 +31,7 @@
                 one or more miniapp but not to FM/2
   17 Jan 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   04 Aug 12 GKY Fix trap on close during drive scan
+  02 Aug 15 GKY Fix trap in Stubby
 
 ***********************************************************************/
 
@@ -281,10 +282,10 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
   ULONG flags;
   static BOOL brokenlan = FALSE, isbroken = FALSE;
 
-  if (!pciParent || !*pciParent->pszFileName
+  if (!pciParent || (INT) pciParent == -1 || !*pciParent->pszFileName
       || pciParent->pszFileName == NullStr || !hwndCnr)
     return FALSE;
-
+  
   len = strlen(pciParent->pszFileName);
   memcpy(str, pciParent->pszFileName, len + 1);
   if (str[len - 1] != '\\')
@@ -397,7 +398,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
     }
     goto None;
   }
-
+  
   if (!rc) {
     DosFindClose(hDir);
     if (nm) {
@@ -435,7 +436,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 	if (*pffb->achName &&
 	    (includefiles || (pffb->attrFile & FILE_DIRECTORY)) &&
 	    // Skip . and ..
-	    (pffb->achName[0] != '.' || (pffb->achName[1]
+	    ((pffb->achName[0] && pffb->achName[0] != '.') || (pffb->achName[1]
 					 && (pffb->achName[1] != '.'
 					     || pffb->achName[2])))) {
 	  isadir = TRUE;
@@ -469,13 +470,13 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 	    ri.pRecordParent = (PRECORDCORE) pciParent;
 	    ri.zOrder = (ULONG) CMA_TOP;
 	    ri.cRecordsInsert = 1;
-	    ri.fInvalidateRecord = TRUE;
+            ri.fInvalidateRecord = TRUE;
 	    //DbgMsg(pszSrcFile, __LINE__, "Stubby %p CM_INSERTRECORD \"%s\" %.255s", hwndCnr, pci->pszFileName, pffb->achName); // 18 Dec 08 SHL fixme debug
 	    if (!WinSendMsg(hwndCnr,
 			    CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
 	      DosSleep(50); //05 Aug 07 GKY 100
-	      WinSetFocus(HWND_DESKTOP, hwndCnr);
-	      if (WinIsWindow((HAB)0, hwndCnr)) {
+              WinSetFocus(HWND_DESKTOP, hwndCnr);
+              if (WinIsWindow((HAB)0, hwndCnr)) {
 		//DbgMsg(pszSrcFile, __LINE__, "Stubby %p CM_INSERTRECORD %s", hwndCnr, pci->pszFileName); // 18 Dec 08 SHL fixme debug
 		if (!WinSendMsg(hwndCnr,
 				CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
@@ -488,10 +489,10 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 	      }
 	    }
 	    else
-	      ok = TRUE;
+              ok = TRUE;
+            }
 	  }
 	}
-      }
       else if (toupper(*str) > 'B' && str[1] == ':' && str[2] == '\\' &&
 	       !str[3]) {
 
