@@ -6,12 +6,13 @@
   Misc utility functions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2008, 2009 Steven H. Levine
+  Copyright (c) 2008, 2015 Steven H. Levine
 
   17 Jul 08 SHL Baseline
   08 Mar 09 GKY Add WriteDetailsSwitches and use LoadDetailsSwitches to replace in line code
   22 Jul 09 GKY Check if drives support EAs add driveflag for this
   22 Jul 09 GKY Allow .LONGNAME to be displayed for FAT drives.
+  09 Aug 15 SHL Expose GetTidForThread
 
 ***********************************************************************/
 
@@ -24,9 +25,10 @@
 
 #include "dircnrs.h"		// typedef for DETAILS_SETTINGS
 
+UINT GetTidForThread(VOID);
+
 #ifdef FORTIFY
-INT GetTidForThread(VOID);
-INT GetTidForWindow(HWND hwnd);
+UINT GetTidForWindow(HWND hwnd);
 #endif
 
 SHORT AddToListboxBottom(HWND hwnd, PCSZ str);

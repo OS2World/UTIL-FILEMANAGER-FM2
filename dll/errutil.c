@@ -6,7 +6,7 @@
   Error reporting
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2014 Steven H. Levine
+  Copyright (c) 2004, 2015 Steven H. Levine
 
   12 Aug 04 SHL Comments
   23 May 05 SHL Move saymsg here
@@ -41,6 +41,7 @@
   15 Feb 14 GKY Improvements to saymsg2 some code cleanup
   16 Feb 14 GKY Rework readonly check on delete code so it actually works in a logical way
                 and so it works with move to trashcan inabled.
+  09 Nov 13 SHL Use GetTidForThread in DbgMsg and tweak for for editors that understand file:line
 
 ***********************************************************************/
 
@@ -60,6 +61,7 @@
 #include "fm3str.h"
 #include "notebook.h"			// fErrorBeepOff
 #include "init.h"			// Data declares
+#include "misc.h"			// GetTidForThread
 #include "wrappers.h"			// xmallocz
 #include "fm3dll2.h"
 
@@ -80,10 +82,7 @@ static APIRET showMsg(ULONG mb_type, HWND hwnd, PCSZ pszTitle, PCSZ pszMsg, BOOL
 
 VOID DbgMsg(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
 {
-  PIB *ppib;
-  TIB *ptib;
   ULONG ultid;
-  APIRET apiret;
   va_list va;
 
 #if 1 // fixme to be selectable
@@ -105,14 +104,11 @@ VOID DbgMsg(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
 
 #endif
 
-  apiret = DosGetInfoBlocks(&ptib, &ppib);
-  if (apiret)
-    ultid = 0;
-  else
-    ultid = ptib->tib_ptib2->tib2_ultid;
+  ultid = GetTidForThread();
 
   // OK for source file name to be null
-  fprintf(stderr, "%s %u (%lu)", pszSrcFile ? pszSrcFile : "n/a", uSrcLineNo, ultid);
+  // 2015-08-08 SHL Use file:line for editors that support it
+  fprintf(stderr, "%s:%u (%lu)", pszSrcFile ? pszSrcFile : "n/a", uSrcLineNo, ultid);
   // If format null want just file and line
   if (pszFmt) {
     fputc(' ', stderr);

@@ -5,7 +5,7 @@
   Misc GUI support functions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2010 Steven H. Levine
+  Copyright (c) 2003, 2015 Steven H. Levine
 
   11 Jun 03 SHL Add JFS and FAT32 support
   01 Aug 04 SHL Rework lstrip/rstrip usage
@@ -58,22 +58,23 @@
   08 Mar 09 GKY Add WriteDetailsSwitches and use LoadDetailsSwitches to replace in line code
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   28 Mar 09 GKY Add RemoveOldCnrSwitches to remove pre 3.16 style ini keys;
-                add State.version key for check
+		add State.version key for check
   12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
   22 Jul 09 GKY Check if drives support EAs add driveflag for this
   22 Jul 09 GKY Allow .LONGNAME to be displayed for FAT drives.
   21 Dec 09 GKY Allow command menu reorder without changing the "ID" or hot key for a command.
-                Added load_inicommand to load the IDs from the ini file.
+		Added load_inicommand to load the IDs from the ini file.
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   23 Oct 10 GKY Add menu items for opening directory cnrs based on path of selected item
-                including the option to use walk directories to select path
+		including the option to use walk directories to select path
   26 Aug 11 GKY Add a low mem version of xDosAlloc* wrappers; move error checking into all the
-                xDosAlloc* wrappers.
+		xDosAlloc* wrappers.
   12 Nov 11 GKY Fixed HelpViewer's failure to open help files and subsequent failure with files with spaces.
   28 Jun 14 GKY Fix errors identified with CPPCheck
   12 Jul 15 GKY Fix CN_REALLOCPSZ file name editing code to: 1) Eliminate the possibility of
-                updating the container before CN_ENDEDIT is called. 2) Don't call RemoveCnrItems
-                for tree container and collector.
+		updating the container before CN_ENDEDIT is called. 2) Don't call RemoveCnrItems
+		for tree container and collector.
+  09 Aug 15 SHL Expose GetTidForThread and rework usage
 
 ***********************************************************************/
 
@@ -162,13 +163,10 @@ BOOL IsFm2Window(HWND hwnd, BOOL chkTid)
     PIB *ppib;
     TIB *ptib;
     BOOL yes;
-    APIRET rc = DosGetInfoBlocks(&ptib, &ppib);
+    APIRET rc = xDosGetInfoBlocks(&ptib, &ppib);
 
-    if (rc) {
-      Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-		PCSZ_DOSGETINFOBLOCKS);
+    if (rc)
       yes = FALSE;
-    }
     else {
       PID pid;
       TID tid;
@@ -189,56 +187,57 @@ BOOL IsFm2Window(HWND hwnd, BOOL chkTid)
  * Return thread ordinal for fm/2 window
  * window must exist and must be created by fm/2
  * @param hwnd is window handle
- * @returns thread ordinal or -1 if error
+ * @returns thread ordinal or 0 if error
  */
 
-INT GetTidForWindow(HWND hwnd)
+UINT GetTidForWindow(HWND hwnd)
 {
     PIB *ppib;
     TIB *ptib;
-    LONG ordinal = -1;
-    APIRET rc = DosGetInfoBlocks(&ptib, &ppib);
+    LONG ordinal;
+    APIRET rc = xDosGetInfoBlocks(&ptib, &ppib);
 
-    if (rc) {
-      Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-		PCSZ_DOSGETINFOBLOCKS);
-    }
+    if (rc)
+      ordinal = 0;
     else {
       PID pid;
       TID tid;
-      if (!WinQueryWindowProcess(hwnd, &pid, &tid))
-	Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__, "WinQueryWindowProcess failed for %X", hwnd);
-      else if (pid != ppib->pib_ulpid)
-	Runtime_Error(pszSrcFile, __LINE__, "hwnd %X not created by fm/2", hwnd);
+      if (!WinQueryWindowProcess(hwnd, &pid, &tid)) {
+	ordinal = -1;
+	Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__, "WinQueryWindowProcess failed for hwnd %x", hwnd);
+      }
+      else if (pid != ppib->pib_ulpid) {
+	ordinal = 0;
+	Runtime_Error(pszSrcFile, __LINE__, "hwnd %x not created by fm/2 process", hwnd);
+      }
       else
 	ordinal = ptib->tib_ptib2->tib2_ultid;
     }
     return ordinal;
 }
 
+#endif // FORTIFY
+
 /**
- * Return thread ordinal for current thread
- * @returns thread ordinal or -1 if error
+ * Return thread ordinal (1..n) for current thread
+ * @returns thread ordinal or 0 if error
+ * 2015-08-09 SHL changed return
  */
 
-INT GetTidForThread(VOID)
+UINT GetTidForThread(VOID)
 {
     PIB *ppib;
     TIB *ptib;
-    LONG ordinal = -1;
-    APIRET rc = DosGetInfoBlocks(&ptib, &ppib);
+    LONG ordinal = 0;
+    APIRET rc = xDosGetInfoBlocks(&ptib, &ppib);
 
-    if (rc) {
-      Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-		PCSZ_DOSGETINFOBLOCKS);
-    }
+    if (rc)
+      ordinal = 0;
     else
       ordinal = ptib->tib_ptib2->tib2_ultid;
 
     return ordinal;
 }
-
-#endif // FORTIFY
 
 VOID SetShiftState(VOID)
 {
@@ -521,24 +520,24 @@ VOID AdjustCnrColsForFSType(HWND hwndCnr, PCSZ directory, DETAILS_SETTINGS *pds,
       hasCreateDT = TRUE;
       hasAccessDT = TRUE;
       if (driveflags[x] & DRIVE_NOEASUPPORT) {
-        hasSubjects  = FALSE;
-        hasLongNames = FALSE;
+	hasSubjects  = FALSE;
+	hasLongNames = FALSE;
       }
       else {
-        hasSubjects  = TRUE;
-        hasLongNames = TRUE;
+	hasSubjects  = TRUE;
+	hasLongNames = TRUE;
       }
     }
     else if (!strcmp(FileSystem, CDFS) || !strcmp(FileSystem, ISOFS)) {
       hasCreateDT = TRUE;
       hasAccessDT = FALSE;
       if (driveflags[x] & DRIVE_NOEASUPPORT) {
-        hasSubjects  = FALSE;
-        hasLongNames = FALSE;
+	hasSubjects  = FALSE;
+	hasLongNames = FALSE;
       }
       else {
-        hasSubjects  = TRUE;
-        hasLongNames = TRUE;
+	hasSubjects  = TRUE;
+	hasLongNames = TRUE;
       }
     }
     else {
@@ -546,12 +545,12 @@ VOID AdjustCnrColsForFSType(HWND hwndCnr, PCSZ directory, DETAILS_SETTINGS *pds,
       hasCreateDT = FALSE;
       hasAccessDT = FALSE;
       if (driveflags[x] & DRIVE_NOEASUPPORT) {
-        hasSubjects  = FALSE;
-        hasLongNames = FALSE;
+	hasSubjects  = FALSE;
+	hasLongNames = FALSE;
       }
       else {
-        hasSubjects  = TRUE;
-        hasLongNames = TRUE;
+	hasSubjects  = TRUE;
+	hasLongNames = TRUE;
       }
     }
   }
@@ -584,27 +583,27 @@ VOID AdjustCnrColsForFSType(HWND hwndCnr, PCSZ directory, DETAILS_SETTINGS *pds,
   AdjustCnrColVis(hwndCnr,
 		  GetPString(IDS_CRTIME),
 		  pds->detailscrtime ? hasCreateDT : FALSE,
-                  FALSE);
+		  FALSE);
   if (pds->detailslongname && !pds->detailssubject && hasSubjects) {
     AdjustCnrColVis(hwndCnr,
-         	    compare ? GetPString(IDS_STATUS) : GetPString(IDS_SUBJ),
+		    compare ? GetPString(IDS_STATUS) : GetPString(IDS_SUBJ),
 		    TRUE,
-                    FALSE);
+		    FALSE);
     AdjustCnrColVis(hwndCnr,
-                    GetPString(IDS_LNAME),
-                    pds->detailslongname ? hasLongNames : FALSE,
-                    FALSE);
+		    GetPString(IDS_LNAME),
+		    pds->detailslongname ? hasLongNames : FALSE,
+		    FALSE);
     WinSendMsg(hwndCnr, CM_INVALIDATEDETAILFIELDINFO, MPVOID, MPVOID);
   }
   else
     AdjustCnrColVis(hwndCnr,
-                    GetPString(IDS_LNAME),
-                    pds->detailslongname ? hasLongNames : FALSE,
-                    FALSE);
+		    GetPString(IDS_LNAME),
+		    pds->detailslongname ? hasLongNames : FALSE,
+		    FALSE);
   AdjustCnrColVis(hwndCnr,
-                  compare ? GetPString(IDS_STATUS) : GetPString(IDS_SUBJ),
-                  pds->detailssubject ? hasSubjects : FALSE,
-                  FALSE);
+		  compare ? GetPString(IDS_STATUS) : GetPString(IDS_SUBJ),
+		  pds->detailssubject ? hasSubjects : FALSE,
+		  FALSE);
   WinSendMsg(hwndCnr, CM_INVALIDATEDETAILFIELDINFO, MPVOID, MPVOID);
 }
 
@@ -620,9 +619,9 @@ VOID AdjustCnrColsForPref(HWND hwndCnr, PCSZ directory, DETAILS_SETTINGS *pds,
 
   if (!directory) {
     AdjustCnrColVis(hwndCnr,
-                    compare ? GetPString(IDS_STATUS) : GetPString(IDS_SUBJ),
-                    pds->detailssubject,
-                    FALSE);
+		    compare ? GetPString(IDS_STATUS) : GetPString(IDS_SUBJ),
+		    pds->detailssubject,
+		    FALSE);
     AdjustCnrColVis(hwndCnr, GetPString(IDS_LADATE), pds->detailsladate, FALSE);
     AdjustCnrColVis(hwndCnr, GetPString(IDS_LATIME), pds->detailslatime, FALSE);
     AdjustCnrColVis(hwndCnr, GetPString(IDS_CRDATE), pds->detailscrdate, FALSE);
@@ -692,7 +691,7 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
     // last column in the lefthand container window (we have a splitbar)
     if (!dsDirCnrDefault.fSubjectInLeftPane)
       pfiLastLeftCol = pfi;
-    else 
+    else
       pfiLastLeftCol = pfi->pNextFieldInfo;
 
     // Fill in column info for subjects
@@ -702,7 +701,7 @@ BOOL SetCnrCols(HWND hwndCnr, BOOL isCompCnr)
       pfi->flData |= CFA_FIREADONLY;
     pfi->flTitle = CFA_LEFT | CFA_FITITLEREADONLY;
     pfi->pTitleData = isCompCnr ? (PSZ)GetPString(IDS_STATUS) :
-                                  (PSZ)GetPString(IDS_SUBJ);
+				  (PSZ)GetPString(IDS_SUBJ);
     pfi->offStruct = FIELDOFFSET(CNRITEM, pszSubject);
     pfi->cxWidth = dsDirCnrDefault.SubjectDisplayWidth;
 
@@ -883,16 +882,16 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      pci->pszSubject = NullStr;
 	      xfree(psz, pszSrcFile, __LINE__);
 	    }
-            else {
-              psz = xrealloc(pci->pszSubject, retlen + 1, pszSrcFile, __LINE__);
-              if (psz)
-                pci->pszSubject = psz;
-              else {
-                xfree(pci->pszSubject, pszSrcFile, __LINE__);
-                pci->pszSubject = NullStr;
-                return FALSE; // out of memory
-              }
-            }
+	    else {
+	      psz = xrealloc(pci->pszSubject, retlen + 1, pszSrcFile, __LINE__);
+	      if (psz)
+		pci->pszSubject = psz;
+	      else {
+		xfree(pci->pszSubject, pszSrcFile, __LINE__);
+		pci->pszSubject = NullStr;
+		return FALSE; // out of memory
+	      }
+	    }
 	  }
 	  else {
 	    pci->pszSubject = xmalloc(retlen + 1, pszSrcFile, __LINE__);
@@ -948,16 +947,16 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      pci->pszLongName = NullStr;
 	      xfree(psz, pszSrcFile, __LINE__);
 	    }
-            else {
-              psz = xrealloc(pci->pszLongName, retlen + 1, pszSrcFile, __LINE__);
-              if (psz)
-                pci->pszLongName = psz;
-              else {
-                xfree(pci->pszLongName, pszSrcFile, __LINE__);
-                pci->pszLongName = NullStr;
-                return FALSE; // out of memory
-              }
-            }
+	    else {
+	      psz = xrealloc(pci->pszLongName, retlen + 1, pszSrcFile, __LINE__);
+	      if (psz)
+		pci->pszLongName = psz;
+	      else {
+		xfree(pci->pszLongName, pszSrcFile, __LINE__);
+		pci->pszLongName = NullStr;
+		return FALSE; // out of memory
+	      }
+	    }
 	  }
 	  else {
 	    pci->pszLongName = xmalloc(retlen + 1, pszSrcFile, __LINE__);
@@ -966,9 +965,9 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	  return (MRESULT) WriteLongName(pci->pszFileName, longname);
 	}
-        else {
-          WinQueryWindowText(hwndMLE, sizeof(testname), testname);
-          // fixme to check for other illegal chars? GKY 11 Jul 15
+	else {
+	  WinQueryWindowText(hwndMLE, sizeof(testname), testname);
+	  // fixme to check for other illegal chars? GKY 11 Jul 15
 	  if (strchr(testname, '?') || strchr(testname, '*'))
 	    return (MRESULT) FALSE;
 	  // If the text changed, rename the file system object.
@@ -976,7 +975,7 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  bstrip(testname);
 	  if (!IsFullName(testname))
 	    Runtime_Error(pszSrcFile, __LINE__, "bad name");
-          else {
+	  else {
 	    if (DosQueryPathInfo(testname, //Why does this return 0 when the file doesn't exist?
 				 FIL_QUERYFULLNAME, // No new directory creation?
 				 newname, sizeof(newname)))
@@ -984,12 +983,12 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    if (DosQueryPathInfo(pci->pszFileName,
 				 FIL_QUERYFULLNAME,
 				 oldname, sizeof(oldname)))
-              strcpy(oldname, pci->pszFileName);
+	      strcpy(oldname, pci->pszFileName);
 	    WinSetWindowText(hwndMLE, oldname);
-	    if (strcmp(oldname, newname)) { 
-              if (stricmp(oldname, newname) && IsFile(newname) != -1) {
-                if (!fAlertBeepOff)
-		  DosBeep(50, 100);       
+	    if (strcmp(oldname, newname)) {
+	      if (stricmp(oldname, newname) && IsFile(newname) != -1) {
+		if (!fAlertBeepOff)
+		  DosBeep(50, 100);
 		return (MRESULT) FALSE;    // exists; disallow
 	      }
 	      if (fVerify && (driveflags[toupper(*oldname) - 'A'] & DRIVE_WRITEVERIFYOFF ||
@@ -999,8 +998,8 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	      if (docopyf(MOVE, oldname, newname))
 		Runtime_Error(pszSrcFile, __LINE__, "docopyf");
-              else {
-                fPostName = TRUE;
+	      else {
+		fPostName = TRUE;
 	      }
 	      if (fResetVerify) {
 		DosSetVerify(fVerify);
@@ -1019,24 +1018,24 @@ MRESULT CnrDirectEdit(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PCNRITEM pci = (PCNRITEM) ((PCNREDITDATA) mp2)->pRecord;
 
       if (fPostName) {
-        CHAR *filename;
-        DIRCNRDATA *dcd;
+	CHAR *filename;
+	DIRCNRDATA *dcd;
 
-        if (!dcd)
-          dcd = INSTDATA(hwnd);
-        filename = xstrdup(oldname, pszSrcFile, __LINE__);
-        if (filename) {
-          if (!PostMsg(hwnd,UM_FIXEDITNAME, MPVOID, MPFROMP(filename)))
-            free(filename);
-        }
-        if (strcmp(newname, NullStr)) {
-          filename = xstrdup(newname, pszSrcFile, __LINE__);
-          if (filename) {
-            if (!PostMsg(hwnd, UM_FIXEDITNAME, MPVOID, MPFROMP(filename)))
-              free(filename);
-          }
-        }
-        fPostName = FALSE;
+	if (!dcd)
+	  dcd = INSTDATA(hwnd);
+	filename = xstrdup(oldname, pszSrcFile, __LINE__);
+	if (filename) {
+	  if (!PostMsg(hwnd,UM_FIXEDITNAME, MPVOID, MPFROMP(filename)))
+	    free(filename);
+	}
+	if (strcmp(newname, NullStr)) {
+	  filename = xstrdup(newname, pszSrcFile, __LINE__);
+	  if (filename) {
+	    if (!PostMsg(hwnd, UM_FIXEDITNAME, MPVOID, MPFROMP(filename)))
+	      free(filename);
+	  }
+	}
+	fPostName = FALSE;
       }
       if (pci && (INT) pci != -1 && !IsRoot(pci->pszFileName)) {
 	WinSendMsg(hwnd,
@@ -1351,36 +1350,36 @@ VOID SetupCommandMenu(HWND hwndMenu, HWND hwndCnr)
     info = cmdhead;
     while (info) {
       WinSendMsg(mit.hwndSubMenu, MM_DELETEITEM,
-                 MPFROMSHORT((SHORT) (info->ID)), MPVOID);
+		 MPFROMSHORT((SHORT) (info->ID)), MPVOID);
       x++;
       info = info->next;
     }
     while (numitems != MIT_ERROR) { // Delete items that were deleted from commands since the ID is gone
       numitems = (SHORT) WinSendMsg(mit.hwndSubMenu, MM_ITEMIDFROMPOSITION,
-                                    MPFROMSHORT((SHORT) 1), MPVOID);
+				    MPFROMSHORT((SHORT) 1), MPVOID);
       WinSendMsg(mit.hwndSubMenu, MM_DELETEITEM,
-                 MPFROMSHORT(numitems), MPVOID);
+		 MPFROMSHORT(numitems), MPVOID);
     }
     if (hwndCnr && cmdhead) {
       x = 0;
       info = cmdhead;
       while (info) {
 
-        CHAR s[CCHMAXPATH + 24];
+	CHAR s[CCHMAXPATH + 24];
 
 	sprintf(s,
-                "%s {%i} %s%s%s",
+		"%s {%i} %s%s%s",
 		info->title, info->ID,
 		info->HotKeyID && info->HotKeyID < IDM_COMMANDNUM20 ? "\tCtrl + " : NullStr,
-                info->HotKeyID && info->HotKeyID > IDM_COMMANDNUM19 ? "\tAlt + " : NullStr,
-                info->HotKeyID && ((info->HotKeyID > IDM_COMMANDNUM9 &&
-                                   info->HotKeyID < IDM_COMMANDNUM20) ||
-                info->HotKeyID > IDM_COMMANDNUM29) ? "Shift + " : NullStr);
+		info->HotKeyID && info->HotKeyID > IDM_COMMANDNUM19 ? "\tAlt + " : NullStr,
+		info->HotKeyID && ((info->HotKeyID > IDM_COMMANDNUM9 &&
+				   info->HotKeyID < IDM_COMMANDNUM20) ||
+		info->HotKeyID > IDM_COMMANDNUM29) ? "Shift + " : NullStr);
 	if (info->HotKeyID)
 	  sprintf(&s[strlen(s)], "%d",
-                  (((info->HotKeyID - IDM_COMMANDNUM0) % 10) + 1) == 10 ? 0 :
-                   ((info->HotKeyID - IDM_COMMANDNUM0) % 10) + 1);
-	mi.id = (USHORT) info->ID; 
+		  (((info->HotKeyID - IDM_COMMANDNUM0) % 10) + 1) == 10 ? 0 :
+		   ((info->HotKeyID - IDM_COMMANDNUM0) % 10) + 1);
+	mi.id = (USHORT) info->ID;
 	mi.afAttribute = (info->flags & ONCE ? MIA_CHECKED : 0) |
 			 (info->flags & PROMPT ? MIA_FRAMED : 0);
 	mi.afStyle = MIS_TEXT;
@@ -1472,9 +1471,9 @@ VOID LoadDetailsSwitches(PCSZ keyroot, DETAILS_SETTINGS *pds, BOOL state)
       size = sizeof(ULONG);
       PrfQueryProfileData(fmprof, appname, s, (PVOID) &pds->SubjectDisplayWidth, &size);
       if (pds->SubjectDisplayWidth < 50)
-        pds->SubjectDisplayWidth = 0;
+	pds->SubjectDisplayWidth = 0;
       else if (pds->SubjectDisplayWidth > 1000)
-        pds->SubjectDisplayWidth = 1000;
+	pds->SubjectDisplayWidth = 1000;
     }
   }
 }
@@ -1705,15 +1704,16 @@ PMINIRECORDCORE CurrentRecord(HWND hwndCnr)
   PMINIRECORDCORE pmi;
 
   for (;;) {
-    pmi = (PMINIRECORDCORE) WinSendMsg(hwndCnr, CM_QUERYRECORDEMPHASIS,
+    pmi = (PMINIRECORDCORE) WinSendMsg(hwndCnr,
+				       CM_QUERYRECORDEMPHASIS,
 				       MPFROMLONG(CMA_FIRST),
 				       MPFROMSHORT(attrib));
-    if ((!pmi || (INT) pmi == -1) && attrib == CRA_SELECTED)    // punt
-      attrib = CRA_CURSORED;
+    if ((!pmi || (INT)pmi == -1) && attrib == CRA_SELECTED)
+      attrib = CRA_CURSORED;		// Retry cursored
     else
-      break;
+      break;				// punt
   }
-  return ((INT)pmi == -1) ? NULL : pmi;
+  return (INT)pmi == -1 ? NULL : pmi;
 }
 
 BOOL PostMsg(HWND h, ULONG msg, MPARAM mp1, MPARAM mp2)
@@ -2035,7 +2035,7 @@ HWND CheckMenu(HWND hwnd, HWND * hwndMenu, USHORT id)
       SetConditionalCascade(CollectorFileMenu, IDM_DELETESUBMENU,
 			    fDefaultDeletePerm ? IDM_PERMDELETE : IDM_DELETE);
       SetConditionalCascade(CollectorFileMenu, IDM_OPENSUBMENU,
-                            IDM_OPENDEFAULT);
+			    IDM_OPENDEFAULT);
       SetConditionalCascade(CollectorFileMenu, IDM_OPENSUBCNRMENU,
 			    IDM_OPENWINDOW);
       SetConditionalCascade(CollectorFileMenu, IDM_OBJECTSUBMENU, IDM_SHADOW);
