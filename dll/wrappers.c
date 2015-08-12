@@ -5,7 +5,7 @@
 
   Wrappers with error checking
 
-  Copyright (c) 2006, 2015 Steven H.Levine
+  Copyright (c) 2006, 2008 Steven H.Levine
 
   22 Jul 06 SHL Baseline
   29 Jul 06 SHL Add xgets_stripped
@@ -22,7 +22,11 @@
 		xDosAlloc* wrappers.
   09 Oct 11 GKY Modify xfsopen so it doesn't fail when called with r+ because the file doesn't exist.
 		We should be creating the file unless it is set to fail silently.
-  09 Aug 15 SHL Add xDosGetInfoBlocks
+  12 Aug 15 JBS Ticket #524: Ensure no "highmem-unsafe" functions are called directly
+		1) New functions have been added
+		2) Code for unsafe-but-not-yet-used-by-FM/2 has been added in an
+		   "#if 0" block for quick implementation should FM/2 start to use them.
+		   Among these. xDosOpenL and xWinUpper still need work. The rest are ready for use.
 
 ***********************************************************************/
 
@@ -59,16 +63,182 @@ static PSZ pszSrcFile = __FILE__;
 #pragma data_seg(GLOBAL1)
 BOOL fNoLargeFileSupport;
 
-APIRET xDosQueryAppType(PCSZ pszName, PULONG pFlags)
+APIRET xDosDupHandle(HFILE hFile,
+		     PHFILE phFile)
 {
-  APIRET rc;
-  CHAR szPgm[CCHMAXPATH];
+  APIRET	rc;
+  HFILE 	hFileLow = *phFile;
 
-  strcpy(szPgm, pszName);
-  rc = DosQueryAppType(szPgm, pFlags);
+  rc = DosDupHandle(hFile, &hFileLow);
+  *phFile = hFileLow;
   return rc;
 }
 
+APIRET xDosForceDelete(PSZ pszFileName)
+{
+  APIRET	rc;
+  CHAR szFileNameLow[CCHMAXPATH];
+
+  strcpy(szFileNameLow, pszFileName);
+  rc = DosForceDelete(szFileNameLow);
+  return rc;
+}
+
+APIRET xDosQueryAppType(PCSZ pszName,
+			PULONG pFlags)
+{
+  APIRET rc;
+  ULONG ulFlagsLow;
+  CHAR szPgm[CCHMAXPATH];
+
+  strcpy(szPgm, pszName);
+  rc = DosQueryAppType(szPgm, &ulFlagsLow);
+  *pFlags = ulFlagsLow;
+  return rc;
+}
+
+APIRET xDosQueryHType(HFILE hFile,
+		      PULONG pulType,
+		      PULONG pulAttr)
+{
+  APIRET	rc;
+  ULONG		ulTypeLow, ulAttrLow;
+
+  rc = DosQueryHType(hFile, &ulTypeLow, &ulAttrLow);
+  *pulType = ulTypeLow;
+  *pulAttr = ulAttrLow;
+  return rc;
+}
+
+APIRET xDosStartSession(PSTARTDATA psd,
+			PULONG pulSessionID,
+			PPID ppid)
+{
+  APIRET	rc;
+  ULONG		ulSessionIDLow;
+  PID		pidLow;
+  PSTARTDATA	psdLow;
+  CHAR		*pbSafe;
+  size_t	cbSafe = sizeof(STARTDATA);
+  UINT		ul0, ul1, ul2, ul3, ul4, ul5;
+
+  if (HIGH_MEMORY_ADDRESS(psd->PgmTitle))
+  {
+    ul0 = strlen((const char *)psd->PgmTitle) + 1;
+    cbSafe += ul0;
+  }
+  else
+      ul0 = 0;
+  if (HIGH_MEMORY_ADDRESS(psd->PgmName))
+  {
+    ul1 = strlen((const char *)psd->PgmName) + 1;
+    cbSafe += ul1;
+  }
+  else
+      ul1 = 0;
+  if (HIGH_MEMORY_ADDRESS(psd->TermQ))
+  {
+    ul2 = strlen((const char *)psd->TermQ) + 1;
+    cbSafe += ul2;
+  }
+  else
+    ul2 = 0;
+  if (HIGH_MEMORY_ADDRESS(psd->PgmInputs))
+  {
+    ul3 = strlen((const char *)psd->PgmInputs) + 1;
+    cbSafe += ul3;
+  }
+  else
+    ul3= 0;
+  if (HIGH_MEMORY_ADDRESS(psd->Environment))
+  {
+    const char *psz = (const char *)psd->Environment;
+    while (*psz)
+	psz = strchr(psz, '\0') + 1;
+    ul4 = (unsigned int *)psz - (unsigned int *)psd->Environment + 1;
+    cbSafe += ul4;
+  }
+  else
+    ul4 = 0;
+  if (HIGH_MEMORY_ADDRESS(psd->IconFile))
+  {
+    ul5 = strlen((const char *)psd->IconFile) + 1;
+    cbSafe += ul5;
+  }
+  else
+    ul5 = 0;
+  if (HIGH_MEMORY_ADDRESS(psd->ObjectBuffer) && psd->ObjectBuffLen)
+    cbSafe += psd->ObjectBuffLen;
+
+  rc = xDosAllocMemLow((void *)&psdLow,
+		       cbSafe,
+		       pszSrcFile,
+		       __LINE__);
+  if (rc)
+    return ERROR_NOT_ENOUGH_MEMORY;
+
+  memcpy((PVOID)psdLow, (PVOID)psd, sizeof(STARTDATA));
+  pbSafe = (CHAR *)psdLow + sizeof(STARTDATA);
+  if (ul0)
+  {
+    memcpy(pbSafe, psd->PgmTitle, ul0);
+    psdLow->PgmTitle = pbSafe;
+    pbSafe += ul0;
+  }
+  if (ul1)
+  {
+    memcpy(pbSafe, psd->PgmName, ul1);
+    psdLow->PgmName = pbSafe;
+    pbSafe += ul1;
+  }
+  if (ul2)
+  {
+    memcpy(pbSafe, psd->TermQ, ul2);
+    psdLow->TermQ = (UCHAR *)pbSafe;
+    pbSafe += ul2;
+  }
+  if (ul3)
+  {
+    memcpy(pbSafe, psd->PgmInputs, ul3);
+    psdLow->PgmInputs = (UCHAR *)pbSafe;
+    pbSafe += ul3;
+  }
+  if (ul4)
+  {
+    memcpy(pbSafe, psd->Environment, ul4);
+    psdLow->Environment = (UCHAR *)pbSafe;
+    pbSafe += ul4;
+  }
+  if (ul5)
+  {
+    memcpy(pbSafe, psd->IconFile, ul5);
+    psdLow->IconFile = pbSafe;
+    pbSafe += ul5;
+  }
+  if (HIGH_MEMORY_ADDRESS(psd->ObjectBuffer) && psd->ObjectBuffLen)
+    psdLow->ObjectBuffer = pbSafe;
+
+  rc = DosStartSession(psdLow,
+		       pulSessionID ? &ulSessionIDLow : NULL,
+		       ppid ? &pidLow : NULL);
+
+  /* Set return values */
+  if (HIGH_MEMORY_ADDRESS(psd->ObjectBuffer) && psd->ObjectBuffLen)
+    memcpy(psd->ObjectBuffer, psdLow->ObjectBuffer, psd->ObjectBuffLen);
+  if (pulSessionID)
+    *pulSessionID = ulSessionIDLow;
+  if (ppid)
+    *ppid = pidLow;
+
+  /* cleanup and return. */
+  xfree(psdLow, pszSrcFile, __LINE__);
+  return rc;
+}
+
+
+//
+//	"Other" wrapper functions
+//
 /**
  * xDosAllocSharedMem uses OBJ_ANY on systems that support high memory use
  * and falls back to low memory allocation where it is not supported.
@@ -82,7 +252,7 @@ APIRET xDosAllocSharedMem(PPVOID ppb,
 			  PCSZ pszSrcFile,
 			  UINT uiLineNumber)
 {
-  APIRET rc; ;
+  APIRET rc;
 
   rc = DosAllocSharedMem(ppb, pszName, cb,
 			 PAG_COMMIT | OBJ_GIVEABLE | PAG_READ | PAG_WRITE | OBJ_ANY);
@@ -312,9 +482,11 @@ APIRET xDosQueryPathInfo (PSZ pszPathName, ULONG ulInfoLevel, PVOID pInfoBuf, UL
  * Some kernels do not correctly handle FILESTATUS3 and PEAOP2 buffers
  * that cross a 64K boundary.
  * When this occurs, they return ERROR_INVALID_NAME.
+ *
  * This code works around the problem because if the passed buffer crosses
  * the boundary the alternate buffer will not because both are on the stack
  * and we don't put enough additional data on the stack for this to occur.
+ *
  * It is caller's responsitibility to report errors
  * @param pInfoBuf pointer to FILESTATUS3(L) or EAOP2 buffer
  * @param ulInfoLevel FIL_STANDARD(L) or FIL_QUERYEASIZE
@@ -327,76 +499,76 @@ APIRET xDosSetPathInfo(PSZ pszPathName,
 		       ULONG cbInfoBuf,
 		       ULONG flOptions)
 {
-    FILESTATUS3 fs3;
-    FILESTATUS3 fs3_a;
-    FILESTATUS3L fs3l;
-    EAOP2 eaop2;
-    APIRET rc;
-    BOOL crosses = ((ULONG)pInfoBuf ^
-		    ((ULONG)pInfoBuf + cbInfoBuf - 1)) & ~0xffff;
-    BOOL fResetVerify = FALSE;
+  FILESTATUS3 fs3;
+  FILESTATUS3 fs3_a;
+  FILESTATUS3L fs3l;
+  EAOP2 eaop2;
+  APIRET rc;
+  BOOL crosses = ((ULONG)pInfoBuf ^
+		  ((ULONG)pInfoBuf + cbInfoBuf - 1)) & ~0xffff;
+  BOOL fResetVerify = FALSE;
 
-    if (fVerify && driveflags[toupper(*pszPathName) - 'A'] & DRIVE_WRITEVERIFYOFF) {
-      DosSetVerify(FALSE);
-      fResetVerify = TRUE;
-    }
-    switch (ulInfoLevel) {
-      case FIL_STANDARD:
-	if (crosses) {
-	  fs3 = *(PFILESTATUS3)pInfoBuf;	// Copy to buffer that does not cross 64K boundary
-	  rc = DosSetPathInfo(pszPathName, ulInfoLevel, &fs3, cbInfoBuf, flOptions);
-	}
-	else
-	  rc = DosSetPathInfo(pszPathName, ulInfoLevel, pInfoBuf, cbInfoBuf, flOptions);
-	break;
+  if (fVerify && driveflags[toupper(*pszPathName) - 'A'] & DRIVE_WRITEVERIFYOFF) {
+    DosSetVerify(FALSE);
+    fResetVerify = TRUE;
+  }
+  switch (ulInfoLevel) {
+    case FIL_STANDARD:
+      if (crosses) {
+	fs3 = *(PFILESTATUS3)pInfoBuf;	// Copy to buffer that does not cross 64K boundary
+	rc = DosSetPathInfo(pszPathName, ulInfoLevel, &fs3, cbInfoBuf, flOptions);
+      }
+      else
+	     rc = DosSetPathInfo(pszPathName, ulInfoLevel, pInfoBuf, cbInfoBuf, flOptions);
+      break;
 
-      case FIL_STANDARDL:
-	if (fNoLargeFileSupport) {
-	  ulInfoLevel = FIL_STANDARD;
-	  fs3 = *(PFILESTATUS3)pInfoBuf;	// Copy aligned data
-	  // Check size too big to handle
-	  if (((PFILESTATUS3L)pInfoBuf)->cbFile >= 1LL << 32 ||
-	      ((PFILESTATUS3L)pInfoBuf)->cbFileAlloc >= 2LL << 32)
-	  {
-	    rc = ERROR_INVALID_PARAMETER;
-	  }
-	  else {
-	    fs3.cbFile = ((PFILESTATUS3L)pInfoBuf)->cbFile;	// Copy unaligned data
-	    fs3.cbFileAlloc = ((PFILESTATUS3L)pInfoBuf)->cbFileAlloc;
-	    fs3.attrFile = ((PFILESTATUS3L)pInfoBuf)->attrFile;
-	    rc = DosSetPathInfo(pszPathName, ulInfoLevel, &fs3, sizeof(fs3), flOptions);
-	  }
-	  if (rc == ERROR_INVALID_NAME) {
-	    // fixme to validate counts?
-	    fs3_a = fs3;		// Copy to buffer that does not cross
-	    rc = DosSetPathInfo(pszPathName, ulInfoLevel, &fs3_a, sizeof(fs3_a), flOptions);
-	  }
+    case FIL_STANDARDL:
+      if (fNoLargeFileSupport) {
+	ulInfoLevel = FIL_STANDARD;
+	fs3 = *(PFILESTATUS3)pInfoBuf;	// Copy aligned data
+	// Check size too big to handle
+	if (((PFILESTATUS3L)pInfoBuf)->cbFile >= 1LL << 32 ||
+	    ((PFILESTATUS3L)pInfoBuf)->cbFileAlloc >= 2LL << 32)
+	{
+	  rc = ERROR_INVALID_PARAMETER;
 	}
 	else {
-	  rc = DosSetPathInfo(pszPathName, ulInfoLevel, pInfoBuf, cbInfoBuf, flOptions);
-	  if (rc == ERROR_INVALID_NAME) {
-	    fs3l = *(PFILESTATUS3L)pInfoBuf;	// Copy to buffer that does not cross
-	    rc = DosSetPathInfo(pszPathName, ulInfoLevel, &fs3l, sizeof(fs3l), flOptions);
-	  }
+	  fs3.cbFile = ((PFILESTATUS3L)pInfoBuf)->cbFile;	// Copy unaligned data
+	  fs3.cbFileAlloc = ((PFILESTATUS3L)pInfoBuf)->cbFileAlloc;
+	  fs3.attrFile = ((PFILESTATUS3L)pInfoBuf)->attrFile;
+	  rc = DosSetPathInfo(pszPathName, ulInfoLevel, &fs3, sizeof(fs3), flOptions);
 	}
-	break;
-      case FIL_QUERYEASIZE:
-	rc = DosSetPathInfo(pszPathName, ulInfoLevel, pInfoBuf, cbInfoBuf, flOptions);
 	if (rc == ERROR_INVALID_NAME) {
 	  // fixme to validate counts?
-	  eaop2 = *(PEAOP2)pInfoBuf;	// Copy to buffer that does not cross
-	  rc = DosSetPathInfo(pszPathName, ulInfoLevel, &eaop2, sizeof(eaop2), flOptions);
+	  fs3_a = fs3;		// Copy to buffer that does not cross
+	  rc = DosSetPathInfo(pszPathName, ulInfoLevel, &fs3_a, sizeof(fs3_a), flOptions);
 	}
-	break;
-      default:
-	Runtime_Error(pszSrcFile, __LINE__, "ulInfoLevel %u unexpected", ulInfoLevel);
-	rc = ERROR_INVALID_PARAMETER;
-    } // switch
-    if (fResetVerify) {
-      DosSetVerify(fVerify);
-      fResetVerify = FALSE;
-    }
-    return rc;
+      }
+      else {
+	rc = DosSetPathInfo(pszPathName, ulInfoLevel, pInfoBuf, cbInfoBuf, flOptions);
+	if (rc == ERROR_INVALID_NAME) {
+	  fs3l = *(PFILESTATUS3L)pInfoBuf;	// Copy to buffer that does not cross
+	  rc = DosSetPathInfo(pszPathName, ulInfoLevel, &fs3l, sizeof(fs3l), flOptions);
+	}
+      }
+      break;
+    case FIL_QUERYEASIZE:
+      rc = DosSetPathInfo(pszPathName, ulInfoLevel, pInfoBuf, cbInfoBuf, flOptions);
+      if (rc == ERROR_INVALID_NAME) {
+	// fixme to validate counts?
+	eaop2 = *(PEAOP2)pInfoBuf;	// Copy to buffer that does not cross
+	rc = DosSetPathInfo(pszPathName, ulInfoLevel, &eaop2, sizeof(eaop2), flOptions);
+      }
+      break;
+    default:
+      Runtime_Error(pszSrcFile, __LINE__, "ulInfoLevel %u unexpected", ulInfoLevel);
+      rc = ERROR_INVALID_PARAMETER;
+  } // switch
+  if (fResetVerify) {
+    DosSetVerify(fVerify);
+    fResetVerify = FALSE;
+  }
+  return rc;
 }
 
 PSZ xfgets(PSZ pszBuf, size_t cMaxBytes, FILE * fp, PCSZ pszSrcFile,
@@ -554,6 +726,333 @@ PVOID xstrdup(PCSZ pszIn, PCSZ pszSrcFile, UINT uiLineNumber)
 
   return psz;
 }
+
+#if 0
+/*
+ * JBS: Wrappers for functions which...
+ * 	- are identified by klibc as "highmem-unsafe"
+ * 	- not yet used by FM/2
+ */
+
+// .H code for these functions
+// The following are ready to go.
+APIRET xDosCreatePipe(PHFILE phfReadHandle,
+		      PHFILE phfWriteHandle,
+		      ULONG ulPipeSize);
+
+APIRET xDosQueryFHState(HFILE hFile,
+			PULONG pulMode);
+
+#ifdef INCL_DOSNMPIPES
+APIRET xDosQueryNPHState(HPIPE hpipe,
+			 PULONG pulState);
+#endif
+
+APIRET xDosSetDateTime(DATETIME *pdt);
+
+APIRET xDosSetFilePtr(HFILE hFile,
+		      LONG lOffset,
+		      ULONG ulOrigin,
+		      PULONG pulPos);
+
+APIRET xDosSetFilePtrL(HFILE hFile,
+		       LONGLONG llOffset,
+		       ULONG ulOrigin,
+		       PLONGLONG pllPos);
+
+#ifdef INCL_DOSPROCESS
+APIRET xDosWaitChild(ULONG ulAction,
+		     ULONG ulWait,
+		     PRESULTCODES pReturnCodes,
+		     PPID ppidOut,
+		     PID pidIn);
+#endif
+
+APIRET xDosWaitNPipe(PCSZ pszName,
+		     ULONG ulTimeout);
+
+// The following functions still need work
+ULONG xWinUpper(HAB hab,
+		ULONG idcp,
+		ULONG idcc,
+		PSZ psz);
+
+APIRET xDosOpenL(PCSZ pszFileName,
+		 PHFILE phFile,
+		 PULONG pulAction,
+		 LONGLONG llFileSize,
+		 ULONG ulAttribute,
+		 ULONG ulOpenFlags,
+		 ULONG ulOpenMode,
+		 PEAOP2 pEABuf);
+
+
+
+// .C code for the functions above
+APIRET xDosCreatePipe(PHFILE phfReadHandle,
+		      PHFILE phfWriteHandle,
+		      ULONG ulPipeSize)
+{
+  APIRET   rc;
+  HFILE   h1, h2;
+  PHFILE  ph1 = NULL;
+  PHFILE  ph2 = NULL;
+
+  if (phfReadHandle)
+  {
+      h1 = *phfReadHandle;
+      ph1 = &h1;
+  }
+  if (phfWriteHandle)
+  {
+      h2 = *phfWriteHandle;
+      ph2 = &h2;
+  }
+
+  rc = DosCreatePipe(ph1, ph2, ulPipeSize);
+
+  if (phfReadHandle)
+      *phfReadHandle = h1;
+  if (phfWriteHandle)
+      *phfWriteHandle = h2;
+  return rc;
+}
+
+// Code pEABuf
+APIRET xDosOpenL(PCSZ pszFileName,
+		 PHFILE phFile,
+		 PULONG pulAction,
+		 LONGLONG llFileSize,
+		 ULONG ulAttribute,
+		 ULONG ulOpenFlags,
+		 ULONG ulOpenMode,
+		 PEAOP2 pEABuf)
+{
+  APIRET  rc;
+  ULONG   ul1;
+  PULONG  pul1 = NULL;
+  HFILE   hf1;
+  PHFILE  phf1 = NULL;
+  char    szFileNameLow[CCHMAXPATH];
+
+  strcpy(szFileNameLow, pszFileName);
+
+  if (phFile)
+  {
+      hf1 = *phFile;
+      phf1 = &hf1;
+  }
+  if (pulAction)
+  {
+      ul1 = *pulAction;
+      pul1 = &ul1;
+  }
+
+/** @todo pEABuf */
+
+  rc = DosOpenL(szFileNameLow, phf1, pul1, llFileSize, ulAttribute,
+		  ulOpenFlags, ulOpenMode, pEABuf);
+
+  if (phFile)
+      *phFile = hf1;
+  if (pulAction)
+      *pulAction = ul1;
+
+  return rc;
+}
+
+APIRET xDosQueryNPHState(HPIPE hpipe,
+			 PULONG pulState)
+{
+  APIRET  rc;
+  ULONG   ul1;
+  PULONG  pul1 = NULL;
+
+  if (pulState)
+  {
+      ul1 = *pulState;
+      pul1 = &ul1;
+  }
+
+  rc = DosQueryNPHState(hpipe, pul1);
+
+  if (pulState)
+      *pulState = ul1;
+  return rc;
+}
+
+APIRET xDosQueryFHState(HFILE hFile,
+			PULONG pulMode)
+{
+  APIRET  rc;
+  ULONG   ul1;
+  PULONG  pul1 = NULL;
+
+  if (pulMode)
+  {
+      ul1 = *pulMode;
+      pul1 = &ul1;
+  }
+
+  rc = DosQueryFHState(hFile, pul1);
+
+  if (pulMode)
+      *pulMode = ul1;
+
+  return rc;
+}
+
+APIRET xDosSetDateTime(DATETIME *pdt)
+{
+  APIRET      rc;
+  DATETIME    dt1;
+  PDATETIME   pdt1 = NULL;
+
+  if (pdt)
+  {
+      dt1 = *pdt;
+      pdt1 = &dt1;
+  }
+
+  rc = DosSetDateTime(pdt1);
+
+  return rc;
+}
+
+APIRET xDosSetFilePtr(HFILE hFile,
+		      LONG lOffset,
+		      ULONG ulOrigin,
+		      PULONG pulPos)
+{
+  APIRET rc;
+  ULONG  ul1;
+  PULONG pul1 = NULL;
+
+  if (pulPos)
+  {
+      ul1 = *pulPos;
+      pul1 = &ul1;
+  }
+
+  rc = DosSetFilePtr(hFile, lOffset, ulOrigin, pul1);
+
+  if (pulPos)
+      *pulPos = ul1;
+
+  return rc;
+}
+
+APIRET xDosSetFilePtrL(HFILE hFile,
+		       LONGLONG llOffset,
+		       ULONG ulOrigin,
+		       PLONGLONG pllPos)
+{
+  APIRET rc;
+  LONGLONG ll1;
+  PLONGLONG pll1 = NULL;
+
+  if (pllPos)
+  {
+      ll1 = *pllPos;
+      pll1 = &ll1;
+  }
+
+  rc = DosSetFilePtrL(hFile, llOffset, ulOrigin, pll1);
+
+  if (pllPos)
+      *pllPos = ll1;
+
+  return rc;
+}
+
+APIRET xDosWaitChild(ULONG ulAction,
+		     ULONG ulWait,
+		     PRESULTCODES pReturnCodes,
+		     PPID ppidOut,
+		     PID pidIn)
+{
+  APIRET          rc;
+  RESULTCODES     res;
+  PRESULTCODES    pres = NULL;
+  PID             pid;
+  PPID            ppid = NULL;
+
+  if (pReturnCodes)
+  {
+      res = *pReturnCodes;
+      pres = &res;
+  }
+  if (ppidOut)
+  {
+      pid = *ppidOut;
+      ppid = &pid;
+  }
+
+  rc = DosWaitChild(ulAction, ulWait, pres, ppid, pidIn);
+
+  if (pReturnCodes)
+      *pReturnCodes = res;
+  if (ppidOut)
+      *ppidOut = pid;
+
+  return rc;
+}
+
+APIRET xDosWaitNPipe(PCSZ pszName,
+		     ULONG ulTimeout)
+{
+  APIRET rc;
+  char szNameLow[CCHMAXPATH];
+
+  strcpy(szNameLow, pszName);
+  rc = DosWaitNPipe(szNameLow, ulTimeout);
+  return rc;
+}
+
+ULONG xWinUpper(HAB hab,
+		ULONG idcp,
+		ULONG idcc,
+		PSZ psz)
+{
+  ULONG rc;
+
+  if (!HIGH_MEMORY_ADDRESS(psz))
+    rc = WinUpper(hab, idcp, idcc, psz);
+  else {
+    size_t cch = strlen(psz);
+    char *pszTmp = xmalloc(cch + 3, pszSrcFile, __LINE__);
+    if (pszTmp)
+      {
+	  memcpy(pszTmp, psz, cch + 1);
+	  pszTmp[cch + 1] = '\0';
+	  pszTmp[cch + 2] = '\0';
+	  rc = WinUpper(hab, idcp, idcc, pszTmp);
+	  if (rc > 0)
+	    memcpy(psz, pszTmp, rc <= cch ? rc + 1 : rc);
+	  xfree(pszTmp, pszSrcFile, __LINE__);
+      }
+      else
+      {
+	  PSZ pszStart = psz;
+	  PSZ pszNext;
+	  while (*psz)
+	  {
+	      pszNext = (PSZ)WinNextChar(hab, idcp, idcc, psz);
+	      if (pszNext - psz == 1)
+		  *psz = WinUpperChar(hab, idcp, idcc, *psz);
+	      else if (pszNext - psz == 2)
+		  *(PUSHORT)psz = WinUpperChar(hab, idcp, idcc, *(PUSHORT)psz); /* a wild guess. */
+	      else
+		  break;
+	      psz = (char *)pszNext;
+	  }
+	  rc = psz - pszStart;
+      }
+  }
+  return rc;
+}
+
+#endif
 
 
 #pragma alloc_text(WRAPPERS1,xfree,xfopen,xfsopen,xmalloc,xrealloc,xstrdup)
