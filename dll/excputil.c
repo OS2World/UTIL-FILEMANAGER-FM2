@@ -11,6 +11,7 @@
 
   2008-12-06 SHL Baseline (Ticket #26)
   2015-04-03 SHL HandleException: check for ignore before checking for cascade
+  2015-08-09 SHL Use xDosGetInfoBlocks
 
 ************************************************************/
 
@@ -167,7 +168,7 @@ ULONG HandleException(PEXCEPTIONREPORTRECORD pReport,
   ptm = localtime(&now);
   pszTime = asctime(ptm);
 
-  apiret = DosGetInfoBlocks(&ptib, &ppib);
+  apiret = xDosGetInfoBlocks(&ptib, &ppib);
   if (apiret) {
     ulpid = 0;
     ultid = 0;
