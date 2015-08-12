@@ -6,7 +6,7 @@
   System Interfaces
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2010 Steven H.Levine
+  Copyright (c) 2003, 2015 Steven H.Levine
 
   21 Nov 03 SHL Comments
   31 Jul 04 SHL Indent -i2
@@ -1148,7 +1148,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	type |= SEPARATE;
       }
 
-      DosGetInfoBlocks(&ptib, &ppib);
+      xDosGetInfoBlocks(&ptib, &ppib);
 
       if (~type & WAIT)
 	useTermQ = FALSE;
