@@ -6,7 +6,7 @@
   Common definitions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2008 Steven H. Levine
+  Copyright (c) 2001, 2015 Steven H. Levine
 
   12 Feb 03 SHL Add CBLIST_TO_EASIZE
   11 Jun 03 SHL Add JFS and FAT32 support
@@ -93,6 +93,7 @@
                 loads drive root directory in directory container or expands drive tree
                 and rescans drive in tree container depending on container focus, greyed out
                 inappropriate menu context choices
+  09 Aug 15 SHL Add RESTORE_STATE_...
 
 ***********************************************************************/
 
@@ -196,6 +197,12 @@
 #define INSTDATA(h)         WinQueryWindowPtr((h),QWL_USER)
 // #define RGBFROMPARTS(r,g,b)     (((r) * 65536) + ((g) * 256) + (b))	// Unused, 13 Sep 08 JBS
 #define SysVal(value)       WinQuerySysValue(HWND_DESKTOP, (value))
+
+// 2015-08-09 SHL See MainObjectWndProc UM_RESTORE
+#define RESTORE_STATE_RESTORE		0
+#define RESTORE_STATE_TILE_CHILDREN	1
+#define RESTORE_STATE_CLOSE_CHILDREN	2
+
 
 
 #endif // FM3DLL_H

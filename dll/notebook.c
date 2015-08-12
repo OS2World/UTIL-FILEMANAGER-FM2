@@ -51,21 +51,22 @@
   06 Jun 09 GKY Add option to show file system type or drive label in tree
   15 Nov 09 GKY Change rescan following label/type change to WinSendMsg to avoid trap on SMP
   13 Dec 09 GKY Fixed separate paramenters. Please note that appname should be used in
-                profile calls for user settings that work and are setable in more than one
-                miniapp; FM3Str should be used for setting only relavent to FM/2 or that
-                aren't user settable; realappname should be used for setting applicable to
-                one or more miniapp but not to FM/2
+		profile calls for user settings that work and are setable in more than one
+		miniapp; FM3Str should be used for setting only relavent to FM/2 or that
+		aren't user settable; realappname should be used for setting applicable to
+		one or more miniapp but not to FM/2
   13 Dec 09 GKY Updated Quick page "Default" to match current defaults; added Gregg's way
-                option to Quick page.
+		option to Quick page.
   17 Jan 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR
-                CONSTANT * as CHAR *.
+		CONSTANT * as CHAR *.
   24 Oct 10 GKY Fixed spurious error message when labels in tree are changed with a
-                "not ready" drive selected
+		"not ready" drive selected
   04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
-                for delete of readonly files
+		for delete of readonly files
   09 Feb 14 GKY Fix separate parameters. Moved to general page renamed separate settings
-                for apps.
+		for apps.
   25 May 15 GKY Auto open help only on first access of quick setting page during a session.
+  09 Aug 15 SHL Use RESTORE_STATE_...
 
 ***********************************************************************/
 
@@ -296,7 +297,7 @@ MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (!WinDlgBox(HWND_DESKTOP, hwnd,
 			 SBoxDlgProc, FM3ModHandle, ASEL_FRAME,
 			 (PVOID) & pat) || !pat || !pat->id || !*pat->id) {
-            if (!fAlertBeepOff)
+	    if (!fAlertBeepOff)
 	      DosBeep(250, 100);          // Complain
 	    WinCheckButton(hwnd, CFGA_DEFARC, FALSE);
 	  }
@@ -371,10 +372,10 @@ MRESULT EXPENTRY CfgADlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_CLOSE:
     fQuickArcFind = WinQueryButtonCheckstate(hwnd, CFGA_QUICKARCFIND);
     PrfWriteProfileData(fmprof, appname, "QuickArcFind",
-                        &fQuickArcFind, sizeof(BOOL));
+			&fQuickArcFind, sizeof(BOOL));
     fArcStuffVisible = WinQueryButtonCheckstate(hwnd, CFGA_ARCSTUFFVISIBLE);
     PrfWriteProfileData(fmprof,	appname, "ArcStuffVisible",
-                        &fArcStuffVisible, sizeof(BOOL));
+			&fArcStuffVisible, sizeof(BOOL));
     fFileNameCnrPath = WinQueryButtonCheckstate(hwnd, CFGA_FILENAMEPATH);
     PrfWriteProfileData(fmprof,	appname, "FileNamePathCnr", &fFileNameCnrPath, sizeof(BOOL));
     fFolderAfterExtract = WinQueryButtonCheckstate(hwnd,
@@ -1434,74 +1435,74 @@ MRESULT EXPENTRY CfgTDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     {
 
       if ((fShowFSTypeInTree != WinQueryButtonCheckstate(hwnd, CFGT_SYSTYPE)) ||
-          (fShowDriveLabelInTree != WinQueryButtonCheckstate(hwnd, CFGT_LABEL)))
-        fShowSysTypeLabelChanged = TRUE;
+	  (fShowDriveLabelInTree != WinQueryButtonCheckstate(hwnd, CFGT_LABEL)))
+	fShowSysTypeLabelChanged = TRUE;
       fShowFSTypeInTree = WinQueryButtonCheckstate(hwnd, CFGT_SYSTYPE);
       fShowDriveLabelInTree = WinQueryButtonCheckstate(hwnd, CFGT_LABEL);
       fShowDriveOnly = WinQueryButtonCheckstate(hwnd, CFGT_DRIVEONLY);
       PrfWriteProfileData(fmprof, appname, "ShowDriveOnly", &fShowDriveOnly, sizeof(BOOL));
       PrfWriteProfileData(fmprof, appname, "ShowFSTypeInTree",
-                          &fShowFSTypeInTree, sizeof(BOOL));
+			  &fShowFSTypeInTree, sizeof(BOOL));
       PrfWriteProfileData(fmprof,	appname, "ShowDriveLabelInTree",
-                          &fShowDriveLabelInTree, sizeof(BOOL));
+			  &fShowDriveLabelInTree, sizeof(BOOL));
       fVTreeOpensWPS = WinQueryButtonCheckstate(hwnd, CFGT_VTREEOPENSWPS);
       PrfWriteProfileData(fmprof, (CHAR *) FM3Str, "VTreeOpensWPS", &fVTreeOpensWPS,
-                          sizeof(BOOL));
+			  sizeof(BOOL));
       fCollapseFirst = WinQueryButtonCheckstate(hwnd, CFGT_COLLAPSEFIRST);
       PrfWriteProfileData(fmprof, appname, "CollapseFirst", &fCollapseFirst,
-                          sizeof(BOOL));
+			  sizeof(BOOL));
       fSwitchTreeOnFocus = WinQueryButtonCheckstate(hwnd,
-                                                    CFGT_SWITCHTREEONFOCUS);
+						    CFGT_SWITCHTREEONFOCUS);
       PrfWriteProfileData(fmprof, appname, "SwitchTreeOnFocus",
-                          &fSwitchTreeOnFocus, sizeof(BOOL));
+			  &fSwitchTreeOnFocus, sizeof(BOOL));
       fSwitchTreeExpand = WinQueryButtonCheckstate(hwnd, CFGT_SWITCHTREEEXPAND);
       PrfWriteProfileData(fmprof, appname, "SwitchTreeExpand",
-                          &fSwitchTreeExpand, sizeof(BOOL));
+			  &fSwitchTreeExpand, sizeof(BOOL));
       fSwitchTreeOnDirChg = WinQueryButtonCheckstate(hwnd, CFGT_SWITCHTREEONDIRCHG);
       PrfWriteProfileData(fmprof, appname, "SwitchTree", &fSwitchTreeOnDirChg,
-                          sizeof(BOOL));
+			  sizeof(BOOL));
       fFollowTree = WinQueryButtonCheckstate(hwnd, CFGT_FOLLOWTREE);
       PrfWriteProfileData(fmprof, appname, "FollowTree", &fFollowTree,
-                          sizeof(BOOL));
+			  sizeof(BOOL));
       fTopDir = WinQueryButtonCheckstate(hwnd, CFGT_TOPDIR);
       PrfWriteProfileData(fmprof, appname, "TopDir", (PVOID) & fTopDir,
-                          sizeof(BOOL));
+			  sizeof(BOOL));
       fDCOpens = WinQueryButtonCheckstate(hwnd, CFGT_DCOPENS);
       PrfWriteProfileData(fmprof, appname, "DoubleClickOpens", &fDCOpens,
-                          sizeof(BOOL));
+			  sizeof(BOOL));
       fShowEnvChanged = (fShowEnv != WinQueryButtonCheckstate(hwnd, CFGT_SHOWENV));
       fShowEnv = WinQueryButtonCheckstate(hwnd, CFGT_SHOWENV);
       PrfWriteProfileData(fmprof, appname, "ShowEnv", &fShowEnv, sizeof(BOOL));
       {
-        char * pszTemp = xmalloc(WinQueryDlgItemTextLength(hwnd, CFGT_ENVVARLIST) + 1,
-                                 pszSrcFile, __LINE__);
-        if (pszTemp) {
-          WinQueryDlgItemText(hwnd, CFGT_ENVVARLIST, MaxComLineStrg, pszTemp);
-          strupr(pszTemp);
-          if (strcmp(pszTemp, pszTreeEnvVarList)) {
-            fTreeEnvVarListChanged = TRUE;
-            strcpy(pszTreeEnvVarList, pszTemp);
-            PrfWriteProfileString(fmprof, appname, "TreeEnvVarList", pszTreeEnvVarList);
-          }
-          free(pszTemp);
-        }
-        if (hwndTree && (fShowEnvChanged || (fShowEnv && fTreeEnvVarListChanged) ||
-                         fShowSysTypeLabelChanged)) {
-          PCNRITEM pci = WinSendMsg(WinWindowFromID
-                                    (WinWindowFromID(hwndTree, FID_CLIENT),
-                                    TREE_CNR), CM_QUERYRECORDEMPHASIS,
-                                    MPFROMLONG(CMA_FIRST),
-                                    MPFROMSHORT(CRA_SELECTED));
-          WinSendMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
-          if (strlen(pci->pszFileName) > 3 &&  fSwitchTreeExpand) {
-            pszTemp = xstrdup(pci->pszFileName, pszSrcFile, __LINE__);
-            if (pszTemp) {
-              if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTemp), MPVOID))
-                free(pszTemp);
-              //pszTemp is freed in the UM_SHOWME code
-            }
-          }
-        }
+	char * pszTemp = xmalloc(WinQueryDlgItemTextLength(hwnd, CFGT_ENVVARLIST) + 1,
+				 pszSrcFile, __LINE__);
+	if (pszTemp) {
+	  WinQueryDlgItemText(hwnd, CFGT_ENVVARLIST, MaxComLineStrg, pszTemp);
+	  strupr(pszTemp);
+	  if (strcmp(pszTemp, pszTreeEnvVarList)) {
+	    fTreeEnvVarListChanged = TRUE;
+	    strcpy(pszTreeEnvVarList, pszTemp);
+	    PrfWriteProfileString(fmprof, appname, "TreeEnvVarList", pszTreeEnvVarList);
+	  }
+	  free(pszTemp);
+	}
+	if (hwndTree && (fShowEnvChanged || (fShowEnv && fTreeEnvVarListChanged) ||
+			 fShowSysTypeLabelChanged)) {
+	  PCNRITEM pci = WinSendMsg(WinWindowFromID
+				    (WinWindowFromID(hwndTree, FID_CLIENT),
+				    TREE_CNR), CM_QUERYRECORDEMPHASIS,
+				    MPFROMLONG(CMA_FIRST),
+				    MPFROMSHORT(CRA_SELECTED));
+	  WinSendMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
+	  if (strlen(pci->pszFileName) > 3 &&  fSwitchTreeExpand) {
+	    pszTemp = xstrdup(pci->pszFileName, pszSrcFile, __LINE__);
+	    if (pszTemp) {
+	      if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTemp), MPVOID))
+		free(pszTemp);
+	      //pszTemp is freed in the UM_SHOWME code
+	    }
+	  }
+	}
       }
       break;
     }
@@ -1623,15 +1624,15 @@ MRESULT EXPENTRY CfgGDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       dummy = WinQueryButtonCheckstate(hwnd, CFGG_APPSEPARATESETTINGS);
       if (dummy != fAppSeparateSettings) {
-        fAppSeparateSettings =  dummy;
-        PrfWriteProfileData(fmprof, realappname, "SeparateParms",
+	fAppSeparateSettings =  dummy;
+	PrfWriteProfileData(fmprof, realappname, "SeparateParms",
 			&fAppSeparateSettings, sizeof(BOOL));
 	WinSendMsg((HWND) WinQueryWindowULong(hwnd, QWL_USER),
-                   UM_UNDO, MPVOID, MPVOID);
-        if (fAppSeparateSettings)
-          strcpy(appname, realappname);
-        else
-          strcpy(appname, FM3Str);
+		   UM_UNDO, MPVOID, MPVOID);
+	if (fAppSeparateSettings)
+	  strcpy(appname, realappname);
+	else
+	  strcpy(appname, FM3Str);
       }
 
       test = WinQueryButtonCheckstate(hwnd, CFGG_NODEAD);
@@ -1690,16 +1691,16 @@ MRESULT EXPENTRY CfgGDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			&fTrashCan, sizeof(BOOL));
     fConfirmTarget = WinQueryButtonCheckstate(hwnd, CFGG_CONFIRMTARGET);
     PrfWriteProfileData(fmprof, appname, "ConfirmTarget",
-                        &fConfirmTarget, sizeof(BOOL));
+			&fConfirmTarget, sizeof(BOOL));
     fAlertBeepOff = WinQueryButtonCheckstate(hwnd, CFGG_ALERTBEEPOFF);
     PrfWriteProfileData(fmprof, appname, "AlertBeepOff",
-                        &fAlertBeepOff, sizeof(BOOL));
+			&fAlertBeepOff, sizeof(BOOL));
     fErrorBeepOff = WinQueryButtonCheckstate(hwnd, CFGG_ERRORBEEPOFF);
     PrfWriteProfileData(fmprof, appname, "ErrorBeepOff",
-                        &fErrorBeepOff, sizeof(BOOL));
+			&fErrorBeepOff, sizeof(BOOL));
     fWarnReadOnly = WinQueryButtonCheckstate(hwnd, CFGG_WARNREADONLY);
     PrfWriteProfileData(fmprof, appname, "WarnReadOnly",
-                        &fWarnReadOnly, sizeof(BOOL));
+			&fWarnReadOnly, sizeof(BOOL));
     {
       WinSendDlgItemMsg(hwnd, CFGG_CMDLNLNGTH, SPBM_QUERYVALUE,
 			MPFROMP(&MaxComLineStrg), MPFROM2SHORT(0, SPBQ_DONOTUPDATE));
@@ -1975,9 +1976,9 @@ MRESULT EXPENTRY CfgDDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (hwndMain && !strcmp(realappname, FM3Str)) {
 	  // Save state and restore to refresh windows with new settings
 	  if (SaveDirCnrState(hwndMain, PCSZ_FM2TEMPTEXT) > 0) {
-	    PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPFROMLONG(2));
+	    PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPFROMLONG(RESTORE_STATE_CLOSE_CHILDREN));
 //          PostMsg(hwndMain, UM_RESTORE, MPVOID, MPVOID);
-	    PostMsg(MainObjectHwnd, UM_RESTORE, (PSZ) PCSZ_FM2TEMPTEXT, MPVOID);
+	    PostMsg(MainObjectHwnd, UM_RESTORE, (PSZ) PCSZ_FM2TEMPTEXT, MPFROMLONG(RESTORE_STATE_RESTORE));
 	  }
 	}
       }
@@ -3076,8 +3077,8 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    appname,
 			    "CollectorflWindowAttr",
 			    &flWindowAttr, sizeof(ULONG));
-        //This is set to maximize the info seen in the container GKY
-        PrfWriteProfileData(fmprof,
+	//This is set to maximize the info seen in the container GKY
+	PrfWriteProfileData(fmprof,
 			    appname,
 			    "Collector.Fontnamesize",
 			    (PVOID) FNT_8HELVETICA,
@@ -3403,27 +3404,27 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			  swp.cy -
 			  (WinQuerySysValue(HWND_DESKTOP, SV_CYICON) * 2),
 			  SWP_MOVE | SWP_SIZE);
-        }
-        if (!fToolbar) {
+	}
+	if (!fToolbar) {
 	  WinSendMsg(hwndMain, WM_COMMAND,
-                     MPFROM2SHORT(IDM_TOOLBAR, 0), MPVOID);
-          fToolbar = TRUE;
-        }
-        if (!fDrivebar) {
+		     MPFROM2SHORT(IDM_TOOLBAR, 0), MPVOID);
+	  fToolbar = TRUE;
+	}
+	if (!fDrivebar) {
 	  WinSendMsg(hwndMain, WM_COMMAND,
-                     MPFROM2SHORT(IDM_DRIVEBAR, 0), MPVOID);
-          fDrivebar = TRUE;
-        }
-        if (!fMoreButtons) {
+		     MPFROM2SHORT(IDM_DRIVEBAR, 0), MPVOID);
+	  fDrivebar = TRUE;
+	}
+	if (!fMoreButtons) {
 	  WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_MOREBUTTONS, 0),
-                     MPVOID);
-          fMoreButtons = TRUE;
-        }
-        if (!fUserComboBox) {
+		     MPVOID);
+	  fMoreButtons = TRUE;
+	}
+	if (!fUserComboBox) {
 	  WinSendMsg(hwndMain, WM_COMMAND,
-                     MPFROM2SHORT(IDM_USERLIST, 0), MPVOID);
-          fUserComboBox = TRUE;
-        }
+		     MPFROM2SHORT(IDM_USERLIST, 0), MPVOID);
+	  fUserComboBox = TRUE;
+	}
       }
       if (hwndTree) {
 
@@ -3505,7 +3506,7 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    swp.cx / 5, swp.cy, SWP_MOVE | SWP_SIZE);
 	  }
 	}
-	PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPFROMLONG(2L));
+	PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPFROMLONG(RESTORE_STATE_CLOSE_CHILDREN));
 	PostMsg(MainObjectHwnd, UM_SETDIR, MPFROMLONG(1L), MPVOID);
       }
       return 0;
@@ -3605,7 +3606,7 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    swp.cx / 5, swp.cy, SWP_MOVE | SWP_SIZE);
 	  }
 	}
-	PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPFROMLONG(2L));
+	PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPFROMLONG(RESTORE_STATE_CLOSE_CHILDREN));
 	PostMsg(MainObjectHwnd, UM_SETDIR, MPVOID, MPVOID);
       }
       return 0;
@@ -3719,27 +3720,27 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			  swp.cy -
 			  (WinQuerySysValue(HWND_DESKTOP, SV_CYICON) * 2),
 			  SWP_MOVE | SWP_SIZE);
-        }
-        if (!fToolbar) {
+	}
+	if (!fToolbar) {
 	  WinSendMsg(hwndMain, WM_COMMAND,
-                     MPFROM2SHORT(IDM_TOOLBAR, 0), MPVOID);
-          fToolbar = TRUE;
-        }
-        if (!fDrivebar) {
+		     MPFROM2SHORT(IDM_TOOLBAR, 0), MPVOID);
+	  fToolbar = TRUE;
+	}
+	if (!fDrivebar) {
 	  WinSendMsg(hwndMain, WM_COMMAND,
-                     MPFROM2SHORT(IDM_DRIVEBAR, 0), MPVOID);
-          fDrivebar = TRUE;
-        }
-        if (!fMoreButtons) {
+		     MPFROM2SHORT(IDM_DRIVEBAR, 0), MPVOID);
+	  fDrivebar = TRUE;
+	}
+	if (!fMoreButtons) {
 	  WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_MOREBUTTONS, 0),
-                     MPVOID);
-          fMoreButtons = TRUE;
-        }
-        if (!fUserComboBox) {
+		     MPVOID);
+	  fMoreButtons = TRUE;
+	}
+	if (!fUserComboBox) {
 	  WinSendMsg(hwndMain, WM_COMMAND,
-                     MPFROM2SHORT(IDM_USERLIST, 0), MPVOID);
-          fUserComboBox = TRUE;
-        }
+		     MPFROM2SHORT(IDM_USERLIST, 0), MPVOID);
+	  fUserComboBox = TRUE;
+	}
       }
       if (hwndTree) {
 
@@ -3776,9 +3777,9 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       // Save state and restore to refresh windows with new settings
       if (SaveDirCnrState(hwndMain, PCSZ_FM2TEMPTEXT) > 0) {
 	// Tell window procedure to close container windows
-	PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPFROMLONG(2));
+	PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPFROMLONG(RESTORE_STATE_CLOSE_CHILDREN));
 	// Restore saved state
-	PostMsg(MainObjectHwnd, UM_RESTORE, (PSZ) PCSZ_FM2TEMPTEXT, MPVOID);
+	PostMsg(MainObjectHwnd, UM_RESTORE, (PSZ) PCSZ_FM2TEMPTEXT, MPFROMLONG(RESTORE_STATE_RESTORE));
       }
     }
     WinSendMsg((HWND) WinQueryWindowULong(hwnd, QWL_USER),
@@ -3950,8 +3951,8 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      BKM_TURNTOPAGE, MPFROMLONG(np[x].ulPageId), MPVOID);
       PostMsg(hwnd, UM_FOCUSME, MPFROMLONG(np[x].hwnd), MPVOID);
       if (!fShowedHelpThisSession) {
-        PostMsg(np[x].hwnd, WM_COMMAND, MPFROM2SHORT(IDM_HELP, 0), MPVOID);
-        fShowedHelpThisSession = TRUE;
+	PostMsg(np[x].hwnd, WM_COMMAND, MPFROM2SHORT(IDM_HELP, 0), MPVOID);
+	fShowedHelpThisSession = TRUE;
       }
     }
     else if (uPageIndex >= x) {

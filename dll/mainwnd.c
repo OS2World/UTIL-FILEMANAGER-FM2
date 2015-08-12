@@ -6,7 +6,7 @@
   fm/2 main window
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2013 Steven H. Levine
+  Copyright (c) 2001, 2015 Steven H. Levine
 
   11 Jun 02 SHL Drop obsolete xor code
   16 Oct 02 SHL Handle large partitions
@@ -99,23 +99,24 @@
   12 Sep 09 GKY Add FM3.INI User ini and system ini to submenu for view ini
   14 Sep 09 SHL Blink thread LEDs when workers busy
   13 Dec 09 GKY Fixed separate paramenters. Please note that appname should be used in
-	        profile calls for user settings that work and are setable in more than one
-	        miniapp; FM3Str should be used for setting only relavent to FM/2 or that
-	        aren't user settable; realappname should be used for setting applicable to
-	        one or more miniapp but not to FM/2
+		profile calls for user settings that work and are setable in more than one
+		miniapp; FM3Str should be used for setting only relavent to FM/2 or that
+		aren't user settable; realappname should be used for setting applicable to
+		one or more miniapp but not to FM/2
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast
-	        CHAR CONSTANT * as CHAR *.
+		CHAR CONSTANT * as CHAR *.
   11 Apr 10 GKY Fix drive tree rescan failure and program hang caused by event sem
-	        never being posted
+		never being posted
   23 Oct 10 GKY Changes to populate and utilize a HELPTABLE for context specific help
   03 Oct 11 SHL Add needTile to ensure containers opened on command line render correctly
   03 Oct 11 SHL Minor code cleanup
   05 Aug 12 GKY Make the Target Directory (DriveBar) a drop target.
   12 Aug 12 GKY Allow for selection of include subdirectories or a list file on initial startup of compare dirs
   30 Dec 12 GKY Enhance traget directory drop to give the option of changing the directory or carrying out an
-                operation to the current target; Added an error message for target = None;
+		operation to the current target; Added an error message for target = None;
   02 Aug 15 GKY Remove unneed SubbyScan code and improve suppression of blank lines and
-                duplicate subdirectory name caused by running Stubby in worker threads.
+		duplicate subdirectory name caused by running Stubby in worker threads.
+  09 Aug 15 SHL Use RESTORE_STATE_...
 
 ***********************************************************************/
 
@@ -339,22 +340,22 @@ static MRESULT EXPENTRY MainObjectWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	s[3] = 0;
 	WinSendMsg(hwndMain, UM_SETDIR, MPFROMP(s), MPVOID);
       }
-      PostMsg(MainObjectHwnd, UM_RESTORE, MPFROMLONG(1), MPFROMLONG(1));
+      PostMsg(MainObjectHwnd, UM_RESTORE, MPFROMLONG(1), MPFROMLONG(RESTORE_STATE_TILE_CHILDREN));
     }
     return 0;
 
   case UM_RESTORE:
     switch ((ULONG)mp2) {
-    case 1:
+    case RESTORE_STATE_TILE_CHILDREN:
       TileChildren(hwndMain, TRUE);
       break;
-    case 2:
+    case RESTORE_STATE_CLOSE_CHILDREN:
       CloseDirCnrChildren(hwndMain);
       break;
-    case 0:
+    case RESTORE_STATE_RESTORE:
       fNoTileUpdate = TRUE;
       WinEnableWindow(WinQueryWindow(hwndMain, QW_PARENT), FALSE);
-      RestoreDirCnrState(hwndMain, (char *)mp1, FALSE);
+      RestoreDirCnrState(hwndMain, (CHAR *)mp1, FALSE);
       WinEnableWindow(WinQueryWindow(hwndMain, QW_PARENT), TRUE);
       fNoTileUpdate = FALSE; ;
       break;
@@ -1818,7 +1819,9 @@ static MRESULT EXPENTRY CommandLineProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
 MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-    static BOOL emphasized = FALSE;
+  APIRET rc;
+
+  static BOOL emphasized;
 
   switch (msg) {
   case WM_CREATE:
@@ -1882,28 +1885,28 @@ MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       cnd.pDragInfo = (PDRAGINFO) mp1;
       if (!DrgAccessDraginfo((PDRAGINFO) cnd.pDragInfo)) {
-        Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
-                  PCSZ_DRGACCESSDRAGINFO);
-        return 0;
+	Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,
+		  PCSZ_DRGACCESSDRAGINFO);
+	return 0;
       }
       numitems = DrgQueryDragitemCount((PDRAGINFO) cnd.pDragInfo);
       usOperation = cnd.pDragInfo->usOperation;
       if (usOperation == DO_DEFAULT)
-        usOperation = fCopyDefault ? DO_COPY : DO_MOVE;
+	usOperation = fCopyDefault ? DO_COPY : DO_MOVE;
       saymsg(MB_ENTER | MB_ICONASTERISK,
-             hwnd,
-             GetPString(IDS_DROPHELPHDRTEXT),
-             GetPString(IDS_DROPHELPTEXT),
-             numitems,
-             &"s"[numitems == 1L],
-             NullStr,
-             NullStr,
-             targetdir,
-             " ",
-             GetPString((usOperation == DO_MOVE) ?
-                        IDS_MOVETEXT :
-                        (usOperation == DO_LINK) ?
-                        IDS_LINKTEXT : IDS_COPYTEXT));
+	     hwnd,
+	     GetPString(IDS_DROPHELPHDRTEXT),
+	     GetPString(IDS_DROPHELPTEXT),
+	     numitems,
+	     &"s"[numitems == 1L],
+	     NullStr,
+	     NullStr,
+	     targetdir,
+	     " ",
+	     GetPString((usOperation == DO_MOVE) ?
+			IDS_MOVETEXT :
+			(usOperation == DO_LINK) ?
+			IDS_LINKTEXT : IDS_COPYTEXT));
     }
     return 0;
 
@@ -1926,16 +1929,16 @@ MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      TRUE, MPFROM2SHORT(TREE_CNR, CN_DROP), MPFROMP(&cnd));
       CheckPmDrgLimit(cnd.pDragInfo);
       if (li) {
-        if (!li->list[1] && !IsFile(li->list[0])) {
-          ret = saymsg(MB_YESNO,
+	if (!li->list[1] && !IsFile(li->list[0])) {
+	  ret = saymsg(MB_YESNO,
 		   HWND_DESKTOP,
-                       NullStr,
-                       GetPString(IDS_DROPSETSTARGET));
-          if (ret == MBID_YES) {
-            SetTargetDir(hwnd, TRUE, li->list[0]);
-            break;
-          }
-        }
+		       NullStr,
+		       GetPString(IDS_DROPSETSTARGET));
+	  if (ret == MBID_YES) {
+	    SetTargetDir(hwnd, TRUE, li->list[0]);
+	    break;
+	  }
+	}
 	strcpy(li->targetpath, targetdir);
 	strcat(li->targetpath, PCSZ_BACKSLASH);
 	if (li->list && li->list[0] && IsRoot(li->list[0]))
@@ -2053,7 +2056,7 @@ MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (!li->list || !li->list[0])
 	  FreeListInfo(li);
 	else
-          WinSendMsg(hwndTree, UM_ACTION, MPFROMP(li), MPFROMLONG(action));
+	  WinSendMsg(hwndTree, UM_ACTION, MPFROMP(li), MPFROMLONG(action));
     }
     else {
       CNRDRAGINFO cnd;
@@ -2071,9 +2074,9 @@ MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      TRUE, MPFROM2SHORT(TREE_CNR, CN_DROP), MPFROMP(&cnd));
       CheckPmDrgLimit(cnd.pDragInfo);
       if (li && !li->list[1] && !IsFile(li->list[0]))
-        SetTargetDir(hwnd, TRUE, li->list[0]);
+	SetTargetDir(hwnd, TRUE, li->list[0]);
       else
-        saymsg(MB_ENTER | MB_ICONASTERISK, hwnd,
+	saymsg(MB_ENTER | MB_ICONASTERISK, hwnd,
 	       GetPString(IDS_WARNINGTEXT),
 	       GetPString(IDS_NOTARGETSET));
     }
@@ -2091,7 +2094,10 @@ MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case WM_COMMAND:
-    DosWaitEventSem(hevTreeCnrScanComplete, SEM_INDEFINITE_WAIT);
+    rc = DosWaitEventSem(hevTreeCnrScanComplete, SEM_INDEFINITE_WAIT);
+    if (rc)
+      Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosWaitEventSem");
+
     switch(SHORT1FROMMP(mp1)) {
     case IDM_RESCAN:
       {
@@ -2122,17 +2128,12 @@ MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     default:
       {
 	CHAR dv[4];
-
 	*dv = SHORT1FROMMP(mp1) - IDM_DRIVEA + 'A';
-	strcpy(dv + 1, ":\\");
+	dv[1] = ':';
+	dv[2] = '\\';
+	dv[3] = 0;
 	if (isalpha(*dv)) {
-
-	  HWND hwndActive;
-
-	  dv[1] = ':';
-	  dv[2] = '\\';
-	  dv[3] = 0;
-	  hwndActive = TopWindow(hwnd, (HWND) 0);
+	  HWND hwndActive = TopWindow(hwnd, (HWND) 0);
 	  if (hwndActive)
 	    WinSendMsg(WinWindowFromID(hwndActive, FID_CLIENT),
 		       UM_DRIVECMD, MPFROMP(dv), MPVOID);
@@ -3889,8 +3890,8 @@ VOID TileChildren(HWND hwndClient, BOOL absolute)
 			      swp.cx, swp.cy, SWP_MOVE | SWP_SIZE | SWP_SHOW);
 	      WinSetWindowUShort(hwndChild,
 				 QWS_XRESTORE,
-	                         (USHORT) ((USHORT) ulWidth * (USHORT) ulCurCol)
-	                         + (USHORT) Rectl.xLeft);
+				 (USHORT) ((USHORT) ulWidth * (USHORT) ulCurCol)
+				 + (USHORT) Rectl.xLeft);
 	      WinSetWindowUShort(hwndChild,
 				 QWS_YRESTORE,
 				 (USHORT) (Rectl.yTop -
@@ -4818,9 +4819,9 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (cmp) {
 	    cmp->size = sizeof(COMPARE);
 	    strcpy(cmp->leftdir, wa.szCurrentPath1);
-            strcpy(cmp->rightdir, wa.szCurrentPath2);
-            cmp->listfile = wa.listfile;
-            cmp->includesubdirs = wa.includesubdirs;
+	    strcpy(cmp->rightdir, wa.szCurrentPath2);
+	    cmp->listfile = wa.listfile;
+	    cmp->includesubdirs = wa.includesubdirs;
 	    cmp->hwndParent = hwnd;
 	    cmp->dcd.hwndParent = hwnd;
 	    WinDlgBox(HWND_DESKTOP,
@@ -6029,7 +6030,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
     // start remaining child windows
     if (!fNoSaveState && fSaveState) {
       PCSZ pszStatename = PCSZ_SHUTDOWNSTATE;
-      PostMsg(MainObjectHwnd, UM_RESTORE, MPFROMP(pszStatename), MPVOID);
+      PostMsg(MainObjectHwnd, UM_RESTORE, MPFROMP(pszStatename), MPFROMLONG(RESTORE_STATE_RESTORE));
       if (!add_setup(pszStatename))
 	save_setups();
     }
@@ -6271,7 +6272,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       info = cmdhead;
       while (info) {
-        sprintf(s, "%s    {%i}", info->title, info->ID);
+	sprintf(s, "%s    {%i}", info->title, info->ID);
 	WinSendMsg(hwndCmdlist, LM_INSERTITEM,
 		   MPFROM2SHORT(LIT_END, 0), MPFROMP(s));
 	info = info->next;
@@ -6545,10 +6546,11 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      WinSetWindowText(hwndButtonlist, (CHAR *) GetPString(IDS_TOOLBARTEXT));
 	    }
 	    else if (SHORT1FROMMP(mp1) == MAIN_SETUPLIST) {
+	      // State name list
 	      CHAR szKey[80];
 	      ULONG numsaves = 0;
 	      ULONG size = sizeof(ULONG);
-	      // 06 Oct 09 SHL Ctrl-select selects, but suppresses open
+	      // Ctrl-select selects, but suppresses open
 		if ((shiftstate & (KC_CTRL | KC_SHIFT | KC_ALT)) == KC_CTRL)
 		  break;
 	      sprintf(szKey, "%s.NumDirsLastTime", path);       // path is state name
@@ -6558,6 +6560,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 				       (PVOID)&numsaves,
 				       &size))
 	      {
+		// Name not found
 		if ((WinGetLastError(WinQueryAnchorBlock(hwnd)) & 0xffff) == PMERR_NOT_IN_IDX) {
 		  saymsg(MB_ENTER | MB_ICONASTERISK, hwnd,
 			 GetPString(IDS_WARNINGTEXT),
@@ -6569,9 +6572,11 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		}
 	      }
 	      else {
+		// Name exists
 		char *pszStateName;
+		// If shift key, add state to existing state - FIXME to doc better
 		if ((shiftstate & KC_SHIFT) == 0)
-		  PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPFROMLONG(2));
+		  PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPFROMLONG(RESTORE_STATE_CLOSE_CHILDREN));
 		pszStateName = xstrdup(path, pszSrcFile, __LINE__);
 		if (!pszStateName) {
 		  // Fall back if out of memory - already complained
@@ -6583,6 +6588,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    MPFROMLONG(1));                // Autotile
 		  }
 		}
+		// Request restore
 		else if (!PostMsg(MainObjectHwnd,
 				  UM_RESTORE,
 				  MPFROMP(pszStateName),
@@ -6590,7 +6596,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  free(pszStateName);
 		}
 	      }
-	    }
+	    } // if MAIN_SETUPLIST
 	    else if (SHORT1FROMMP(mp1) == MAIN_CMDLIST) {
 
 	      SHORT sSelect = (SHORT) WinSendMsg(hwndCmdlist,
@@ -6601,15 +6607,15 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		CHAR *p;
 
 		WinSendMsg(hwndCmdlist, LM_QUERYITEMTEXT,
-                           MPFROM2SHORT(sSelect, CCHMAXPATH), MPFROMP(s));
+			   MPFROM2SHORT(sSelect, CCHMAXPATH), MPFROMP(s));
 		p = strrchr(s, '}');
 		p = 0;
 		p = strrchr(s, '{');
 		p++;
 		WinPostMsg(hwnd,
 			   WM_COMMAND,
-                           MPFROM2SHORT(atol(p), 0), //fixme GKY this traps in atol the {} probably don't exist
-                           //IDM_COMMANDSTART + sSelect, 0),
+			   MPFROM2SHORT(atol(p), 0), //fixme GKY this traps in atol the {} probably don't exist
+			   //IDM_COMMANDSTART + sSelect, 0),
 			   MPVOID);
 	      }
 		WinSetWindowText(hwndCmdlist, (CHAR *) GetPString(IDS_COMMANDSTEXT));
@@ -6656,7 +6662,9 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSendMsg(hwndTree, WM_CLOSE, MPVOID, MPVOID);
     }
     DosSleep(1);
-    return 0; 		// Suppress WinDefWindowProc WM_QUIT message generation
+    DbgMsg(pszSrcFile, __LINE__, "MainWndProc WM_CLOSE returning");
+
+    return 0;		// Suppress WinDefWindowProc WM_QUIT message generation
 
   case UM_CLOSE:
     HideNote();
@@ -6668,7 +6676,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       // Try to restore saved shutdown state
       char *pszDefaultStateName = xstrdup(PCSZ_SHUTDOWNSTATE, pszSrcFile, __LINE__);
       if (pszDefaultStateName) {
-	if (!PostMsg(MainObjectHwnd, UM_RESTORE, MPFROMP(pszDefaultStateName), MPVOID))
+	if (!PostMsg(MainObjectHwnd, UM_RESTORE, MPFROMP(pszDefaultStateName), MPFROMLONG(RESTORE_STATE_RESTORE)))
 	  // 05 Feb 08 SHL fixme to complain?
 	  free(pszDefaultStateName);
       }
@@ -6684,12 +6692,9 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_DESTROY:
-#   ifdef FORTIFY
-    DbgMsg(pszSrcFile, __LINE__, "WM_DESTROY hwnd %p TID %u", hwnd, GetTidForThread());	// 22 Jul 08 SHL fixme
-#   endif
-    hwndMain = (HWND) 0;
-    if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
-      WinSendMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
+    hwndMain = (HWND)0;
+    if (!PostMsg((HWND)0, WM_QUIT, MPVOID, MPVOID))
+      WinSendMsg((HWND)0, WM_QUIT, MPVOID, MPVOID);
 #   ifdef FORTIFY
     free_commands();
     free_associations();
