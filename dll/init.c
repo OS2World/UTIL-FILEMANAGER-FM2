@@ -132,6 +132,8 @@
                 a trap when FM2 is shutdown while directory containers are still populating
   02 Aug 15 GKY Serialize local hard drive scanning to reduce drive thrashing continue to scan
                 all other drive types in separate threads.
+  12 Aug 15 JBS Ticket #524: Ensure no "highmem-unsafe" functions are called directly
+                Calls to unsafe Dos... functions have been changed to call the wrapped xDos... functions
 
 ***********************************************************************/
 
@@ -652,7 +654,7 @@ VOID APIENTRY DeInitFM3DLL(ULONG why)
     DosFindClose(search_handle);
   }
   BldFullPathName(szTempFile, pTmpDir, PCSZ_FM2PLAYTEMP);
-  DosForceDelete(szTempFile);
+  xDosForceDelete(szTempFile);
   if (pTmpDir) {
     wipeallf(TRUE, "%s\\*", pTmpDir);
     DosDeleteDir(pTmpDir);

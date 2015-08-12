@@ -105,6 +105,8 @@
                 or gzip.exe on TAR.B/GZ archives.
   06 Apr 14 GKY Removed all BZ/GZ checks
   28 Jun 14 GKY Fix errors identified with CPPCheck; Fix retry to create workdir code
+  12 Aug 15 JBS Ticket #524: Ensure no "highmem-unsafe" functions are called directly
+                Calls to unsafe Dos... functions have been changed to call the wrapped xDos... functions
 
 ***********************************************************************/
 
@@ -590,9 +592,8 @@ static INT FillArcCnr(HWND hwndCnr, CHAR * arcname, ARC_TYPE ** arcinfo,
   HFILE newstdout;
   CHAR lonename[CCHMAXPATH + 2],
        *nsize, *osize, *fdate, *fname, *p, *pp, *arctemp;
-  // Change the DosQueryAppType call below to xDosQueryAppType if "s" is no longer in low memory
   CHAR s[CCHMAXPATH * 2];
-  CHAR TestStr[CCHMAXPATH * 2]; 
+  CHAR TestStr[CCHMAXPATH * 2];
   BOOL gotstart;
   BOOL gotend;
   BOOL wasquote;
@@ -605,7 +606,7 @@ static INT FillArcCnr(HWND hwndCnr, CHAR * arcname, ARC_TYPE ** arcinfo,
   ULONG apptype;
   APIRET rc;
   CHAR *mode;
-  ULONG cnter = 0; 
+  ULONG cnter = 0;
 
   if (!arcname || !arcinfo)
     return 0;
@@ -658,7 +659,7 @@ ReTry:
     if (p)
       *p = 0;
     DosError(FERR_DISABLEHARDERR);
-    if (!DosQueryAppType(s, &apptype) &&
+    if (!xDosQueryAppType(s, &apptype) &&
 	(apptype & FAPPTYP_DOS ||
 	 apptype & FAPPTYP_WINDOWSREAL ||
 	 apptype & FAPPTYP_WINDOWSPROT ||
@@ -700,7 +701,7 @@ ReTry:
 	    return 0;
 	  }
           else {
-            rc = 0; 
+            rc = 0;
  	    //DbgMsg(pszSrcFile, __LINE__, "Number of tries %i", cnter);
  	    rc = SearchPathForFile(PCSZ_PATH, s, NULL);
  	    if (!rc) {
@@ -710,7 +711,7 @@ ReTry:
                       "%s %s",
                       info->list,
                       BldQuotedFileName(s, arcname));
-              if (cnter == 1) { 
+              if (cnter == 1) {
                 if (info->test)
                   strcpy(TestStr, info->test);
                 else {
@@ -943,7 +944,7 @@ ReTry:
 	    tinfo = find_type(arcname, tinfo);
 	  if (tinfo) {
 	    DosError(FERR_DISABLEHARDERR);
-	    DosForceDelete(arctemp);
+	    xDosForceDelete(arctemp);
 	    info = tinfo;
 	    goto ReTry;
 	  }
@@ -951,7 +952,7 @@ ReTry:
         if (!fAlertBeepOff)
           DosBeep(750, 50);		// wake up user
 
-        if (cnter > 0) { 
+        if (cnter > 0) {
           CHAR Temp[CCHMAXPATH + 2];
 
           sprintf(errstr, GetPString(IDS_ARCERRORINFOTEXT),
@@ -964,7 +965,7 @@ ReTry:
           ad.info = info;
           strcpy(ad.listname, arctemp);
           strcpy(ad.arcname, arcname);
-          if (!notest) { 
+          if (!notest) {
             strcpy(Temp, info->test);
             info->test = xstrdup(TestStr, pszSrcFile, __LINE__);
           }
@@ -979,7 +980,7 @@ ReTry:
           if (!notest || rc)
             info->test = xstrdup(Temp, pszSrcFile, __LINE__);
         }
-        else 
+        else
  	  saymsg(MB_OK, HWND_DESKTOP, GetPString(IDS_ARCMISSINGEXE),
                  GetPString(IDS_ARCMISSINGEXEVERBOSE));
       }
@@ -998,7 +999,7 @@ ReTry:
     }					// if opened
 
     DosError(FERR_DISABLEHARDERR);
-    DosForceDelete(arctemp);
+    xDosForceDelete(arctemp);
     xfree(arctemp, pszSrcFile, __LINE__);
   }
 
@@ -1007,6 +1008,7 @@ ReTry:
 
   return numarcfiles;
 } // FillArcCnr
+
 MRESULT EXPENTRY ArcTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   static BOOL emphasized = FALSE;

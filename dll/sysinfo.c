@@ -18,6 +18,8 @@
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   20 Nov 10 GKY Check that pTmpDir IsValid and recreate if not found; Fixes hangs caused
                 by temp file creation failures.
+  12 Aug 15 JBS Ticket #524: Ensure no "highmem-unsafe" functions are called directly
+                Calls to unsafe Dos... functions have been changed to call the wrapped xDos... functions
 
 ***********************************************************************/
 
@@ -73,17 +75,17 @@ VOID RunRmview(VOID * arg)
       goto Abort;
     else {
       newstdout = -1;
-      if (DosDupHandle(fileno(stdout), &newstdout)) {
+      if (xDosDupHandle(fileno(stdout), &newstdout)) {
 	fclose(fp);
 	goto Abort;
       }
       oldstdout = fileno(stdout);
-      DosDupHandle(fileno(fp), &oldstdout);
+      xDosDupHandle(fileno(fp), &oldstdout);
       runemf2(SEPARATE | INVISIBLE | FULLSCREEN | BACKGROUND | WAIT,
               hwnd, pszSrcFile, __LINE__,
               NULL, NULL, "%s", szTempFile);
       oldstdout = fileno(stdout);
-      DosDupHandle(newstdout, &oldstdout);
+      xDosDupHandle(newstdout, &oldstdout);
       DosClose(newstdout);
       fclose(fp);
     }
@@ -119,7 +121,7 @@ VOID RunRmview(VOID * arg)
     WinTerminate(thab);
   }
   if (szTempFile)
-    DosForceDelete(szTempFile);
+    xDosForceDelete(szTempFile);
 }
 
 MRESULT EXPENTRY SysInfoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)

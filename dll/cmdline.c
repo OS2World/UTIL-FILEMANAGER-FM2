@@ -29,6 +29,8 @@
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   23 Oct 10 GKY Changes to populate and utilize a HELPTABLE for context specific help
   28 Apr 14 JBS Ticket #522: Ensure use of wrapper functions where needed
+  12 Aug 15 JBS Ticket #524: Ensure no "highmem-unsafe" functions are called directly
+                Calls to unsafe Dos... functions have been changed to call the wrapped xDos... functions
 
 ***********************************************************************/
 
@@ -404,7 +406,6 @@ MRESULT EXPENTRY CmdLineDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_SETUP:
     {
       ULONG apptype = 0L;
-      // Change DosQueryAppType to xDosQueryAppType if "executable"is no longer local
       CHAR executable[CCHMAXPATH], commandline[1001], *p;
 
       ex = INSTDATA(hwnd);
@@ -448,7 +449,7 @@ MRESULT EXPENTRY CmdLineDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 // 	  }
 	}
       }
-      if (DosQueryAppType(executable, &apptype) ||
+      if (xDosQueryAppType(executable, &apptype) ||
 	  (apptype && !(apptype &
 			(FAPPTYP_NOTWINDOWCOMPAT |
 			 FAPPTYP_WINDOWCOMPAT |

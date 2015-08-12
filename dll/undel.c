@@ -106,7 +106,7 @@ static VOID FillUndelListThread(VOID * arg)
     }
     else {
       newstdout = -1;
-      if (DosDupHandle(fileno(stdout), &newstdout)) {
+      if (xDosDupHandle(fileno(stdout), &newstdout)) {
 	saymsg(MB_CANCEL,
 	       hwnd,
 	       GetPString(IDS_MAYDAYTEXT), GetPString(IDS_REDIRECTERRORTEXT));
@@ -115,7 +115,7 @@ static VOID FillUndelListThread(VOID * arg)
 	goto Abort;
       }
       oldstdout = fileno(stdout);
-      DosDupHandle(fileno(fp), &oldstdout);
+      xDosDupHandle(fileno(fp), &oldstdout);
       runemf2(SEPARATE | INVISIBLE | WINDOWED | BACKGROUND | WAIT,
 	      hwnd, pszSrcFile, __LINE__,
 	      NULL,
@@ -123,7 +123,7 @@ static VOID FillUndelListThread(VOID * arg)
 	      "UNDELETE.COM %s /L%s",
 	      path, (undelinfo->inclsubdirs) ? " /S" : NullStr);
       oldstdout = fileno(stdout);
-      DosDupHandle(newstdout, &oldstdout);
+      xDosDupHandle(newstdout, &oldstdout);
       DosClose(newstdout);
       fclose(fp);
     }
@@ -175,7 +175,7 @@ static VOID FillUndelListThread(VOID * arg)
   Abort:
     ;
   }
-  DosForceDelete(szTempFile);
+  xDosForceDelete(szTempFile);
   xfree(undelinfo, pszSrcFile, __LINE__);
   if (thmq) {
     PostMsg(hwnd, UM_CONTAINER_FILLED, MPVOID, MPVOID);
@@ -427,10 +427,10 @@ MRESULT EXPENTRY UndeleteDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (sSelect >= 0) {
 
 	  FILE *fp;
-          CHAR s[CCHMAXPATH + 1];
-          CHAR *modew = "w";
+	  CHAR s[CCHMAXPATH + 1];
+	  CHAR *modew = "w";
 
-	  DosForceDelete("\\FMUNDEL.CMD");
+	  xDosForceDelete("\\FMUNDEL.CMD");
 	  fp = xfopen("\\FMUNDEL.CMD", modew, pszSrcFile, __LINE__, FALSE);
 	  if (fp) {
 	    while (sSelect >= 0) {

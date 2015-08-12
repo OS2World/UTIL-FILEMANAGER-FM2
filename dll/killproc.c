@@ -34,6 +34,8 @@
                 xDosAlloc* wrappers.
   22 Aug 14 JBS Ticket #519: Corrected mis-coded but probably harmless calls to strtol
                 and removed unneeded second parameter variables.
+  12 Aug 15 JBS Ticket #524: Ensure no "highmem-unsafe" functions are called directly
+                Calls to unsafe Dos... functions have been changed to call the wrapped xDos... functions
 
 ***********************************************************************/
 
@@ -277,16 +279,16 @@ static VOID FillKillListThread(VOID * arg)
   }
   else {
     newstdout = -1;
-    rc = DosDupHandle(fileno(stdout), &newstdout);
+    rc = xDosDupHandle(fileno(stdout), &newstdout);
     if (rc)
       Dos_Error(MB_CANCEL, rc, hwnd, __FILE__, __LINE__, PCSZ_DOSDUPHANDLE);
     oldstdout = fileno(stdout);
-    DosDupHandle(fileno(fp), &oldstdout);
+    xDosDupHandle(fileno(fp), &oldstdout);
     rc = runemf2(SEPARATE | INVISIBLE | FULLSCREEN | BACKGROUND | WAIT,
 		 hwnd, pszSrcFile, __LINE__, NULL, NULL,
 		 "%s", "PSTAT.EXE /C");
     oldstdout = fileno(stdout);
-    DosDupHandle(newstdout, &oldstdout);
+    xDosDupHandle(newstdout, &oldstdout);
     DosClose(newstdout);
     fclose(fp);
     // fixme to be gone?
@@ -335,7 +337,7 @@ static VOID FillKillListThread(VOID * arg)
   }
 Abort:
   BldFullPathName(s, pTmpDir, "$PSTAT#$.#$#");
-  DosForceDelete(s);
+  xDosForceDelete(s);
   PostMsg(hwnd, UM_CONTAINER_FILLED, MPVOID, MPVOID);
   WinDestroyMsgQueue(thmq);
   DecrThreadUsage();

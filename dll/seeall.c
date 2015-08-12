@@ -63,6 +63,8 @@
   22 Feb 14 GKY Fix warn readonly yes don't ask to work when recursing directories.
   02 May 15 GKY Changes to allow a JAVA executable object to be created using "Real object"
                 menu item on a jar file.
+  12 Aug 15 JBS Ticket #524: Ensure no "highmem-unsafe" functions are called directly
+                Calls to unsafe Dos... functions have been changed to call the wrapped xDos... functions
 
 ***********************************************************************/
 
@@ -1097,7 +1099,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      if (SHORT1FROMMP(mp1) == IDM_DELETE)
 		error = DosDelete(list[x]);
 	      else
-		error = DosForceDelete(list[x]);
+		error = xDosForceDelete(list[x]);
 	      if (error) {
 		DosError(FERR_DISABLEHARDERR);
                 retrn = make_deleteable(list[x], error, ignorereadonly);
@@ -1110,7 +1112,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		if (SHORT1FROMMP(mp1) == IDM_DELETE)
 		  error = DosDelete(list[x]);
 		else
-		  error = DosForceDelete(list[x]);
+		  error = xDosForceDelete(list[x]);
 	      }
 	    }
 	    if (error) {
