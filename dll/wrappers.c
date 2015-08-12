@@ -5,7 +5,7 @@
 
   Wrappers with error checking
 
-  Copyright (c) 2006, 2008 Steven H.Levine
+  Copyright (c) 2006, 2015 Steven H.Levine
 
   22 Jul 06 SHL Baseline
   29 Jul 06 SHL Add xgets_stripped
@@ -19,9 +19,10 @@
   12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
   15 Nov 09 GKY Rework xDosQueryAppType to remove HIMEM ifdefs
   26 Aug 11 GKY Add a low mem version of xDosAlloc* wrappers; move error checking into all the
-                xDosAlloc* wrappers.
+		xDosAlloc* wrappers.
   09 Oct 11 GKY Modify xfsopen so it doesn't fail when called with r+ because the file doesn't exist.
-                We should be creating the file unless it is set to fail silently.
+		We should be creating the file unless it is set to fail silently.
+  09 Aug 15 SHL Add xDosGetInfoBlocks
 
 ***********************************************************************/
 
@@ -76,15 +77,15 @@ APIRET xDosQueryAppType(PCSZ pszName, PULONG pFlags)
  */
 
 APIRET xDosAllocSharedMem(PPVOID ppb,
-                          PSZ pszName,
-                          ULONG cb,
-                          PCSZ pszSrcFile,
-	                  UINT uiLineNumber)
+			  PSZ pszName,
+			  ULONG cb,
+			  PCSZ pszSrcFile,
+			  UINT uiLineNumber)
 {
   APIRET rc; ;
 
   rc = DosAllocSharedMem(ppb, pszName, cb,
-                         PAG_COMMIT | OBJ_GIVEABLE | PAG_READ | PAG_WRITE | OBJ_ANY);
+			 PAG_COMMIT | OBJ_GIVEABLE | PAG_READ | PAG_WRITE | OBJ_ANY);
   //DbgMsg(pszSrcFile, __LINE__, "ppb %p", *ppb);
   if (rc)
     rc = DosAllocSharedMem(ppb, pszName, cb, PAG_COMMIT | OBJ_GIVEABLE | PAG_READ | PAG_WRITE);
@@ -101,9 +102,9 @@ APIRET xDosAllocSharedMem(PPVOID ppb,
  */
 
 APIRET xDosAllocMem(PPVOID ppb,
-                    ULONG cb,
-                    PCSZ pszSrcFile,
-	            UINT uiLineNumber)
+		    ULONG cb,
+		    PCSZ pszSrcFile,
+		    UINT uiLineNumber)
 {
   APIRET rc;
 
@@ -126,9 +127,9 @@ APIRET xDosAllocMem(PPVOID ppb,
  */
 
 APIRET xDosAllocMemLow(PPVOID ppb,
-                       ULONG cb,
-                       PCSZ pszSrcFile,
-	               UINT uiLineNumber)
+		       ULONG cb,
+		       PCSZ pszSrcFile,
+		       UINT uiLineNumber)
 {
   APIRET rc;
 
@@ -137,6 +138,20 @@ APIRET xDosAllocMemLow(PPVOID ppb,
     Runtime_Error(pszSrcFile, uiLineNumber, GetPString(IDS_OUTOFMEMORY));
   //DbgMsg(pszSrcFile, uiLineNumber, "ppb %p", *ppb);
   return rc;
+}
+
+APIRET xDosGetInfoBlocks(PTIB *pptib,
+			 PPIB *pppib)
+{
+  APIRET apiret = DosGetInfoBlocks(pptib, pppib);
+
+  if (apiret) {
+    Dos_Error(MB_CANCEL, apiret, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      PCSZ_DOSGETINFOBLOCKS);
+    *pppib = 0;
+    *pptib = 0;
+  }
+  return apiret;
 }
 
 APIRET xDosFindFirst(PSZ pszFileSpec,
@@ -318,7 +333,7 @@ APIRET xDosSetPathInfo(PSZ pszPathName,
     EAOP2 eaop2;
     APIRET rc;
     BOOL crosses = ((ULONG)pInfoBuf ^
-                    ((ULONG)pInfoBuf + cbInfoBuf - 1)) & ~0xffff;
+		    ((ULONG)pInfoBuf + cbInfoBuf - 1)) & ~0xffff;
     BOOL fResetVerify = FALSE;
 
     if (fVerify && driveflags[toupper(*pszPathName) - 'A'] & DRIVE_WRITEVERIFYOFF) {
@@ -327,12 +342,12 @@ APIRET xDosSetPathInfo(PSZ pszPathName,
     }
     switch (ulInfoLevel) {
       case FIL_STANDARD:
-        if (crosses) {
+	if (crosses) {
 	  fs3 = *(PFILESTATUS3)pInfoBuf;	// Copy to buffer that does not cross 64K boundary
-       	  rc = DosSetPathInfo(pszPathName, ulInfoLevel, &fs3, cbInfoBuf, flOptions);
-        }
-        else
-       	  rc = DosSetPathInfo(pszPathName, ulInfoLevel, pInfoBuf, cbInfoBuf, flOptions);
+	  rc = DosSetPathInfo(pszPathName, ulInfoLevel, &fs3, cbInfoBuf, flOptions);
+	}
+	else
+	  rc = DosSetPathInfo(pszPathName, ulInfoLevel, pInfoBuf, cbInfoBuf, flOptions);
 	break;
 
       case FIL_STANDARDL:
@@ -371,8 +386,8 @@ APIRET xDosSetPathInfo(PSZ pszPathName,
 	  // fixme to validate counts?
 	  eaop2 = *(PEAOP2)pInfoBuf;	// Copy to buffer that does not cross
 	  rc = DosSetPathInfo(pszPathName, ulInfoLevel, &eaop2, sizeof(eaop2), flOptions);
-        }
-        break;
+	}
+	break;
       default:
 	Runtime_Error(pszSrcFile, __LINE__, "ulInfoLevel %u unexpected", ulInfoLevel);
 	rc = ERROR_INVALID_PARAMETER;
@@ -447,7 +462,7 @@ FILE *xfopen(PCSZ pszFileName, PCSZ pszMode, PCSZ pszSrcFile,
  */
 
 FILE *xfsopen(PCSZ pszFileName, PCSZ pszMode, INT fSharemode, PCSZ pszSrcFile,
-              UINT uiLineNumber, BOOL fSilent)
+	      UINT uiLineNumber, BOOL fSilent)
 {
   CHAR FileName[CCHMAXPATH];
   FILE *fp;
