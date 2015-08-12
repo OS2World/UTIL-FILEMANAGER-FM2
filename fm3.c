@@ -6,11 +6,12 @@
   fm/2 starter
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2008 Steven H.Levine
+  Copyright (c) 2008, 2015 Steven H.Levine
 
   05 Jan 08 SHL Sync
   18 Jul 08 SHL Add Fortify support
   11 Dec 08 SHL Add exception handler support
+  08 Aug 15 SHL Comments
 
 ***********************************************************************/
 
@@ -66,23 +67,28 @@ int main(int argc, char *argv[])
 	  Fortify_EnterScope();
 #	  endif
 	  hwndFrame = StartFM3(hab, argc, argv);
-	  if (hwndFrame != (HWND) 0) {
+	  if (hwndFrame != (HWND)0) {
 	    for (;;) {
 	      if (!WinGetMsg(hab, &qmsg, (HWND) 0, 0, 0)) {
-		if (qmsg.hwnd)
-		  qmsg.msg = WM_CLOSE;	// Map quit to close
-		else
-		  break;
+		// Get WM_QUIT
+		if (!qmsg.hwnd)
+		  break;		// Time to die if no window
+		// Map quit to close
+		// Must use System Menu or Ctrl-Alt-F4 accel to shutdown
+		qmsg.msg = WM_CLOSE;
 	      }
 	      if (hwndBubble &&
-		  ((qmsg.msg > (WM_BUTTON1DOWN - 1) &&
-		    qmsg.msg < (WM_BUTTON3DBLCLK + 1)) ||
-		   (qmsg.msg > (WM_CHORD - 1) &&
-		    qmsg.msg < (WM_BUTTON3CLICK + 1))) &&
+		  ((qmsg.msg > WM_BUTTON1DOWN - 1 &&
+		    qmsg.msg < WM_BUTTON3DBLCLK + 1) ||
+		   (qmsg.msg > WM_CHORD - 1 &&
+		    qmsg.msg < WM_BUTTON3CLICK + 1)) &&
 		  WinIsWindowVisible(hwndBubble))
-		WinShowWindow(hwndBubble, FALSE);
+	      {
+		WinShowWindow(hwndBubble, FALSE);	// Hide
+	      }
 	      WinDispatchMsg(hab, &qmsg);
-	    }
+	    } // for
+	    // Time to die
 	    if (WinIsWindow(hab, WinWindowFromID(hwndFrame, FID_CLIENT)))
 	      WinSendMsg(WinWindowFromID(hwndFrame, FID_CLIENT), WM_CLOSE,
 			 MPVOID, MPVOID);
