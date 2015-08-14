@@ -105,8 +105,8 @@
                 or gzip.exe on TAR.B/GZ archives.
   06 Apr 14 GKY Removed all BZ/GZ checks
   28 Jun 14 GKY Fix errors identified with CPPCheck; Fix retry to create workdir code
-  12 Aug 15 JBS Ticket #524: Ensure no "highmem-unsafe" functions are called directly
-                Calls to unsafe Dos... functions have been changed to call the wrapped xDos... functions
+  12 Aug 15 JBS Ticket #522: Ensure no "highmem-unsafe" functions are called directly.
+                Calls to unsafe Dos... functions have been changed to call the wrapped xDos... functions.
 
 ***********************************************************************/
 
@@ -651,7 +651,7 @@ ReTry:
       highest = 32767;
 
     DosError(FERR_DISABLEHARDERR);
-    DosForceDelete(arctemp);
+    xDosForceDelete(arctemp);
     DosError(FERR_DISABLEHARDERR);
 
     strcpy(s, info->list);
@@ -683,7 +683,7 @@ ReTry:
       else {
 	newstdout = -1;
 	DosError(FERR_DISABLEHARDERR);
-	rc = DosDupHandle(fileno(stdout), &newstdout);
+	rc = xDosDupHandle(fileno(stdout), &newstdout);
 	if (rc) {
 	  Dos_Error(MB_CANCEL, rc, hwndCnr, pszSrcFile, __LINE__,
 		    PCSZ_DOSDUPHANDLE);
@@ -693,7 +693,7 @@ ReTry:
 	else {
 	  oldstdout = fileno(stdout);
 	  DosError(FERR_DISABLEHARDERR);
-	  rc = DosDupHandle(fileno(fp), &oldstdout);
+	  rc = xDosDupHandle(fileno(fp), &oldstdout);
 	  if (rc) {
 	    Dos_Error(MB_CANCEL, rc, hwndCnr, pszSrcFile, __LINE__,
 		      PCSZ_DOSDUPHANDLE);
@@ -726,7 +726,7 @@ ReTry:
  	    }
 	    oldstdout = fileno(stdout);
 	    DosError(FERR_DISABLEHARDERR);
-	    DosDupHandle(newstdout, &oldstdout);
+	    xDosDupHandle(newstdout, &oldstdout);
 	    DosClose(newstdout);
 	    fclose(fp);
 	  }
