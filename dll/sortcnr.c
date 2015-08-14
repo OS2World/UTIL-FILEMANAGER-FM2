@@ -27,6 +27,10 @@
 #include "collect.h"			// Data declarations
 #include "sortcnr.h"
 #include "valid.h"                      // TestCDates
+#if 0
+#define  __PMPRINTF__
+#include "PMPRINTF.H"
+#endif
 
 static SHORT SortCnr(PMINIRECORDCORE p1, PMINIRECORDCORE p2, INT Sortflags);
 
@@ -61,6 +65,9 @@ SHORT SortCnr(PMINIRECORDCORE pRec1, PMINIRECORDCORE pRec2, INT SortFlags)
 
   if (SortFlags & SORT_NOSORT)
     return 0;
+  if (!strcmp(pCI1->pszFileName, NullStr) || !strcmp(pCI2->pszFileName, NullStr)) {
+    return 0;
+  }
   if (SortFlags && pCI1->pszFileName + 3 && pCI2->pszFileName + 3) {
     if (SortFlags & SORT_DIRSFIRST) {
       if ((pCI1->attrFile & FILE_DIRECTORY) !=

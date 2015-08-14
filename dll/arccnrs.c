@@ -3074,7 +3074,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  if (!*dcd->mask.szMask) {
 	    empty = TRUE;
 	    pci = (PARCITEM) CurrentRecord(hwnd);
-	    if (pci && strchr(pci->pszFileName, '.'))
+	    if (pci && (INT) pci != -1 && strchr(pci->pszFileName, '.'))
 	      strcpy(dcd->mask.szMask, pci->pszFileName);
 	  }
 
@@ -3311,7 +3311,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      return MRFROM2SHORT(DOR_NEVERDROP, 0);
 	    }
 	  }
-	  if (pci) {
+	  if (pci && (INT) pci != -1) {
 	    DrgFreeDraginfo(pDInfo);
 	    return MRFROM2SHORT(DOR_NODROP, 0);
 	  }
@@ -3337,7 +3337,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
 	  if (pcd) {
 	    pci = (PARCITEM) pcd->pRecord;
-	    if (pci) {
+	    if (pci && (INT) pci != -1) {
 	      if (pci->rc.flRecordAttr & CRA_SELECTED)
 		wasemphasized = TRUE;
 	      if (!ParentIsDesktop(hwnd, dcd->hwndParent) &&
@@ -3392,7 +3392,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	{
 	  PARCITEM pci = (PARCITEM) mp2;
 
-	  if (pci) {
+	  if (pci && (INT) pci != -1) {
 	    WinSendMsg(hwnd, CM_SETRECORDEMPHASIS, MPFROMP(pci),
 		       MPFROM2SHORT(TRUE, CRA_CURSORED));
 	    MarkAll(hwnd, FALSE, FALSE, TRUE);
@@ -3487,7 +3487,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
 	  PARCITEM pci = (PARCITEM) ((PNOTIFYRECORDENTER) mp2)->pRecord;
 
-	  if (pci) {
+	  if (pci && (INT) pci != -1) {
 
 	    CHAR *s;
 
