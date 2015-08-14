@@ -42,6 +42,8 @@
   19 Jul 14 GKY Fix redundant error message following selection of no for unlocking a file
   02 May 15 GKY Changes to R/O check to eliminate redundant checks and error messages
   02 May 15 GKY Limit unlock attempts to exes and dlls.
+  12 Aug 15 JBS Ticket #522: Ensure no "highmem-unsafe" functions are called directly.
+                Calls to unsafe Dos... functions have been changed to call the wrapped xDos... functions
 
 ***********************************************************************/
 
@@ -550,10 +552,10 @@ APIRET docopyf(INT type, CHAR *oldname, CHAR *newname)
           APIRET error;
 
           DosError(FERR_DISABLEHARDERR);
-          error = DosForceDelete(dir);
+          error = xDosForceDelete(dir);
 	  if (error) {
 	    make_deleteable(dir, error, TRUE);
-	    DosForceDelete(dir);
+	    xDosForceDelete(dir);
 	  }
 	  if (zaplong) {
 	    ret = ZapLongName(dir);
@@ -841,7 +843,7 @@ INT wipeallf(BOOL ignorereadonly, CHAR *string, ...)
         APIRET error;
 
         DosError(FERR_DISABLEHARDERR);
-        error = DosForceDelete(ss);
+        error = xDosForceDelete(ss);
         if (error) {
           INT retrn = 0;
 
@@ -853,7 +855,7 @@ INT wipeallf(BOOL ignorereadonly, CHAR *string, ...)
           else if (retrn == SM2_CANCEL)
             break;
 	  DosError(FERR_DISABLEHARDERR);
-	  rc = (INT) DosForceDelete(ss);
+	  rc = (INT) xDosForceDelete(ss);
 	  if (rc)
 	    return rc;
 	}
@@ -965,13 +967,13 @@ INT unlinkf(CHAR *string)
     INT ret;
 
     DosError(FERR_DISABLEHARDERR);
-    error = DosForceDelete(string);
+    error = xDosForceDelete(string);
     if (error) {
       ret = make_deleteable(string, error, FALSE);
       if (ret == SM2_CANCEL || ret == SM2_NO)
         return 0;
       DosError(FERR_DISABLEHARDERR);
-      return DosForceDelete(string);
+      return xDosForceDelete(string);
     }
   }
   return 0;
