@@ -12,7 +12,7 @@
   12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
   26 Aug 11 GKY Add a low mem version of xDosAlloc* wrappers; move error checking into all the
 		xDosAlloc* wrappers.
-  12 Aug 15 JBS Ticket #524: Ensure no "highmem-unsafe" functions are called directly
+  12 Aug 15 JBS Ticket #522: Ensure no "highmem-unsafe" functions are called directly
 		1) New functions have been added
 		2) Code for unsafe-but-not-yet-used-by-FM/2 has been added in an
 		   "#if 0" block in wrappers.c for quick implementation should FM/2 start to use them.

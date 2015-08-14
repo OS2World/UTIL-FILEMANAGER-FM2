@@ -22,7 +22,7 @@
 		xDosAlloc* wrappers.
   09 Oct 11 GKY Modify xfsopen so it doesn't fail when called with r+ because the file doesn't exist.
 		We should be creating the file unless it is set to fail silently.
-  12 Aug 15 JBS Ticket #524: Ensure no "highmem-unsafe" functions are called directly
+  12 Aug 15 JBS Ticket #522: Ensure no "highmem-unsafe" functions are called directly
 		1) New functions have been added
 		2) Code for unsafe-but-not-yet-used-by-FM/2 has been added in an
 		   "#if 0" block for quick implementation should FM/2 start to use them.
