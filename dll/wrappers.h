@@ -14,7 +14,7 @@
 		xDosAlloc* wrappers.
   12 Aug 15 JBS Ticket #522: Ensure no "highmem-unsafe" functions are called directly
 		1) New functions have been added
-		2) Code for unsafe-but-not-yet-used-by-FM/2 has been added in an
+		2) Code for unsafe-but-not-yet-used-by-FM/2 functinos have been added in an
 		   "#if 0" block in wrappers.c for quick implementation should FM/2 start to use them.
 		   Among these. xDosOpenL and xWinUpper still need work. The rest are ready for use.
 
