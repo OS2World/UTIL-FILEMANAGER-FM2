@@ -94,6 +94,10 @@ WARNALL = $(%WARNALL)		# use value from environment
 FORTIFY = $(%FORTIFY)		# use value from environment
 !endif
 
+!ifdef %PMPRINTF		# if defined in environment
+PMPRINTF = $(%PMPRINTF)		# use value from environment
+!endif
+
 # Keep this code in sync with makefile_post.mk
 !ifndef NOHIGHMEM
 !ifdef %NOHIGHMEM
@@ -232,8 +236,10 @@ $(BASE).lrf: $(__MAKEFILES__)
    @%write $^@ $(LFLAGS)
    @%append $^@ name $(BASE)
    @for %f in ($(OBJS)) do @%append $^@ file %f
-  @%append $^@ library os2386.lib
-
+  @%append $^@ library os2386.lib 
+!ifdef PMPRINTF  
+  @%append $^@ library PMPRINTF.LIB
+!endif
 !else # MAKERES defined
 
 # MAKERES mode - build resources only
