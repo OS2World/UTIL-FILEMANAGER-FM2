@@ -6,12 +6,13 @@
   Wrappers with error checking
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2008 Steven H. Levine
+  Copyright (c) 2008, 2015 Steven H. Levine
 
   08 Dec 08 SHL Add missing OS2_INCLUDED check
   12 Jul 09 GKY Add xDosQueryAppType and xDoxAlloc... to allow FM/2 to load in high memory
   26 Aug 11 GKY Add a low mem version of xDosAlloc* wrappers; move error checking into all the
 		xDosAlloc* wrappers.
+  09 Aug 15 SHL Add xDosGetInfoBlocks
   12 Aug 15 JBS Ticket #522: Ensure no "highmem-unsafe" functions are called directly
 		1) New functions have been added
 		2) Code for unsafe-but-not-yet-used-by-FM/2 functinos have been added in an
