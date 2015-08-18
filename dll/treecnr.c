@@ -360,7 +360,7 @@ VOID ShowTreeRec(HWND hwndCnr,
       }
 
       if (~pciP->rc.flRecordAttr & CRA_EXPANDED) {
-        DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec expanding %s", pciP->pszFileName); // 2015-08-04 SHL FIXME debug
+	DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec expanding %s", pciP->pszFileName); // 2015-08-04 SHL FIXME debug
 	WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciP), MPVOID);
 	DosSleep(100);				// 2015-08-13 SHL Let PM catch up
 	// WaitFleshWorkListEmpty();		// 2015-08-13 SHL
@@ -1337,7 +1337,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinSetWindowText(hwndAttr, pci->pszDispAttr);
 	}
       }
-      DbgMsg(pszSrcFile, __LINE__, "TreeCnrWndProc UM_RESCAN PostMsg(UM_RESCAN2, %s)", pci->pszFileName); // 2015-08-04 SHL FIXME debug
+      DbgMsg(pszSrcFile, __LINE__, "TreeCnrWndProc UM_RESCAN PostMsg(UM_RESCAN2, %p %s)",
+	     pci, pci && pci->pszFileName ? pci->pszFileName : "(null)"); // 2015-08-04 SHL FIXME debug
       PostMsg(dcd->hwndObject, UM_RESCAN2, MPFROMP(pci), MPVOID);
       if (hwndStatus2)
 	PostMsg(hwnd, UM_TIMER, MPVOID, MPVOID);
