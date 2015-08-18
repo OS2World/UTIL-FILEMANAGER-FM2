@@ -4,13 +4,14 @@
   $Id$
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2008 Steven H.Levine
+  Copyright (c) 2003, 2015 Steven H.Levine
 
   Find records
 
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   28 Dec 08 GKY Containers will only scroll to the right if needed to show end of selected
-                item and will scroll left to eliminate space after a selected item. Ticket 204
+	        item and will scroll left to eliminate space after a selected item. Ticket 204
+  06 Aug 15 SHL Clean up and comment
 
 ***********************************************************************/
 
@@ -55,34 +56,36 @@ PCNRITEM FindCnrRecord(HWND hwndCnr, CHAR *filename, PCNRITEM pciParent,
   srch.pszSearch = (PSZ) file;
   srch.fsPrefix = FALSE;
   srch.fsCaseSensitive = FALSE;
-  srch.usView = CV_TREE;		
+  srch.usView = CV_TREE;
   if (!pciParent)
     pciParent = (PCNRITEM) CMA_FIRST;
   pci = WinSendMsg(hwndCnr,
 		   CM_SEARCHSTRING, MPFROMP(&srch), MPFROMP(pciParent));
   while (pci && (INT) pci != -1) {
     if (!noenv || (pci->flags & (RECFLAGS_ENV | RECFLAGS_UNDERENV)) == 0) {
-      if (!partmatch) {			// full name must match full name
+      // CNRITEM for file/directory
+      if (!partmatch) {			// file name must match full name
 	if (!stricmp(pci->pszFileName, filename))
-	  return pci;			// success
+	  return pci;			// got full match
       }
       else {				// only root name must match
-	if (strlen(pci->pszFileName) > 3) {
+	// partial match
+	if (strlen(pci->pszFileName) <= 3)
+	  p = pci->pszFileName;			// Root
+	else {
 	  p = strrchr(pci->pszFileName, '\\');
-	  if (!p) {
+	  if (p)
+	    p++;			// After slash
+	  else {
 	    p = strrchr(pci->pszFileName, ':');
 	    if (p)
-	      p++;
+	      p++;			// After colon
 	    else
-	      p = pci->pszFileName;
+	      p = pci->pszFileName;	// Must be bare file name
 	  }
-	  else
-	    p++;
 	}
-	else
-	  p = pci->pszFileName;
 	if (!stricmp(p, file))
-	  return pci;			// success
+	  return pci;			// got partial match
       }
     }
     pci = WinSendMsg(hwndCnr, CM_SEARCHSTRING, MPFROMP(&srch), MPFROMP(pci));
@@ -123,21 +126,21 @@ VOID ShowCnrRecord(HWND hwndCnr, PMINIRECORDCORE pmi)
   qrecrct.pRecord = (PRECORDCORE) pmi;
   qrecrct.fsExtent = (CMA_ICON | CMA_TEXT | CMA_TREEICON);
   if (!WinSendMsg(hwndCnr,
-                  CM_QUERYRECORDRECT, MPFROMP(&rcl), MPFROMP(&qrecrct))) {
+	          CM_QUERYRECORDRECT, MPFROMP(&rcl), MPFROMP(&qrecrct))) {
     qrecrct.fsExtent = CMA_TEXT | CMA_TREEICON;
     WinSendMsg(hwndCnr, CM_QUERYRECORDRECT, MPFROMP(&rcl), MPFROMP(&qrecrct));
   }
   WinSendMsg(hwndCnr,
 	     CM_QUERYVIEWPORTRECT,
-             MPFROMP(&rclViewport), MPFROM2SHORT(CMA_WINDOW, TRUE));
+	     MPFROMP(&rclViewport), MPFROM2SHORT(CMA_WINDOW, TRUE));
   //DbgMsg(pszSrcFile, __LINE__, "TOPPORT %i TOPRCL %i", rclViewport.yTop , rcl.yTop);
   WinSendMsg(hwndCnr,
 	     CM_SCROLLWINDOW,
-             MPFROMSHORT(CMA_HORIZONTAL), MPFROMLONG(rcl.xRight - rclViewport.xRight));
+	     MPFROMSHORT(CMA_HORIZONTAL), MPFROMLONG(rcl.xRight - rclViewport.xRight));
   WinSendMsg(hwndCnr,
 	     CM_SCROLLWINDOW,
 	     MPFROMSHORT(CMA_VERTICAL),
-             MPFROMLONG((rclViewport.yTop - (rcl.yTop) - 4)));
+	     MPFROMLONG((rclViewport.yTop - (rcl.yTop) - 4)));
 }
 
 #pragma alloc_text(FINDREC,FindCnrRecord,FindParentRecord,ShowCnrRecord)
