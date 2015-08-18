@@ -116,7 +116,9 @@
 		operation to the current target; Added an error message for target = None;
   02 Aug 15 GKY Remove unneed SubbyScan code and improve suppression of blank lines and
 		duplicate subdirectory name caused by running Stubby in worker threads.
+		duplicate subdirectory name caused by running Stubby in worker threads.
   09 Aug 15 SHL Use RESTORE_STATE_...
+  13 Aug 15 SHL Sync with Flesh/Stubby mods
 
 ***********************************************************************/
 
@@ -237,6 +239,8 @@ HWND hwndStatelist;
 HWND hwndToolback;
 HWND hwndTree;
 USHORT shiftstate;
+
+UINT cDirectoriesRestored;		// 2015-08-12 SHL Incremented by RestoreDirCnrState
 
 #pragma data_seg(GLOBAL2)
 HMODULE FM3ModHandle;
@@ -1819,7 +1823,9 @@ static MRESULT EXPENTRY CommandLineProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
 MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
+#if 0 // 2015-08-04 SHL FIXME to be gone
   APIRET rc;
+#endif // 2015-08-04 SHL FIXME to be gone
 
   static BOOL emphasized;
 
@@ -2094,9 +2100,11 @@ MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case WM_COMMAND:
+#if 0 // 2015-08-04 SHL FIXME to be gone
     rc = DosWaitEventSem(hevTreeCnrScanComplete, SEM_INDEFINITE_WAIT);
     if (rc)
       Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosWaitEventSem");
+#endif // 2015-08-04 SHL FIXME to be gone
 
     switch(SHORT1FROMMP(mp1)) {
     case IDM_RESCAN:
@@ -2135,6 +2143,7 @@ MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (isalpha(*dv)) {
 	  HWND hwndActive = TopWindow(hwnd, (HWND) 0);
 	  if (hwndActive)
+	    DbgMsg(pszSrcFile, __LINE__, "WinSendMsg UM_DRIVECMD %c", *dv); // 2015-08-04 SHL FIXME debug
 	    WinSendMsg(WinWindowFromID(hwndActive, FID_CLIENT),
 		       UM_DRIVECMD, MPFROMP(dv), MPVOID);
 	}
@@ -3445,7 +3454,8 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
   CHAR szPrefix[STATE_NAME_MAX_BYTES + 2];
   HWND hwndDir, hwndC, hwndPPSave = NULLHANDLE;
   SWP swp, swpO, swpN;
-  ULONG size, numsaves = 0;
+  ULONG size;
+  ULONG numsaves = 0;
   LONG x;
   double xtrans, ytrans;
   BOOL fRestored = FALSE;
@@ -3463,6 +3473,8 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
   }
 
   sprintf(szPrefix, "%s.", pszStateName);
+
+  DbgMsg(pszSrcFile, __LINE__, "RestoreDirCnrState %s", pszStateName);	// 2015-08-13 SHL FIXME debug
 
   // If restoring shutdown state bypass no-prescan drives
   fIsShutDownState = strcmp(pszStateName, PCSZ_SHUTDOWNSTATE) == 0;
@@ -3532,6 +3544,13 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
   sprintf(szKey, "%sNumDirsLastTime", szPrefix);
   size = sizeof(ULONG);
   if (PrfQueryProfileData(fmprof, FM3Str, szKey, (PVOID) &numsaves, &size)) {
+    // 2015-08-13 SHL TreeCnrWndProc UM_RESCAN has already requested a UM_RESCAN2 which
+    // will result in an extra UM_SHOWME
+    // RestoreDirCnrState can be called before pending UM_SHOWMEs complete - oh well
+    if (fSwitchTreeOnFocus && numsaves)
+      cDirectoriesRestored = 1;
+    else
+      cDirectoriesRestored = 0;
     if (fDeleteState)
       PrfWriteProfileData(fmprof, FM3Str, szKey, NULL, 0L);
     for (x = numsaves - 1; x >= 0; x--) {
@@ -3630,6 +3649,10 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 		    }
 		  }
 		}
+		// 2015-08-12 SHL Suppress drive tree updates if not last container to restore
+		if (fSwitchTreeOnFocus)
+		  cDirectoriesRestored++;	// 2015-08-12 SHL
+
 		if (!PostMsg(hwndCnr, UM_SETUP2, NULL, NULL))
 		  WinSendMsg(hwndCnr, UM_SETUP2, NULL, NULL);
 	      }
@@ -3659,12 +3682,14 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 	    RemoveCnrSwitches(szKeyBase, pszStateName);
 	}
       }
-    } // for
+    } // for numsaves
     if (hwndPPSave) {
       SavePresParams(hwndPPSave, PCSZ_DIRCNR);
       WinDestroyWindow(hwndPPSave);
     }
+    DbgMsg(pszSrcFile, __LINE__, "RestoreDirCnrState returning fRestored %u", fRestored);	// 2015-08-13 SHL FIXME debug
   }
+
   return fRestored;
 }
 
@@ -6532,6 +6557,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	    }
 	    else if (SHORT1FROMMP(mp1) == MAIN_DRIVELIST) {
+	      DbgMsg(pszSrcFile, __LINE__, "MainWndProc CBN_ENTER ShowTreeRec(\"%s\")", path); // 2015-08-04 SHL FIXME debug
 	      ShowTreeRec(WinWindowFromID(WinWindowFromID(hwndTree,
 							  FID_CLIENT),
 					  TREE_CNR), path, FALSE, TRUE);
@@ -6662,7 +6688,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSendMsg(hwndTree, WM_CLOSE, MPVOID, MPVOID);
     }
     DosSleep(1);
-    DbgMsg(pszSrcFile, __LINE__, "MainWndProc WM_CLOSE returning");
+    DbgMsg(pszSrcFile, __LINE__, "MainWndProc WM_CLOSE returning with fAmClosing %u", fAmClosing); // 2015-08-16 SHL
 
     return 0;		// Suppress WinDefWindowProc WM_QUIT message generation
 
@@ -6692,10 +6718,12 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_DESTROY:
+    DbgMsg(pszSrcFile, __LINE__, "MainWndProc WM_DESTROY hwnd %p TID %u", hwnd, GetTidForThread());	// 2015-08-09 SHL FIXME debug
     hwndMain = (HWND)0;
     if (!PostMsg((HWND)0, WM_QUIT, MPVOID, MPVOID))
       WinSendMsg((HWND)0, WM_QUIT, MPVOID, MPVOID);
 #   ifdef FORTIFY
+    DbgMsg(pszSrcFile, __LINE__, "MainWndProc WM_DESTROY hwnd %p TID %u", hwnd, GetTidForThread());	// 2015-08-09 SHL FIXME debug
     free_commands();
     free_associations();
     free_udirs();

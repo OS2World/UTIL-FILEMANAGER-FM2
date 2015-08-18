@@ -6,7 +6,7 @@
   Initialization
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2010 Steven H. Levine
+  Copyright (c) 2001, 2015 Steven H. Levine
 
   11 Jun 02 SHL Add CheckVersion
   11 Jun 03 SHL Add JFS and FAT32 support
@@ -210,10 +210,12 @@
 #include "fortify.h"
 #include "excputil.h"			// xbeginthread
 #include "systemf.h"                    // runemf2
+
 #if 0
 #define  __PMPRINTF__
 #include "PMPRINTF.H"
 #endif
+
 extern int _CRT_init(void);
 extern void _CRT_term(void);
 
@@ -235,11 +237,21 @@ unsigned __MaxThreads = {48};
 #pragma data_seg(GLOBAL1)
 HMTX hmtxFM2Delete;
 HMTX hmtxFM2Globals;
+
+#if 0 // 2015-08-04 SHL FIXME to be gone
 HMTX hmtxScanning;
+#endif // 2015-08-04 SHL FIXME to be gone
+
+#if 0 // 2015-08-07 SHL FIXME to be gone
 HMTX hmtxScanningLocalHD;
-HMTX hmtxScanningLocal;
+#endif // 2015-08-07 SHL FIXME to be gone
+
 HMTX hmtxFiltering;
+
+#if 0 // 2015-08-04 SHL FIXME to be gone
 HEV  hevTreeCnrScanComplete;
+#endif // 2015-08-04 SHL FIXME to be gone
+
 ULONG OS2ver[2];
 PFNWP PFNWPCnr;
 PFNWP PFNWPMLE;
@@ -248,7 +260,6 @@ CHAR DateSeparator[2];
 CHAR TimeSeparator[2];
 ULONG ulTimeFmt;
 ULONG ulDateFmt;
-ULONG ulScanPostCnt;
 BOOL fDontSuggestAgain;
 BOOL fInitialDriveScan;
 BOOL fAmAV2;
@@ -711,15 +722,15 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     return FALSE;
   }
 
-    rc = DosExitList(EXLST_ADD, DeInitFM3DLL);
-    if (rc) {
-      Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-	       "DosExitList");
-    }
+  rc = DosExitList(EXLST_ADD, DeInitFM3DLL);
+  if (rc) {
+    Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+	     "DosExitList");
+  }
 
-    rcq = DosQueryProcAddr(FM3ModHandle, 1, "ResVersion", &pfnResVersion);
-    if (!rcq)
-      ret = pfnResVersion(&RVMajor, &RVMinor);
+  rcq = DosQueryProcAddr(FM3ModHandle, 1, "ResVersion", &pfnResVersion);
+  if (!rcq)
+    ret = pfnResVersion(&RVMajor, &RVMinor);
   else {
     ret = 0;
     RVMajor = 0;
@@ -738,10 +749,12 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 	   GetPString(IDS_FM3RESERROR5TEXT), RVMajor, RVMinor, rcl, rcq, ret);
     return FALSE;
   }
+
 #if 0
   PmPrintfDisplayInterfaceVersionInfo();
   PmPrintfQueueNameThisProcess(NULL);
 #endif
+
   if (!*profile)
     strcpy(profile, PCSZ_FM3DOTINI);
   mypid = getpid();
@@ -768,7 +781,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     OS2ver[1] = 1;
   }
 
-  //Save the FM2 save directory name. This is the location of the ini, dat files etc.
+  // Save the FM2 save directory name. This is the location of the ini, dat files etc.
   rc = save_dir2(temp);
   if (rc) {
     saymsg(MB_CANCEL | MB_ICONEXCLAMATION,
@@ -883,6 +896,9 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 		   __LINE__) == -1) {
     return FALSE;
   }
+
+  if (!StartFleshWorkThread())
+    return FALSE;
 
   // timer messages are sent from a separate thread -- start it
   if (!StartTimer()) {
@@ -1165,27 +1181,40 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 		   CS_SYNCPAINT | CS_SIZEREDRAW | CS_PARENTCLIP,
 		   sizeof(PVOID));
 
-  if (DosCreateMutexSem(NULL, &hmtxFM2Globals, 0L, FALSE))
+  rc = DosCreateMutexSem(NULL, &hmtxFM2Globals, 0L, FALSE);
+  if (rc) {
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
               PCSZ_DOSCREATEMUTEXSEM);
+  }
+#if 0 // 2015-08-04 SHL FIXME to be gone
   if (DosCreateMutexSem(NULL, &hmtxScanning, 0L, TRUE))
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
               PCSZ_DOSCREATEMUTEXSEM);
-  if (DosCreateMutexSem(NULL, &hmtxScanningLocalHD, 0L, FALSE))
+#endif // 2015-08-04 SHL FIXME to be gone
+#if 0 // 2015-08-07 SHL FIXME to be gone
+  rc = DosCreateMutexSem(NULL, &hmtxScanningLocalHD, 0L, FALSE);
+  if (rc) {
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
               PCSZ_DOSCREATEMUTEXSEM);
-    if (DosCreateMutexSem(NULL, &hmtxScanningLocal, 0L, FALSE))
-    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-	      PCSZ_DOSCREATEMUTEXSEM);
-  if (DosCreateMutexSem(NULL, &hmtxFM2Delete, 0L, FALSE))
-    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-              PCSZ_DOSCREATEMUTEXSEM);
-  if (DosCreateMutexSem(NULL, &hmtxFiltering, 0L, FALSE))
+  }
+#endif // 2015-08-07 SHL FIXME to be gone
+  rc = DosCreateMutexSem(NULL, &hmtxFM2Delete, 0L, FALSE);
+  if (rc) {
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
               PCSZ_DOSCREATEMUTEXSEM);
-  if (DosCreateEventSem(NULL, &hevTreeCnrScanComplete, 0L, TRUE))
+  }
+  rc = DosCreateMutexSem(NULL, &hmtxFiltering, 0L, FALSE);
+  if (rc) {
+    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+              PCSZ_DOSCREATEMUTEXSEM);
+  }
+#if 0 // 2015-08-04 SHL FIXME to be gone
+  rc = DosCreateEventSem(NULL, &hevTreeCnrScanComplete, 0L, TRUE);
+  if (rc) {
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      PCSZ_DOSCREATEEVENTSEM);
+  }
+#endif // 2015-08-04 SHL FIXME to be gone
 
   /**
    * set some defaults (note: everything else automatically initialized
@@ -1651,6 +1680,10 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, FM3Str, "DontAskBzip", &fDontAskBzip, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, FM3Str, "DontAskGzip", &fDontAskGzip, &size);
+
+  // 2015-08-11 SHL FIXME debug
+  DbgMsg(pszSrcFile, __LINE__, "ShowEnv %u SwitchTree %u SwitchTreeExpand %u SwitchTreeOnFocus %u CollapseFirst %u", fShowEnv, fSwitchTreeOnDirChg, fSwitchTreeExpand, fSwitchTreeOnFocus, fCollapseFirst);
+  DbgMsg(pszSrcFile, __LINE__, "RScanLocal %u RScanRemote %u RScanVirtual %u RScanSlow RScanNoWrite %u", fRScanLocal, fRScanRemote, fRScanVirtual, fRScanSlow, fRScanNoWrite);
 
   LoadDetailsSwitches(PCSZ_DIRCNR, &dsDirCnrDefault, FALSE);
 

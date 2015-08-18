@@ -6,7 +6,7 @@
   Update Container record/list
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2008 Steven H. Levine
+  Copyright (c) 2003, 2015 Steven H. Levine
 
   12 Feb 03 SHL Standardize EA math
   10 Jan 04 SHL Add some intermin large drive error avoidance
@@ -20,6 +20,8 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   14 Mar 09 GKY Prevent execution of UM_SHOWME while drive scan is occuring
   22 Jul 09 GKY Code changes to use semaphores to serialize drive scanning
+  07 Aug 15 SHL Sync with Flesh/Stubby mods
+
 
 ***********************************************************************/
 
@@ -199,7 +201,7 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR *filename, BOOL partial,
 	    dcd->ullTotalBytes += ullTotalBytes;
 	    PostMsg(hwndCnr, UM_RESCAN, MPVOID, MPVOID);
 	    if (pci->attrFile & FILE_DIRECTORY) {
-	      Stubby(hwndCnr, pci);
+	      AddFleshWorkRequest(hwndCnr, pci, eStubby);
 	    }
 	  }
 	}
@@ -242,7 +244,7 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR *filename, BOOL partial,
 		ri.fInvalidateRecord = TRUE;
 		if (WinSendMsg(hwndCnr,
 			       CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
-		  Flesh(hwndCnr, pci);
+		  AddFleshWorkRequest(hwndCnr, pci, eFlesh);
 		  *p = temp;
 		  pci = FindCnrRecord(hwndCnr,
 				      filename, pciT, partial, FALSE, TRUE);
@@ -254,7 +256,7 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR *filename, BOOL partial,
 	    else {
 	      pciParent = pciT;
 	      if (!(pciT->rc.flRecordAttr & CRA_EXPANDED)) {
-		Flesh(hwndCnr, pciT);
+		AddFleshWorkRequest(hwndCnr, pciT, eFlesh);
 		*p = temp;
 		pci = FindCnrRecord(hwndCnr,
 				    filename, pciT, partial, FALSE, TRUE);
@@ -293,7 +295,7 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR *filename, BOOL partial,
 	    if (dcd->type == DIR_FRAME) {
 	      dcd->ullTotalBytes += ullTotalBytes;
 	    }
-	    Stubby(hwndCnr, pci);
+	    AddFleshWorkRequest(hwndCnr, pci, eStubby);
 	  }
 	}
       }
@@ -459,7 +461,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 		}
 		repos = TRUE;
 		if (pci->attrFile & FILE_DIRECTORY) {
-		  Stubby(hwndCnr, pci);
+		  AddFleshWorkRequest(hwndCnr, pci, eStubby);
 		}
 	      }
 	      else
@@ -558,7 +560,7 @@ BOOL UpdateCnrList(HWND hwndCnr, CHAR ** filename, INT howmany, BOOL partial,
 		      dcd->ullTotalBytes += ullTotalBytes;
 		  }
 		  repos = TRUE;
-		  Stubby(hwndCnr, pci);
+		  AddFleshWorkRequest(hwndCnr, pci, eStubby);
 		}
 		else
 		  FreeCnrItem(hwndCnr, pci);

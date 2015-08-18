@@ -2,7 +2,7 @@
 # $Id$
 
 # Copyright (c) 1993-98 M. Kimes
-# Copyright (c) 2002, 2014 Steven H. Levine
+# Copyright (c) 2002, 2015 Steven H. Levine
 
 # 22 May 03 SHL Correct icon dependencies
 # 12 May 07 SHL Drop obsolete macros
@@ -46,6 +46,7 @@
 # 18 Feb 14 JBS Ticket #516: Run exehdr to set high-memory only if something has changed.
 # 21 Feb 14 JBS Ticket #500: Set only non-resource objects in FM3RES.DLL to high memory
 # 24 Feb 14 JBS Ticket #500: Suspended use of high memory by commenting out the calls to exehdr
+# 13 Aug 15 SHL Add listutil
 
 # Environment: see makefile_pre.mk and makefile_post.mk
 
@@ -195,7 +196,8 @@ OBJS = arccnrs.obj archive.obj assoc.obj attribs.obj autoview.obj &
        filldir.obj filter.obj findrec.obj flesh.obj fm2cmd.obj &
        fonts.obj fortify.obj &
        getnames.obj grep.obj grep2.obj i18nutil.obj info.obj inis.obj &
-       init.obj input.obj instant.obj key.obj killproc.obj literal.obj &
+       init.obj input.obj instant.obj key.obj killproc.obj &
+       listutil.obj literal.obj &
        loadbmp.obj mainwnd.obj mainwnd2.obj makelist.obj menu.obj misc.obj &
        mkdir.obj mle.obj newview.obj notebook.obj notify.obj objcnr.obj &
        objwin.obj &

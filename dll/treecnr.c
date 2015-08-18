@@ -6,7 +6,7 @@
   Tree containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001-2012 Steven H. Levine
+  Copyright (c) 2001, 2015 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   11 Jun 03 SHL Add JFS and FAT32 support
@@ -77,28 +77,29 @@
   14 Sep 09 SHL Drop experimental code
   15 Sep 09 SHL Use UM_GREP when passing pathname
   15 Nov 09 GKY Add semaphore to fix double names in tree container caused by UM_SHOWME
-                before scan completes
+		before scan completes
   22 Nov 09 GKY Add LVM.EXE to partition submenu
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast
-                CHAR CONSTANT * as CHAR *.
+		CHAR CONSTANT * as CHAR *.
   11 Apr 10 GKY Fix drive tree rescan failure and program hang caused by event sem
-                never being posted
+		never being posted
   20 Nov 10 GKY Rework scanning code to remove redundant scans, prevent double directory
-                entries in the tree container, fix related semaphore performance using
-                combination of event and mutex semaphores
+		entries in the tree container, fix related semaphore performance using
+		combination of event and mutex semaphores
   04 Aug 12 GKY Fix trap reported by Ben
   30 Dec 12 GKY Changed refresh removable media to query LVM directly to call Rediscover_PRMs (Ticket 472);
-                Also added a tree rescan following volume detach.
+		Also added a tree rescan following volume detach.
   22 Feb 14 GKY Fix warn readonly yes don't ask to work when recursing directories.
   07 Sep 14 GKY Fix tree container mis-draws (stacked icons with RWS) The problem was magnified
-                by RWS but I think the occasional extra blank directory or duplicating
-                directories is related.
+		by RWS but I think the occasional extra blank directory or duplicating
+		directories is related.
   16 Mar 15 GKY Add semaphore hmtxFiltering to prevent freeing dcd while filtering. Prevents
-                a trap when FM2 is shutdown or the container is closed while tree
-                container is still populating
+		a trap when FM2 is shutdown or the container is closed while tree
+		container is still populating
   02 May 15 GKY Changes to allow a JAVA executable object to be created using "Real object"
-                menu item on a jar file.
+		menu item on a jar file.
   12 Jul 15 GKY Fixed trap caused by pci->pszFileName being NullStr
+  07 Aug 15 SHL Rework to use AddFleshWorkRequest rather than direct calls to Stubby/Flesh/Unflesh
 
 ***********************************************************************/
 
@@ -140,7 +141,7 @@
 #include "chklist.h"			// DropListProc
 #include "select.h"			// ExpandAll
 #include "findrec.h"			// FindCnrRecord, FindParentRecord, ShowCnrRecord
-#include "flesh.h"			// Flesh, UnFlesh
+#include "flesh.h"			// AddFleshWorkRequest
 #include "notify.h"			// HideNote
 #include "objwin.h"			// MakeObjWin
 #include "notify.h"			// NotifyError
@@ -164,7 +165,7 @@
 #include "systemf.h"			// runemf2
 #include "dirs.h"			// save_dir2
 #include "fortify.h"
-#include "init.h"			// GetTidForWindow
+#include "init.h"			// NullStr etc.
 #include "excputil.h"			// xbeginthread
 #include "copyf.h"			// ignorereadonly
 
@@ -272,117 +273,167 @@ MRESULT EXPENTRY OpenButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   return PFNWPButton(hwnd, msg, mp1, mp2);
 }
 
+/**
+ * Find a record in tree view, move it so it shows in container and
+ * make it the current record
+ * @param hwndCnr is container which must be in tree view
+ * @param pszDir_ is full path name to find
+ */
+
 VOID ShowTreeRec(HWND hwndCnr,
-		 CHAR *dirname,
+		 CHAR *pszDir_,
 		 BOOL collapsefirst,
 		 BOOL maketop)
 {
-    /**
-     * Find a record in tree view, move it so it shows in container and
-     * make it the current record
-     */
-
-  PCNRITEM pci, pciToSelect, pciP;
+  PCNRITEM pci;
+  PCNRITEM pciToSelect;
+  PCNRITEM pciP;
+  UINT retries;
   BOOL quickbail = FALSE;
-  CHAR szDir[CCHMAXPATH], *p;
+  PSZ p;
+  UINT cDirLen;
+  BOOL found;
+  CHAR szDir[CCHMAXPATH];
+
+  DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec pszDir_ %s", pszDir_); // 2015-08-04 SHL FIXME debug
 
   // already positioned to requested record?
   pci = WinSendMsg(hwndCnr,
 		   CM_QUERYRECORDEMPHASIS,
 		   MPFROMLONG(CMA_FIRST), MPFROMSHORT(CRA_CURSORED));
-  if (pci && (INT) pci != -1 && !stricmp(pci->pszFileName, dirname)) {
-    quickbail = TRUE;			// Bypass repositioning
+  if (pci && (INT)pci != -1 && !stricmp(pci->pszFileName, pszDir_)) {
+    found = TRUE;
+    quickbail = TRUE;			// Already at requested record - bypass repositioning
     goto MakeTop;
   }
+
   WinEnableWindowUpdate(hwndCnr, FALSE);
-  pci = FindCnrRecord(hwndCnr, dirname, NULL, TRUE, FALSE, TRUE);
-  if (!pci || (INT) pci == -1) {
-    *szDir = *dirname;
+
+  // 2015-08-13 SHL add retry logic
+  for (found = FALSE, retries = 0; !found && retries < 10; retries++) {
+
+    pci = FindCnrRecord(hwndCnr,
+			pszDir_,
+			NULL,		// pciParent
+			TRUE,		// partial
+			FALSE,		// partmatch
+			TRUE);		// noenv
+
+    if (pci && (INT)pci != -1) {
+      found = TRUE;
+      break;			// Found it
+    }
+
+    // Try again expanding as needed
+
+    DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec need expand"); // 2015-08-04 SHL FIXME debug
+
+    cDirLen = strlen(pszDir_);
+
+    *szDir = *pszDir_;			// Drive letter
     szDir[1] = ':';
     szDir[2] = '\\';
     szDir[3] = 0;
     p = szDir + 3;			// Point after root backslash
+
     for (;;) {
-      pciP = FindCnrRecord(hwndCnr, szDir, NULL, TRUE, FALSE, TRUE);
-      if (pciP && (INT) pciP != -1) {
-	if (!stricmp(dirname, pciP->pszFileName))
-	  break;			// Found it
-	if (~pciP->rc.flRecordAttr & CRA_EXPANDED)
-	  WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciP), MPVOID);
-	strcpy(szDir, dirname);
-	if (p - szDir >= strlen(szDir))
-	  break;			// Not root dir
-	p = strchr(p, '\\');
-	if (p) {
-	  *p = 0;			// fixme?
-	  p++;
-	}
-	else
-	  break;
+      // Try to match path prefix
+      pciP = FindCnrRecord(hwndCnr,
+			   szDir,
+			   NULL,		// pciParent
+			   TRUE,		// partial
+			   FALSE,		// partmatch
+			   TRUE);		// noenv
+      if (!pciP || (INT)pciP == -1) {
+	DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec FindCnrRecord(%s) returned %p", szDir, pciP); // 2015-08-04 SHL FIXME debug
+	WaitFleshWorkListEmpty();		// 2015-08-13 SHL
+	DosSleep(1000);
+	break;					// No match
       }
-      else
-	break;
-      DosSleep(0);
-    } // for
-    pci = FindCnrRecord(hwndCnr, dirname, NULL, TRUE, FALSE, TRUE);
-  }
-  if (pci && (INT) pci != -1) {
+
+      DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec FindCnrRecord returned %p %s", pciP, pciP->pszFileName); // 2015-08-04 SHL FIXME debug
+
+      if (!stricmp(pszDir_, pciP->pszFileName)) {
+	pci = pciP;
+	found = TRUE;
+	break;			// Got full match
+      }
+
+      if (~pciP->rc.flRecordAttr & CRA_EXPANDED) {
+        DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec expanding %s", pciP->pszFileName); // 2015-08-04 SHL FIXME debug
+	WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciP), MPVOID);
+	DosSleep(100);				// 2015-08-13 SHL Let PM catch up
+	// WaitFleshWorkListEmpty();		// 2015-08-13 SHL
+      }
+
+      WaitFleshWorkListEmpty();		// 2015-08-13 SHL
+
+      // Add next component to path
+      if (p - szDir >= cDirLen)
+	break;				// Done
+      strcpy(szDir, pszDir_);		// Reset
+      p = strchr(p, '\\');		// Find next backslash
+      if (!p)
+	break;				// Give up
+
+      *p++ = 0;				// Truncate at backslash
+
+    } // while expanding
+
+  } // for
+
+  DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec retries %u pci %p pci->pszFileName %s",retries, pci, pci && (INT)pci != -1 ? pci->pszFileName : "(null)"); // 2015-08-04 SHL FIXME debug
+
+  if (found) {
+    // Found it
     if (~pci->rc.flRecordAttr & CRA_CURSORED) {
       if (collapsefirst) {
 	pciP = WinSendMsg(hwndCnr,
 			  CM_QUERYRECORD,
 			  MPVOID, MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
 	while (pciP && (INT) pciP != -1) {
-#if 1 // 05 Jan 08 SHL fixme to be sure this is correct code
 	  if (pciP->rc.flRecordAttr & CRA_EXPANDED) {
 	    // collapse top level of all branches
 	    WinSendMsg(hwndCnr, CM_COLLAPSETREE, MPFROMP(pciP), MPVOID);
 	  }
-#else // fixme to be gone
-	  if (toupper(*pciP->pszFileName) == toupper(*dirname)) {
-	    // collapse all levels if branch is our drive
-	    if (pciP->rc.flRecordAttr & CRA_EXPANDED)
-	      ExpandAll(hwndCnr, FALSE, pciP);
-	  }
-	  else if (pciP->rc.flRecordAttr & CRA_EXPANDED) {
-	    // collapse top level of all branches
-	    WinSendMsg(hwndCnr, CM_COLLAPSETREE, MPFROMP(pciP), MPVOID);
-	  }
-#endif
 	  pciP = WinSendMsg(hwndCnr,
 			    CM_QUERYRECORD,
 			    MPFROMP(pciP),
 			    MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
 	} // while
-      }
-      // expand all parent branches
+      } // if collapse
+
+      // Expand parent branches
+      // 2015-08-06 SHL FIXME to bypass if we did not collapse since search already expanded - maybe?
       pciToSelect = pci;
       for (;;) {
 	pciP = WinSendMsg(hwndCnr,
 			  CM_QUERYRECORD,
 			  MPFROMP(pciToSelect),
 			  MPFROM2SHORT(CMA_PARENT, CMA_ITEMORDER));
-	if (pciP && (INT) pciP != -1) {
-	  if (!(pciP->rc.flRecordAttr & CRA_EXPANDED))
-	    WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciP), MPVOID);
-	  pciToSelect = pciP;
-	}
-	else
-	  break;
+	if (!pciP || (INT)pciP == -1)
+	  break;			// Done
+	// Got parent
+	if (~pciP->rc.flRecordAttr & CRA_EXPANDED)
+	  WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciP), MPVOID);
+	pciToSelect = pciP;
 	DosSleep(0);			// Let GUI update
       } // for
-    }
-    // make record visible
+    } // if not cursored
+
   MakeTop:
+    // make record visible
     pciToSelect = pci;
     if (pciToSelect && (INT) pciToSelect != -1) {
-      //DbgMsg(pszSrcFile, __LINE__, "TOP %i %i", fTopDir, maketop);
+      DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec %p fTopDir %i maketop %i", pciToSelect, fTopDir, maketop); // 2015-08-04 SHL FIXME debug
       if (fSwitchTreeExpand && ~pciToSelect->rc.flRecordAttr & CRA_EXPANDED)
-        WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciToSelect), MPVOID);
-      if (fTopDir || maketop) {
-        ShowCnrRecord(hwndCnr, (PMINIRECORDCORE) pciToSelect);
-      }
+	WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciToSelect), MPVOID);
+      if (fTopDir || maketop)
+	ShowCnrRecord(hwndCnr, (PMINIRECORDCORE)pciToSelect);
+
       if (!quickbail) {
+	WaitFleshWorkListEmpty();	// 2015-08-07 SHL FIXME try to ensure contents stable
+	DbgMsg(pszSrcFile, __LINE__, "WinSendMsg(CM_SETRECORDEMPHASIS, CRA_SELECTED | CRA_CURSORED) \"%s\"", pszDir_); // 2015-08-04 SHL FIXME debug
 	WinSendMsg(hwndCnr,
 		   CM_SETRECORDEMPHASIS,
 		   MPFROMP(pciToSelect),
@@ -390,6 +441,7 @@ VOID ShowTreeRec(HWND hwndCnr,
       }
     }
   }
+
   WinEnableWindowUpdate(hwndCnr, TRUE);
 }
 
@@ -648,9 +700,15 @@ MRESULT EXPENTRY TreeClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
   return WinDefWindowProc(hwnd, msg, mp1, mp2);
 }
 
+ULONG ulScanPostCnt;
+
 MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   DIRCNRDATA *dcd;
+
+#if 0 // 2015-08-04 SHL FIXME to be gone
+  APIRET rc;
+#endif // 2015-08-04 SHL FIXME to be gone
 
   switch (msg) {
   case UM_SHOWME:
@@ -660,23 +718,44 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 #     endif
       dcd = INSTDATA(hwnd);
       if (dcd) {
-        BOOL tempsusp, tempfollow, temptop;
 
-        DosWaitEventSem(hevTreeCnrScanComplete, SEM_INDEFINITE_WAIT);
-	tempsusp = dcd->suspendview;
-	dcd->suspendview = TRUE;
-	tempfollow = fFollowTree;
-	fFollowTree = FALSE;
-	if (mp2) {
-	  temptop = fTopDir;
-	  fTopDir = TRUE;
-        }
-	ShowTreeRec(dcd->hwndCnr, (CHAR *)mp1, fCollapseFirst, TRUE);
-	PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_UPDATE, 0), MPVOID);
-	dcd->suspendview = (USHORT) tempsusp;
-	fFollowTree = tempfollow;
-	if (mp2)
-	  fTopDir = temptop;
+#if 0 // 2015-08-04 SHL FIXME to be gone
+	rc = DosWaitEventSem(hevTreeCnrScanComplete, SEM_INDEFINITE_WAIT);
+	if (rc)
+	  Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosPostEventSem");
+#endif // 2015-08-04 SHL FIXME to be gone
+
+	/* Hold off if switching on focus change and
+	   RestoreDirCnrState has restored one or directory directory containers
+	   See RestoreDirCnrState()
+	*/
+	DbgMsg(pszSrcFile, __LINE__, "TreeObjWndProc UM_SHOWME cDirectoriesRestored %u", cDirectoriesRestored, fInitialDriveScan); // 2015-08-04 SHL FIXME debug
+	DbgMsg(pszSrcFile, __LINE__, "TreeObjWndProc UM_SHOWME %s)", mp1); // 2015-08-04 SHL FIXME debug
+
+	if (cDirectoriesRestored > 0)
+	  cDirectoriesRestored--;
+
+	if (!cDirectoriesRestored) {
+	  BOOL tempsusp = dcd->suspendview;
+	  BOOL tempfollow = fFollowTree;
+	  BOOL temptop;
+	  dcd->suspendview = TRUE;
+	  fFollowTree = FALSE;
+	  if (mp2) {
+	    temptop = fTopDir;
+	    fTopDir = TRUE;
+	  }
+
+	  DbgMsg(pszSrcFile, __LINE__, "TreeObjWndProc UM_SHOWME calling ShowTreeRec(\"%s\")", mp1); // 2015-08-04 SHL FIXME debug
+	  ShowTreeRec(dcd->hwndCnr, (CHAR *)mp1, fCollapseFirst, TRUE);
+	  DbgMsg(pszSrcFile, __LINE__, "TreeObjWndProc UM_SHOWME calling PostMsg(IDM_UPDATE)"); // 2015-08-04 SHL FIXME debug
+	  PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_UPDATE, 0), MPVOID);
+
+	  dcd->suspendview = (USHORT)tempsusp;	// Restore
+	  fFollowTree = tempfollow;		// Restore
+	  if (mp2)
+	    fTopDir = temptop;			// Restore
+	}
       }
       free((CHAR *)mp1);
     }
@@ -716,9 +795,9 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       dcd->suspendview = TRUE;
       ExpandAll(dcd->hwndCnr,
-                (SHORT1FROMMP(mp1) == IDM_EXPAND), (PCNRITEM) mp2);
+		(SHORT1FROMMP(mp1) == IDM_EXPAND), (PCNRITEM) mp2);
       DosSleep(1); // Fixes tree epansion (dir text and icons all placed on
-                       // the same line as the drive) failure on startup using RWS
+		       // the same line as the drive) failure on startup using RWS
       dcd->suspendview = (USHORT) tempsusp;
       PostMsg(dcd->hwndCnr, UM_FILTER, MPVOID, MPVOID);
     }
@@ -788,7 +867,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		 MPFROMP(&cnri), MPFROMLONG(sizeof(CNRINFO)));
       if (cnri.cRecords) {
 	sprintf(s, GetPString(IDS_NUMDRIVESTEXT), cnri.cRecords);
-        if (pci && (INT) pci != -1 && pci->pszFileName != NullStr) { //fixme? will try checking pci->pszFileName instead of the pointer
+	if (pci && (INT) pci != -1 && pci->pszFileName != NullStr) { //fixme? will try checking pci->pszFileName instead of the pointer
 	  if (!(driveflags[toupper(*pci->pszFileName) - 'A'] &
 		DRIVE_REMOVABLE) ||
 	      driveserial[toupper(*pci->pszFileName) - 'A'] != -1) {
@@ -808,11 +887,11 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		sprintf(szFree, "  %s %s", tb, GetPString(IDS_FREETEXT));
 	      }
 	      else
-                *szFree = 0;
-              //Show information on status line not shown in the tree container
+		*szFree = 0;
+	      //Show information on status line not shown in the tree container
 	      driveserial[toupper(*pci->pszFileName) - 'A'] = volser.serial;
-              if (CheckDrive(toupper(*pci->pszFileName), FileSystem, &type) == -1 ||
-                  fShowFSTypeInTree)
+	      if (CheckDrive(toupper(*pci->pszFileName), FileSystem, &type) == -1 ||
+		  fShowFSTypeInTree)
 		strcpy(FileSystem, NullStr);
 	      if (fShowDriveLabelInTree)
 		strcpy(szTmpLabel, NullStr);
@@ -825,18 +904,18 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		strcat(temp, "]");
 		sprintf(s,
 			GetPString(fShowFSTypeInTree ? IDS_TREESTATUSSTART1TEXT :
-                                   fShowDriveLabelInTree ? IDS_TREESTATUSSTART2TEXT :
-                                   IDS_TREESTATUSSTARTTEXT), toupper(*pci->pszFileName),
-                        FileSystem, szTmpLabel, volser.serial, szFree);
+				   fShowDriveLabelInTree ? IDS_TREESTATUSSTART2TEXT :
+				   IDS_TREESTATUSSTARTTEXT), toupper(*pci->pszFileName),
+			FileSystem, szTmpLabel, volser.serial, szFree);
 		strcat(s, temp);
 	      }
 	      else {
 		strcat(s, " [");
 		sprintf(&s[strlen(s)],
 			GetPString(fShowFSTypeInTree ? IDS_TREESTATUSSTART1TEXT :
-                                   fShowDriveLabelInTree ? IDS_TREESTATUSSTART2TEXT :
-                                   IDS_TREESTATUSSTARTTEXT), toupper(*pci->pszFileName),
-                        FileSystem, szTmpLabel, volser.serial, szFree);
+				   fShowDriveLabelInTree ? IDS_TREESTATUSSTART2TEXT :
+				   IDS_TREESTATUSSTARTTEXT), toupper(*pci->pszFileName),
+			FileSystem, szTmpLabel, volser.serial, szFree);
 		strcat(s, "]");
 	      }
 	      if (!fMoreButtons) {
@@ -860,11 +939,12 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    // find root record and strip it
 	    pci = FindParentRecord(dcd->hwndCnr, pci);
 	    driveserial[toupper(*pci->pszFileName) - 'A'] = -1;
-	    UnFlesh(dcd->hwndCnr, pci);
+	    WaitFleshWorkListEmpty();	// 2015-08-13 SHL in case pci still in work list
+	    AddFleshWorkRequest(dcd->hwndCnr, pci, eUnFlesh);
 	  }
 	}
       }
-      // 21 Sep 09 SHL fixme to know why checking again - focus change?
+      // 21 Sep 09 SHL FIXME to know why checking again - focus change?
       if (dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent))
 	WinSetWindowText(hwndStatus, s);
     }
@@ -872,8 +952,15 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_RESCAN:
     // populate container
-    DosWaitEventSem(hevTreeCnrScanComplete, SEM_INDEFINITE_WAIT);
-    DosResetEventSem(hevTreeCnrScanComplete, &ulScanPostCnt);
+#if 0 // 2015-08-04 SHL FIXME to be gone
+    rc = DosWaitEventSem(hevTreeCnrScanComplete, SEM_INDEFINITE_WAIT);
+    if (rc)
+      Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosWaitEventSem");
+    rc = DosResetEventSem(hevTreeCnrScanComplete, &ulScanPostCnt);
+    if (rc)
+      Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosResetEventSem");
+#endif // 2015-08-04 SHL FIXME to be gone
+
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
     if (!dcd)
       Runtime_Error(pszSrcFile, __LINE__, NULL);
@@ -884,6 +971,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSendMsg(dcd->hwndCnr,
 		 CM_SCROLLWINDOW,
 		 MPFROMSHORT(CMA_HORIZONTAL), MPFROMLONG(-1));
+      DbgMsg(pszSrcFile, __LINE__, "TreeObjWndProc FillTreeCnr()"); // 2015-08-04 SHL FIXME debug
       FillTreeCnr(dcd->hwndCnr, dcd->hwndParent);
       if (fOkayMinimize) {
 	PostMsg(dcd->hwndCnr, UM_MINIMIZE, MPVOID, MPVOID);
@@ -891,7 +979,8 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       WinSendMsg(dcd->hwndCnr,
 		 CM_INVALIDATERECORD,
-                 MPVOID, MPFROM2SHORT(0, CMA_ERASE | CMA_REPOSITION));
+		 MPVOID, MPFROM2SHORT(0, CMA_ERASE | CMA_REPOSITION));
+      DbgMsg(pszSrcFile, __LINE__, "TreeObjWndProc PostMsg(UM_RESCAN)"); // 2015-08-04 SHL FIXME debug
       PostMsg(dcd->hwndCnr, UM_RESCAN, MPVOID, MPVOID);
     }
     return 0;
@@ -916,8 +1005,8 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case IDM_ATTRS:
       case IDM_DELETE:
       case IDM_PERMDELETE:
-        if (li->type == IDM_DELETE)
-          ignorereadonly = FALSE;
+	if (li->type == IDM_DELETE)
+	  ignorereadonly = FALSE;
 	if (PostMsg(hwnd, UM_MASSACTION, mp1, mp2))
 	  return (MRESULT) TRUE;
       default:
@@ -1036,6 +1125,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   static APPNOTIFY *apphead = NULL, *apptail = NULL;
   DIRCNRDATA *dcd = INSTDATA(hwnd);
   PCNRITEM pci;
+  APIRET rc;
 
   switch (msg) {
   case DM_PRINTOBJECT:
@@ -1123,7 +1213,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       else
 	WinSetWindowText(hwndStatus2, NullStr);
     }
-    // 13 Jul 09 SHL fixme to make sense
+    // 13 Jul 09 SHL FIXME to make sense
     if (msg == UM_TIMER)
       return 0;
     break;
@@ -1137,8 +1227,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       HWND menuHwnd = (HWND) 0;
       FSALLOCATE fsa;
 
-      pci = (PCNRITEM) CurrentRecord(hwnd);
-      if (pci && (INT) pci != -1) {
+      pci = (PCNRITEM)CurrentRecord(hwnd);
+      if (pci && (INT)pci != -1) {
 	if (IsRoot(pci->pszFileName) || !DosQueryFSInfo(toupper(*pci->pszFileName) - '@',
 						       FSIL_ALLOC, &fsa,
 						       sizeof(FSALLOCATE)))
@@ -1234,7 +1324,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	else
 	  WinSetWindowText(WinWindowFromID(dcd->hwndFrame,
-                                           MAIN_STATUS), pci->pszFileName);
+					   MAIN_STATUS), pci->pszFileName);
 	if (fMoreButtons && hwndName) {
 	  CHAR szDate[DATE_BUF_BYTES];
 
@@ -1247,6 +1337,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinSetWindowText(hwndAttr, pci->pszDispAttr);
 	}
       }
+      DbgMsg(pszSrcFile, __LINE__, "TreeCnrWndProc UM_RESCAN PostMsg(UM_RESCAN2, %s)", pci->pszFileName); // 2015-08-04 SHL FIXME debug
       PostMsg(dcd->hwndObject, UM_RESCAN2, MPFROMP(pci), MPVOID);
       if (hwndStatus2)
 	PostMsg(hwnd, UM_TIMER, MPVOID, MPVOID);
@@ -1514,14 +1605,14 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	    }
 	  }
-	  pDItem = DrgQueryDragitemPtr(pDInfo,	        // Access DRAGITEM
-				       0);	        // Index to DRAGITEM
-	  if (DrgVerifyRMF(pDItem,	                // Check valid rendering
+	  pDItem = DrgQueryDragitemPtr(pDInfo,		// Access DRAGITEM
+				       0);		// Index to DRAGITEM
+	  if (DrgVerifyRMF(pDItem,			// Check valid rendering
 			   (CHAR *) DRM_OS2FILE,	// mechanisms and data
-                           NULL) || DrgVerifyRMF(pDItem,
-                                                 (CHAR *) DRM_FM2ARCMEMBER,
-                                                 (CHAR *) DRF_FM2ARCHIVE)) {	// formats
-	    DrgFreeDraginfo(pDInfo);	                // Free DRAGINFO
+			   NULL) || DrgVerifyRMF(pDItem,
+						 (CHAR *) DRM_FM2ARCMEMBER,
+						 (CHAR *) DRF_FM2ARCHIVE)) {	// formats
+	    DrgFreeDraginfo(pDInfo);			// Free DRAGINFO
 	    if (!pci || (INT) pci == -1)
 	      return MRFROM2SHORT(DOR_DROP, DO_MOVE);
 	    if (driveflags[toupper(*pci->pszFileName) - 'A'] &
@@ -1529,12 +1620,12 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      return MRFROM2SHORT(DOR_DROP, DO_LINK);
 	    if (toupper(*pci->pszFileName) < 'C')
 	      return MRFROM2SHORT(DOR_DROP, DO_COPY);
-	    return MRFROM2SHORT(DOR_DROP,	        // Return okay to drop
+	    return MRFROM2SHORT(DOR_DROP,		// Return okay to drop
 				((fCopyDefault) ? DO_COPY : DO_MOVE));
 	  }
-	  DrgFreeDraginfo(pDInfo);	                // Free DRAGINFO
+	  DrgFreeDraginfo(pDInfo);			// Free DRAGINFO
 	}
-	return MRFROM2SHORT(DOR_NODROP, 0);	        // Drop not valid
+	return MRFROM2SHORT(DOR_NODROP, 0);		// Drop not valid
 
       case CN_INITDRAG:
 	{
@@ -1753,24 +1844,27 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       case CN_CONTEXTMENU:
 	{
-	  PCNRITEM pci = (PCNRITEM) mp2;
+	  PCNRITEM pci = (PCNRITEM)mp2;
 	  BOOL wasFollowing;
 
-	  //DosEnterCritSec(); //GKY 11-28-08
 	  wasFollowing = fFollowTree;
 	  fFollowTree = FALSE;
-	  //DosExitCritSec();
-	  if (pci && (INT) pci != -1 && !(pci->flags & RECFLAGS_ENV)) {
-	    WinSendMsg(hwnd,
-		       CM_SETRECORDEMPHASIS,
-		       MPFROMP(pci), MPFROM2SHORT(TRUE, CRA_CURSORED));
-	    MarkAll(hwnd, FALSE, FALSE, TRUE);
-	    if (!(pci->attrFile & FILE_DIRECTORY))
-	      dcd->hwndLastMenu = CheckMenu(hwndMainMenu, &FileMenu, FILE_POPUP);
-	    else if (!IsRoot(pci->pszFileName))
-	      dcd->hwndLastMenu = CheckMenu(hwndMainMenu, &DirMenu, DIR_POPUP);
-	    else
-	      dcd->hwndLastMenu = CheckMenu(hwndMainMenu, &TreeMenu, TREE_POPUP);
+	  if (pci && (INT)pci != -1 && !(pci->flags & RECFLAGS_ENV)) {
+	    // 2015-08-09 SHL try to ensure contents stable
+	    if (!IsFleshWorkListEmpty())
+	      WinPostMsg(hwnd, msg, mp1, mp2);		// Try again later
+	    else {
+	      WinSendMsg(hwnd,
+			 CM_SETRECORDEMPHASIS,
+			 MPFROMP(pci), MPFROM2SHORT(TRUE, CRA_CURSORED));
+	      MarkAll(hwnd, FALSE, FALSE, TRUE);
+	      if (!(pci->attrFile & FILE_DIRECTORY))
+		dcd->hwndLastMenu = CheckMenu(hwndMainMenu, &FileMenu, FILE_POPUP);
+	      else if (!IsRoot(pci->pszFileName))
+		dcd->hwndLastMenu = CheckMenu(hwndMainMenu, &DirMenu, DIR_POPUP);
+	      else
+		dcd->hwndLastMenu = CheckMenu(hwndMainMenu, &TreeMenu, TREE_POPUP);
+	    }
 	  }
 	  else {
 	    dcd->hwndLastMenu = CheckMenu(hwndMainMenu, &TreeCnrMenu, TREECNR_POPUP);
@@ -1797,9 +1891,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		MarkAll(hwnd, TRUE, FALSE, TRUE);
 	    }
 	  }
-	  //DosEnterCritSec(); //GKY 11-28-08
 	  fFollowTree = wasFollowing;
-	  //DosExitCritSec();
 	}
 	break;
 
@@ -1836,13 +1928,16 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    !volser.serial ||
 		    driveserial[toupper(*pci->pszFileName) - 'A'] !=
 		    volser.serial)
-		  UnFlesh(hwnd, pci);
+		{
+		  WaitFleshWorkListEmpty();	// 2015-08-13 SHL in case pci still in work list
+		  AddFleshWorkRequest(hwnd, pci, eUnFlesh);
+		}
 		if (SHORT2FROMMP(mp1) != CN_COLLAPSETREE ||
 		    (!volser.serial ||
 		     driveserial[toupper(*pci->pszFileName) - 'A'] !=
 		     volser.serial)) {
-                  if (SHORT2FROMMP(mp1) == CN_EXPANDTREE && Flesh(hwnd, pci)
-                      &&!dcd->suspendview  && fTopDir) {
+		  if (SHORT2FROMMP(mp1) == CN_EXPANDTREE && AddFleshWorkRequest(hwnd, pci, eFlesh)
+		      &&!dcd->suspendview  && fTopDir) {
 		    PostMsg(hwnd, UM_TOPDIR, MPFROMP(pci), MPVOID);
 		    //DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
 		  }
@@ -1851,21 +1946,31 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	      else {
 		driveserial[toupper(*pci->pszFileName) - 'A'] = -1;
-		UnFlesh(hwnd, pci);
+		WaitFleshWorkListEmpty();	// 2015-08-13 SHL in case pci still in work list
+		AddFleshWorkRequest(hwnd, pci, eUnFlesh);
 		PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
 		if (!fAlertBeepOff)
 		  DosBeep(250, 100);
 	      }
 	    }
 	    else if (SHORT2FROMMP(mp1) == CN_EXPANDTREE) {
-	      if (Flesh(hwnd, pci) && !dcd->suspendview && fTopDir){
+	      // 2015-08-04 SHL
+#if 1
+	      AddFleshWorkRequest(hwnd, pci, eFlesh);	// forceFlesh
+	      if (!dcd->suspendview && fTopDir) {
+		DbgMsg(pszSrcFile, __LINE__, "TreeCnrWndProc UM_TOPDIR %p pci %p", hwnd, pci);  // 2015-08-04 SHL FIXME debug
 		PostMsg(hwnd, UM_TOPDIR, MPFROMP(pci), MPVOID);
-		//DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
 	      }
+#else
+	      if (Flesh(hwnd, pci) && !dcd->suspendview && fTopDir) {
+		DbgMsg(pszSrcFile, __LINE__, "TreeCnrWndProc UM_TOPDIR %p pci %p", hwnd, pci);  // 2015-08-04 SHL FIXME debug
+		PostMsg(hwnd, UM_TOPDIR, MPFROMP(pci), MPVOID);
+	      }
+#endif
 	    }
 	    if (SHORT2FROMMP(mp1) == CN_EXPANDTREE && !dcd->suspendview){
+	      DbgMsg(pszSrcFile, __LINE__, "UM_FILTER %p pci %p", hwnd, pci);
 	      WinSendMsg(hwnd, UM_FILTER, MPVOID, MPVOID);
-	      //DbgMsg(pszSrcFile, __LINE__, "UM_FILTER %p pci %p", hwnd, pci);
 	    }
 	  }
 	}
@@ -1891,17 +1996,18 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       CHAR *dir = xstrdup((CHAR *)mp1, pszSrcFile, __LINE__);
 
       if (dir) {
+	DbgMsg(pszSrcFile, __LINE__, "TreeCnrWndProc UM_SHOWME PostMsg(UM_SHOWME, %s)", dir); // 2015-08-13 SHL FIXME debug
 	if (!PostMsg(dcd->hwndObject, UM_SHOWME, MPFROMP(dir), MPVOID))
 	  free(dir);
+	else
+	  SetFleshFocusDrive(*dir);
       }
     }
     return 0;
 
   case UM_TOPDIR:
     if (mp1) {
-
       PCNRITEM pci = (PCNRITEM) mp1;
-
       ShowCnrRecord(hwnd, (PMINIRECORDCORE) pci);
     }
     return 0;
@@ -1911,18 +2017,30 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       FILEFINDBUF3 ffb;
       HDIR hDir = HDIR_CREATE;
       ULONG nm = 1;
-      APIRET status;
+      // APIRET status;
       BOOL IsOk = FALSE;
       ULONG ulDriveNum, ulDriveMap;
       PCNRITEM pciP, pciL, pci;
       ULONG fl = SWP_ACTIVATE;
       INT x;
 
-      DosRequestMutexSem(hmtxScanning, SEM_INDEFINITE_WAIT);
-      DosQueryEventSem(hevTreeCnrScanComplete, &ulScanPostCnt);
+#if 0 // 2015-08-04 SHL FIXME to be gone
+      rc = DosRequestMutexSem(hmtxScanning, SEM_INDEFINITE_WAIT);
+      if (rc)
+	Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosRequestMutexSem");
+#endif // 2015-08-04 SHL FIXME to be gone
+
+#if 0 // 2015-08-04 SHL FIXME to be gone
+      rc = DosQueryEventSem(hevTreeCnrScanComplete, &ulScanPostCnt);
+      if (rc)
+	Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosQueryEventSem");
       if (ulScanPostCnt < 1)
-        return 0;
-      DosResetEventSem(hevTreeCnrScanComplete, &ulScanPostCnt);
+	return 0;
+      rc = DosResetEventSem(hevTreeCnrScanComplete, &ulScanPostCnt);
+      if (rc)
+	Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosResetEventSem");
+#endif // 2015-08-04 SHL FIXME to be gone
+
       if (fFollowTree)
 	fl = 0;
       SetShiftState();
@@ -1937,7 +2055,13 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    DosBeep(50, 100);
 	  if (hwndStatus)
 	    WinSetWindowText(hwndStatus, (CHAR *) GetPString(IDS_RESCANSUGTEXT));
-          DosPostEventSem(hevTreeCnrScanComplete);
+
+#if 0 // 2015-08-04 SHL FIXME to be gone
+	  rc = DosPostEventSem(hevTreeCnrScanComplete);
+	  if (rc && rc != ERROR_ALREADY_POSTED)
+	    Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosPostEventSem");
+#endif // 2015-08-04 SHL FIXME to be gone
+
 	  return 0;
 	}
 	DosError(FERR_DISABLEHARDERR);
@@ -1957,7 +2081,12 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	    } // for
 	    RemoveCnrItems(hwnd, pciP, 1, CMA_FREE | CMA_INVALIDATE);
-            DosPostEventSem(hevTreeCnrScanComplete);
+
+#if 0 // 2015-08-04 SHL FIXME to be gone
+	    rc = DosPostEventSem(hevTreeCnrScanComplete);
+	    if (rc && rc != ERROR_ALREADY_POSTED)
+	      Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosPostEventSem");
+#endif // 2015-08-04 SHL FIXME to be gone
 	    return 0;
 	  }
 	}
@@ -1995,21 +2124,29 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	  memset(&volser, 0, sizeof(volser));
 	  DosError(FERR_DISABLEHARDERR);
-	  status = DosQueryFSInfo(toupper(*pci->pszFileName) - '@',
-				  FSIL_VOLSER, &volser,
-				  (ULONG) sizeof(volser));
-	  if (!status) {
+	  rc = DosQueryFSInfo(toupper(*pci->pszFileName) - '@',
+			      FSIL_VOLSER, &volser,
+			      (ULONG) sizeof(volser));
+	  if (!rc) {
 	    if (!volser.serial || driveserial[x] != volser.serial) {
+#if 1 // 2015-08-04 SHL FIXME to be gone
+	      AddFleshWorkRequest(hwnd, pciP, eFlesh);	// forceFlesh
+#else
 	      Flesh(hwnd, pciP);
+#endif // 2015-08-04 SHL FIXME to be gone
 	      driveserial[x] = volser.serial;
 	    }
 	    pciL = WinSendMsg(hwnd,
 			      CM_QUERYRECORD,
 			      MPFROMP(pciP),
 			      MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
-            if (!pciL) {
-              Flesh(hwnd, pciP);
-            }
+	    if (!pciL) {
+#if 1 // 2015-08-04 SHL FIXME to be gone
+	      AddFleshWorkRequest(hwnd, pciP, eFlesh);	// forceFlesh
+#else
+	      Flesh(hwnd, pciP);
+#endif // 2015-08-04 SHL FIXME to be gone
+	    }
 	    if ((fShowFSTypeInTree || fShowDriveLabelInTree) &&
 		strlen(pciP->pszFileName) < 4) {
 	      strcpy(szBuf, pciP->pszFileName);
@@ -2026,44 +2163,65 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	  else {
 	    driveserial[x] = -1;
-	    UnFlesh(hwnd, pci);
+	    WaitFleshWorkListEmpty();	// 2015-08-13 SHL in case pci still in work list
+	    AddFleshWorkRequest(hwnd, pci, eUnFlesh);
 	    PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
-	    PostMsg(hwnd, UM_SETUP2, MPFROMP(pci), MPFROMLONG(status));
-            DosPostEventSem(hevTreeCnrScanComplete);
+	    PostMsg(hwnd, UM_SETUP2, MPFROMP(pci), MPFROMLONG(rc));
+
+#if 0 // 2015-08-04 SHL FIXME to be gone
+	    rc = DosPostEventSem(hevTreeCnrScanComplete);
+	    if (rc && rc != ERROR_ALREADY_POSTED)
+	      Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosPostEventSem");
+#endif // 2015-08-04 SHL FIXME to be gone
 	    return 0;
 	  }
 	}
-	status = 0;
+	rc = 0;
 	IsOk = (IsRoot(pci->pszFileName) &&
 		IsValidDrive(toupper(*pci->pszFileName)));
 	if (!IsOk) {
 	  DosError(FERR_DISABLEHARDERR);
-	  status = DosFindFirst(pci->pszFileName, &hDir,
-				FILE_NORMAL | FILE_DIRECTORY |
-				FILE_ARCHIVED | FILE_READONLY |
-				FILE_HIDDEN | FILE_SYSTEM,
-				&ffb, sizeof(ffb), &nm, FIL_STANDARD);
+	  rc = DosFindFirst(pci->pszFileName, &hDir,
+			    FILE_NORMAL | FILE_DIRECTORY |
+			    FILE_ARCHIVED | FILE_READONLY |
+			    FILE_HIDDEN | FILE_SYSTEM,
+			    &ffb, sizeof(ffb), &nm, FIL_STANDARD);
 	  priority_bumped();
 	}
-	if (!status) {
+	if (!rc) {
 	  if (!IsOk)
 	    DosFindClose(hDir);
 	  if (IsOk || (ffb.attrFile & FILE_DIRECTORY)) {
 	    if ((shiftstate & (KC_CTRL | KC_ALT)) == (KC_CTRL | KC_ALT)) {
 	      PostMsg(hwnd,
 		      WM_COMMAND, MPFROM2SHORT(IDM_SHOWALLFILES, 0), MPVOID);
-              DosPostEventSem(hevTreeCnrScanComplete);
+
+#if 0 // 2015-08-04 SHL FIXME to be gone
+	      rc = DosPostEventSem(hevTreeCnrScanComplete);
+	      if (rc && rc != ERROR_ALREADY_POSTED)
+		Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosPostEventSem");
+#endif // 2015-08-04 SHL FIXME to be gone
 	      return 0;
 	    }
 	    if ((shiftstate & (KC_CTRL | KC_SHIFT)) == (KC_CTRL | KC_SHIFT)) {
 	      OpenObject(pci->pszFileName, Settings, dcd->hwndFrame);
-              DosPostEventSem(hevTreeCnrScanComplete);
+
+#if 0 // 2015-08-04 SHL FIXME to be gone
+	      rc = DosPostEventSem(hevTreeCnrScanComplete);
+	      if (rc && rc != ERROR_ALREADY_POSTED)
+		Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosPostEventSem");
+#endif // 2015-08-04 SHL FIXME to be gone
 	      return 0;
 	    }
 	    if (!(shiftstate & (KC_CTRL | KC_SHIFT))) {
 	      if (!ParentIsDesktop(hwnd, dcd->hwndParent)) {
 		if (FindDirCnrByName(pci->pszFileName, TRUE)) {
-                  DosPostEventSem(hevTreeCnrScanComplete);
+
+#if 0 // 2015-08-04 SHL FIXME to be gone
+		  rc = DosPostEventSem(hevTreeCnrScanComplete);
+		  if (rc && rc != ERROR_ALREADY_POSTED)
+		    Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosPostEventSem");
+#endif // 2015-08-04 SHL FIXME to be gone
 		  return 0;
 		}
 	      }
@@ -2087,7 +2245,12 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  strcpy(s, Details);
 	      }
 	      OpenObject(pci->pszFileName, s, dcd->hwndFrame);
-              DosPostEventSem(hevTreeCnrScanComplete);
+
+#if 0 // 2015-08-04 SHL FIXME to be gone
+	      rc = DosPostEventSem(hevTreeCnrScanComplete);
+	      if (rc && rc != ERROR_ALREADY_POSTED)
+		Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosPostEventSem");
+#endif // 2015-08-04 SHL FIXME to be gone
 	      return 0;
 	    }
 	    if (!ParentIsDesktop(hwnd, dcd->hwndParent) &&
@@ -2122,7 +2285,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	else {
 	  if (!IsRoot(pci->pszFileName)) {
-	    NotifyError(pci->pszFileName, status);
+	    NotifyError(pci->pszFileName, rc);
 	    RemoveCnrItems(hwnd, pci, 1, CMA_FREE | CMA_INVALIDATE);
 	  }
 	}
@@ -2131,7 +2294,12 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_MKDIR, 0), MPVOID);
       if (fFollowTree)
 	WinSetFocus(HWND_DESKTOP, hwnd);
-      DosPostEventSem(hevTreeCnrScanComplete);
+
+#if 0 // 2015-08-04 SHL FIXME to be gone
+      rc = DosPostEventSem(hevTreeCnrScanComplete);
+      if (rc && rc != ERROR_ALREADY_POSTED)
+	Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosPostEventSem");
+#endif // 2015-08-04 SHL FIXME to be gone
     }
     return 0;
 
@@ -2234,8 +2402,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    WinEnableMenuItem((HWND) mp2, IDM_PARTITIONSMENU, local);
 	    WinEnableMenuItem((HWND) mp2, IDM_PARTITION, fMiniLVM);
 	    WinEnableMenuItem((HWND) mp2, IDM_PARTITIONDF, fDFSee);
-            WinEnableMenuItem((HWND) mp2, IDM_PARTITIONLVMG, fLVMGui);
-            WinEnableMenuItem((HWND) mp2, IDM_PARTITIONLVM, fLVM);
+	    WinEnableMenuItem((HWND) mp2, IDM_PARTITIONLVMG, fLVMGui);
+	    WinEnableMenuItem((HWND) mp2, IDM_PARTITIONLVM, fLVM);
 	    WinEnableMenuItem((HWND) mp2, IDM_PARTITIONFD, fFDisk);
 
 	    WinEnableMenuItem((HWND) mp2, IDM_DETACH, !local);
@@ -2265,8 +2433,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinEnableMenuItem((HWND) mp2, IDM_RESELECT, FALSE);
 	WinEnableMenuItem((HWND) mp2, IDM_PARTITION, fMiniLVM);
 	WinEnableMenuItem((HWND) mp2, IDM_PARTITIONDF, fDFSee);
-        WinEnableMenuItem((HWND) mp2, IDM_PARTITIONLVMG, fLVMGui);
-        WinEnableMenuItem((HWND) mp2, IDM_PARTITIONLVM, fLVM);
+	WinEnableMenuItem((HWND) mp2, IDM_PARTITIONLVMG, fLVMGui);
+	WinEnableMenuItem((HWND) mp2, IDM_PARTITIONLVM, fLVM);
 	WinEnableMenuItem((HWND) mp2, IDM_PARTITIONFD, fFDisk);
 	break;
 
@@ -2349,13 +2517,14 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSendMsg(hwnd, CM_FILTER, MPFROMP(Filter), MPFROMP(&dcd->mask));
       dcd->suspendview = (USHORT) tempsusp;
       PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
-      //DbgMsg(pszSrcFile, __LINE__, "UM_RESCAN %p pci %s", hwnd, (CHAR *) mp1);
     }
     return 0;
 
   case UM_DRIVECMD:
     if (mp1) {
+      DbgMsg(pszSrcFile, __LINE__, "TreeCnrWndProc UM_DRIVECMD ShowTreeRec(\"%s\")", mp1);
       ShowTreeRec(hwnd, (CHAR *)mp1, FALSE, TRUE);
+      DbgMsg(pszSrcFile, __LINE__, "TreeCnrWndProc PostMsg(IDM_UPDATE)");
       PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_UPDATE, 0), MPVOID);
     }
     return 0;
@@ -2385,7 +2554,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		(DRIVE_INVALID | DRIVE_IGNORE))
 	      RemoveCnrItems(hwnd, pci, 1, CMA_FREE);
 	    else
-	      Flesh(hwnd, pci);
+	      AddFleshWorkRequest(hwnd, pci, eFlesh);
 	  }
 	  if (info->prev)
 	    info->prev->next = info->next;
@@ -2460,8 +2629,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  info->prev = apptail;
 		}
 		apptail = info;
-              }
-              PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
+	      }
+	      PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
 	    }
 	  }
 	}
@@ -2611,7 +2780,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, pszSrcFile, __LINE__,
 		NULL, NULL,
 		"%s", PCSZ_LVMGUICMD);
-        break;
+	break;
 
       case IDM_PARTITIONLVM:
 	runemf2(SEPARATE | WINDOWED, HWND_DESKTOP, pszSrcFile, __LINE__,
@@ -2626,23 +2795,22 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
 
       case IDM_REFRESHREMOVABLES:
-        {
-        PFN Rediscover_PRMs;
-        HMODULE hmod = 0;
-        APIRET rc;
-        CHAR objerr[CCHMAXPATH];
+	{
+	PFN Rediscover_PRMs;
+	HMODULE hmod = 0;
+	CHAR objerr[CCHMAXPATH];
 
-        rc = DosLoadModule(objerr, sizeof(objerr), "LVM", &hmod);
-        if (!rc) {
-          rc = DosQueryProcAddr(hmod, 70, NULL, &Rediscover_PRMs);
-          if (!rc)
+	rc = DosLoadModule(objerr, sizeof(objerr), "LVM", &hmod);
+	if (!rc) {
+	  rc = DosQueryProcAddr(hmod, 70, NULL, &Rediscover_PRMs);
+	  if (!rc)
 	    Rediscover_PRMs(&rc);
-          DosFreeModule(hmod);
-        }
-        if (!rc)
+	  DosFreeModule(hmod);
+	}
+	if (!rc)
 	  PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
-        break;
-        }
+	break;
+	}
 
       case IDM_SORTNAME:
       case IDM_SORTFILENAME:
@@ -2801,7 +2969,11 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       case IDM_UPDATE:
 	{
-	  PCNRITEM pci = (PCNRITEM)CurrentRecord(hwnd);
+	  // 2015-08-07 SHL FIXME select
+	  PCNRITEM pci;
+	  if (!IsFleshWorkListEmpty())
+	    break;			// 2015-08-07 SHL hold off until stable
+	  pci = (PCNRITEM)CurrentRecord(hwnd);
 	  if (pci && (INT)pci != -1) {
 	    struct
 	    {
@@ -2816,10 +2988,23 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    UINT driveflag = driveflags[x];
 	    if (pci->attrFile & FILE_DIRECTORY) {
 	      if (pci->flags & RECFLAGS_UNDERENV)
-                break;
-              DosRequestMutexSem(hmtxScanning, SEM_INDEFINITE_WAIT);
-              DosResetEventSem(hevTreeCnrScanComplete, &ulScanPostCnt);
-	      UnFlesh(hwnd, pci);
+		break;
+
+#if 0 // 2015-08-04 SHL FIXME to be gone
+	      rc = DosRequestMutexSem(hmtxScanning, SEM_INDEFINITE_WAIT);
+	      if (rc)
+		Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosRequestMutexSem");
+#endif // 2015-08-04 SHL FIXME to be gone
+
+#if 0 // 2015-08-04 SHL FIXME to be gone
+	      rc = DosResetEventSem(hevTreeCnrScanComplete, &ulScanPostCnt);
+	      if (rc)
+		Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosResetEventSem");
+#endif // 2015-08-04 SHL FIXME to be gone
+
+	      // Can't wait here
+	      // WaitFleshWorkListEmpty();	// 2015-08-13 SHL in case pci still in work list
+	      AddFleshWorkRequest(hwnd, pci, eUnFlesh);
 	      // Check if drive type might need update
 	      if ((driveflag & (DRIVE_INVALID | DRIVE_NOPRESCAN)) ||
 		  (~driveflag & DRIVE_NOPRESCAN && pci->rc.hptrIcon == hptrDunno)) {
@@ -2827,17 +3012,17 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		driveflag = driveflags[x];
 		if (driveflag & DRIVE_INVALID)
 		  pci->rc.hptrIcon = hptrDunno;
-		else  if (strlen(pci->pszFileName) < 4) {
+		else if (strlen(pci->pszFileName) < 4) {
 		  SelectDriveIcon(pci);
-                  if (fShowFSTypeInTree || fShowDriveLabelInTree) {
-                    strcpy(szBuf, pci->pszFileName);
-                    strcat(szBuf, " [");
-                    strcat(szBuf, fShowFSTypeInTree ? FileSystem : volser.volumelabel);
-                    strcat(szBuf, "]");
-                    pci->pszDisplayName = xstrdup(szBuf, pszSrcFile, __LINE__);
-                    pci->rc.pszIcon = pci->pszDisplayName;
-                  }
-                }
+		  if (fShowFSTypeInTree || fShowDriveLabelInTree) {
+		    strcpy(szBuf, pci->pszFileName);
+		    strcat(szBuf, " [");
+		    strcat(szBuf, fShowFSTypeInTree ? FileSystem : volser.volumelabel);
+		    strcat(szBuf, "]");
+		    pci->pszDisplayName = xstrdup(szBuf, pszSrcFile, __LINE__);
+		    pci->rc.pszIcon = pci->pszDisplayName;
+		  }
+		}
 		WinSendMsg(hwnd,
 			   CM_INVALIDATERECORD,
 			   MPFROMP(&pci),
@@ -2845,9 +3030,14 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		if (hwndMain)
 		  PostMsg(hwndMain, UM_BUILDDRIVEBAR, MPVOID, MPVOID);
 	      }
+	      DbgMsg(pszSrcFile, __LINE__, " TreeCnrWndProc IDM_UPDATE %s", pci->pszFileName); // 2015-08-03 SHL FIXME debug
 	      if (~driveflag & DRIVE_INVALID)
-		Flesh(hwnd, pci);
-              DosPostEventSem(hevTreeCnrScanComplete);
+		AddFleshWorkRequest(hwnd, pci, eFlesh);
+#if 0 // 2015-08-04 SHL FIXME to be gone
+	      rc = DosPostEventSem(hevTreeCnrScanComplete);
+	      if (rc && rc != ERROR_ALREADY_POSTED)
+		Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosPostEventSem");
+#endif // 2015-08-04 SHL FIXME to be gone
 	    }
 	  }
 	}
@@ -3020,9 +3210,9 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    case IDM_EDITBINARY:
 	    case IDM_MCIPLAY:
 	      action = UM_MASSACTION;
-            }
-            if (li->type == IDM_DELETE)
-              ignorereadonly = FALSE;
+	    }
+	    if (li->type == IDM_DELETE)
+	      ignorereadonly = FALSE;
 	    if (SHORT1FROMMP(mp1) == IDM_SHADOW ||
 		SHORT1FROMMP(mp1) == IDM_SHADOW2)
 	      *li->targetpath = 0;
@@ -3142,7 +3332,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case WM_DESTROY:
 #   ifdef FORTIFY
-    DbgMsg(pszSrcFile, __LINE__, "WM_DESTROY hwnd %p TID %u", hwnd, GetTidForThread());	// 18 Jul 08 SHL fixme
+    DbgMsg(pszSrcFile, __LINE__, "WM_DESTROY hwnd %x TID %u", hwnd, GetTidForThread());	// 18 Jul 08 SHL FIXME
 #   endif
     if (TreeCnrMenu)
       WinDestroyWindow(TreeCnrMenu);

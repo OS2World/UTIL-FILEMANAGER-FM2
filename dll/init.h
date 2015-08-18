@@ -3,10 +3,10 @@
 
   $Id$
 
-  <<<description here>>>
+  Initialization
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2008-10 Steven H. Levine
+  Copyright (c) 2008, 2015 Steven H. Levine
 
   Change log
   29 Nov 08 GKY Remove or replace with a mutex semaphore DosEnterCriSec where appropriate.
@@ -106,7 +106,6 @@ extern CHAR DateSeparator[2];
 extern CHAR TimeSeparator[2];
 extern ULONG ulTimeFmt;
 extern ULONG ulDateFmt;
-extern ULONG ulScanPostCnt;
 extern PCSZ FNT_HELVETICA;
 extern PCSZ FNT_6HELVETICA;
 extern PCSZ FNT_8HELVETICA;
@@ -238,11 +237,21 @@ extern ULONGLONG ullTmpSpaceNeeded;
 #ifdef INCL_DOSSEMAPHORES
 extern HMTX hmtxFM2Globals;
 extern HMTX hmtxFM2Delete;
+
+#if 0 // 2015-08-07 SHL FIXME to be gone
 extern HMTX hmtxScanning;
+#endif // 2015-08-07 SHL FIXME to be gone
+
+#if 0 // 2015-08-07 SHL FIXME to be gone
 extern HMTX hmtxScanningLocalHD;
-extern HMTX hmtxScanningLocal;
+#endif // 2015-08-07 SHL FIXME to be gone
+
 extern HMTX hmtxFiltering;
+
+#if 0 // 2015-08-04 SHL FIXME to be gone
 extern HEV  hevTreeCnrScanComplete;
+#endif // 2015-08-04 SHL FIXME to be gone
+
 #endif
 
 #endif // INIT_H

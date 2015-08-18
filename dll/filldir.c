@@ -6,7 +6,7 @@
   Fill Directory Tree Containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2011 Steven H. Levine
+  Copyright (c) 2001, 2015 Steven H. Levine
 
   10 Jan 04 SHL ProcessDirectory: avoid most large drive failures
   24 May 05 SHL Rework Win_Error usage
@@ -55,8 +55,8 @@
   24 Nov 08 GKY Add StubyScanThread to treecnr scan/rescan drives all on separate threads
   24 Nov 08 GKY Replace 4 pass drive scan code with StubyScanThread multithread scan
   28 Nov 08 SHL FreeCnrItemData: optimize and always NULL pointers
-  28 Nov 08 SHL StubbyScanThread: add else lost in translation
-  30 Nov 08 SHL StubbyScanThread: restore else - we want all drives listed
+  28 Nov 08 SHL StubbyThread: add else lost in translation
+  30 Nov 08 SHL StubbyThread: restore else - we want all drives listed
   30 Nov 08 SHL FreeCnrItemData: report double free with Runtime_Error
   04 Dec 08 GKY Use event semaphore to prevent scan of "last" directory container prior to
 		tree scan completion; prevents duplicate directory names in tree.
@@ -97,7 +97,7 @@
   12 Jun 11 GKY Added IdleIfNeeded to the container "free" loops to improve system
 	        responsiveness when closing containers with large numbers of items
   12 Jun 11 GKY Replaced SleepIfNeeded with IdleIfNeeded in the container loade loop
-  22 Oct 11 GKY Removing unneeded UnFlesh call from StubbyScanThread appears to significantly speed opening of FM/2
+  22 Oct 11 GKY Removing unneeded UnFlesh call from StubbyThread appears to significantly speed opening of FM/2
   02 Mar 14 GKY !didone for fFirstTime so the suggest code works again. Also clear out the
 	        garbage that was appearing in the string.
   02 Mar 14 GKY Speed up intial drive scans Ticket 528
@@ -110,8 +110,11 @@
   19 Jun 15 JBS Ticket 514: Double free fix (which also fixes a memory leak)
   02 Aug 15 GKY Serialize local hard drive scanning to reduce drive thrashing continue to scan
                 all other drive types in separate threads.
-  02 Aug 15 GKY Remove unneed SubbyScan code and improve suppression of blank lines and
+  02 Aug 15 GKY Remove unneeded SubbyScan code and improve suppression of blank lines and
                 duplicate subdirectory name caused by running Stubby in worker threads.
+  04 Aug 15 SHL Comments
+  04 Aug 15 SHL Move StubbyThread to flesh.c
+  07 Aug 15 SHL Rework to use AddFleshWorkRequest rather than direct calls to Stubby/Flesh/Unflesh
 
 ***********************************************************************/
 
@@ -141,7 +144,7 @@
 #include "misc.h"			// GetTidForWindow
 #include "fortify.h"			// 06 May 08 SHL
 #include "notebook.h"			// INI file fields
-#include "flesh.h"			// FleshEnv, Stubby
+#include "flesh.h"			// AddFleshWorkRequest
 #include "update.h"			// SelectDriveIcon
 #include "valid.h"			// CheckDrive
 #include "filter.h"			// Filter
@@ -151,8 +154,8 @@
 #include "literal.h"			// wildcard
 #include "i18nutil.h"			// CommaFmtULL
 #include "wrappers.h"			// xDosFindNext
-#include "init.h"			// GetTidForWindow
-#include "common.h"			// IncrThreadUsage
+#include "init.h"
+#include "common.h"
 #include "excputil.h"			// xbeginthread
 #include "fm3dlg.h"			// INFO_LABEL
 #include "pathutil.h"			// AddBackslashToPath
@@ -161,8 +164,6 @@
 #define  __PMPRINTF__
 #include "PMPRINTF.H"
 #endif
-
-VOID StubbyScanThread(VOID * arg);
 
 // Data definitions
 static PSZ pszSrcFile = __FILE__;
@@ -177,12 +178,6 @@ HPOINTER hptrSystem;
 #pragma data_seg(GLOBAL2)
 PCSZ FM3Tools = "<FM3_Tools>";
 PCSZ WPProgram = "WPProgram";
-
-typedef struct {
-  PCNRITEM	pci;
-  HWND		hwndCnr;		// hwnd you want the message posted to
-}
-STUBBYSCAN;
 
 /**
  * Return display string given standard file attribute mask
@@ -239,68 +234,6 @@ const PSZ FileAttrToString(ULONG fileAttr)
   fileAttr = ((fileAttr & 0x30) >> 1) | (fileAttr & 7);	// Drop don't care bit from index
 
   return apszAttrString[fileAttr];
-
-}
-
-VOID StubbyScanThread(VOID * arg)
-{
-  STUBBYSCAN *StubbyScan;
-  HAB thab;
-  HMQ hmq = (HMQ) 0;
-  static INT ProcessDirCount = 0;
-
-  DosError(FERR_DISABLEHARDERR);
-
-# ifdef FORTIFY
-  Fortify_EnterScope();
-#  endif
-
-  StubbyScan = (STUBBYSCAN *)arg;
-  if (StubbyScan && StubbyScan->pci && StubbyScan->pci->pszFileName && StubbyScan->hwndCnr) {
-    thab = WinInitialize(0);
-    if (thab) {
-      hmq = WinCreateMsgQueue(thab, 0);
-      if (hmq) {
-	IncrThreadUsage();
-	priority_normal();
-	if (WinIsWindow((HAB)0, StubbyScan->hwndCnr)) {
-	  ULONG flags = driveflags[toupper(*StubbyScan->pci->pszFileName) - 'A'];
-
-	  if ((fRScanLocal && flags & DRIVE_LOCALHD ) ||
-	       (fRScanRemote && flags & DRIVE_REMOTE) ||
-	       (fRScanVirtual && flags & DRIVE_VIRTUAL)) {
-	    if (!(flags & ((fRScanNoWrite ? 0 : DRIVE_NOTWRITEABLE) ||
-			   (fRScanSlow ? 0 : DRIVE_SLOW)))) {
-	      Flesh(StubbyScan->hwndCnr, StubbyScan->pci);
-	    }
-	    else {
-	      Stubby(StubbyScan->hwndCnr, StubbyScan->pci);
-	    }
-	  }
-	  else {
-	    Stubby(StubbyScan->hwndCnr, StubbyScan->pci);
-          }
-          if (flags & DRIVE_LOCALHD)
-            DosReleaseMutexSem(hmtxScanningLocalHD);
-	}
-	WinDestroyMsgQueue(hmq);
-      }
-      DecrThreadUsage();
-      WinTerminate(thab);
-    }
-    free(StubbyScan);
-  } // if StubbyScan
-  ProcessDirCount++;
-  // DbgMsg(pszSrcFile, __LINE__, "ProcessDirCount %i FixedVolume %i", ProcessDirCount, FixedVolume);
-  if (ProcessDirCount >= FixedVolume) {
-    DosReleaseMutexSem(hmtxScanning);
-    DosPostEventSem(hevTreeCnrScanComplete);    
-    ProcessDirCount = 0;
-    FixedVolume = 0;
-  }
-# ifdef FORTIFY
-  Fortify_LeaveScope();
-#  endif
 
 }
 
@@ -659,7 +592,7 @@ ULONGLONG FillInRecordFromFFB(HWND hwndCnr,
     pci->pszFmtFileSize = xstrdup(szBuf, pszSrcFile, __LINE__);
 #   ifdef FORTIFY
     {
-      unsigned tid = GetTidForWindow(hwndCnr);
+      UINT tid = GetTidForWindow(hwndCnr);
       if (tid == 1)
 	Fortify_ChangeScope(pci->pszFmtFileSize, -1);
       else
@@ -740,7 +673,7 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
   pci->hwndCnr = hwndCnr;
   pci->pszFileName = xstrdup(pszFileName, pszSrcFile, __LINE__);
 
-  // 13 Jul 09 SHL fixme to know if fetch can be bypassed if pszFSType already filled
+  // 13 Jul 09 SHL FIXME to know if fetch can be bypassed if pszFSType already filled
   // If FSType not supplied, assume don't need EAs either
   if (pfsa4->cbList > 4L && dcd &&
       !(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_NOEASUPPORT))
@@ -813,7 +746,7 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
   else
     pci->pszDisplayName = p;
 
-  // 13 Jul 09 SHL fixme to know why pszFSType check needed
+  // 13 Jul 09 SHL FIXME to know why pszFSType check needed
   // comma format the file size for large file support
   if (!pszFSType || *pszFSType == 0) {
     CHAR szBuf[30];
@@ -1014,7 +947,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	      ullTotalBytes = 0;
 	    }
 	    else {
-	      // 04 Jan 08 SHL fixme like comp.c to handle less than ulSelCnt records
+	      // 04 Jan 08 SHL FIXME like comp.c to handle less than ulSelCnt records
 	      pci = pciFirst;
 	      ullTotalBytes = 0;
 	      // Finish filling pci items
@@ -1068,7 +1001,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 				 sizeof(FILEFINDBUF4L) * (ulSelCnt + cAffbTotal),
 				 pszSrcFile, __LINE__);
 	    if (paffbTemp) {
-	      // 13 Aug 07 SHL fixme to optimize copy
+	      // 13 Aug 07 SHL FIXME to optimize copy
 	      paffbTotal = paffbTemp;
 	      ullTotalBytes = 0;	// 15 Sep 09 SHL
 	      for (x = 0; x < ulSelCnt; x++) {
@@ -1134,7 +1067,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	      break;
 	    }
 	    else {
-	      // 04 Jan 08 SHL fixme like comp.c to handle less than ulSelCnt records
+	      // 04 Jan 08 SHL FIXME like comp.c to handle less than ulSelCnt records
 	      if (hwndStatus && dcd &&
 		  dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
 		WinSetWindowText(hwndStatus, (CHAR *) GetPString(IDS_PLEASEWAITCOUNTINGTEXT));
@@ -1231,7 +1164,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	rc = ERROR_NO_MORE_FILES;
     }
 
-    // 13 Oct 09 SHL fixme to be saymsg if ERROR_NOT_READY and first try on volume
+    // 13 Oct 09 SHL FIXME to be saymsg if ERROR_NOT_READY and first try on volume
     if (rc && rc != ERROR_NO_MORE_FILES && (fDontSuggestAgain || !fInitialDriveScan)) {
       Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 		GetPString(IDS_CANTFINDDIRTEXT), pszFileSpec);
@@ -1256,7 +1189,7 @@ Abort:
         return;
       }
       if ((pci->attrFile & FILE_DIRECTORY))
-        Stubby(hwndCnr, pci);
+        AddFleshWorkRequest(hwndCnr, pci, eStubby);
       pci = WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pci),
                        MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
     }
@@ -1288,7 +1221,7 @@ VOID FillDirCnr(HWND hwndCnr,
 		   pullTotalBytes);
   DosPostEventSem(CompactSem);
 
-#if 0 // 2011-05-31 SHL	fixme to be gone or to be configurable
+#if 0 // 2011-05-31 SHL FIXME to be gone or to be configurable
   {
     int state = _heapchk();
     if (state != _HEAPOK)
@@ -1326,6 +1259,8 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 
   static BOOL didonce;
   static ULONG ulLastDriveMap;
+
+  DbgMsg(pszSrcFile, __LINE__, "FillTreeCnr hwndCnr %x hwndParent %x", hwndCnr, hwndParent);	 // 2015-08-03 SHL FIXME debug
 
   fDummy = TRUE;
   *szSuggest = 0;
@@ -1380,11 +1315,11 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 
   if (!pciFirst) {
     Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__, GetPString(IDS_CMALLOCRECERRTEXT));
-    // 04 Jan 08 SHL fixme not just up and die
+    // 04 Jan 08 SHL FIXME not just up and die
     exit(0);
   }
 
-  // 04 Jan 08 SHL fixme like comp.c to handle less than ulSelCnt records
+  // 04 Jan 08 SHL FIXME like comp.c to handle less than ulSelCnt records
   pci = pciFirst;
   for (iDrvNum = 0; iDrvNum < 26; iDrvNum++) {
     ulDriveMapMask = 1L << iDrvNum;
@@ -1406,7 +1341,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
       }
 
       if (iDrvNum > 1) {
-	// Hard drive (2..N)
+	// Hard drive, 2..N, C:..Z:
 	if (~driveflags[iDrvNum] & DRIVE_NOPRESCAN) {
 	  *szFSType = 0;
 	  ulDriveType = 0;
@@ -1502,7 +1437,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	  pci->pszDispAttr = FileAttrToString(pci->attrFile);
 	  driveserial[iDrvNum] = -1;
 	}
-	}
+      } // if not diskette
       else {
 	// diskette drive (A or B)
 	pci->rc.hptrIcon = hptrFloppy;
@@ -1546,7 +1481,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 
   ulLastDriveMap = ulDriveMap;		// 13 Oct 09 SHL
 
-  // insert the drives
+  // insert the drives in container
   if (numtoinsert && pciFirst) {
     RECORDINSERT ri;
 
@@ -1661,67 +1596,44 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	FreeCnrItem(hwndCnr, pciParent);
     }
   } // if show env
-  {
-    STUBBYSCAN *stubbyScan;
 
-    pci = (PCNRITEM) WinSendMsg(hwndCnr,
-				CM_QUERYRECORD,
-				MPVOID,
-				MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
-    while (pci && (INT)pci != -1) {
-      stubbyScan = xmallocz(sizeof(STUBBYSCAN), pszSrcFile, __LINE__);
-      if (!stubbyScan)
-	break;
-      stubbyScan->pci = pci;
-      stubbyScan->hwndCnr = hwndCnr;
-      pciNext = (PCNRITEM) WinSendMsg(hwndCnr,
-				      CM_QUERYRECORD,
-				      MPFROMP(pci),
-				      MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
-      if (~pci->flags & RECFLAGS_ENV) {
-	iDrvNum = toupper(*pci->pszFileName) - 'A';	// 0..25
-	if (iDrvNum == ulCurDriveNum || iDrvNum >= 2) {
-	  // Hard drive or current drive
-	  ULONG flags = driveflags[iDrvNum];	// Speed up
-	  if (~flags & DRIVE_INVALID &&
-	      ~flags & DRIVE_NOPRESCAN && (!fNoRemovableScan || ~flags & DRIVE_REMOVABLE)) {
-            // DbgMsg(pszSrcFile, __LINE__, "Begin Thread %s", pci->pszFileName);
-            if (flags & DRIVE_LOCALHD) {
-              DosRequestMutexSem(hmtxScanningLocalHD, SEM_INDEFINITE_WAIT );
-              if (xbeginthread(StubbyScanThread,
-                               65536,
-                               stubbyScan,
-                               pszSrcFile, __LINE__) == -1) {
-                DosReleaseMutexSem(hmtxScanningLocalHD);
-                xfree(stubbyScan, pszSrcFile, __LINE__);
-              }
-            }
-            else {
-              if (xbeginthread(StubbyScanThread,
-                               65536,
-                               stubbyScan,
-                               pszSrcFile, __LINE__) == -1)
-                xfree(stubbyScan, pszSrcFile, __LINE__);
-            }
-
-	  } // if drive needs to be scanned
-	}
-	else {
-	  // Diskette and not current drive
-	  WinSendMsg(hwndCnr,
-		     CM_INVALIDATERECORD,
-		     MPFROMP(&pci),
-		     MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
-	}
+  // Run Stubby on each hard drive to ensure expand/collapse buttons correct
+  pci = (PCNRITEM) WinSendMsg(hwndCnr,
+			      CM_QUERYRECORD,
+			      MPVOID,
+			      MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
+  while (pci && (INT)pci != -1) {
+    pciNext = (PCNRITEM) WinSendMsg(hwndCnr,
+				    CM_QUERYRECORD,
+				    MPFROMP(pci),
+				    MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
+    if (~pci->flags & RECFLAGS_ENV) {
+      iDrvNum = toupper(*pci->pszFileName) - 'A';	// 0..25
+      if (iDrvNum == ulCurDriveNum || iDrvNum >= 2) {
+	// Hard drive or current drive
+	ULONG flags = driveflags[iDrvNum];	// Speed up
+	if (~flags & DRIVE_INVALID &&
+	    ~flags & DRIVE_NOPRESCAN &&
+	    (!fNoRemovableScan || ~flags & DRIVE_REMOVABLE)) {
+	  AddFleshWorkRequest(hwndCnr, pci, eFillDir);
+	} // if drive needs to be scanned
       }
-      pci = pciNext;
-    } // while
-  }
+      else {
+	// Diskette or not current drive
+	WinSendMsg(hwndCnr,
+		   CM_INVALIDATERECORD,
+		   MPFROMP(&pci),
+		   MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
+      }
+    }
+    pci = pciNext;
+  } // while pci
 
-  // 13 Oct 09 SHL
+  // Deselect all
   if (hwndDrivelist)
     WinSendMsg(hwndDrivelist, LM_SELECTITEM, MPFROM2SHORT(0, 0), MPFROMLONG(TRUE));
 
+  // Fill in environment CNRITEMs, if any
   pci = (PCNRITEM) WinSendMsg(hwndCnr,
 			      CM_QUERYRECORD,
 			      MPVOID,
@@ -1739,7 +1651,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 					       CMA_ITEMORDER));
       while (pci && (INT)pci != -1) {
 	if (pci->flags & RECFLAGS_ENV)
-	  FleshEnv(hwndCnr, pci);
+	  AddFleshWorkRequest(hwndCnr, pci, eFleshEnv);
 	pci = (PCNRITEM) WinSendMsg(hwndCnr,
 				    CM_QUERYRECORD,
 				    MPFROMP(pci),
@@ -1755,9 +1667,12 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 
   if (hwndMain)
     PostMsg(hwndMain, UM_BUILDDRIVEBAR, MPVOID, MPVOID);
-  DosSleep(16);				// 05 Aug 07 GKY 33
+
+  DosSleep(16);
   fDummy = FALSE;
+
   fInitialDriveScan = FALSE;
+  DbgMsg(pszSrcFile, __LINE__, "fInitialDriveScan now FALSE");	 // 2015-08-03 SHL FIXME debug
   DosPostEventSem(CompactSem);
 
   if (!fDontSuggestAgain) {
@@ -1776,7 +1691,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	szSuggest[1] = 'B';
       }
     }
-    //DbgMsg(pszSrcFile, __LINE__, "szSuggest %x info %x", *szSuggest, info);
+    // DbgMsg(pszSrcFile, __LINE__, "szSuggest %x info %x", *szSuggest, info);
     if (*szSuggest) {
       APIRET rc;
       for (iDrvNum = 2; iDrvNum < 26; iDrvNum++) {
@@ -1836,6 +1751,9 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
     } // if suggest
   } // if !fDontSuggestAgain
   didonce = TRUE;
+
+  DbgMsg(pszSrcFile, __LINE__, "FillTreeCnr finished");	 // 2015-08-03 SHL FIXME debug
+
 } // FillTreeCnr
 
 
@@ -2097,6 +2015,6 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
 }
 
 #pragma alloc_text(FILLDIR,FillInRecordFromFFB,FillInRecordFromFSA,IDFile)
-#pragma alloc_text(FILLDIR1,ProcessDirectory,FillDirCnr,FillTreeCnr,FileAttrToString,StubbyScanThread)
+#pragma alloc_text(FILLDIR1,ProcessDirectory,FillDirCnr,FillTreeCnr,FileAttrToString)
 #pragma alloc_text(EMPTYCNR,EmptyCnr,FreeCnrItemData,FreeCnrItem,FreeCnrItemList,RemoveCnrItems)
 

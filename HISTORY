@@ -1,5 +1,9 @@
 New stuff at the top.  This list is not necessarily complete.
 
+3.24
+ o Rework Flesh/Stubby logic to avoid doing work on thread 1
+ o Add generic linked list support routines
+
 3.23 
  o Rework FM/2 Lite Config menu.  Add drag&drop dialog toggle. (Steven)
  o Rework FM/2 Lite Config menu.  Add confirm delete toggle. (Steven)

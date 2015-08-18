@@ -6,7 +6,7 @@
   Directory containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2010 Steven H. Levine
+  Copyright (c) 2001, 2015 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   01 Aug 04 SHL Rework lstrip/rstrip usage
@@ -84,13 +84,14 @@
                 copy, move and delete operations
   22 Feb 14 GKY Fix warn readonly yes don't ask to work when recursing directories.
   02 Mar 14 GKY Speed up intial drive scans Ticket 528
-  26 Jun 14 SHL	Rework DirObjWndProc UM_RESCAN to avoid hanging FM/2 Lite when tree hidden
+  26 Jun 14 SHL Rework DirObjWndProc UM_RESCAN to avoid hanging FM/2 Lite when tree hidden
   30 Aug 14 GKY Add semaphore hmtxFiltering to prevent freeing dcd while filtering. Prevents
                 a trap when FM2 is shutdown while directory containers are still populating
   02 May 15 GKY Changes to allow a JAVA executable object to be created using "Real object"
                 menu item on a jar file.
   02 Aug 15 GKY Remove unneed SubbyScan code and improve suppression of blank lines and
                 duplicate subdirectory name caused by running Stubby in worker threads.
+  07 Aug 15 SHL Rework to use AddFleshWorkRequest rather than direct calls to Stubby/Flesh/Unflesh
 
 ***********************************************************************/
 
@@ -138,7 +139,7 @@
 #include "select.h"			// DeselectAll, HideAll, InvertAll, SelectAll, SelectList
 					// SpecialSelect2
 #include "dirsize.h"			// DirSizeProc
-#include "flesh.h"			// Flesh, Stubby, UnFlesh
+#include "flesh.h"			// AddFleshWorkRequest
 #include "valid.h"			// IsValidDir
 #include "objwin.h"			// MakeObjWin
 #include "notify.h"			// NotifyError
@@ -765,8 +766,8 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (dcd) {
 #     ifdef FORTIFY
       Fortify_BecomeOwner(dcd);		// We free dcd
-      if (GetTidForThread() != 1)
-      Fortify_ChangeScope(dcd, -1);
+      if (GetTidForThread())
+	Fortify_ChangeScope(dcd, -1);
 #     endif
       // set unique id
       WinSetWindowUShort(hwnd, QWS_ID, DIROBJ_FRAME + (DIR_FRAME - dcd->id));
@@ -778,7 +779,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
 #   ifdef FORTIFY
     // TID 1 will free data
-    if (GetTidForThread() != 1)
+    if (GetTidForThread())
       Fortify_LeaveScope();
 #   endif
     return 0;
@@ -843,7 +844,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			    MPFROMP(pci),
 			    MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
           if (!pciC) {
-            Stubby(dcd->hwndCnr, pci);
+            AddFleshWorkRequest(dcd->hwndCnr, pci, eStubby);
           }
 	}
 	pci = WinSendMsg(dcd->hwndCnr,
@@ -898,20 +899,31 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       // 2014-06-26 SHL FM/2 Lite may not have drive tree yet
       if (hwndTree) {
+	// 2015-08-12 SHL Optimze to update drive tree for only last saved state
+
+	// 2015-08-13 SHL
+	if (fSwitchTreeOnDirChg)
+	  DbgMsg(pszSrcFile, __LINE__, "DirObjWndProc UM_RESCAN cDirectoriesRestored %u", cDirectoriesRestored); // 2015-08-04 SHL FIXME debug
+
 	if (fSwitchTreeOnDirChg) {
 	  // Keep drive tree in sync with directory container
           PSZ pszTempDir;
+#if 0 // 2015-08-12 SHL FIXME to be gone fInitialDriveScan
 	  while (fInitialDriveScan)
-            DosSleep(10);			// Allow to complete
-          DosSleep(50);
+            DosSleep(500);			// Allow to complete
+          DosSleep(200);			// Allow to complete
+#endif
 	  pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
 	  if (pszTempDir) {
 	    if (hwndMain) {
-	      if (TopWindow(hwndMain, (HWND) 0) == dcd->hwndFrame)
+	      if (TopWindow(hwndMain, (HWND)0) == dcd->hwndFrame) {
+		DbgMsg(pszSrcFile, __LINE__, "DirObjWndProc UM_RESCAN PostMsg(UM_SHOWME)"); // 2015-08-04 SHL FIXME debug
 		if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
 		  free(pszTempDir);
+	      }
 	    }
 	    else {
+	      DbgMsg(pszSrcFile, __LINE__, "DirObjWndProc UM_RESCAN PostMsg(UM_SHOWME)"); // 2015-08-04 SHL FIXME debug
 	      if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
 		free(pszTempDir);
 	    }
@@ -1228,7 +1240,7 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			0,
 			0,
 			0,
-                        SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
+	                SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
       FreeList(dcd->lastselection);
       WinSetWindowPtr(dcd->hwndCnr, QWL_USER, NULL);	// 13 Apr 10 SHL Set NULL before freeing dcd
       DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
@@ -1420,9 +1432,12 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       LastDir = hwnd;
       PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
+      // 2015-08-13 SHL
       if (fSwitchTreeOnFocus && hwndTree && dcd && *dcd->directory) {
 	PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
+	DbgMsg(pszSrcFile, __LINE__, "DirCnrWndProc WM_SETFOCUS cDirectoriesRestored %u", cDirectoriesRestored); // 2015-08-04 SHL FIXME debug
 	if (pszTempDir) {
+	  DbgMsg(pszSrcFile, __LINE__, "DirCnrWndProc WM_SETFOCUS PostMsg(UM_SHOWME, %s)", pszTempDir); // 2015-08-04 SHL FIXME debug
 	  if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
 	    free(pszTempDir);		// Failed
 	}
@@ -1489,7 +1504,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		 MPFROMP(&cnri), MPFROMLONG(sizeof(CNRINFO)));
       cnri.pszCnrTitle = dcd->directory;
       WinSendMsg(hwnd,
-                 CM_SETCNRINFO, MPFROMP(&cnri), MPFROMLONG(CMA_CNRTITLE));
+	         CM_SETCNRINFO, MPFROMP(&cnri), MPFROMLONG(CMA_CNRTITLE));
       DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
       dcd->totalfiles = cnri.cRecords;
       commafmt(tb, sizeof(tb), dcd->totalfiles);
@@ -1568,7 +1583,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       cnri.cb = sizeof(CNRINFO);
       WinSendMsg(hwnd,
 		 CM_QUERYCNRINFO,
-                 MPFROMP(&cnri), MPFROMLONG(sizeof(CNRINFO)));
+	         MPFROMP(&cnri), MPFROMLONG(sizeof(CNRINFO)));
       cnri.pSortRecord = (PVOID) SortDirCnr;
       WinSendMsg(hwnd,
 		 CM_SETCNRINFO, MPFROMP(&cnri), MPFROMLONG(CMA_PSORTRECORD));
@@ -1595,7 +1610,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	cnri.flWindowAttr &= (~(CV_TREE | CV_ICON | CV_DETAIL | CV_TEXT));
 	cnri.flWindowAttr |= (CV_NAME | CA_DETAILSVIEWTITLES | CV_MINI |
-                              CV_FLOW);
+	                      CV_FLOW);
 	cnri.pSortRecord = (PVOID) SortDirCnr;
 
 	{
@@ -1652,9 +1667,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  DosSleep(32); // 05 Aug 07 GKY 64
 	WinEnableMenuItem(DirCnrMenu, IDM_FINDINTREE, (hwndTree != (HWND) 0));
       }
-      // 2014-06-11 SHL fm/2 lite can get here before drive scan completes
-      //if (!fInitialDriveScan) // 2014-08-30 GKY This doesn't seem to be needed
-        PostMsg(hwnd, UM_SETUP2, MPVOID, MPVOID);
+	// 2014-06-11 SHL fm/2 lite can get here before drive scan completes - may not be true anymore
+	PostMsg(hwnd, UM_SETUP2, MPVOID, MPVOID);
     }
     else {
       PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
@@ -1962,6 +1976,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
 
 	  if (pszTempDir) {
+	    DbgMsg(pszSrcFile, __LINE__, "DirCnrWndProc IDM_FINDINTREE PostMsg(UM_SHOWME)"); // 2015-08-04 SHL FIXME debug
 	    if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir),
 			    MPFROMLONG(1L)))
 	      free(pszTempDir);
@@ -2127,7 +2142,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  else
 	    dcd->sortFlags |= SORT_REVERSE;
 	  break;
-        }
+	}
 	WinSendMsg(hwnd, CM_SORTRECORD, MPFROMP(SortDirCnr),
 		   MPFROMLONG(dcd->sortFlags));
 	SaySort(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
@@ -2727,8 +2742,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      case IDM_ATTRS:
 	      case IDM_PRINT:
 	      case IDM_SHADOW:
-              case IDM_SHADOW2:
-              case IDM_JAVAEXE:
+	      case IDM_SHADOW2:
+	      case IDM_JAVAEXE:
 	      case IDM_OBJECT:
 	      case IDM_VIEW:
 	      case IDM_VIEWTEXT:
@@ -2846,7 +2861,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		if (!fErrorBeepOff)
 		  DosBeep(250,100);
 		driveserial[toupper(*pci->pszFileName) - 'A'] = -1;
-		UnFlesh(hwnd, pci);
+		AddFleshWorkRequest(hwnd, pci, eUnFlesh);
 		PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
 	      }
 	      else {
@@ -2854,12 +2869,13 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    !volser.serial ||
 		    driveserial[toupper(*pci->pszFileName) - 'A'] !=
 		    volser.serial)
-		  UnFlesh(hwnd, pci);
+		  AddFleshWorkRequest(hwnd, pci, eUnFlesh);
 		if (SHORT2FROMMP(mp1) != CN_COLLAPSETREE ||
 		    (!volser.serial ||
 		     driveserial[toupper(*pci->pszFileName) - 'A'] !=
 		     volser.serial)) {
-		  if (SHORT2FROMMP(mp1) == CN_EXPANDTREE && Flesh(hwnd, pci) &&
+		  // 2015-08-07 SHL FIXME to wait for Flesh to finish before PostMsg
+		  if (SHORT2FROMMP(mp1) == CN_EXPANDTREE && AddFleshWorkRequest(hwnd, pci, eFlesh) &&
 		      !dcd->suspendview && fTopDir ) {
 		    PostMsg(hwnd, UM_TOPDIR, MPFROMP(pci), MPVOID);
 		    //DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
@@ -2869,7 +2885,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	    }
 	    else if (SHORT2FROMMP(mp1) == CN_EXPANDTREE) {
-	      if (Flesh(hwnd, pci) && !dcd->suspendview && fTopDir) {
+	      if (AddFleshWorkRequest(hwnd, pci, eFlesh) && !dcd->suspendview && fTopDir) {
+		// 2015-08-07 SHL FIXME to wait for Flesh to finish before PostMsg
 		PostMsg(hwnd, UM_TOPDIR, MPFROMP(pci), MPVOID);
 		//DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
 	      }
@@ -3274,9 +3291,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	  else {
 
-            MRESULT mre;
+	    MRESULT mre;
 
-            mre = CnrDirectEdit(hwnd, msg, mp1, mp2);
+	    mre = CnrDirectEdit(hwnd, msg, mp1, mp2);
 	    if (mre != (MRESULT) - 1)
 	      return mre;
 	  }
@@ -3529,7 +3546,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case WM_CLOSE:
     WinSendMsg(hwnd, WM_SAVEAPPLICATION, MPVOID, MPVOID);
     if (LastDir == hwnd)
-        LastDir = (HWND) 0;
+	LastDir = (HWND) 0;
     DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
     if (dcd) {
       dcd->stopflag++;
@@ -3548,7 +3565,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			0,
 			0,
 			0,
-                        SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
+			SWP_RESTORE | SWP_SHOW | SWP_ACTIVATE | SWP_ZORDER);
       FreeList(dcd->lastselection);
       WinSetWindowPtr(hwnd, QWL_USER, NULL);
       DosPostEventSem(CompactSem);
@@ -3820,10 +3837,10 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
 	if (!dcd->hwndCnr) {
 	  Win_Error(hwndClient, hwndClient, pszSrcFile, __LINE__,
 		    PCSZ_WINCREATEWINDOW);
-          PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
-          DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
-          free(dcd);
-          DosReleaseMutexSem(hmtxFiltering);
+	  PostMsg(hwndClient, WM_CLOSE, MPVOID, MPVOID);
+	  DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
+	  free(dcd);
+	  DosReleaseMutexSem(hmtxFiltering);
 	  hwndFrame = (HWND) 0;
 	}
 	else {

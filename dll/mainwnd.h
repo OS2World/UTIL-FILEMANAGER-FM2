@@ -3,16 +3,17 @@
 
   $Id$
 
-  <<description here>>
+  fm/2 main window
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2009 Steven H. Levine
+  Copyright (c) 2001, 2015 Steven H. Levine
 
   05 Sep 08 JBS Ticket 187: Refactor FM3DLL.H
   04 Feb 09 SHL Convert args to const to match GetPString mods
   08 Mar 09 GKY Additional strings move to PCSZs & String Table
   21 Jun 09 GKY Added drive letter to bitmap buttons in drive bar; Eliminate static drive
                 letter windows; Use button ID to identify drive letter for processing.
+  13 Aug 15 SHL Sync with Flesh/Stubby updates
 
 ***********************************************************************/
 
@@ -89,6 +90,8 @@ extern HWND hwndToolback;
 extern HWND hwndTree;
 extern USHORT shiftstate;
 extern PSZ pszFocusDir;
+
+extern UINT cDirectoriesRestored;		// 2015-08-12 SHL Incremented by RestoreDirCnrState
 
 #define STATE_NAME_MAX_BYTES 256
 

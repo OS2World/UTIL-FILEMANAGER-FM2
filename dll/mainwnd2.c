@@ -1264,20 +1264,20 @@ MRESULT EXPENTRY MainWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSendMsg(pd->hwndCurr, UM_INITMENU, mp1, mp2);
       break;
     case IDM_CONFIGMENU:
-      // 2014-05-17 SHL	FIXME to use SetToggleChecks maybe
+      // 2014-05-17 SHL FIXME to use SetToggleChecks maybe
       WinCheckMenuItem((HWND) mp2, IDM_TOOLSUBMENU, fToolbar);
       WinCheckMenuItem((HWND) mp2, IDM_AUTOVIEW, fAutoView);
       WinCheckMenuItem((HWND) mp2, IDM_CONFIRMDELETE, fConfirmDelete);	// 2014-05-17 SHL
       WinCheckMenuItem((HWND) mp2, IDM_TOGGLEDRAGDIALOG, fDragndropDlg);	// 2014-05-15 SHL
       break;
     case IDM_TOOLSUBMENU:
-      // 2014-05-17 SHL	FIXME to use SetToggleChecks maybe
+      // 2014-05-17 SHL FIXME to use SetToggleChecks maybe
       WinCheckMenuItem((HWND) mp2, IDM_TOOLBAR, fToolbar);
       WinCheckMenuItem((HWND) mp2, IDM_TEXTTOOLS, fTextTools);
       WinCheckMenuItem((HWND) mp2, IDM_TOOLTITLES, fToolTitles);
       break;
     case IDM_WINDOWSMENU:
-      // 2014-05-17 SHL	FIXME to use SetToggleChecks maybe
+      // 2014-05-17 SHL FIXME to use SetToggleChecks maybe
       WinCheckMenuItem((HWND) mp2, IDM_VTREE, (hwndTree != (HWND) 0));
       WinCheckMenuItem((HWND) mp2, IDM_TILEBACKWARDS, fTileBackwards);
       SetupWinList((HWND) mp2, hwnd, WinQueryWindow(hwnd, QW_PARENT));
@@ -1403,6 +1403,7 @@ MRESULT EXPENTRY MainWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinSendMsg(hwnd, WM_SAVEAPPLICATION, MPVOID, MPVOID);
     CloseChildren(hwnd);
     PostMsg(hwnd, UM_CLOSE, MPVOID, MPVOID);
+    DbgMsg(pszSrcFile, __LINE__, "MainWndProc2 WM_CLOSE returning with fAmClosing %u", fAmClosing); // 2015-08-16 SHL
     DosSleep(1);
     return 0;			// Suppress WinDefWindowProc WM_QUIT message generation
 
