@@ -6,7 +6,7 @@
   Common window functions
 
   Copyright (c) 1993, 1998 M. Kimes
-  Copyright (c) 2001, 2010 Steven H. Levine
+  Copyright (c) 2001, 2015 Steven H. Levine
 
   13 Aug 05 SHL Renames
   22 Jul 06 SHL Check more run time errors
@@ -33,8 +33,9 @@
   14 Sep 09 SHL Blink thread LEDs while threads working
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
   13 Jul 15 GKY Fix CN_REALLOCPSZ file name editing code to: 1) Eliminate the possibility of
-                updating the container before CN_ENDEDIT is called. 2) Don't call RemoveCnrItems
-                for tree container and collector.
+		updating the container before CN_ENDEDIT is called. 2) Don't call RemoveCnrItems
+		for tree container and collector.
+  07 Aug 15 SHL Clean up and comment
 
 ***********************************************************************/
 
@@ -62,12 +63,10 @@
 #include "fm3dlg.h"
 #include "fm3str.h"
 #include "mle.h"
-#include "filldir.h"			// RemoveCnrItems
 #include "errutil.h"			// Dos_Error...
 #include "strutil.h"			// GetPString
 #include "autoview.h"			// AutoViewProc
 #include "mainwnd.h"			// BuildDriveBarButtons, GetNextWindowPos, TopWindow
-#include "common.h"
 #include "dirsize.h"			// DirSizeProc
 #include "info.h"			// DrvInfoProc, SetDrvProc
 #include "seeall.h"			// StartSeeAll
@@ -152,7 +151,7 @@ MRESULT EXPENTRY CommonFrameWndProc(USHORT id,
 
   case UM_RESCAN:
     if (fAutoTile &&
-        !fAmClosing && !fNoTileUpdate && !ParentIsDesktop(hwnd, (HWND) 0))
+	!fAmClosing && !fNoTileUpdate && !ParentIsDesktop(hwnd, (HWND) 0))
       PostMsg(WinQueryWindow(hwnd, QW_PARENT), UM_RESCAN, MPVOID, MPVOID);
     return 0;
 
@@ -187,8 +186,8 @@ MRESULT EXPENTRY CommonTextProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       case DIR_SORT:
       case DIR_VIEW:
       case DIR_FILTER:
-        //fixme to allow user to change presparams 1-10-09 GKY
-        SetPresParams(hwnd, &RGBGREY, &RGBBLACK, &RGBBLACK, FNT_8HELVETICA);
+	//fixme to allow user to change presparams 1-10-09 GKY
+	SetPresParams(hwnd, &RGBGREY, &RGBBLACK, &RGBBLACK, FNT_8HELVETICA);
 	return rc;
       }
     }
@@ -670,7 +669,7 @@ MRESULT EXPENTRY CommonMainWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       CHAR sz[33];
       if (mp1) {
 	cWorkerThreads++;
-	// 13 Sep 09 SHL fixme to be SMP safe
+	// 13 Sep 09 SHL FIXME to be SMP safe
 	if (cWorkerThreads == 1) {
 	  if (!WinStartTimer(WinQueryAnchorBlock(hwnd), hwnd, ID_LED_TIMER, 500))
 	    Win_Error(hwnd, hwnd, pszSrcFile, __LINE__, "WinStartTimer");
@@ -873,9 +872,9 @@ MRESULT EXPENTRY CommonCnrProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  MLEsetcurpos(WinWindowFromID(hwnd, CID_MLE), strlen((CHAR *)mp1));
       }
       else if (mp2) {
-        Broadcast(WinQueryAnchorBlock(hwnd),
-                  dcd->hwndParent, UM_UPDATERECORD, mp2, MPVOID);
-        xfree(mp2, pszSrcFile, __LINE__);
+	Broadcast(WinQueryAnchorBlock(hwnd),
+		  dcd->hwndParent, UM_UPDATERECORD, mp2, MPVOID);
+	xfree(mp2, pszSrcFile, __LINE__);
       }
     }
     return 0;
