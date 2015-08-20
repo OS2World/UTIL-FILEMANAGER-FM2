@@ -42,6 +42,7 @@
                 a trap when FM2 is shutdown while directory containers are still populating
   02 Aug 15 GKY Serialize local hard drive scanning to reduce drive thrashing continue to scan
                 all other drive types in separate threads.
+  19 Aug 15 SHL Delete obsoletes
 
 ***********************************************************************/
 
@@ -237,20 +238,7 @@ extern ULONGLONG ullTmpSpaceNeeded;
 #ifdef INCL_DOSSEMAPHORES
 extern HMTX hmtxFM2Globals;
 extern HMTX hmtxFM2Delete;
-
-#if 0 // 2015-08-07 SHL FIXME to be gone
-extern HMTX hmtxScanning;
-#endif // 2015-08-07 SHL FIXME to be gone
-
-#if 0 // 2015-08-07 SHL FIXME to be gone
-extern HMTX hmtxScanningLocalHD;
-#endif // 2015-08-07 SHL FIXME to be gone
-
 extern HMTX hmtxFiltering;
-
-#if 0 // 2015-08-04 SHL FIXME to be gone
-extern HEV  hevTreeCnrScanComplete;
-#endif // 2015-08-04 SHL FIXME to be gone
 
 #endif
 

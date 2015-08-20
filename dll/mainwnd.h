@@ -14,6 +14,7 @@
   21 Jun 09 GKY Added drive letter to bitmap buttons in drive bar; Eliminate static drive
                 letter windows; Use button ID to identify drive letter for processing.
   13 Aug 15 SHL Sync with Flesh/Stubby updates
+  19 Aug 15 SHL Add fAmQuitting
 
 ***********************************************************************/
 
@@ -64,6 +65,7 @@ extern PFNWP PFNWPStatic;
 extern PFNWP PFNWPButton;
 extern RGB2 RGBGREY;
 extern BOOL fAmClosing;
+extern BOOL fAmQuitting;			// Main window close/destroy in progress
 extern BOOL fAutoTile;
 extern BOOL fAutoView;
 extern BOOL fComments;

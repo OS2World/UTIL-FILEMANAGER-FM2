@@ -9,6 +9,7 @@
   Copyright (c) 2008, 2015 Steven H. Levine
 
   07 Aug 15 SHL Rework to use AddFleshWorkRequest rather than direct calls to Stubby/Flesh/Unflesh
+  19 Aug 15 SHL Allow WaitFleshWorkListEmpty to wait for dependent items
 
 ***********************************************************************/
 
@@ -26,8 +27,8 @@ VOID SetFleshFocusDrive(CHAR chDriveLetter);
 #if 0 // 2015-08-03 SHL FIXME debug
 VOID WaitFleshWorkListEmpty();
 #else
-#define WaitFleshWorkListEmpty() WaitFleshWorkListEmptyDbg(__FILE__, __LINE__)
-VOID WaitFleshWorkListEmptyDbg(PCSZ pszSrcFile, UINT uSrcLineNo);
+#define WaitFleshWorkListEmpty(pszFileName) WaitFleshWorkListEmptyDbg(pszFileName, __FILE__, __LINE__)
+VOID WaitFleshWorkListEmptyDbg(PCSZ pszFileName, PCSZ pszSrcFile, UINT uSrcLineNo);
 #endif
 
 #if 0 // 2015-08-03 SHL FIXME debug

@@ -908,11 +908,6 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (fSwitchTreeOnDirChg) {
 	  // Keep drive tree in sync with directory container
           PSZ pszTempDir;
-#if 0 // 2015-08-12 SHL FIXME to be gone fInitialDriveScan
-	  while (fInitialDriveScan)
-            DosSleep(500);			// Allow to complete
-          DosSleep(200);			// Allow to complete
-#endif
 	  pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
 	  if (pszTempDir) {
 	    if (hwndMain) {

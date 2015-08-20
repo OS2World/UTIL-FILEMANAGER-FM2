@@ -119,6 +119,8 @@
 		duplicate subdirectory name caused by running Stubby in worker threads.
   09 Aug 15 SHL Use RESTORE_STATE_...
   13 Aug 15 SHL Sync with Flesh/Stubby mods
+  19 Aug 15 SHL Add/use fAmQuitting
+  19 Aug 15 SHL Delete obsoletes
 
 ***********************************************************************/
 
@@ -213,7 +215,8 @@ HWND MainPopupMenu;
 BOOL MenuInvisible;
 PFNWP PFNWPButton;
 PFNWP PFNWPStatic;
-BOOL fAmClosing;
+BOOL fAmClosing;			// Attempting to close main window
+BOOL fAmQuitting;			// Main window close/destroy in progress
 BOOL fAutoTile;
 BOOL fAutoView;
 BOOL fComments;
@@ -1823,10 +1826,6 @@ static MRESULT EXPENTRY CommandLineProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
 MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
-#if 0 // 2015-08-04 SHL FIXME to be gone
-  APIRET rc;
-#endif // 2015-08-04 SHL FIXME to be gone
-
   static BOOL emphasized;
 
   switch (msg) {
@@ -2100,12 +2099,6 @@ MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case WM_COMMAND:
-#if 0 // 2015-08-04 SHL FIXME to be gone
-    rc = DosWaitEventSem(hevTreeCnrScanComplete, SEM_INDEFINITE_WAIT);
-    if (rc)
-      Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosWaitEventSem");
-#endif // 2015-08-04 SHL FIXME to be gone
-
     switch(SHORT1FROMMP(mp1)) {
     case IDM_RESCAN:
       {
@@ -6678,6 +6671,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinSendMsg(WinQueryWindow(hwnd, QW_PARENT),
 	       WM_SYSCOMMAND, MPFROM2SHORT(SC_MINIMIZE, 0), MPVOID);
     if (CloseChildren(hwnd)) {
+      // Close request refused - recover
       fAmClosing = FALSE;
       if (fAutoTile)
 	PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_TILE, 0), MPVOID);
@@ -6687,6 +6681,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (!PostMsg(hwndTree, WM_CLOSE, MPVOID, MPVOID))
 	WinSendMsg(hwndTree, WM_CLOSE, MPVOID, MPVOID);
     }
+    fAmQuitting = TRUE;			// Let world know quit in progress
     DosSleep(1);
     DbgMsg(pszSrcFile, __LINE__, "MainWndProc WM_CLOSE returning with fAmClosing %u", fAmClosing); // 2015-08-16 SHL
 

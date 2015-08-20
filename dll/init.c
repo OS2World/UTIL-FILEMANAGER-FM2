@@ -134,6 +134,7 @@
                 all other drive types in separate threads.
   12 Aug 15 JBS Ticket #524: Ensure no "highmem-unsafe" functions are called directly
                 Calls to unsafe Dos... functions have been changed to call the wrapped xDos... functions
+  19 Aug 15 SHL Delete obsoletes
 
 ***********************************************************************/
 
@@ -238,19 +239,7 @@ unsigned __MaxThreads = {48};
 HMTX hmtxFM2Delete;
 HMTX hmtxFM2Globals;
 
-#if 0 // 2015-08-04 SHL FIXME to be gone
-HMTX hmtxScanning;
-#endif // 2015-08-04 SHL FIXME to be gone
-
-#if 0 // 2015-08-07 SHL FIXME to be gone
-HMTX hmtxScanningLocalHD;
-#endif // 2015-08-07 SHL FIXME to be gone
-
 HMTX hmtxFiltering;
-
-#if 0 // 2015-08-04 SHL FIXME to be gone
-HEV  hevTreeCnrScanComplete;
-#endif // 2015-08-04 SHL FIXME to be gone
 
 ULONG OS2ver[2];
 PFNWP PFNWPCnr;
@@ -1186,18 +1175,6 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
               PCSZ_DOSCREATEMUTEXSEM);
   }
-#if 0 // 2015-08-04 SHL FIXME to be gone
-  if (DosCreateMutexSem(NULL, &hmtxScanning, 0L, TRUE))
-    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-              PCSZ_DOSCREATEMUTEXSEM);
-#endif // 2015-08-04 SHL FIXME to be gone
-#if 0 // 2015-08-07 SHL FIXME to be gone
-  rc = DosCreateMutexSem(NULL, &hmtxScanningLocalHD, 0L, FALSE);
-  if (rc) {
-    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-              PCSZ_DOSCREATEMUTEXSEM);
-  }
-#endif // 2015-08-07 SHL FIXME to be gone
   rc = DosCreateMutexSem(NULL, &hmtxFM2Delete, 0L, FALSE);
   if (rc) {
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
@@ -1208,13 +1185,6 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
               PCSZ_DOSCREATEMUTEXSEM);
   }
-#if 0 // 2015-08-04 SHL FIXME to be gone
-  rc = DosCreateEventSem(NULL, &hevTreeCnrScanComplete, 0L, TRUE);
-  if (rc) {
-    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-	      PCSZ_DOSCREATEEVENTSEM);
-  }
-#endif // 2015-08-04 SHL FIXME to be gone
 
   /**
    * set some defaults (note: everything else automatically initialized

@@ -325,8 +325,7 @@ VOID ShowTreeRec(HWND hwndCnr,
     }
 
     // Try again expanding as needed
-
-    DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec need expand"); // 2015-08-04 SHL FIXME debug
+    DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec need expand, IsFleshWorkListEmpty %u", IsFleshWorkListEmpty()); // 2015-08-04 SHL FIXME debug
 
     cDirLen = strlen(pszDir_);
 
@@ -346,7 +345,7 @@ VOID ShowTreeRec(HWND hwndCnr,
 			   TRUE);		// noenv
       if (!pciP || (INT)pciP == -1) {
 	DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec FindCnrRecord(%s) returned %p", szDir, pciP); // 2015-08-04 SHL FIXME debug
-	WaitFleshWorkListEmpty();		// 2015-08-13 SHL
+	WaitFleshWorkListEmpty(szDir);		// 2015-08-19 SHL
 	DosSleep(1000);
 	break;					// No match
       }
@@ -363,10 +362,9 @@ VOID ShowTreeRec(HWND hwndCnr,
 	DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec expanding %s", pciP->pszFileName); // 2015-08-04 SHL FIXME debug
 	WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciP), MPVOID);
 	DosSleep(100);				// 2015-08-13 SHL Let PM catch up
-	// WaitFleshWorkListEmpty();		// 2015-08-13 SHL
       }
 
-      WaitFleshWorkListEmpty();		// 2015-08-13 SHL
+      WaitFleshWorkListEmpty(szDir);	// 2015-08-19 SHL
 
       // Add next component to path
       if (p - szDir >= cDirLen)
@@ -432,7 +430,7 @@ VOID ShowTreeRec(HWND hwndCnr,
 	ShowCnrRecord(hwndCnr, (PMINIRECORDCORE)pciToSelect);
 
       if (!quickbail) {
-	WaitFleshWorkListEmpty();	// 2015-08-07 SHL FIXME try to ensure contents stable
+	WaitFleshWorkListEmpty(pszDir_);	// 2015-08-19 SHL try to ensure contents stable
 	DbgMsg(pszSrcFile, __LINE__, "WinSendMsg(CM_SETRECORDEMPHASIS, CRA_SELECTED | CRA_CURSORED) \"%s\"", pszDir_); // 2015-08-04 SHL FIXME debug
 	WinSendMsg(hwndCnr,
 		   CM_SETRECORDEMPHASIS,
@@ -706,10 +704,6 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 {
   DIRCNRDATA *dcd;
 
-#if 0 // 2015-08-04 SHL FIXME to be gone
-  APIRET rc;
-#endif // 2015-08-04 SHL FIXME to be gone
-
   switch (msg) {
   case UM_SHOWME:
     if (mp1) {
@@ -719,17 +713,11 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       dcd = INSTDATA(hwnd);
       if (dcd) {
 
-#if 0 // 2015-08-04 SHL FIXME to be gone
-	rc = DosWaitEventSem(hevTreeCnrScanComplete, SEM_INDEFINITE_WAIT);
-	if (rc)
-	  Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosPostEventSem");
-#endif // 2015-08-04 SHL FIXME to be gone
-
 	/* Hold off if switching on focus change and
 	   RestoreDirCnrState has restored one or directory directory containers
 	   See RestoreDirCnrState()
 	*/
-	DbgMsg(pszSrcFile, __LINE__, "TreeObjWndProc UM_SHOWME cDirectoriesRestored %u", cDirectoriesRestored, fInitialDriveScan); // 2015-08-04 SHL FIXME debug
+	DbgMsg(pszSrcFile, __LINE__, "TreeObjWndProc UM_SHOWME cDirectoriesRestored %u", cDirectoriesRestored); // 2015-08-04 SHL FIXME debug
 	DbgMsg(pszSrcFile, __LINE__, "TreeObjWndProc UM_SHOWME %s)", mp1); // 2015-08-04 SHL FIXME debug
 
 	if (cDirectoriesRestored > 0)
@@ -939,7 +927,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    // find root record and strip it
 	    pci = FindParentRecord(dcd->hwndCnr, pci);
 	    driveserial[toupper(*pci->pszFileName) - 'A'] = -1;
-	    WaitFleshWorkListEmpty();	// 2015-08-13 SHL in case pci still in work list
+	    WaitFleshWorkListEmpty(pci->pszFileName);	// 2015-08-19 SHL in case pci still in work list
 	    AddFleshWorkRequest(dcd->hwndCnr, pci, eUnFlesh);
 	  }
 	}
@@ -951,16 +939,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_RESCAN:
-    // populate container
-#if 0 // 2015-08-04 SHL FIXME to be gone
-    rc = DosWaitEventSem(hevTreeCnrScanComplete, SEM_INDEFINITE_WAIT);
-    if (rc)
-      Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosWaitEventSem");
-    rc = DosResetEventSem(hevTreeCnrScanComplete, &ulScanPostCnt);
-    if (rc)
-      Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosResetEventSem");
-#endif // 2015-08-04 SHL FIXME to be gone
-
+    // Populate container
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
     if (!dcd)
       Runtime_Error(pszSrcFile, __LINE__, NULL);
@@ -1930,7 +1909,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    driveserial[toupper(*pci->pszFileName) - 'A'] !=
 		    volser.serial)
 		{
-		  WaitFleshWorkListEmpty();	// 2015-08-13 SHL in case pci still in work list
+		  WaitFleshWorkListEmpty(pci->pszFileName);	// 2015-08-19 SHL in case pci still in work list
 		  AddFleshWorkRequest(hwnd, pci, eUnFlesh);
 		}
 		if (SHORT2FROMMP(mp1) != CN_COLLAPSETREE ||
@@ -1947,7 +1926,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	      else {
 		driveserial[toupper(*pci->pszFileName) - 'A'] = -1;
-		WaitFleshWorkListEmpty();	// 2015-08-13 SHL in case pci still in work list
+		WaitFleshWorkListEmpty(pci->pszFileName);	// 2015-08-19 SHL in case pci still in work list
 		AddFleshWorkRequest(hwnd, pci, eUnFlesh);
 		PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
 		if (!fAlertBeepOff)
@@ -2025,23 +2004,6 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       ULONG fl = SWP_ACTIVATE;
       INT x;
 
-#if 0 // 2015-08-04 SHL FIXME to be gone
-      rc = DosRequestMutexSem(hmtxScanning, SEM_INDEFINITE_WAIT);
-      if (rc)
-	Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosRequestMutexSem");
-#endif // 2015-08-04 SHL FIXME to be gone
-
-#if 0 // 2015-08-04 SHL FIXME to be gone
-      rc = DosQueryEventSem(hevTreeCnrScanComplete, &ulScanPostCnt);
-      if (rc)
-	Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosQueryEventSem");
-      if (ulScanPostCnt < 1)
-	return 0;
-      rc = DosResetEventSem(hevTreeCnrScanComplete, &ulScanPostCnt);
-      if (rc)
-	Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosResetEventSem");
-#endif // 2015-08-04 SHL FIXME to be gone
-
       if (fFollowTree)
 	fl = 0;
       SetShiftState();
@@ -2056,13 +2018,6 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    DosBeep(50, 100);
 	  if (hwndStatus)
 	    WinSetWindowText(hwndStatus, (CHAR *) GetPString(IDS_RESCANSUGTEXT));
-
-#if 0 // 2015-08-04 SHL FIXME to be gone
-	  rc = DosPostEventSem(hevTreeCnrScanComplete);
-	  if (rc && rc != ERROR_ALREADY_POSTED)
-	    Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosPostEventSem");
-#endif // 2015-08-04 SHL FIXME to be gone
-
 	  return 0;
 	}
 	DosError(FERR_DISABLEHARDERR);
@@ -2082,12 +2037,6 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	    } // for
 	    RemoveCnrItems(hwnd, pciP, 1, CMA_FREE | CMA_INVALIDATE);
-
-#if 0 // 2015-08-04 SHL FIXME to be gone
-	    rc = DosPostEventSem(hevTreeCnrScanComplete);
-	    if (rc && rc != ERROR_ALREADY_POSTED)
-	      Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosPostEventSem");
-#endif // 2015-08-04 SHL FIXME to be gone
 	    return 0;
 	  }
 	}
@@ -2130,11 +2079,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      (ULONG) sizeof(volser));
 	  if (!rc) {
 	    if (!volser.serial || driveserial[x] != volser.serial) {
-#if 1 // 2015-08-04 SHL FIXME to be gone
 	      AddFleshWorkRequest(hwnd, pciP, eFlesh);	// forceFlesh
-#else
-	      Flesh(hwnd, pciP);
-#endif // 2015-08-04 SHL FIXME to be gone
 	      driveserial[x] = volser.serial;
 	    }
 	    pciL = WinSendMsg(hwnd,
@@ -2142,11 +2087,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			      MPFROMP(pciP),
 			      MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
 	    if (!pciL) {
-#if 1 // 2015-08-04 SHL FIXME to be gone
 	      AddFleshWorkRequest(hwnd, pciP, eFlesh);	// forceFlesh
-#else
-	      Flesh(hwnd, pciP);
-#endif // 2015-08-04 SHL FIXME to be gone
 	    }
 	    if ((fShowFSTypeInTree || fShowDriveLabelInTree) &&
 		strlen(pciP->pszFileName) < 4) {
@@ -2164,16 +2105,10 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	  else {
 	    driveserial[x] = -1;
-	    WaitFleshWorkListEmpty();	// 2015-08-13 SHL in case pci still in work list
+	    WaitFleshWorkListEmpty(NULL);	// 2015-08-13 SHL in case pci still in work list
 	    AddFleshWorkRequest(hwnd, pci, eUnFlesh);
 	    PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
 	    PostMsg(hwnd, UM_SETUP2, MPFROMP(pci), MPFROMLONG(rc));
-
-#if 0 // 2015-08-04 SHL FIXME to be gone
-	    rc = DosPostEventSem(hevTreeCnrScanComplete);
-	    if (rc && rc != ERROR_ALREADY_POSTED)
-	      Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosPostEventSem");
-#endif // 2015-08-04 SHL FIXME to be gone
 	    return 0;
 	  }
 	}
@@ -2196,33 +2131,15 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    if ((shiftstate & (KC_CTRL | KC_ALT)) == (KC_CTRL | KC_ALT)) {
 	      PostMsg(hwnd,
 		      WM_COMMAND, MPFROM2SHORT(IDM_SHOWALLFILES, 0), MPVOID);
-
-#if 0 // 2015-08-04 SHL FIXME to be gone
-	      rc = DosPostEventSem(hevTreeCnrScanComplete);
-	      if (rc && rc != ERROR_ALREADY_POSTED)
-		Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosPostEventSem");
-#endif // 2015-08-04 SHL FIXME to be gone
 	      return 0;
 	    }
 	    if ((shiftstate & (KC_CTRL | KC_SHIFT)) == (KC_CTRL | KC_SHIFT)) {
 	      OpenObject(pci->pszFileName, Settings, dcd->hwndFrame);
-
-#if 0 // 2015-08-04 SHL FIXME to be gone
-	      rc = DosPostEventSem(hevTreeCnrScanComplete);
-	      if (rc && rc != ERROR_ALREADY_POSTED)
-		Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosPostEventSem");
-#endif // 2015-08-04 SHL FIXME to be gone
 	      return 0;
 	    }
 	    if (!(shiftstate & (KC_CTRL | KC_SHIFT))) {
 	      if (!ParentIsDesktop(hwnd, dcd->hwndParent)) {
 		if (FindDirCnrByName(pci->pszFileName, TRUE)) {
-
-#if 0 // 2015-08-04 SHL FIXME to be gone
-		  rc = DosPostEventSem(hevTreeCnrScanComplete);
-		  if (rc && rc != ERROR_ALREADY_POSTED)
-		    Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosPostEventSem");
-#endif // 2015-08-04 SHL FIXME to be gone
 		  return 0;
 		}
 	      }
@@ -2246,12 +2163,6 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  strcpy(s, Details);
 	      }
 	      OpenObject(pci->pszFileName, s, dcd->hwndFrame);
-
-#if 0 // 2015-08-04 SHL FIXME to be gone
-	      rc = DosPostEventSem(hevTreeCnrScanComplete);
-	      if (rc && rc != ERROR_ALREADY_POSTED)
-		Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosPostEventSem");
-#endif // 2015-08-04 SHL FIXME to be gone
 	      return 0;
 	    }
 	    if (!ParentIsDesktop(hwnd, dcd->hwndParent) &&
@@ -2295,12 +2206,6 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_MKDIR, 0), MPVOID);
       if (fFollowTree)
 	WinSetFocus(HWND_DESKTOP, hwnd);
-
-#if 0 // 2015-08-04 SHL FIXME to be gone
-      rc = DosPostEventSem(hevTreeCnrScanComplete);
-      if (rc && rc != ERROR_ALREADY_POSTED)
-	Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosPostEventSem");
-#endif // 2015-08-04 SHL FIXME to be gone
     }
     return 0;
 
@@ -2991,21 +2896,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      if (pci->flags & RECFLAGS_UNDERENV)
 		break;
 
-#if 0 // 2015-08-04 SHL FIXME to be gone
-	      rc = DosRequestMutexSem(hmtxScanning, SEM_INDEFINITE_WAIT);
-	      if (rc)
-		Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosRequestMutexSem");
-#endif // 2015-08-04 SHL FIXME to be gone
-
-#if 0 // 2015-08-04 SHL FIXME to be gone
-	      rc = DosResetEventSem(hevTreeCnrScanComplete, &ulScanPostCnt);
-	      if (rc)
-		Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosResetEventSem");
-#endif // 2015-08-04 SHL FIXME to be gone
-
-	      // Can't wait here
-	      // WaitFleshWorkListEmpty();	// 2015-08-13 SHL in case pci still in work list
 	      AddFleshWorkRequest(hwnd, pci, eUnFlesh);
+
 	      // Check if drive type might need update
 	      if ((driveflag & (DRIVE_INVALID | DRIVE_NOPRESCAN)) ||
 		  (~driveflag & DRIVE_NOPRESCAN && pci->rc.hptrIcon == hptrDunno)) {
@@ -3034,11 +2926,6 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      DbgMsg(pszSrcFile, __LINE__, " TreeCnrWndProc IDM_UPDATE %s", pci->pszFileName); // 2015-08-03 SHL FIXME debug
 	      if (~driveflag & DRIVE_INVALID)
 		AddFleshWorkRequest(hwnd, pci, eFlesh);
-#if 0 // 2015-08-04 SHL FIXME to be gone
-	      rc = DosPostEventSem(hevTreeCnrScanComplete);
-	      if (rc && rc != ERROR_ALREADY_POSTED)
-		Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosPostEventSem");
-#endif // 2015-08-04 SHL FIXME to be gone
 	    }
 	  }
 	}
