@@ -44,7 +44,7 @@
   23 Feb 14 GKY Undated one of the error messages in runemf2 to provide the calling line
                 and file.
   28 Apr 14 JBS Ticket #522: Ensure use of wrapper functions where needed
-  12 Aug 15 JBS Ticket #524: Ensure no "highmem-unsafe" functions are called directly
+  12 Aug 15 JBS Ticket #522: Ensure no "highmem-unsafe" functions are called directly
                 Calls to unsafe Dos... functions have been changed to call the wrapped xDos... functions
 
 ***********************************************************************/

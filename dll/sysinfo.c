@@ -18,7 +18,7 @@
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   20 Nov 10 GKY Check that pTmpDir IsValid and recreate if not found; Fixes hangs caused
                 by temp file creation failures.
-  12 Aug 15 JBS Ticket #524: Ensure no "highmem-unsafe" functions are called directly
+  12 Aug 15 JBS Ticket #522: Ensure no "highmem-unsafe" functions are called directly
                 Calls to unsafe Dos... functions have been changed to call the wrapped xDos... functions
 
 ***********************************************************************/

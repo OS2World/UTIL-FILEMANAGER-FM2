@@ -67,7 +67,7 @@
                 menu item on a jar file.
   24 Jun 15 GKY Corrected failure to show error message when locked non-exe/dll file fails
                 delete
-  12 Aug 15 JBS Ticket #524: Ensure no "highmem-unsafe" functions are called directly
+  12 Aug 15 JBS Ticket #522: Ensure no "highmem-unsafe" functions are called directly
                 Calls to unsafe Dos... functions have been changed to call the wrapped xDos... functions
 
 ***********************************************************************/

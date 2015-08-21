@@ -15,7 +15,7 @@
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   07 Feb 09 GKY Allow user to turn off alert and/or error beeps in settings notebook.
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
-  12 Aug 15 JBS Ticket #524: Ensure no "highmem-unsafe" functions are called directly
+  12 Aug 15 JBS Ticket #522: Ensure no "highmem-unsafe" functions are called directly
                 Calls to unsafe Dos... functions have been changed to call the wrapped xDos... functions
 
 ***********************************************************************/

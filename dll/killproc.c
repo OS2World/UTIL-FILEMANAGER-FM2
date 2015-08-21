@@ -34,7 +34,7 @@
                 xDosAlloc* wrappers.
   22 Aug 14 JBS Ticket #519: Corrected mis-coded but probably harmless calls to strtol
                 and removed unneeded second parameter variables.
-  12 Aug 15 JBS Ticket #524: Ensure no "highmem-unsafe" functions are called directly
+  12 Aug 15 JBS Ticket #522: Ensure no "highmem-unsafe" functions are called directly
                 Calls to unsafe Dos... functions have been changed to call the wrapped xDos... functions
 
 ***********************************************************************/
