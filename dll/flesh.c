@@ -781,7 +781,7 @@ BOOL IsParentOfChildPath(PLIST2 item, PVOID data)
 {
   UINT c;
   if (!((PFLESHWORKITEM)item)->pci->pszFileName) {
-    Runtime_Error(pszSrcFile, __LINE__, "IsParentOfChildPath called with pci %p pszFileName (null) by %s:%u", ((PFLESHWORKITEM)item)->pci);
+    Runtime_Error(pszSrcFile, __LINE__, "IsParentOfChildPath called with pci %p pszFileName (null)", ((PFLESHWORKITEM)item)->pci);
     return FALSE;
   }
   c = strlen(((PFLESHWORKITEM)item)->pci->pszFileName);
