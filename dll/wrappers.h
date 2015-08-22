@@ -18,6 +18,7 @@
 		2) Code for unsafe-but-not-yet-used-by-FM/2 functinos have been added in an
 		   "#if 0" block in wrappers.c for quick implementation should FM/2 start to use them.
 		   Among these. xDosOpenL and xWinUpper still need work. The rest are ready for use.
+  20 Aug 15 SHL Add xDos...MutexSem and xDos..EventSem wrappers
 
 ***********************************************************************/
 
@@ -80,9 +81,18 @@ APIRET xDosFindNext(HDIR   hDir,
 		    PULONG pcFilenames,
 		    ULONG  ulInfoLevel);	// 06 Oct 07 SHL Added
 
-#ifdef INCL_DOSPROCESS  // // PPIB PTIB
+#ifdef INCL_DOSPROCESS  // PPIB PTIB
 APIRET xDosGetInfoBlocks(PTIB *pptib,
 			 PPIB *pppib);  // 2015-08-09 SHL added
+#endif
+
+#ifdef INCL_DOSSEMAPHORES	// HMTX HEV
+APIRET xDosRequestMutexSem(HMTX hmtx, ULONG ulTimeout);
+APIRET xDosReleaseMutexSem(HMTX hmtx);
+APIRET xDosCreateEventSem (PSZ pszName,PHEV phev, ULONG flAttr, BOOL32 fState);
+APIRET xDosWaitEventSem(HEV hev, ULONG ulTimeout);
+APIRET xDosPostEventSem(HEV hev);
+APIRET xDosResetEventSem(HEV hev, PULONG pulPostCt);
 #endif
 
 APIRET xDosSetPathInfo(PSZ   pszPathName,

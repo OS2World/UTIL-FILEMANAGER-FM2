@@ -100,6 +100,7 @@
 		menu item on a jar file.
   12 Jul 15 GKY Fixed trap caused by pci->pszFileName being NullStr
   07 Aug 15 SHL Rework to use AddFleshWorkRequest rather than direct calls to Stubby/Flesh/Unflesh
+  20 Aug 15 SHL Sync with SetFleshFocusPath mods
 
 ***********************************************************************/
 
@@ -1091,7 +1092,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       Fortify_LeaveScope();
 #     endif
     }
-    DosPostEventSem(CompactSem);
+    xDosPostEventSem(CompactSem);
     if (!PostMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID))
       WinSendMsg((HWND) 0, WM_QUIT, MPVOID, MPVOID);
     break;
@@ -1980,7 +1981,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (!PostMsg(dcd->hwndObject, UM_SHOWME, MPFROMP(dir), MPVOID))
 	  free(dir);
 	else
-	  SetFleshFocusDrive(*dir);
+	  SetFleshFocusPath(dir);
       }
     }
     return 0;

@@ -77,64 +77,65 @@
   08 Mar 09 GKY Removed variable aurguments from docopyf and unlinkf (not used)
   14 Mar 09 GKY PCSZ strings moved to compile time initialization
   14 Mar 09 GKY Prevent execution of UM_SHOWME while drive scan is occuring replaces check for
-	        saved drive containers.
+		saved drive containers.
   06 Jun 09 GKY Add option to show file system type or drive label in tree
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
   12 Jul 09 GKY Add xDosQueryAppType and xDosAlloc... to allow FM/2 to load in high memory
   22 Jul 09 GKY Code changes to use semaphores to serialize drive scanning
   22 Jul 09 GKY Fix failure to restore the notebook setting for saving container states or not
   12 Sep 09 GKY Change protectonly check to check for VKBD being loaded instead of starting
-	        command.com. Prevents hang (at least until a Dos program is started) on a system
-	        that has a broken MDOS install.
+		command.com. Prevents hang (at least until a Dos program is started) on a system
+		that has a broken MDOS install.
   15 Nov 09 GKY Add more PCSZs
   22 Nov 09 GKY Fix FindSwapperDat so the check for large file support actually occurs if the
-                fall back to config.sys is used to find it; use bstripcr to streamline code.
+		fall back to config.sys is used to find it; use bstripcr to streamline code.
   13 Dec 09 GKY Fixed separate paramenters. Please note that appname should be used in
-                profile calls for user settings that work and are setable in more than one
-                miniapp; FM3Str should be used for setting only relavent to FM/2 or that
-                aren't user settable; realappname should be used for setting applicable to
-                one or more miniapp but not to FM/2
+		profile calls for user settings that work and are setable in more than one
+		miniapp; FM3Str should be used for setting only relavent to FM/2 or that
+		aren't user settable; realappname should be used for setting applicable to
+		one or more miniapp but not to FM/2
   17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR
-                CONSTANT * as CHAR *.
+		CONSTANT * as CHAR *.
   09 MAY 10 JBS Ticket 434: Make fDontSuggestAgain a "global" flag, not a per app flag
   23 Oct 10 GKY Changes to populate and utilize a HELPTABLE for context specific help
   20 Nov 10 GKY Rework scanning code to remove redundant scans, prevent double directory
-                entries in the tree container, fix related semaphore performance using
-                combination of event and mutex semaphores
+		entries in the tree container, fix related semaphore performance using
+		combination of event and mutex semaphores
   20 Nov 10 GKY Check that pTmpDir IsValid and recreate if not found; Fixes hangs caused
-                by temp file creation failures.
+		by temp file creation failures.
   03 Mar 11 SHL Try using FM3INI to create help instance if fm3.hlp not in current directory
   06 Aug 11 GKY Fixed failure to initalize pFM2SaveDirectory if TEMP and TMP were not present
-                or invalid
+		or invalid
   22 Oct 11 GKY Thread notes dialog now reopens on startup if it was open on shutdown.
   08 Jan 12 GKY Add support for changing PresParams in the notify status window
   04 Aug 12 GKY Changes to use Unlock to unlock files if Unlock.exe is in path both from menu/toolbar and as part of
-                copy, move and delete operations
+		copy, move and delete operations
   04 Aug 12 GKY Changes to allow copy and move over readonly files with a warning dialog; also added a warning dialog
-                for delete of readonly files
+		for delete of readonly files
   09 Feb 14 GKY Fix separate parameters. Moved to general page renamed separate settings
-                for apps.
+		for apps.
   09 Feb 14 GKY Modified wipeallf to allow suppression of the readonly warning on delete
-                of temporary files
+		of temporary files
   16 Feb 14 GKY Add "#" command line switch to workaround problem with blank command shell
-                started from fm2 after fm2 has been started with stdout and stderr
-                redirected to a file.
+		started from fm2 after fm2 has been started with stdout and stderr
+		redirected to a file.
   22 Feb 14 GKY Cleanup of readonly check code suppress spurious error on blocked directory
-                delete and eliminated the check on additional temp file deletes
+		delete and eliminated the check on additional temp file deletes
   23 Feb 14 JBS Ticket #515: Corrected a mis-coded call to strtol which was causing the traps
-                described in this ticket. (Also changed it to strtoul.)
+		described in this ticket. (Also changed it to strtoul.)
   01 Mar 14 JBS Ticket #524: Made "searchapath" thread-safe. Function names and signatures were changed.
-                So calls to these functions had to be changed.
+		So calls to these functions had to be changed.
   02 Mar 14 GKY Fixed typo that reversed the function of the saymsg dialog g/bzip check.
-                Added option to suppress message regarding missing bzip2.exe
-                or gzip.exe on TAR.B/GZ archives.
+		Added option to suppress message regarding missing bzip2.exe
+		or gzip.exe on TAR.B/GZ archives.
   30 Aug 14 GKY Add semaphore hmtxFiltering to prevent freeing dcd while filtering. Prevents
-                a trap when FM2 is shutdown while directory containers are still populating
+		a trap when FM2 is shutdown while directory containers are still populating
   02 Aug 15 GKY Serialize local hard drive scanning to reduce drive thrashing continue to scan
-                all other drive types in separate threads.
+		all other drive types in separate threads.
   12 Aug 15 JBS Ticket #522: Ensure no "highmem-unsafe" functions are called directly
-                Calls to unsafe Dos... functions have been changed to call the wrapped xDos... functions
+		Calls to unsafe Dos... functions have been changed to call the wrapped xDos... functions
   19 Aug 15 SHL Delete obsoletes
+  20 Aug 15 SHL Support PCSZ_DOS...SEM
 
 ***********************************************************************/
 
@@ -335,8 +336,15 @@ PCSZ LONGNAME             = ".LONGNAME";
 CHAR *NullStr             = "";
 PCSZ PCSZ_CM_ALLOCRECORD  = "CM_ALLOCRECORD";
 PCSZ PCSZ_QUERYCNRINFO    = "CM_QUERYCNRINFO";
-PCSZ PCSZ_DOSCREATEMUTEXSEM =  "DosCreateMutexSem";
-PCSZ PCSZ_DOSCREATEEVENTSEM =  "DosCreateEventSem";
+
+PCSZ PCSZ_DOSCREATEMUTEXSEM = "DosCreateMutexSem";
+PCSZ PCSZ_DOSREQUESTMUTEXSEM = "DosRequestMutexSem";
+PCSZ PCSZ_DOSRELEASEMUTEXSEM =  "DosReleaseMutexSem";
+PCSZ PCSZ_DOSCREATEEVENTSEM = "DosCreateEventSem";
+PCSZ PCSZ_DOSWAITEVENTSEM = "DosWaitEventSem";
+PCSZ PCSZ_DOSPOSTEVENTSEM = "DosPostEventSem";
+PCSZ PCSZ_DOSRESETEVENTSEM = "DosResetEventSem";
+
 PCSZ PCSZ_DOSDUPHANDLE    =  "DosDupHandle";
 PCSZ PCSZ_DOSGETINFOBLOCKS = "DosGetInfoBlocks";
 PCSZ PCSZ_DOSQUERYPATHINFO = "DosQueryPathInfo";
@@ -811,13 +819,13 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 			FILE_NORMAL | FILE_DIRECTORY |
 			FILE_SYSTEM | FILE_READONLY | FILE_HIDDEN |
 			FILE_ARCHIVED,
-                        &ffb, sizeof(ffb), &num_matches, FIL_STANDARD)) {
-        do {
+			&ffb, sizeof(ffb), &num_matches, FIL_STANDARD)) {
+	do {
 	  strcpy(enddir, ffb.achName);
 	  p = strrchr(szTempName, '.');
 	  if (p) {
 	    p++;
-            ul = strtoul(p, NULL, 16);
+	    ul = strtoul(p, NULL, 16);
 	    GetDosPgmName(ul, temp);
 	    if (!strstr(temp, "FM/2") &&
 		!strstr(temp, "AV/2")) {
@@ -825,19 +833,19 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 	      DosDeleteDir(szTempName);
 	    }
 	  }
-        }
-        while (!DosFindNext(search_handle,
-                            &ffb, sizeof(ffb), &num_matches));
-        DosFindClose(search_handle);
+	}
+	while (!DosFindNext(search_handle,
+			    &ffb, sizeof(ffb), &num_matches));
+	DosFindClose(search_handle);
       }
       if (fs3.attrFile & FILE_DIRECTORY) {
 	strcpy(szTempName, env);
 	MakeTempName(szTempName, NULL, 1);
 	rc = DosCreateDir(szTempName, 0);
 	if (!rc)
-          pTmpDir = xstrdup(szTempName, pszSrcFile, __LINE__);	// if writable
-        else
-          pTmpDir = xstrdup(pFM2SaveDirectory, pszSrcFile, __LINE__);
+	  pTmpDir = xstrdup(szTempName, pszSrcFile, __LINE__);	// if writable
+	else
+	  pTmpDir = xstrdup(pFM2SaveDirectory, pszSrcFile, __LINE__);
       }
     }
   }
@@ -924,9 +932,9 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     else {
       CHAR szFullFilename[CCHMAXPATH];
       if (!SearchMultiplePathsForFile(profile, szFullFilename)) {
-        strcpy(inipath, szFullFilename);
+	strcpy(inipath, szFullFilename);
       } else {
-        strcpy(inipath, profile);
+	strcpy(inipath, profile);
       }
     } //fixme the DosCopies probably fail if the INI isn't in the FM2 directory GKY 06 Aug 11
     if (!*inipath)
@@ -935,22 +943,22 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     rc = DosQueryPathInfo(inipath, FIL_STANDARD, &fs3, sizeof(fs3));
     if (rc) {
       if (rc == ERROR_FILE_NOT_FOUND) {
-        DosCopy(PCSZ_FM3INIDOTBAK, PCSZ_FM3DOTINI, 0);
+	DosCopy(PCSZ_FM3INIDOTBAK, PCSZ_FM3DOTINI, 0);
       }
       rc = DosQueryPathInfo(inipath, FIL_STANDARD, &fs3, sizeof(fs3));
       if (rc)
-        fWantFirstTimeInit = TRUE;
+	fWantFirstTimeInit = TRUE;
     }
     if (!fWantFirstTimeInit) { //Check the ini file header and restore from backup if corupted
       if (!CheckFileHeader(inipath, "\xff\xff\xff\xff\x14\x00\x00\x00", 0L)) {
-        saymsg(MB_ENTER,HWND_DESKTOP, GetPString(IDS_DEBUG_STRING),
-               GetPString(IDS_INIFAILURETEXT));
-        DosCopy(PCSZ_FM3DOTINI, PCSZ_FM3INIDOTBAD, DCPY_EXISTING);
-        DosCopy(PCSZ_FM3INIDOTBAK, PCSZ_FM3DOTINI, DCPY_EXISTING);
-        if (!CheckFileHeader(inipath, "\xff\xff\xff\xff\x14\x00\x00\x00", 0L)) {
-          DosCopy(PCSZ_FM3DOTINI, PCSZ_FM3INIDOTBAD2, DCPY_EXISTING);
-          fWantFirstTimeInit = TRUE;
-        }
+	saymsg(MB_ENTER,HWND_DESKTOP, GetPString(IDS_DEBUG_STRING),
+	       GetPString(IDS_INIFAILURETEXT));
+	DosCopy(PCSZ_FM3DOTINI, PCSZ_FM3INIDOTBAD, DCPY_EXISTING);
+	DosCopy(PCSZ_FM3INIDOTBAK, PCSZ_FM3DOTINI, DCPY_EXISTING);
+	if (!CheckFileHeader(inipath, "\xff\xff\xff\xff\x14\x00\x00\x00", 0L)) {
+	  DosCopy(PCSZ_FM3DOTINI, PCSZ_FM3INIDOTBAD2, DCPY_EXISTING);
+	  fWantFirstTimeInit = TRUE;
+	}
       }
     }
     // in some odd cases the INI file can get set to readonly status
@@ -958,12 +966,12 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     if (!fWantFirstTimeInit) {
       fIniExisted = TRUE;
       if (fs3.attrFile & (FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM)) {
-        fs3.attrFile &= ~(FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM);
-        rc = xDosSetPathInfo(inipath, FIL_STANDARD, &fs3, sizeof(fs3), 0);
-        if (rc) {
-          Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-                      GetPString(IDS_INIREADONLYTEXT), inipath);
-        }
+	fs3.attrFile &= ~(FILE_READONLY | FILE_HIDDEN | FILE_SYSTEM);
+	rc = xDosSetPathInfo(inipath, FIL_STANDARD, &fs3, sizeof(fs3), 0);
+	if (rc) {
+	  Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+		      GetPString(IDS_INIREADONLYTEXT), inipath);
+	}
       }
     }
     fmprof = PrfOpenProfile((HAB)0, inipath);
@@ -1009,9 +1017,9 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 	  hini.pszHelpLibraryName = helppath;
 	  hwndHelp = WinCreateHelpInstance(hab, &hini);
 	  if (!hwndHelp)
-            Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
-                      "WinCreateHelpInstance failed for %s with error 0x%x",
-                      hini.pszHelpLibraryName, hini.ulReturnCode);
+	    Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,
+		      "WinCreateHelpInstance failed for %s with error 0x%x",
+		      hini.pszHelpLibraryName, hini.ulReturnCode);
 	}
       }
     }
@@ -1173,17 +1181,17 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   rc = DosCreateMutexSem(NULL, &hmtxFM2Globals, 0L, FALSE);
   if (rc) {
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-              PCSZ_DOSCREATEMUTEXSEM);
+	      PCSZ_DOSCREATEMUTEXSEM);
   }
   rc = DosCreateMutexSem(NULL, &hmtxFM2Delete, 0L, FALSE);
   if (rc) {
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-              PCSZ_DOSCREATEMUTEXSEM);
+	      PCSZ_DOSCREATEMUTEXSEM);
   }
   rc = DosCreateMutexSem(NULL, &hmtxFiltering, 0L, FALSE);
   if (rc) {
     Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-              PCSZ_DOSCREATEMUTEXSEM);
+	      PCSZ_DOSCREATEMUTEXSEM);
   }
 
   /**

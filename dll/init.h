@@ -43,6 +43,7 @@
   02 Aug 15 GKY Serialize local hard drive scanning to reduce drive thrashing continue to scan
                 all other drive types in separate threads.
   19 Aug 15 SHL Delete obsoletes
+  20 Aug 15 SHL Support PCSZ_DOS...SEM
 
 ***********************************************************************/
 
@@ -119,8 +120,16 @@ extern PCSZ FNT_10SYSTEMVIO;
 extern PCSZ FNT_8TIMESNEWROMAN;
 extern PCSZ PCSZ_CM_ALLOCRECORD;
 extern PCSZ PCSZ_QUERYCNRINFO;
+
 extern PCSZ PCSZ_DOSCREATEMUTEXSEM;
+extern PCSZ PCSZ_DOSREQUESTMUTEXSEM;
+extern PCSZ PCSZ_DOSRELEASEMUTEXSEM;
+
 extern PCSZ PCSZ_DOSCREATEEVENTSEM;
+extern PCSZ PCSZ_DOSWAITEVENTSEM;
+extern PCSZ PCSZ_DOSPOSTEVENTSEM;
+extern PCSZ PCSZ_DOSRESETEVENTSEM;
+
 extern PCSZ PCSZ_DOSDUPHANDLE;
 extern PCSZ PCSZ_DOSGETINFOBLOCKS;
 extern PCSZ PCSZ_DOSQUERYPATHINFO;

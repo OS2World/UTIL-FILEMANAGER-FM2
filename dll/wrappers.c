@@ -5,7 +5,7 @@
 
   Wrappers with error checking
 
-  Copyright (c) 2006, 2008 Steven H.Levine
+  Copyright (c) 2006, 2015 Steven H.Levine
 
   22 Jul 06 SHL Baseline
   29 Jul 06 SHL Add xgets_stripped
@@ -27,6 +27,7 @@
 		2) Code for unsafe-but-not-yet-used-by-FM/2 functions have been added in an
 		   "#if 0" block for quick implementation should FM/2 start to use them.
 		   Among these. xDosOpenL and xWinUpper still need work. The rest are ready for use.
+  20 Aug 15 SHL Add xDos...MutexSem and xDos..EventSem wrappers
 
 ***********************************************************************/
 
@@ -67,7 +68,7 @@ APIRET xDosDupHandle(HFILE hFile,
 		     PHFILE phFile)
 {
   APIRET	rc;
-  HFILE 	hFileLow = *phFile;
+  HFILE	hFileLow = *phFile;
 
   rc = DosDupHandle(hFile, &hFileLow);
   *phFile = hFileLow;
@@ -323,6 +324,99 @@ APIRET xDosGetInfoBlocks(PTIB *pptib,
   }
   return apiret;
 }
+
+/**
+ * DosRequestMutexSem wrapper
+ */
+
+APIRET xDosRequestMutexSem(HMTX hmtx, ULONG ulTimeout)
+{
+  APIRET apiret = DosRequestMutexSem(hmtx, ulTimeout);
+
+  if (apiret && (ulTimeout == SEM_INDEFINITE_WAIT || apiret != ERROR_TIMEOUT)) {
+    Dos_Error(MB_CANCEL, apiret, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      PCSZ_DOSREQUESTMUTEXSEM);
+  }
+  return apiret;
+}
+
+/**
+ * DosReleaseMutexSem wrapper
+ */
+
+APIRET xDosReleaseMutexSem(HMTX hmtx)
+{
+  APIRET apiret = DosReleaseMutexSem(hmtx);
+
+  if (apiret) {
+    Dos_Error(MB_CANCEL, apiret, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      PCSZ_DOSRELEASEMUTEXSEM);
+  }
+  return apiret;
+}
+
+/**
+ * DosCreateEventSem wrapper
+ */
+
+APIRET xDosCreateEventSem (PSZ pszName,PHEV phev, ULONG flAttr, BOOL32 fState)
+{
+  APIRET apiret = DosCreateEventSem (pszName,phev, flAttr, fState);
+  if (apiret) {
+    Dos_Error(MB_CANCEL, apiret, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      PCSZ_DOSCREATEEVENTSEM);
+  }
+  return apiret;
+}
+
+/**
+ * DosWaitEventSem wrapper
+ */
+
+APIRET xDosWaitEventSem(HEV hev, ULONG ulTimeout)
+{
+  APIRET apiret = DosWaitEventSem(hev, ulTimeout);
+
+  if (apiret && (ulTimeout == SEM_INDEFINITE_WAIT || apiret != ERROR_TIMEOUT)) {
+    Dos_Error(MB_CANCEL, apiret, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      PCSZ_DOSWAITEVENTSEM);
+  }
+  return apiret;
+}
+
+/**
+ * DosPostEventSem wrapper
+ */
+
+APIRET xDosPostEventSem(HEV hev)
+{
+  APIRET apiret = DosPostEventSem(hev);
+
+  if (apiret && apiret != ERROR_ALREADY_POSTED)	{
+    Dos_Error(MB_CANCEL, apiret, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      PCSZ_DOSPOSTEVENTSEM);
+  }
+  return apiret;
+}
+
+/**
+ * DosResetEventSem wrapper
+ */
+
+APIRET xDosResetEventSem(HEV hev, PULONG pulPostCt)
+{
+  APIRET apiret = DosResetEventSem(hev, pulPostCt);
+
+  if (apiret && apiret != ERROR_ALREADY_RESET) {
+    Dos_Error(MB_CANCEL, apiret, HWND_DESKTOP, pszSrcFile, __LINE__,
+	      PCSZ_DOSRESETEVENTSEM);
+  }
+  return apiret;
+}
+
+/**
+ * DosFindFirst wrapper
+ */
 
 APIRET xDosFindFirst(PSZ pszFileSpec,
 		     PHDIR phdir,
@@ -730,8 +824,8 @@ PVOID xstrdup(PCSZ pszIn, PCSZ pszSrcFile, UINT uiLineNumber)
 #if 0
 /*
  * JBS: Wrappers for functions which...
- * 	- are identified by klibc as "highmem-unsafe"
- * 	- not yet used by FM/2
+ *	- are identified by klibc as "highmem-unsafe"
+ *	- not yet used by FM/2
  */
 
 // .H code for these functions

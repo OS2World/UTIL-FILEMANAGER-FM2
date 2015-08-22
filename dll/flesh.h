@@ -22,13 +22,13 @@ typedef enum {eStubby, eFlesh, eFleshEnv, eUnFlesh, eFillDir} FLESHWORKACTION;
 
 BOOL IsFleshWorkListEmpty();
 
-VOID SetFleshFocusDrive(CHAR chDriveLetter);
+VOID SetFleshFocusPath(PCSZ pszPath);
 
 #if 0 // 2015-08-03 SHL FIXME debug
-VOID WaitFleshWorkListEmpty();
+VOID WaitFleshWorkListEmpty(PCSZ pszDirName);
 #else
-#define WaitFleshWorkListEmpty(pszFileName) WaitFleshWorkListEmptyDbg(pszFileName, __FILE__, __LINE__)
-VOID WaitFleshWorkListEmptyDbg(PCSZ pszFileName, PCSZ pszSrcFile, UINT uSrcLineNo);
+#define WaitFleshWorkListEmpty(pszDirName) WaitFleshWorkListEmptyDbg(pszDirName, __FILE__, __LINE__)
+VOID WaitFleshWorkListEmptyDbg(PCSZ pszDirName, PCSZ pszSrcFile, UINT uSrcLineNo);
 #endif
 
 #if 0 // 2015-08-03 SHL FIXME debug

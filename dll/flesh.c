@@ -81,8 +81,7 @@ static PSZ pszSrcFile = __FILE__;
 
 static INT tidFleshWorkListThread = -1;	// 2015-08-08 SHL
 
-static CHAR chFleshFocusDrive;	// 2015-08-16 SHL A..Z or 0
-
+static PCSZ pszFleshFocusPath;	// 2015-08-20 SHL
 
 BOOL fNoFleshDbgMsg;	// 2015-08-09 SHL FIXME to be gone
 
@@ -692,8 +691,6 @@ BOOL AddFleshWorkRequest(HWND hwndCnr, PCNRITEM pci, FLESHWORKACTION action)
 BOOL AddFleshWorkRequestDbg(HWND hwndCnr, PCNRITEM pci, FLESHWORKACTION action, PCSZ pszSrcFile_, UINT uSrcLineNo)
 #endif
 {
-  APIRET rc;
-
   PFLESHWORKITEM item = xmallocz(sizeof(FLESHWORKITEM), pszSrcFile, __LINE__);
   item->hwndCnr = hwndCnr;
   item->pci = pci;
@@ -750,9 +747,7 @@ BOOL AddFleshWorkRequestDbg(HWND hwndCnr, PCNRITEM pci, FLESHWORKACTION action, 
   }
 #endif
 
-  rc = DosRequestMutexSem(hmtxFleshWork, SEM_INDEFINITE_WAIT);
-  if (rc)
-    Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosRequestMutexSem");
+  xDosRequestMutexSem(hmtxFleshWork, SEM_INDEFINITE_WAIT);
 
   // Delete stale requests
   if (item->action == eUnFlesh)
@@ -760,13 +755,8 @@ BOOL AddFleshWorkRequestDbg(HWND hwndCnr, PCNRITEM pci, FLESHWORKACTION action, 
 
   List2Append(&FleshWorkList, (PLIST2)item);
 
-  rc = DosReleaseMutexSem(hmtxFleshWork);
-  if (rc)
-    Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosReleaseMutexSem");
-
-  rc = DosPostEventSem(hevFleshWorkListChanged);
-  if (rc && rc != ERROR_ALREADY_POSTED)
-    Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosPostEventSem");
+  xDosReleaseMutexSem(hmtxFleshWork);
+  xDosPostEventSem(hevFleshWorkListChanged);
 
   return TRUE;
 }
@@ -784,14 +774,14 @@ BOOL IsFleshWorkListEmpty()
 /**
  * Check if pci pathname is parent of child path name
  * @param data is child path name
- * @return TRUE if is parent
+ * @return TRUE if is work item path is parent of given path
  */
 
 BOOL IsParentOfChildPath(PLIST2 item, PVOID data)
 {
   UINT c;
   if (!((PFLESHWORKITEM)item)->pci->pszFileName) {
-    Runtime_Error(pszSrcFile, __LINE__, "MatchesFocusDrive called with pci %p pszFileName (null) by %s:%u", ((PFLESHWORKITEM)item)->pci);
+    Runtime_Error(pszSrcFile, __LINE__, "IsParentOfChildPath called with pci %p pszFileName (null) by %s:%u", ((PFLESHWORKITEM)item)->pci);
     return FALSE;
   }
   c = strlen(((PFLESHWORKITEM)item)->pci->pszFileName);
@@ -805,15 +795,16 @@ BOOL IsParentOfChildPath(PLIST2 item, PVOID data)
  */
 
 #if 0 // 2015-08-03 SHL FIXME debug
-VOID WaitFleshWorkListEmpty(PCSZ pszFileName)
+VOID WaitFleshWorkListEmpty(PCSZ pszDirName)
 #else
-VOID WaitFleshWorkListEmptyDbg(PCSZ pszFileName, PCSZ pszSrcFile_, UINT uSrcLineNo_)
+VOID WaitFleshWorkListEmptyDbg(PCSZ pszDirName, PCSZ pszSrcFile_, UINT uSrcLineNo_)
 #endif
 {
   APIRET rc;
   PFLESHWORKITEM item;
   INT tid = GetTidForThread();
-  CHAR chSavedFleshFocusDrive = chFleshFocusDrive;
+  BOOL pathSaved = FALSE;
+  PCSZ pszSavedFleshFocusPath;
 
   if (tid == 1 || tid == tidFleshWorkListThread) {
 #   ifdef WaitFleshWorkListEmpty
@@ -848,29 +839,35 @@ VOID WaitFleshWorkListEmptyDbg(PCSZ pszFileName, PCSZ pszSrcFile_, UINT uSrcLine
     if (fAmQuitting)
       return;
 
-    // Just wait for dependents if path name given
-    if (pszFileName) {
-      rc = DosRequestMutexSem(hmtxFleshWork, SEM_INDEFINITE_WAIT);
-      if (rc) {
-	Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosRequestMutexSem");
-	continue;
+    // Just wait for dependents to be gone if path name given
+    if (pszDirName) {
+      rc = xDosRequestMutexSem(hmtxFleshWork, SEM_INDEFINITE_WAIT);
+      if (rc)
+	continue;			// Maybe should return ???
+
+      if (!pathSaved) {
+	// Give priority to work items for parents of this path
+	pathSaved = TRUE;
+	pszSavedFleshFocusPath = pszFleshFocusPath;
+	pszFleshFocusPath = pszDirName;
       }
 
-      chFleshFocusDrive = *pszFileName;		// Give priority to work on this drive
+      item = (PFLESHWORKITEM)List2Search(&FleshWorkList, IsParentOfChildPath, (PVOID)pszDirName);
 
-      item = (PFLESHWORKITEM)List2Search(&FleshWorkList, IsParentOfChildPath, (PVOID)pszFileName);
-
-      rc = DosReleaseMutexSem(hmtxFleshWork);
-      if (rc)
-	Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosReleaseMutexSem");
+      xDosReleaseMutexSem(hmtxFleshWork);
 
       if (!item)
 	break;				// Dependents gone from work list
-    }
+    } // if pszDirName
+
     DosSleep(250);
   } // while
 
-  chFleshFocusDrive = chSavedFleshFocusDrive;	// In case overridden
+  if (!pathSaved) {
+    xDosRequestMutexSem(hmtxFleshWork, SEM_INDEFINITE_WAIT);
+    pszFleshFocusPath = pszSavedFleshFocusPath;
+    xDosReleaseMutexSem(hmtxFleshWork);
+  }
 
 }
 
@@ -879,25 +876,17 @@ VOID WaitFleshWorkListEmptyDbg(PCSZ pszFileName, PCSZ pszSrcFile_, UINT uSrcLine
  * @param chDriveLetter is upper case drive letter (A-Z)
  */
 
-VOID SetFleshFocusDrive(CHAR chDriveLetter) {
-  chFleshFocusDrive = chDriveLetter;
-  DbgMsg(pszSrcFile, __LINE__, "SetFleshFocusDrive focus drive set to %c", chFleshFocusDrive); // 2015-08-03 SHL FIXME debug
+VOID SetFleshFocusPath(PCSZ pszPath) {
+  PCSZ pszOld;
+  PCSZ pszNew = strdup(pszPath);
+  xDosRequestMutexSem(hmtxFleshWork, SEM_INDEFINITE_WAIT);
+  pszOld = pszFleshFocusPath;
+  pszFleshFocusPath = pszNew;
+  xDosReleaseMutexSem(hmtxFleshWork);
+  if (pszOld)
+    xfree((PVOID)pszOld, pszSrcFile, __LINE__);
+  DbgMsg(pszSrcFile, __LINE__, "SetFleshFocusPath focus path set to %s", pszFleshFocusPath); // 2015-08-03 SHL FIXME debug
 
-}
-
-/**
- * Check pci pathname matches focus drive
- * @param data is uppercase drive letter mapped to PVOID
- * @return TRUE if drive letter matches
- */
-
-BOOL MatchesFocusDrive(PLIST2 item, PVOID data)
-{
-  if (!((PFLESHWORKITEM)item)->pci->pszFileName) {
-    Runtime_Error(pszSrcFile, __LINE__, "MatchesFocusDrive called with pci %p pszFileName (null) by %s:%u", ((PFLESHWORKITEM)item)->pci);
-    return FALSE;
-  }
-  return ((PFLESHWORKITEM)item)->pci->pszFileName[0] == (CHAR)data;
 }
 
 /**
@@ -908,7 +897,6 @@ VOID FleshWorkThread(PVOID arg)
 {
   HAB thab;
   HMQ hmq = (HMQ)0;
-  APIRET rc;
 
   // 2015-08-07 SHL FIXME to be gone
   static INT ProcessDirCount = 0;
@@ -932,17 +920,17 @@ VOID FleshWorkThread(PVOID arg)
 	PFLESHWORKITEM item;
 
 	// 2015-08-07 SHL FIXME to use SMPSafe...
-	rc = DosRequestMutexSem(hmtxFleshWork, SEM_INDEFINITE_WAIT);
-	if (rc)
-	  Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosRequestMutexSem");
+	xDosRequestMutexSem(hmtxFleshWork, SEM_INDEFINITE_WAIT);
 
 	// 2015-08-14 SHL
 	// Get next work list item and remove from list
-	// If focus drive known, process items for focus drive first
-	if (chFleshFocusDrive) {
-	  item = (PFLESHWORKITEM)List2Search(&FleshWorkList, MatchesFocusDrive, (PVOID)chFleshFocusDrive);
-	  if (!item)
-	    chFleshFocusDrive = 0;		// Revert to normal
+	// If focus path set, process parents of focus path first
+	if (pszFleshFocusPath) {
+	  item = (PFLESHWORKITEM)List2Search(&FleshWorkList, IsParentOfChildPath, (PVOID)pszFleshFocusPath);
+	  if (!item) {
+	    xfree((PSZ)pszFleshFocusPath, pszSrcFile, __LINE__);
+	    pszFleshFocusPath = NULL;		// Revert to normal
+	  }
 	  else
 	    List2Delete(&FleshWorkList, (PLIST2)item);
 	}
@@ -952,21 +940,15 @@ VOID FleshWorkThread(PVOID arg)
 	if (!item)
 	  item = (PFLESHWORKITEM)List2DeleteFirst(&FleshWorkList);
 
-	rc = DosReleaseMutexSem(hmtxFleshWork);
-	if (rc)
-	  Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosReleaseMutexSem");
+	xDosReleaseMutexSem(hmtxFleshWork);
 
 	// Wait for new items to be added to list
 	if (!item) {
 	  ULONG ul;
 	  if (!fNoFleshDbgMsg)
 	    DbgMsg(pszSrcFile, __LINE__, "FleshWorkThread work list empty - waiting"); // 2015-08-03 SHL FIXME debug
-	  rc = DosWaitEventSem(hevFleshWorkListChanged, SEM_INDEFINITE_WAIT);
-	  if (rc)
-	    Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosWaitEventSem");
-	  rc = DosResetEventSem(hevFleshWorkListChanged, &ul);
-	  if (rc)
-	    Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__, "DosResetEventSem");
+	  xDosWaitEventSem(hevFleshWorkListChanged, SEM_INDEFINITE_WAIT);
+	  xDosResetEventSem(hevFleshWorkListChanged, &ul);
 	  if (!fNoFleshDbgMsg)
 	    DbgMsg(pszSrcFile, __LINE__, "FleshWorkThread work hev posted"); // 2015-08-03 SHL FIXME debug
 	  continue;
@@ -1084,12 +1066,9 @@ BOOL StartFleshWorkThread()
     return FALSE;
   }
 
-  rc = DosCreateEventSem(NULL, &hevFleshWorkListChanged, 0 /* Not shared */, FALSE /* Reset */);
-  if (rc) {
-    Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
-	      PCSZ_DOSCREATEEVENTSEM);
-    return FALSE;
-  }
+  rc = xDosCreateEventSem(NULL, &hevFleshWorkListChanged, 0 /* Not shared */, FALSE /* Reset */);
+  if (rc)
+    return FALSE;			// Give up
 
   /* DbgMsg is time consuming
      define FM2_NO_FLESH_DBGMSG to suppress
