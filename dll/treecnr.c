@@ -101,6 +101,8 @@
   12 Jul 15 GKY Fixed trap caused by pci->pszFileName being NullStr
   07 Aug 15 SHL Rework to use AddFleshWorkRequest rather than direct calls to Stubby/Flesh/Unflesh
   20 Aug 15 SHL Sync with SetFleshFocusPath mods
+  22 Aug 15 GKY Improve ability of maketop to get directory position in tree correct on first
+                open of states with large and/or deep tree structures
 
 ***********************************************************************/
 
@@ -307,11 +309,16 @@ VOID ShowTreeRec(HWND hwndCnr,
     quickbail = TRUE;			// Already at requested record - bypass repositioning
     goto MakeTop;
   }
+  // 2015-08-22 GKY Without this FM2 has NULL pci->pszFileName errors and switch failures
+  if (fInitialDriveScan)
+    DosSleep(1500); // 100 still had errors
+  if (fSwitchTreeOnDirChg)
+    DosSleep(200);
+  //WaitFleshWorkListEmpty(0);
 
-  WinEnableWindowUpdate(hwndCnr, FALSE);
-
-  // 2015-08-13 SHL add retry logic
-  for (found = FALSE, retries = 0; !found && retries < 10; retries++) {
+  // 2015-08-13 SHL add retry logic 2015-08-22 GKY increase retries from 10 to 100 to
+  // eliminate switch failures on deep or large tree state switches
+  for (found = FALSE, retries = 0; !found && retries < 100; retries++) {
 
     pci = FindCnrRecord(hwndCnr,
 			pszDir_,
@@ -346,8 +353,7 @@ VOID ShowTreeRec(HWND hwndCnr,
 			   TRUE);		// noenv
       if (!pciP || (INT)pciP == -1) {
 	DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec FindCnrRecord(%s) returned %p", szDir, pciP); // 2015-08-04 SHL FIXME debug
-	WaitFleshWorkListEmpty(szDir);		// 2015-08-19 SHL
-	DosSleep(1000);
+        WaitFleshWorkListEmpty(szDir);		// 2015-08-19 SHL
 	break;					// No match
       }
 
@@ -365,7 +371,7 @@ VOID ShowTreeRec(HWND hwndCnr,
 	DosSleep(100);				// 2015-08-13 SHL Let PM catch up
       }
 
-      WaitFleshWorkListEmpty(szDir);	// 2015-08-19 SHL
+      //WaitFleshWorkListEmpty(szDir);	// 2015-08-19 SHL
 
       // Add next component to path
       if (p - szDir >= cDirLen)
@@ -428,7 +434,7 @@ VOID ShowTreeRec(HWND hwndCnr,
       if (fSwitchTreeExpand && ~pciToSelect->rc.flRecordAttr & CRA_EXPANDED)
 	WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciToSelect), MPVOID);
       if (fTopDir || maketop)
-	ShowCnrRecord(hwndCnr, (PMINIRECORDCORE)pciToSelect);
+        ShowCnrRecord(hwndCnr, (PMINIRECORDCORE)pciToSelect);
 
       if (!quickbail) {
 	WaitFleshWorkListEmpty(pszDir_);	// 2015-08-19 SHL try to ensure contents stable
@@ -440,8 +446,6 @@ VOID ShowTreeRec(HWND hwndCnr,
       }
     }
   }
-
-  WinEnableWindowUpdate(hwndCnr, TRUE);
 }
 
 MRESULT EXPENTRY TreeTitleWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
@@ -2106,7 +2110,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 	  else {
 	    driveserial[x] = -1;
-	    WaitFleshWorkListEmpty(NULL);	// 2015-08-13 SHL in case pci still in work list
+	    //WaitFleshWorkListEmpty(NULL);	// 2015-08-13 SHL in case pci still in work list
 	    AddFleshWorkRequest(hwnd, pci, eUnFlesh);
 	    PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
 	    PostMsg(hwnd, UM_SETUP2, MPFROMP(pci), MPFROMLONG(rc));
