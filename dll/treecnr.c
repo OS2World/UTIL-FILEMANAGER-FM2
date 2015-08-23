@@ -284,7 +284,7 @@ MRESULT EXPENTRY OpenButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
  */
 
 VOID ShowTreeRec(HWND hwndCnr,
-		 CHAR *pszDir_,
+		 PCSZ pszDir_,
 		 BOOL collapsefirst,
 		 BOOL maketop)
 {
@@ -298,7 +298,7 @@ VOID ShowTreeRec(HWND hwndCnr,
   BOOL found;
   CHAR szDir[CCHMAXPATH];
 
-  DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec pszDir_ %s", pszDir_); // 2015-08-04 SHL FIXME debug
+  DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec pszDir_ \"%s\"", pszDir_); // 2015-08-04 SHL FIXME debug
 
   // already positioned to requested record?
   pci = WinSendMsg(hwndCnr,
@@ -314,7 +314,6 @@ VOID ShowTreeRec(HWND hwndCnr,
     DosSleep(1500); // 100 still had errors
   if (fSwitchTreeOnDirChg)
     DosSleep(200);
-  //WaitFleshWorkListEmpty(0);
 
   // 2015-08-13 SHL add retry logic 2015-08-22 GKY increase retries from 10 to 100 to
   // eliminate switch failures on deep or large tree state switches
@@ -352,12 +351,12 @@ VOID ShowTreeRec(HWND hwndCnr,
 			   FALSE,		// partmatch
 			   TRUE);		// noenv
       if (!pciP || (INT)pciP == -1) {
-	DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec FindCnrRecord(%s) returned %p", szDir, pciP); // 2015-08-04 SHL FIXME debug
+	DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec FindCnrRecord(\"%s\") returned %p", szDir, pciP); // 2015-08-04 SHL FIXME debug
         WaitFleshWorkListEmpty(szDir);		// 2015-08-19 SHL
 	break;					// No match
       }
 
-      DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec FindCnrRecord returned %p %s", pciP, pciP->pszFileName); // 2015-08-04 SHL FIXME debug
+      DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec FindCnrRecord returned %p \"%s\"", pciP, pciP->pszFileName); // 2015-08-04 SHL FIXME debug
 
       if (!stricmp(pszDir_, pciP->pszFileName)) {
 	pci = pciP;
@@ -366,7 +365,7 @@ VOID ShowTreeRec(HWND hwndCnr,
       }
 
       if (~pciP->rc.flRecordAttr & CRA_EXPANDED) {
-	DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec expanding %s", pciP->pszFileName); // 2015-08-04 SHL FIXME debug
+	DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec expanding \"%s\"", pciP->pszFileName); // 2015-08-04 SHL FIXME debug
 	WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciP), MPVOID);
 	DosSleep(100);				// 2015-08-13 SHL Let PM catch up
       }
@@ -387,7 +386,7 @@ VOID ShowTreeRec(HWND hwndCnr,
 
   } // for
 
-  DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec retries %u pci %p pci->pszFileName %s",retries, pci, pci && (INT)pci != -1 ? pci->pszFileName : "(null)"); // 2015-08-04 SHL FIXME debug
+  DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec retries %u pci %p pci->pszFileName \"%s\"",retries, pci, pci && (INT)pci != -1 ? pci->pszFileName : "(null)"); // 2015-08-04 SHL FIXME debug
 
   if (found) {
     // Found it
@@ -430,15 +429,20 @@ VOID ShowTreeRec(HWND hwndCnr,
     // make record visible
     pciToSelect = pci;
     if (pciToSelect && (INT) pciToSelect != -1) {
-      DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec %p fTopDir %i maketop %i", pciToSelect, fTopDir, maketop); // 2015-08-04 SHL FIXME debug
-      if (fSwitchTreeExpand && ~pciToSelect->rc.flRecordAttr & CRA_EXPANDED)
+      if (fSwitchTreeExpand && ~pciToSelect->rc.flRecordAttr & CRA_EXPANDED) {
+	// 2015-08-23 SHL FIXME debug
+	DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec WinSendMsg(CM_EXPANDTREE, %p)", pciToSelect); // 2015-08-04 SHL FIXME debug
 	WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciToSelect), MPVOID);
-      if (fTopDir || maketop)
+      }
+      if (fTopDir || maketop) {
+	// 2015-08-23 SHL FIXME debug
+	DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec ShowCnrRecord(%p) fTopDir %i maketop %i", pciToSelect, fTopDir, maketop); // 2015-08-04 SHL FIXME debug
         ShowCnrRecord(hwndCnr, (PMINIRECORDCORE)pciToSelect);
+      }
 
       if (!quickbail) {
 	WaitFleshWorkListEmpty(pszDir_);	// 2015-08-19 SHL try to ensure contents stable
-	DbgMsg(pszSrcFile, __LINE__, "WinSendMsg(CM_SETRECORDEMPHASIS, CRA_SELECTED | CRA_CURSORED) \"%s\"", pszDir_); // 2015-08-04 SHL FIXME debug
+	DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec WinSendMsg(CM_SETRECORDEMPHASIS, CRA_SELECTED | CRA_CURSORED) pszDir_ \"%s\"", pszDir_); // 2015-08-04 SHL FIXME debug
 	WinSendMsg(hwndCnr,
 		   CM_SETRECORDEMPHASIS,
 		   MPFROMP(pciToSelect),
@@ -723,7 +727,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	   See RestoreDirCnrState()
 	*/
 	DbgMsg(pszSrcFile, __LINE__, "TreeObjWndProc UM_SHOWME cDirectoriesRestored %u", cDirectoriesRestored); // 2015-08-04 SHL FIXME debug
-	DbgMsg(pszSrcFile, __LINE__, "TreeObjWndProc UM_SHOWME %s)", mp1); // 2015-08-04 SHL FIXME debug
+	DbgMsg(pszSrcFile, __LINE__, "TreeObjWndProc UM_SHOWME \"%s\")", mp1); // 2015-08-04 SHL FIXME debug
 
 	if (cDirectoriesRestored > 0)
 	  cDirectoriesRestored--;

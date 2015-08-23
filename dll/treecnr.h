@@ -12,6 +12,7 @@
   28 Dec 08 GKY Check for LVM.EXE and remove Refresh removable media menu item as appropriate
   28 Dec 08 GKY Rework partition submenu to gray out unavailable items (check for existence of files)
                 and have no default choice.
+  23 Aug 15 SHL Protect ShowTreeRec dirname arg
 
 ***********************************************************************/
 
@@ -19,8 +20,7 @@
 #define TREECNR_H
 
 MRESULT EXPENTRY OpenButtonProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-VOID ShowTreeRec(HWND hwndCnr, CHAR * dirname, BOOL collapsefirst,
-		 BOOL maketop);
+VOID ShowTreeRec(HWND hwndCnr, PCSZ dirname, BOOL collapsefirst, BOOL maketop);
 HWND StartTreeCnr(HWND hwndParent, ULONG flags);
 MRESULT EXPENTRY TreeClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				   MPARAM mp2);

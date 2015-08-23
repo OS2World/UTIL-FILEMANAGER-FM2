@@ -3,12 +3,12 @@
 
   $Id$
 
-  <<<description here>>>
+  Find records
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2008 Steven H. Levine
+  Copyright (c) 2008, 2015 Steven H. Levine
 
-  Change log
+  23 Aug 15 SHL Protect FindCnrRecord filename arg
 
 ***********************************************************************/
 
@@ -17,7 +17,7 @@
 
 #include "dircnrs.h"			// typedef for CNRITEM, PCNRITEM
 
-PCNRITEM FindCnrRecord(HWND hwndCnr, CHAR * filename, PCNRITEM pciParent,
+PCNRITEM FindCnrRecord(HWND hwndCnr, PCSZ filename, PCNRITEM pciParent,
 		       BOOL partial, BOOL partmatch, BOOL noenv);
 PCNRITEM FindParentRecord(HWND hwndCnr, PCNRITEM pciC);
 VOID ShowCnrRecord(HWND hwndCnr, PMINIRECORDCORE pmi);

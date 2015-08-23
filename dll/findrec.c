@@ -10,8 +10,9 @@
 
   20 Aug 07 GKY Move #pragma alloc_text to end for OpenWatcom compat
   28 Dec 08 GKY Containers will only scroll to the right if needed to show end of selected
-	        item and will scroll left to eliminate space after a selected item. Ticket 204
+		item and will scroll left to eliminate space after a selected item. Ticket 204
   06 Aug 15 SHL Clean up and comment
+  23 Aug 15 SHL Protect FindCnrRecord filename arg
 
 ***********************************************************************/
 
@@ -26,12 +27,13 @@
 
 //static PSZ pszSrcFile = __FILE__;
 
-PCNRITEM FindCnrRecord(HWND hwndCnr, CHAR *filename, PCNRITEM pciParent,
+PCNRITEM FindCnrRecord(HWND hwndCnr, PCSZ filename, PCNRITEM pciParent,
 		       BOOL partial, BOOL partmatch, BOOL noenv)
 {
   SEARCHSTRING srch;
   PCNRITEM pci;
-  register CHAR *file, *p;
+  PCSZ file;
+  PCSZ p;
 
   if (partial) {
     if (strlen(filename) > 3) {
@@ -126,7 +128,7 @@ VOID ShowCnrRecord(HWND hwndCnr, PMINIRECORDCORE pmi)
   qrecrct.pRecord = (PRECORDCORE) pmi;
   qrecrct.fsExtent = (CMA_ICON | CMA_TEXT | CMA_TREEICON);
   if (!WinSendMsg(hwndCnr,
-	          CM_QUERYRECORDRECT, MPFROMP(&rcl), MPFROMP(&qrecrct))) {
+		  CM_QUERYRECORDRECT, MPFROMP(&rcl), MPFROMP(&qrecrct))) {
     qrecrct.fsExtent = CMA_TEXT | CMA_TREEICON;
     WinSendMsg(hwndCnr, CM_QUERYRECORDRECT, MPFROMP(&rcl), MPFROMP(&qrecrct));
   }
