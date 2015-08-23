@@ -35,6 +35,7 @@
   03 Aug 15 SHL Document Stubby a bit better
   07 Aug 15 SHL Rework to use AddFleshWorkRequest rather than direct calls to Stubby/Flesh/Unflesh
   19 Aug 15 SHL Allow WaitFleshWorkListEmpty to wait for dependent items
+  23 Aug 15 GKY Fixed code to notify on drive with no subdirectories in first 64 entries
 
 ***********************************************************************/
 
@@ -494,6 +495,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
     goto None;				// Done
   }
 
+
   if (!rc) {
     DosFindClose(hDir);
     if (nm) {
@@ -600,21 +602,19 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 	  }
 	}
       } // if isadir
-      else if (toupper(*wildcard) > 'B' && wildcard[1] == ':' && wildcard[2] == '\\' &&
-	       !wildcard[3]) {
-
-	// 2015-08-19 SHL FIXME to know how this can happen since wildcard ends with *
-	// Is root and no subdirectories
-	CHAR s[162];
-	DbgMsg(pszSrcFile, __LINE__, "Stubby !isadir for %s", wildcard); // 2015-08-19 SHL FIXME debug
-	sprintf(s,
-		GetPString(IDS_NOSUBDIRS2TEXT),
-		nm,
-		toupper(*pciParent->pszFileName),
-		isremote ? GetPString(IDS_NOSUBDIRS3TEXT) : NullStr);
-	Notify(s);
-      }
     }
+  } // if !rc
+  else if (toupper(*wildcard) > 'B' && wildcard[1] == ':' && wildcard[2] == '\\' &&
+           wildcard[3] == '*' && !wildcard[4]) {
+    // Is root and no subdirectories
+    CHAR s[162];
+    
+    sprintf(s,
+            GetPString(IDS_NOSUBDIRS2TEXT),
+            nm,
+            toupper(*pciParent->pszFileName),
+            isremote ? GetPString(IDS_NOSUBDIRS3TEXT) : NullStr);
+    Notify(s);
   }
   else if (toupper(*wildcard) > 'B' && rc != ERROR_NO_MORE_FILES) {
     // Find for remote or hard drive failed with error
@@ -783,7 +783,7 @@ BOOL IsParentOfChildPath(PLIST2 item, PVOID data)
     return FALSE;
   }
   c = strlen(((PFLESHWORKITEM)item)->pci->pszFileName);
-    return strncmp(((PFLESHWORKITEM)item)->pci->pszFileName, (PCSZ)data, c) == 0;
+    return FALSE; //strncmp(((PFLESHWORKITEM)item)->pci->pszFileName, (PCSZ)data, c) == 0;
 }
 
 /**
