@@ -69,6 +69,7 @@
                 delete
   12 Aug 15 JBS Ticket #522: Ensure no "highmem-unsafe" functions are called directly
                 Calls to unsafe Dos... functions have been changed to call the wrapped xDos... functions
+  22 Aug 15 GKY Remove recurse scan code.
 
 ***********************************************************************/
 
@@ -993,16 +994,14 @@ VOID Action(VOID * args)
 				wk->li->list[x],
 				GetPString(IDS_TOTEXT), newname);
 		      }
-		      if (!strcmp(realappname, "FM/4") ||
-			  ((driveflags[*wk->li->targetpath - 'A'] & DRIVE_RSCANNED) &&
+		      if (!strcmp(realappname, "FM/4") &&
 			  AddToList(wk->li->list[x],
-				    &files, &cFilesModified, &cItemsAllocated)))
+				    &files, &cFilesModified, &cItemsAllocated))
 			Broadcast(hab2,
                                   wk->li->type == IDM_RENAME ? wk->hwndParent : wk->hwndCnr,
 				  UM_UPDATERECORD,
 				  MPFROMP(wk->li->list[x]), MPVOID);
-		      if (!strcmp(realappname, "FM/4") ||
-			  (driveflags[*wk->li->targetpath - 'A'] & DRIVE_RSCANNED) &&
+		      if (!strcmp(realappname, "FM/4") &&
 			  AddToList(newname, &files, &cFilesModified, &cItemsAllocated))
 			Broadcast(hab2,
 				  wk->li->type == IDM_RENAME ? wk->hwndParent : wk->hwndCnr,

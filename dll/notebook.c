@@ -67,6 +67,7 @@
 		for apps.
   25 May 15 GKY Auto open help only on first access of quick setting page during a session.
   09 Aug 15 SHL Use RESTORE_STATE_...
+  22 Aug 15 GKY Remove recurse scan code.
 
 ***********************************************************************/
 
@@ -166,11 +167,6 @@ BOOL fOtherHelp;
 BOOL fQuickArcFind;
 BOOL fRealIdle;
 BOOL fRemoteBug;
-BOOL fRScanLocal;
-BOOL fRScanRemote;
-BOOL fRScanVirtual;
-BOOL fRScanSlow;
-BOOL fRScanNoWrite;
 BOOL fSaveState;
 BOOL fShowDriveOnly;
 BOOL fShowEnv;
@@ -507,11 +503,6 @@ MRESULT EXPENTRY CfgSDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     WinCheckButton(hwnd, CFGS_FORCEUPPER, fForceUpper);
     WinCheckButton(hwnd, CFGS_REMOTEBUG, fRemoteBug);
     WinCheckButton(hwnd, CFGS_NOREMOVABLESCAN, fNoRemovableScan);
-    WinCheckButton(hwnd, CFGS_RSCANLOCAL, fRScanLocal);
-    WinCheckButton(hwnd, CFGS_RSCANREMOTE, fRScanRemote);
-    WinCheckButton(hwnd, CFGS_RSCANVIRTUAL, fRScanVirtual);
-    WinCheckButton(hwnd, CFGS_RSCANSLOW, fRScanSlow);
-    WinCheckButton(hwnd, CFGS_RSCANNOWRITE, fRScanNoWrite);
     WinCheckButton(hwnd, CFGS_EJECTREMOVABLESCAN, fEjectRemovableScan);
     WinCheckButton(hwnd, CFGS_EJECTCDSCAN, fEjectCDScan);
     WinCheckButton(hwnd, CFGS_EJECTFLPYSCAN, fEjectFlpyScan);
@@ -572,21 +563,6 @@ MRESULT EXPENTRY CfgSDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			sizeof(BOOL));
     fRemoteBug = WinQueryButtonCheckstate(hwnd, CFGS_REMOTEBUG);
     PrfWriteProfileData(fmprof, appname, "RemoteBug", &fRemoteBug,
-			sizeof(BOOL));
-    fRScanLocal = WinQueryButtonCheckstate(hwnd, CFGS_RSCANLOCAL);
-    PrfWriteProfileData(fmprof, appname, "RScanLocal", &fRScanLocal,
-			sizeof(BOOL));
-    fRScanRemote = WinQueryButtonCheckstate(hwnd, CFGS_RSCANREMOTE);
-    PrfWriteProfileData(fmprof, appname, "RScanRemote", &fRScanRemote,
-			sizeof(BOOL));
-    fRScanVirtual = WinQueryButtonCheckstate(hwnd, CFGS_RSCANVIRTUAL);
-    PrfWriteProfileData(fmprof, appname, "RScanVirtual", &fRScanVirtual,
-			sizeof(BOOL));
-    fRScanSlow = WinQueryButtonCheckstate(hwnd, CFGS_RSCANSLOW);
-    PrfWriteProfileData(fmprof, appname, "RScanSlow", &fRScanSlow,
-			sizeof(BOOL));
-    fRScanNoWrite = WinQueryButtonCheckstate(hwnd, CFGS_RSCANNOWRITE);
-    PrfWriteProfileData(fmprof, appname, "RScanNoWrite", &fRScanNoWrite,
 			sizeof(BOOL));
     fNoRemovableScan = WinQueryButtonCheckstate(hwnd, CFGS_NOREMOVABLESCAN);
     PrfWriteProfileData(fmprof, appname, "NoRemovableScan", &fNoRemovableScan,
@@ -3174,7 +3150,6 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       fForceUpper = FALSE;
       fForceLower = FALSE;
       fEjectRemovableScan = FALSE;
-      fRScanLocal = FALSE;
       dsDirCnrDefault.detailslongname = FALSE;
       dsDirCnrDefault.detailssubject = FALSE;
       break;
@@ -3353,11 +3328,6 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       fOtherHelp = TRUE;
       fDrivebarHelp = TRUE;
       fShowTarget = TRUE;
-      fRScanLocal = TRUE;
-      fRScanRemote = FALSE;
-      fRScanVirtual = FALSE;
-      fRScanSlow = FALSE;
-      fRScanNoWrite = FALSE;
       fEjectRemovableScan = TRUE;
       fEjectCDScan = FALSE;
       fEjectFlpyScan = FALSE;
@@ -3669,11 +3639,6 @@ MRESULT EXPENTRY Cfg9DlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       fOtherHelp = TRUE;
       fDrivebarHelp = TRUE;
       fShowTarget = TRUE;
-      fRScanLocal = TRUE;
-      fRScanRemote = TRUE;
-      fRScanVirtual = FALSE;
-      fRScanSlow = FALSE;
-      fRScanNoWrite = FALSE;
       fEjectRemovableScan = TRUE;
       fEjectCDScan = TRUE;
       fEjectFlpyScan = FALSE;

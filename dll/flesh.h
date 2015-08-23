@@ -10,6 +10,7 @@
 
   07 Aug 15 SHL Rework to use AddFleshWorkRequest rather than direct calls to Stubby/Flesh/Unflesh
   19 Aug 15 SHL Allow WaitFleshWorkListEmpty to wait for dependent items
+  22 Aug 15 GKY Remove recurse scan code.
 
 ***********************************************************************/
 
@@ -18,7 +19,7 @@
 
 BOOL StartFleshWorkThread(VOID);
 
-typedef enum {eStubby, eFlesh, eFleshEnv, eUnFlesh, eFillDir} FLESHWORKACTION;
+typedef enum {eStubby, eFlesh, eFleshEnv, eUnFlesh} FLESHWORKACTION;
 
 BOOL IsFleshWorkListEmpty();
 

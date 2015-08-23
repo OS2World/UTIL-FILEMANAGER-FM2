@@ -248,11 +248,11 @@ BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent)
   pciL = (PCNRITEM)WinSendMsg(hwndCnr,
 			      CM_QUERYRECORD,
 			      MPFROMP(pciParent),
-			      MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
+                              MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
 
   // 2015-08-06 SHL allow pciL -1
   // 2015-08-06 SHL FIXME to not need pszFileName check
-  if (!pciL || (INT)pciL == -1 || !*pciL->pszFileName) {
+  if (!pciL || (INT)pciL == -1 || !*pciL->pszFileName || !strcmp(pciL->pszFileName, NullStr)) {
 
     // No children or filename null
     if (pciL && (INT)pciL != -1) {
@@ -286,8 +286,6 @@ BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent)
 		     dcd,
 		     NULL,		// total files
 		     NULL);		// total bytes
-    if (pciParent && pciParent->pszFileName && !(driveflags[toupper(*pciParent->pszFileName) - 'A'] & DRIVE_RSCANNED))
-      driveflags[toupper(*pciParent->pszFileName) - 'A'] |= DRIVE_RSCANNED;
     return TRUE;
   }
 
@@ -785,7 +783,7 @@ BOOL IsParentOfChildPath(PLIST2 item, PVOID data)
     return FALSE;
   }
   c = strlen(((PFLESHWORKITEM)item)->pci->pszFileName);
-  return strncmp(((PFLESHWORKITEM)item)->pci->pszFileName, (PCSZ)data, c) == 0;
+    return strncmp(((PFLESHWORKITEM)item)->pci->pszFileName, (PCSZ)data, c) == 0;
 }
 
 /**
@@ -955,9 +953,6 @@ VOID FleshWorkThread(PVOID arg)
 	}
 
 	if (WinIsWindow((HAB)0, item->hwndCnr)) {
-
-	  ULONG flags;
-
 #if 0 // 2015-08-07 SHL	FIXME debug
 	  // 2015-08-03 SHL FIXME debug
 	  {
@@ -984,39 +979,10 @@ VOID FleshWorkThread(PVOID arg)
 	  case eFleshEnv:
 	    FleshEnv(item->hwndCnr, item->pci);
 	    break;
-	  case eFillDir:
 	  case eStubby:
 	    // DbgMsg(pszSrcFile, __LINE__, "FleshWorkThread pci %p pszFileName %s", stubbyArgs->pci, stubbyArgs->pci->pszFileName); // 2015-08-03 SHL FIXME debug
-	    flags = driveflags[toupper(*item->pci->pszFileName) - 'A'];
-
-#if 1
-	    if (item->action == eFillDir) {
-	      // eFillDir maps to eFlesh or eStubby depending on fRScan.. settings
-	      if (((fRScanLocal && flags & DRIVE_LOCALHD) ||
-		   (fRScanRemote && flags & DRIVE_REMOTE) ||
-		   (fRScanVirtual && flags & DRIVE_VIRTUAL))  &&
-		  (!(flags & ((fRScanNoWrite ? 0 : DRIVE_NOTWRITEABLE) |
-			      (fRScanSlow ? 0 : DRIVE_SLOW)))))
-	      {
-		item->action = eFlesh;
-	      }
-	      else
-		item->action = eStubby;
-	    }
-#else
-	    wantFlesh = ((fRScanLocal && flags & DRIVE_LOCALHD ) ||
-			 (fRScanRemote && flags & DRIVE_REMOTE) ||
-			 (fRScanVirtual && flags & DRIVE_VIRTUAL))  &&
-			 // 2015-08-11 SHL typo - should not be local or
-			(!(flags & ((fRScanNoWrite ? 0 : DRIVE_NOTWRITEABLE) ||
-				    (fRScanSlow ? 0 : DRIVE_SLOW))));
-#endif
-	    if (item->action == eStubby) {
-	      Stubby(item->hwndCnr, item->pci);
-	      break;
-	    }
-	    // Drop through to eFlesh
-
+            Stubby(item->hwndCnr, item->pci);
+            break;
 	  case eFlesh:
 	    if (Flesh(item->hwndCnr, item->pci)) {
 	      // 2015-08-06 SHL FIXME to report?

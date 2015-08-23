@@ -47,6 +47,7 @@
   06 Jan 13 GKY Added EA compare option to compare dir Ticket 80
   09 Feb 14 GKY Fix separate parameters. Moved to general page renamed separate settings
                 for apps.
+  22 Aug 15 GKY Remove recurse scan code.
 
 ***********************************************************************/
 
@@ -745,11 +746,6 @@
 #define CFGS_REMOTEBUG									25367
 #define CFGS_NOREMOVABLESCAN							        25368
 #define CFGS_FILESTOGET									25369
-#define CFGS_RSCANLOCAL                                                                 25370
-#define CFGS_RSCANREMOTE                                                                25371
-#define CFGS_RSCANVIRTUAL                                                               25372
-#define CFGS_RSCANSLOW                                                                  25373
-#define CFGS_RSCANNOWRITE                                                               25374
 #define CFGS_EJECTREMOVABLESCAN                                                         25375
 #define CFGS_EJECTCDSCAN                                                                25376
 #define CFGS_EJECTFLPYSCAN                                                              25377
@@ -949,7 +945,6 @@
 #define DVS_NOSTATS									27017
 #define DVS_RAMDISK									27018
 #define DVS_WRITEVERIFYOFF								27019
-#define DVS_RSCANNED									27020
 #define DVS_LOCALHD									27021
 #define DVS_NOEASUPPORT									27022
 

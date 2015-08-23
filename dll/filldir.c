@@ -115,6 +115,9 @@
   04 Aug 15 SHL Comments
   04 Aug 15 SHL Move StubbyThread to flesh.c
   07 Aug 15 SHL Rework to use AddFleshWorkRequest rather than direct calls to Stubby/Flesh/Unflesh
+  22 Aug 15 GKY Remove recurse scan code.
+  22 Aug 15 GKY Minimize the occurence of an A:\ Drive not ready error by moving the cursor
+                to the default drive.
 
 ***********************************************************************/
 
@@ -1501,23 +1504,21 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   }
 
   // move cursor onto the default drive rather than the first drive
-  if (!fSwitchTreeOnDirChg) {
-    pci = (PCNRITEM) WinSendMsg(hwndCnr,
-				CM_QUERYRECORD,
-				MPVOID,
-				MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
-    while (pci && (INT)pci != -1) {
-      if ((ULONG) (toupper(*pci->pszFileName) - '@') == ulCurDriveNum) {
-	WinSendMsg(hwndCnr,
-		   CM_SETRECORDEMPHASIS,
-		   MPFROMP(pci), MPFROM2SHORT(TRUE, CRA_CURSORED));
-	break;
-      }
-      pci = (PCNRITEM) WinSendMsg(hwndCnr,
-				  CM_QUERYRECORD,
-				  MPFROMP(pci),
-				  MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
+  pci = (PCNRITEM) WinSendMsg(hwndCnr,
+                              CM_QUERYRECORD,
+                              MPVOID,
+                              MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
+  while (pci && (INT)pci != -1) {
+    if ((ULONG) (toupper(*pci->pszFileName) - '@') == ulCurDriveNum) {
+      WinSendMsg(hwndCnr,
+                 CM_SETRECORDEMPHASIS,
+                 MPFROMP(pci), MPFROM2SHORT(TRUE, CRA_CURSORED));
+      break;
     }
+    pci = (PCNRITEM) WinSendMsg(hwndCnr,
+                                CM_QUERYRECORD,
+                                MPFROMP(pci),
+                                MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
   }
 
   if (fShowEnv) {
@@ -1615,7 +1616,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	if (~flags & DRIVE_INVALID &&
 	    ~flags & DRIVE_NOPRESCAN &&
 	    (!fNoRemovableScan || ~flags & DRIVE_REMOVABLE)) {
-	  AddFleshWorkRequest(hwndCnr, pci, eFillDir);
+	  AddFleshWorkRequest(hwndCnr, pci, eStubby);
 	} // if drive needs to be scanned
       }
       else {

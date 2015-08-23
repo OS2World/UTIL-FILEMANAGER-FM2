@@ -38,6 +38,7 @@
   20 Apr 13 GKY Double click on directory in Info listbox opens directory object instead of
                 causing an error message from DefaultView
   28 Apr 14 JBS Ticket #522: Ensure use of wrapper functions where needed
+  22 Aug 15 GKY Remove recurse scan code.
 
 ***********************************************************************/
 
@@ -983,8 +984,6 @@ MRESULT EXPENTRY SetDrvProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                      ((driveflags[drive] & DRIVE_NOSTATS) != 0));
       WinCheckButton(hwnd,DVS_WRITEVERIFYOFF,
                      ((driveflags[drive] & DRIVE_WRITEVERIFYOFF) != 0));
-      WinCheckButton(hwnd,DVS_RSCANNED,
-                     ((driveflags[drive] & DRIVE_RSCANNED) != 0));
       WinCheckButton(hwnd,DVS_LOCALHD,
                      ((driveflags[drive] & DRIVE_LOCALHD) != 0));
       WinCheckButton(hwnd,DVS_NOEASUPPORT,

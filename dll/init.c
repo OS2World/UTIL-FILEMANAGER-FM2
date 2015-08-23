@@ -136,6 +136,7 @@
 		Calls to unsafe Dos... functions have been changed to call the wrapped xDos... functions
   19 Aug 15 SHL Delete obsoletes
   20 Aug 15 SHL Support PCSZ_DOS...SEM
+  22 Aug 15 GKY Remove recurse scan code.
 
 ***********************************************************************/
 
@@ -1208,7 +1209,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     fSwitchTreeExpand = fNoSearch = fCustomFileDlg = fOtherHelp =
     fSaveMiniCmds = fUserComboBox = fFM2Deletes = fConfirmTarget =
     fShowTarget = fDrivebarHelp = fCheckMM = fInitialDriveScan =
-    fEjectRemovableScan = fRScanLocal = TRUE;
+    fEjectRemovableScan = TRUE;
   ulCnrType = CCS_EXTENDSEL;
   FilesToGet = FILESTOGET_MAX;
   MaxComLineStrg = MAXCOMLINESTRGDEFAULT;
@@ -1609,16 +1610,6 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "RemoteBug", &fRemoteBug, &size);
   size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, appname, "RScanLocal", &fRScanLocal, &size);
-  size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, appname, "RScanRemote", &fRScanRemote, &size);
-  size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, appname, "RScanVirtual", &fRScanVirtual, &size);
-  size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, appname, "RScanSlow", &fRScanSlow, &size);
-  size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, appname, "RScanNoWrite", &fRScanNoWrite, &size);
-  size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "EjectRemovableScan", &fEjectRemovableScan, &size);
   size = sizeof(BOOL);
   PrfQueryProfileData(fmprof, appname, "EjectCDScan", &fEjectCDScan, &size);
@@ -1661,8 +1652,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 
   // 2015-08-11 SHL FIXME debug
   DbgMsg(pszSrcFile, __LINE__, "ShowEnv %u SwitchTree %u SwitchTreeExpand %u SwitchTreeOnFocus %u CollapseFirst %u", fShowEnv, fSwitchTreeOnDirChg, fSwitchTreeExpand, fSwitchTreeOnFocus, fCollapseFirst);
-  DbgMsg(pszSrcFile, __LINE__, "RScanLocal %u RScanRemote %u RScanVirtual %u RScanSlow RScanNoWrite %u", fRScanLocal, fRScanRemote, fRScanVirtual, fRScanSlow, fRScanNoWrite);
-
+  
   LoadDetailsSwitches(PCSZ_DIRCNR, &dsDirCnrDefault, FALSE);
 
   // load pointers and icons we use

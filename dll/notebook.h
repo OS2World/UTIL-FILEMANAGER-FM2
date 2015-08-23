@@ -19,6 +19,7 @@
                 for delete of readonly files
   09 Feb 14 GKY Fix separate parameters. Moved to general page renamed separate settings
                 for apps.
+  22 Aug 15 GKY Remove recurse scan code.
 
 ***********************************************************************/
 
@@ -86,10 +87,6 @@ extern BOOL fOtherHelp;
 extern BOOL fQuickArcFind;
 extern BOOL fRealIdle;
 extern BOOL fRemoteBug;
-extern BOOL fRScanLocal;
-extern BOOL fRScanRemote;
-extern BOOL fRScanVirtual;
-extern BOOL fRScanSlow;
 extern BOOL fRScanNoWrite;
 extern BOOL fSaveState;
 extern BOOL fShowDriveOnly;

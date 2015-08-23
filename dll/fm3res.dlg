@@ -59,6 +59,7 @@
   06 Jan 13 GKY Added EA compare option to compare dir Ticket 80
   09 Feb 14 GKY Fix separate parameters. Moved to general page renamed separate settings
                 for apps.
+  22 Aug 15 GKY Remove recurse scan code.
   
 ***********************************************************************/
 
@@ -1999,15 +2000,7 @@ BEGIN
         CONTROL         "", CFGS_FILESTOGET, 44, 30, 64, 12, WC_SPINBUTTON,
                         SPBS_NUMERICONLY | SPBS_MASTER | SPBS_SERVANT |
                         SPBS_JUSTCENTER | WS_TABSTOP | SPBS_FASTSPIN |
-                        WS_VISIBLE
-        GROUPBOX        "Recurse scan at startup:", -1, 130, 65, 166, 70, NOT WS_GROUP
-        AUTOCHECKBOX    "Local hard drives", CFGS_RSCANLOCAL, 136, 116, 106, 10
-        AUTOCHECKBOX    "Remote drives", CFGS_RSCANREMOTE, 136, 104, 106, 10
-        AUTOCHECKBOX    "Virtual drives", CFGS_RSCANVIRTUAL, 136, 92, 106, 10
-        AUTOCHECKBOX    "Slow drives of drive types selected", CFGS_RSCANSLOW,
-                        142, 80, 136, 10
-        AUTOCHECKBOX    "Read only drives of drive types selected", CFGS_RSCANNOWRITE,
-                        142, 68, 136, 10
+                        WS_VISIBLE          
         GROUPBOX        "Drive tree rescan on media eject from:", -1, 130, 16, 166, 45, NOT WS_GROUP
         AUTOCHECKBOX    "Removable drives", CFGS_EJECTREMOVABLESCAN, 136, 44, 106, 10
         AUTOCHECKBOX    "CD/DVD drives", CFGS_EJECTCDSCAN, 136, 32, 106, 10
@@ -2148,9 +2141,6 @@ BEGIN
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
         CHECKBOX        "Invalid", DVS_INVALID, 4, 34, 94, 10,
-                        BS_NOPOINTERFOCUS | NOT WS_TABSTOP
-                        PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
-        CHECKBOX        "Recursive scan done", DVS_RSCANNED, 4, 22, 94, 10,
                         BS_NOPOINTERFOCUS | NOT WS_TABSTOP
                         PRESPARAMS PP_FOREGROUNDCOLOR, 0x00808080L
         CHECKBOX       "No EA support", DVS_NOEASUPPORT, 106, 142, 94, 10,
