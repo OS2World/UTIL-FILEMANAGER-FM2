@@ -13,6 +13,7 @@
   28 Dec 08 GKY Rework partition submenu to gray out unavailable items (check for existence of files)
                 and have no default choice.
   23 Aug 15 SHL Protect ShowTreeRec dirname arg
+  24 AUG 15 GKY Remove fDummy code
 
 ***********************************************************************/
 
@@ -34,7 +35,6 @@ extern HWND TreeCnrMenu;
 extern INT TreesortFlags;
 extern INT driveserial[26];
 extern BOOL fDCOpens;
-extern BOOL fDummy;
 extern BOOL fFollowTree;
 extern BOOL fTopDir;
 extern BOOL fLVMGui;

@@ -137,7 +137,8 @@
   19 Aug 15 SHL Delete obsoletes
   20 Aug 15 SHL Support PCSZ_DOS...SEM
   22 Aug 15 GKY Remove recurse scan code.
-
+  24 Aug 15 GKY Remove obsolete code fDontAsk?zip
+  
 ***********************************************************************/
 
 #include <stdlib.h>
@@ -260,10 +261,7 @@ BOOL fLogFile;
 BOOL fProtectOnly;
 BOOL fReminimize;
 BOOL fWantFirstTimeInit;
-BOOL fUseShellEnv;
-BOOL fDontAskBzip;
-BOOL fDontAskGzip;
-//BOOL fDrivetoSkip[26];
+BOOL fUseShellEnv;;
 HPOINTER hptrApp;
 HPOINTER hptrArc;
 HPOINTER hptrArrow;
@@ -1645,10 +1643,6 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   PrfQueryProfileData(fmprof, appname, "ThreadNotes", &fThreadNotes, &size);
   if (fThreadNotes)
     ShowNote();
-  size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "DontAskBzip", &fDontAskBzip, &size);
-  size = sizeof(BOOL);
-  PrfQueryProfileData(fmprof, FM3Str, "DontAskGzip", &fDontAskGzip, &size);
 
   // 2015-08-11 SHL FIXME debug
   DbgMsg(pszSrcFile, __LINE__, "ShowEnv %u SwitchTree %u SwitchTreeExpand %u SwitchTreeOnFocus %u CollapseFirst %u", fShowEnv, fSwitchTreeOnDirChg, fSwitchTreeExpand, fSwitchTreeOnFocus, fCollapseFirst);

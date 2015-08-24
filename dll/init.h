@@ -44,6 +44,7 @@
                 all other drive types in separate threads.
   19 Aug 15 SHL Delete obsoletes
   20 Aug 15 SHL Support PCSZ_DOS...SEM
+  24 Aug 15 GKY Remove obsolete code fDontAsk?zip
 
 ***********************************************************************/
 
@@ -222,8 +223,6 @@ extern BOOL fProtectOnly;
 extern BOOL fReminimize;
 extern BOOL fWantFirstTimeInit;
 extern BOOL fUseShellEnv;
-extern BOOL fDontAskBzip;
-extern BOOL fDontAskGzip;
 extern HPOINTER hptrApp;
 extern HPOINTER hptrArc;
 extern HPOINTER hptrArrow;

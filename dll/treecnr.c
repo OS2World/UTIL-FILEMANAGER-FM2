@@ -103,6 +103,7 @@
   20 Aug 15 SHL Sync with SetFleshFocusPath mods
   22 Aug 15 GKY Improve ability of maketop to get directory position in tree correct on first
 		open of states with large and/or deep tree structures
+  24 AUG 15 GKY Remove fDummy code
 
 ***********************************************************************/
 
@@ -179,7 +180,6 @@ HWND LastDir;
 HWND TreeCnrMenu;
 INT driveserial[26];
 BOOL fDCOpens;
-BOOL fDummy;
 BOOL fFollowTree;
 BOOL fTopDir;
 BOOL fLVMGui;
@@ -1797,46 +1797,45 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	return 0;
 
       case CN_EMPHASIS:
-	if (!fDummy) {
+        {
+          PNOTIFYRECORDEMPHASIS pre = mp2;
 
-	  PNOTIFYRECORDEMPHASIS pre = mp2;
-
-	  if (pre->fEmphasisMask & CRA_SELECTED) {
-	    if (pre->pRecord->flRecordAttr & CRA_SELECTED) {
-	      if (((PCNRITEM) (pre->pRecord))->attrFile & FILE_DIRECTORY) {
-		PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
-		if (fFollowTree &&
-		    !(driveflags
-		      [toupper(*((PCNRITEM) pre->pRecord)->pszFileName) -
-		       'A'] & DRIVE_INVALID)) {
-		  if (!LastDir && !ParentIsDesktop(hwnd, dcd->hwndParent))
-		    LastDir = FindDirCnr(dcd->hwndParent);
-		  if (LastDir) {
-
-		    NOTIFYRECORDENTER pri;
-		    BOOL tbool = fDCOpens;
-
-		    fDCOpens = FALSE;
-		    memset(&pri, 0, sizeof(pri));
-		    pri.hwndCnr = hwnd;
-		    pri.fKey = FALSE;
-		    pri.pRecord = pre->pRecord;
-		    WinSendMsg(hwnd,
-			       WM_CONTROL,
-			       MPFROM2SHORT(SHORT1FROMMP(mp1),
-					    CN_ENTER), MPFROMP(&pri));
-		    fDCOpens = tbool;
-		  }
-		}
-		if (*(ULONG *) realappname != FM3UL)
-		  WinSetWindowText(WinWindowFromID(dcd->hwndFrame,
-						   MAIN_STATUS),
-				   ((PCNRITEM) (pre->pRecord))->pszFileName);
-	      }
-	    }
-	  }
-	}
-	break;
+          if (pre->fEmphasisMask & CRA_SELECTED) {
+            if (pre->pRecord->flRecordAttr & CRA_SELECTED) {
+              if (((PCNRITEM) (pre->pRecord))->attrFile & FILE_DIRECTORY) {
+                PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
+                if (fFollowTree &&
+                    !(driveflags
+                      [toupper(*((PCNRITEM) pre->pRecord)->pszFileName) -
+                       'A'] & DRIVE_INVALID)) {
+                  if (!LastDir && !ParentIsDesktop(hwnd, dcd->hwndParent))
+                    LastDir = FindDirCnr(dcd->hwndParent);
+                  if (LastDir) {
+  
+                    NOTIFYRECORDENTER pri;
+                    BOOL tbool = fDCOpens;
+  
+                    fDCOpens = FALSE;
+                    memset(&pri, 0, sizeof(pri));
+                    pri.hwndCnr = hwnd;
+                    pri.fKey = FALSE;
+                    pri.pRecord = pre->pRecord;
+                    WinSendMsg(hwnd,
+                               WM_CONTROL,
+                               MPFROM2SHORT(SHORT1FROMMP(mp1),
+                                            CN_ENTER), MPFROMP(&pri));
+                    fDCOpens = tbool;
+                  }
+                }
+                if (*(ULONG *) realappname != FM3UL)
+                  WinSetWindowText(WinWindowFromID(dcd->hwndFrame,
+                                                   MAIN_STATUS),
+                                   ((PCNRITEM) (pre->pRecord))->pszFileName);
+              }
+            }
+          }
+        }
+        break;
 
       case CN_CONTEXTMENU:
 	{
@@ -3182,14 +3181,12 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_MINIMIZE:
     if (dcd && hwndMain) {
       fOkayMinimize = TRUE;
-      if (dcd->hwndObject && !fDummy) {
+      if (dcd->hwndObject) {
 	DosSleep(50);//05 Aug 07 GKY 100
-	if (!fDummy) {
 	  fOkayMinimize = FALSE;
 	  WinSetWindowPos(((hwndMain) ? WinQueryWindow(hwndMain, QW_PARENT) :
 			   dcd->hwndFrame), HWND_TOP, 0, 0, 0, 0,
 			  SWP_MINIMIZE | SWP_DEACTIVATE);
-	}
       }
     }
     return 0;

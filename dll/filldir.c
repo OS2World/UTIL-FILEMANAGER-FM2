@@ -118,6 +118,7 @@
   22 Aug 15 GKY Remove recurse scan code.
   22 Aug 15 GKY Minimize the occurence of an A:\ Drive not ready error by moving the cursor
 		to the default drive.
+  24 AUG 15 GKY Remove fDummy code
 
 ***********************************************************************/
 
@@ -1268,7 +1269,6 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 
   DbgMsg(pszSrcFile, __LINE__, "FillTreeCnr hwndCnr %x hwndParent %x", hwndCnr, hwndParent);	 // 2015-08-03 SHL FIXME debug
 
-  fDummy = TRUE;
   *szSuggest = 0;
   for (iDrvNum = 0; iDrvNum < 26; iDrvNum++) {
     driveflags[iDrvNum] &= (DRIVE_IGNORE | DRIVE_NOPRESCAN | DRIVE_NOLOADICONS |
@@ -1672,7 +1672,6 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
     PostMsg(hwndMain, UM_BUILDDRIVEBAR, MPVOID, MPVOID);
 
   DosSleep(16);
-  fDummy = FALSE;
 
   fInitialDriveScan = FALSE;
   DbgMsg(pszSrcFile, __LINE__, "fInitialDriveScan now FALSE");	 // 2015-08-03 SHL FIXME debug
