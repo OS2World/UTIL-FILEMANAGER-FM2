@@ -803,6 +803,7 @@ VOID WaitFleshWorkListEmptyDbg(PCSZ pszDirName, PCSZ pszSrcFile_, UINT uSrcLineN
   PFLESHWORKITEM item;
   INT tid = GetTidForThread();
   BOOL pathSaved = FALSE;
+  BOOL waited;
   PCSZ pszSavedFleshFocusPath;
 
   if (tid == 1 || tid == tidFleshWorkListThread) {
@@ -822,7 +823,7 @@ VOID WaitFleshWorkListEmptyDbg(PCSZ pszDirName, PCSZ pszSrcFile_, UINT uSrcLineN
   }
 
   // Can not wait if call from thread 1 or FleshWorkListThread
-  while (!IsFleshWorkListEmpty()) {
+  for (waited = FALSE; !IsFleshWorkListEmpty(); waited = TRUE) {
 
 #if 0 // 2015-08-19 SHL	FIXME debug
 #   ifdef WaitFleshWorkListEmpty
@@ -855,12 +856,15 @@ VOID WaitFleshWorkListEmptyDbg(PCSZ pszDirName, PCSZ pszSrcFile_, UINT uSrcLineN
 
       xDosReleaseMutexSem(hmtxFleshWork);
 
-      if (!item)
+      if (!item) {
+	if (waited)
+	  DosSleep(250);		// Let PM do some work
 	break;				// Dependents gone from work list
+      }
     } // if pszDirName
 
     DosSleep(250);
-  } // while
+  } // for
 
   if (pathSaved) {
     xDosRequestMutexSem(hmtxFleshWork, SEM_INDEFINITE_WAIT);

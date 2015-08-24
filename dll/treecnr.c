@@ -102,7 +102,7 @@
   07 Aug 15 SHL Rework to use AddFleshWorkRequest rather than direct calls to Stubby/Flesh/Unflesh
   20 Aug 15 SHL Sync with SetFleshFocusPath mods
   22 Aug 15 GKY Improve ability of maketop to get directory position in tree correct on first
-                open of states with large and/or deep tree structures
+		open of states with large and/or deep tree structures
 
 ***********************************************************************/
 
@@ -294,24 +294,29 @@ VOID ShowTreeRec(HWND hwndCnr,
   UINT retries;
   BOOL quickbail = FALSE;
   PSZ p;
-  UINT cDirLen;
   BOOL found;
   CHAR szDir[CCHMAXPATH];
+  CHAR szDirArg[CCHMAXPATH];		// Copy of passed value
+  CHAR chSaved;
 
-  DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec pszDir_ \"%s\"", pszDir_); // 2015-08-04 SHL FIXME debug
+  DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec called for pszDir_ \"%s\"", pszDir_); // 2015-08-04 SHL FIXME debug
+
+  strcpy(szDirArg, pszDir_);		// Cache here in case arg content changed by some other thread
 
   // already positioned to requested record?
   pci = WinSendMsg(hwndCnr,
 		   CM_QUERYRECORDEMPHASIS,
 		   MPFROMLONG(CMA_FIRST), MPFROMSHORT(CRA_CURSORED));
-  if (pci && (INT)pci != -1 && !stricmp(pci->pszFileName, pszDir_)) {
+  if (pci && (INT)pci != -1 && !stricmp(pci->pszFileName, szDirArg)) {
     found = TRUE;
     quickbail = TRUE;			// Already at requested record - bypass repositioning
     goto MakeTop;
   }
+
+  // 2015-08-23 SHL FIXME to be gone - problem must be elsewhere
   // 2015-08-22 GKY Without this FM2 has NULL pci->pszFileName errors and switch failures
   if (fInitialDriveScan)
-    DosSleep(1500); // 100 still had errors
+    DosSleep(100); // 100 still had errors
   if (fSwitchTreeOnDirChg)
     DosSleep(200);
 
@@ -320,7 +325,7 @@ VOID ShowTreeRec(HWND hwndCnr,
   for (found = FALSE, retries = 0; !found && retries < 100; retries++) {
 
     pci = FindCnrRecord(hwndCnr,
-			pszDir_,
+			szDirArg,
 			NULL,		// pciParent
 			TRUE,		// partial
 			FALSE,		// partmatch
@@ -331,16 +336,13 @@ VOID ShowTreeRec(HWND hwndCnr,
       break;			// Found it
     }
 
-    // Try again expanding as needed
-    DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec need expand, IsFleshWorkListEmpty %u", IsFleshWorkListEmpty()); // 2015-08-04 SHL FIXME debug
+    // Walk down directory tree, expanding as needed
+    DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec needs expand, szDirArg \"%s\", IsFleshWorkListEmpty %u", szDirArg, IsFleshWorkListEmpty()); // 2015-08-04 SHL FIXME debug
 
-    cDirLen = strlen(pszDir_);
-
-    *szDir = *pszDir_;			// Drive letter
-    szDir[1] = ':';
-    szDir[2] = '\\';
-    szDir[3] = 0;
+    strcpy(szDir, szDirArg);
     p = szDir + 3;			// Point after root backslash
+    chSaved = *p;			// Remember for restore
+    *p = 0;				// Chop after backslash
 
     for (;;) {
       // Try to match path prefix
@@ -351,36 +353,41 @@ VOID ShowTreeRec(HWND hwndCnr,
 			   FALSE,		// partmatch
 			   TRUE);		// noenv
       if (!pciP || (INT)pciP == -1) {
-	DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec FindCnrRecord(\"%s\") returned %p", szDir, pciP); // 2015-08-04 SHL FIXME debug
-        WaitFleshWorkListEmpty(szDir);		// 2015-08-19 SHL
+	DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec FindCnrRecord(\"%s\") returned pciP %p", szDir, pciP); // 2015-08-04 SHL FIXME debug
+	WaitFleshWorkListEmpty(szDirArg);	// 2015-08-23 SHL
 	break;					// No match
       }
 
-      DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec FindCnrRecord returned %p \"%s\"", pciP, pciP->pszFileName); // 2015-08-04 SHL FIXME debug
+      DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec FindCnrRecord(\"%s\") returned %p \"%s\"", szDir, pciP, pciP->pszFileName); // 2015-08-04 SHL FIXME debug
 
-      if (!stricmp(pszDir_, pciP->pszFileName)) {
+      if (!stricmp(szDirArg, pciP->pszFileName)) {
 	pci = pciP;
 	found = TRUE;
 	break;			// Got full match
       }
 
+      // Got partial match
+
       if (~pciP->rc.flRecordAttr & CRA_EXPANDED) {
 	DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec expanding \"%s\"", pciP->pszFileName); // 2015-08-04 SHL FIXME debug
 	WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciP), MPVOID);
-	DosSleep(100);				// 2015-08-13 SHL Let PM catch up
       }
 
-      //WaitFleshWorkListEmpty(szDir);	// 2015-08-19 SHL
+      // Add next component to path unless no more components
+      if (p) {
+	*p = chSaved;			// Restore
+	if (chSaved) {
+	  if (chSaved == '\\')
+	    p++;			// Get past last backslash
+	  p = strchr(p, '\\');		// Find next backslash
+	  if (p) {
+	    chSaved = *p;
+	    *p = 0;			// Truncate at backslash
+	  }
+	}
+      }
 
-      // Add next component to path
-      if (p - szDir >= cDirLen)
-	break;				// Done
-      strcpy(szDir, pszDir_);		// Reset
-      p = strchr(p, '\\');		// Find next backslash
-      if (!p)
-	break;				// Give up
-
-      *p++ = 0;				// Truncate at backslash
+      DosSleep(100);			// 2015-08-13 SHL Let PM catch up
 
     } // while expanding
 
@@ -437,12 +444,12 @@ VOID ShowTreeRec(HWND hwndCnr,
       if (fTopDir || maketop) {
 	// 2015-08-23 SHL FIXME debug
 	DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec ShowCnrRecord(%p) fTopDir %i maketop %i", pciToSelect, fTopDir, maketop); // 2015-08-04 SHL FIXME debug
-        ShowCnrRecord(hwndCnr, (PMINIRECORDCORE)pciToSelect);
+	ShowCnrRecord(hwndCnr, (PMINIRECORDCORE)pciToSelect);
       }
 
       if (!quickbail) {
-	WaitFleshWorkListEmpty(pszDir_);	// 2015-08-19 SHL try to ensure contents stable
-	DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec WinSendMsg(CM_SETRECORDEMPHASIS, CRA_SELECTED | CRA_CURSORED) pszDir_ \"%s\"", pszDir_); // 2015-08-04 SHL FIXME debug
+	WaitFleshWorkListEmpty(szDirArg);	// 2015-08-19 SHL try to ensure contents stable
+	DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec WinSendMsg(CM_SETRECORDEMPHASIS, CRA_SELECTED | CRA_CURSORED) szDirArg \"%s\"", szDirArg); // 2015-08-04 SHL FIXME debug
 	WinSendMsg(hwndCnr,
 		   CM_SETRECORDEMPHASIS,
 		   MPFROMP(pciToSelect),
