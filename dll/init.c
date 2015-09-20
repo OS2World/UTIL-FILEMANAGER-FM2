@@ -138,6 +138,7 @@
   20 Aug 15 SHL Support PCSZ_DOS...SEM
   22 Aug 15 GKY Remove recurse scan code.
   24 Aug 15 GKY Remove obsolete code fDontAsk?zip
+  20 Sep 15 GKY Move tree expand to a thread.
   
 ***********************************************************************/
 
@@ -261,7 +262,7 @@ BOOL fLogFile;
 BOOL fProtectOnly;
 BOOL fReminimize;
 BOOL fWantFirstTimeInit;
-BOOL fUseShellEnv;;
+BOOL fUseShellEnv;
 HPOINTER hptrApp;
 HPOINTER hptrArc;
 HPOINTER hptrArrow;
@@ -895,6 +896,9 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
 
   if (!StartFleshWorkThread())
     return FALSE;
+
+  if (!StartExpandTreeThread())
+     return FALSE;
 
   // timer messages are sent from a separate thread -- start it
   if (!StartTimer()) {
@@ -1645,7 +1649,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     ShowNote();
 
   // 2015-08-11 SHL FIXME debug
-  DbgMsg(pszSrcFile, __LINE__, "ShowEnv %u SwitchTree %u SwitchTreeExpand %u SwitchTreeOnFocus %u CollapseFirst %u", fShowEnv, fSwitchTreeOnDirChg, fSwitchTreeExpand, fSwitchTreeOnFocus, fCollapseFirst);
+  //DbgMsg(pszSrcFile, __LINE__, "ShowEnv %u SwitchTree %u SwitchTreeExpand %u SwitchTreeOnFocus %u CollapseFirst %u", fShowEnv, fSwitchTreeOnDirChg, fSwitchTreeExpand, fSwitchTreeOnFocus, fCollapseFirst);
   
   LoadDetailsSwitches(PCSZ_DIRCNR, &dsDirCnrDefault, FALSE);
 

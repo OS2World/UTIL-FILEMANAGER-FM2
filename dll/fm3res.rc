@@ -6,7 +6,7 @@
   Command resources
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2003, 2014 Steven H. Levine
+  Copyright (c) 2003, 2015 Steven H. Levine
 
   08 Feb 03 SHL Enable SYS_FRAME
   17 Feb 07 GKY Add Make directory to white space directory container menu
@@ -78,6 +78,7 @@
   02 May 15 GKY Changes to allow a JAVA executable object to be created using "Real object"
                 menu item on a jar file.
   23 May 15 GKY Option to restart desktop to prevent icon loss from JAVA object
+  20 Sep 15 GKY Add "Expanding" window text.
   
 ***********************************************************************/
 
@@ -3416,7 +3417,7 @@ STRINGTABLE
     IDS_LZIPNOLIST                        "Lzip doesn't have a list files option"
     IDS_RESTARTDESKTOP                    "Restart Desktop?"
     IDS_SETTINGLOSEICON                   "If you don't restart the desktop before opening in settings view the icon will be lost"
-
+    IDS_PLEASEWAITEXPANDINGTEXT           "Please wait--expanding can take 10+ min on huge drives"
 
     // Add strings that need to be combined by GetPString here
     IDS_SUGGEST1TEXT1                     "Based on this scan of your drives, I would like to suggest the following parameters for your FM/2 program object. Each letter following the '/' character is a drive that probably should be excluded from viewing by FM/2 (see README), and the '%%*' on the"

@@ -6,9 +6,13 @@
   <<<description here>>>
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2008 Steven H. Levine
+  Copyright (c) 2008, 2015 Steven H. Levine
 
   Change log
+  20 Sep 15 GKY Create CollapseAll and modify ExpandAll to reduce code overhead
+                both to try and speed drive expansion. Change ExpandAll to allow it to loop
+                in UM_EXPAND until until drive is completely expanded. Changes were need to
+                work with Flesh, Stubby and UnFlesh being moved to a thread
 
 ***********************************************************************/
 
@@ -20,7 +24,8 @@
 VOID Deselect(HWND hwndCnr);
 VOID DeselectAll(HWND hwndCnr, BOOL files, BOOL dirs, CHAR * mask,
 		 CHAR * text, BOOL arc);
-VOID ExpandAll(HWND hwndCnr, BOOL expand, PCNRITEM pciParent);
+BOOL ExpandAll(HWND hwndCnr, INT count, PCNRITEM pciParent);
+VOID CollapseAll(HWND hwndCnr, PCNRITEM pciParent);
 VOID HideAll(HWND hwndCnr);
 VOID InvertAll(HWND hwndCnr);
 VOID MarkAll(HWND hwndCnr, BOOL quitit, BOOL target, BOOL source);

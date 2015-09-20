@@ -6,7 +6,7 @@
   Object containers
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2005, 2009 Steven H. Levine
+  Copyright (c) 2005, 2015 Steven H. Levine
 
   24 May 05 SHL Rework for CNRITEM.szSubject
   13 Jul 06 SHL Use Runtime_Error
@@ -24,6 +24,7 @@
   10 Dec 08 SHL Integrate exception handler support
   08 Mar 09 GKY Additional strings move to PCSZs
   28 Jun 09 GKY Added AddBackslashToPath() to remove repeatative code.
+  20 Sep 15 GKY Update for modified ExpandAll
 
 ***********************************************************************/
 
@@ -364,7 +365,7 @@ MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					   MPFROM2SHORT(CMA_FIRST,
 							CMA_ITEMORDER));
 	if (pci && (INT) pci != -1) {
-	  ExpandAll(WinWindowFromID(hwnd, OBJCNR_CNR), TRUE, pci);
+	  ExpandAll(WinWindowFromID(hwnd, OBJCNR_CNR), 0, pci);
 	  if (id == QTREE_FRAME)
 	    pci = (PCNRITEM) WinSendDlgItemMsg(hwnd, OBJCNR_CNR,
 					       CM_QUERYRECORD,

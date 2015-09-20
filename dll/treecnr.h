@@ -14,6 +14,7 @@
                 and have no default choice.
   23 Aug 15 SHL Protect ShowTreeRec dirname arg
   24 AUG 15 GKY Remove fDummy code
+  20 Sep 15 GKY Move tree expand to a thread.
 
 ***********************************************************************/
 
@@ -27,6 +28,7 @@ MRESULT EXPENTRY TreeClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				   MPARAM mp2);
 MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY TreeStatProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
+BOOL StartExpandTreeThread();
 
 // Data declarations
 extern ULONG FM3UL;

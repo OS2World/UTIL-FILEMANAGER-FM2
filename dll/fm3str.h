@@ -1056,7 +1056,7 @@
 #define IDS_ARCNOTEST                                        1024
 #define IDS_ARCMISSINGEXE                                    1025
 #define IDS_ARCMISSINGEXEVERBOSE                             1026
-
+#define IDS_PLEASEWAITEXPANDINGTEXT                          1027
 // The following strings were cut up form the string of the root name (ie IDS_SUGGEST1TEXT)
 // This was done as part of the conversion to a StringTable where strings are limited to 255
 #define IDS_SUGGEST1TEXT1                                   10000

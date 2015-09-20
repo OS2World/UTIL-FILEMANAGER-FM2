@@ -13,6 +13,8 @@
 		item and will scroll left to eliminate space after a selected item. Ticket 204
   06 Aug 15 SHL Clean up and comment
   23 Aug 15 SHL Protect FindCnrRecord filename arg
+  20 Sep 15 GKY Add a correction factor so directories don't get placed above the top of the
+                tree container when a large drive has been expanded.
 
 ***********************************************************************/
 
@@ -62,7 +64,9 @@ PCNRITEM FindCnrRecord(HWND hwndCnr, PCSZ filename, PCNRITEM pciParent,
   if (!pciParent)
     pciParent = (PCNRITEM) CMA_FIRST;
   pci = WinSendMsg(hwndCnr,
-		   CM_SEARCHSTRING, MPFROMP(&srch), MPFROMP(pciParent));
+                   CM_SEARCHSTRING, MPFROMP(&srch), MPFROMP(pciParent));
+  //DbgMsg(pszSrcFile, __LINE__,"FindCnrItem pciParent %p pci %p file %s", pciParent,
+  //      pci, file);
   while (pci && (INT) pci != -1) {
     if (!noenv || (pci->flags & (RECFLAGS_ENV | RECFLAGS_UNDERENV)) == 0) {
       // CNRITEM for file/directory
@@ -122,7 +126,19 @@ VOID ShowCnrRecord(HWND hwndCnr, PMINIRECORDCORE pmi)
   QUERYRECORDRECT qrecrct;
   RECTL rcl;
   RECTL rclViewport;
+  RECTL rclFirst;
+  RECTL rclLast;
+  PMINIRECORDCORE pmiFirst;
+  PMINIRECORDCORE pmiLast;
+  INT correction;
 
+  pmiFirst = WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(NULL),
+                        MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
+  pmiLast = WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(NULL),
+                       MPFROM2SHORT(CMA_LAST, CMA_ITEMORDER));
+  WinSendMsg(hwndCnr,
+	     CM_QUERYVIEWPORTRECT,
+	     MPFROMP(&rclViewport), MPFROM2SHORT(CMA_WINDOW , TRUE));
   memset(&qrecrct, 0, sizeof(QUERYRECORDRECT));
   qrecrct.cb = sizeof(QUERYRECORDRECT);
   qrecrct.pRecord = (PRECORDCORE) pmi;
@@ -132,17 +148,25 @@ VOID ShowCnrRecord(HWND hwndCnr, PMINIRECORDCORE pmi)
     qrecrct.fsExtent = CMA_TEXT | CMA_TREEICON;
     WinSendMsg(hwndCnr, CM_QUERYRECORDRECT, MPFROMP(&rcl), MPFROMP(&qrecrct));
   }
-  WinSendMsg(hwndCnr,
-	     CM_QUERYVIEWPORTRECT,
-	     MPFROMP(&rclViewport), MPFROM2SHORT(CMA_WINDOW, TRUE));
-  //DbgMsg(pszSrcFile, __LINE__, "TOPPORT %i TOPRCL %i", rclViewport.yTop , rcl.yTop);
-  WinSendMsg(hwndCnr,
-	     CM_SCROLLWINDOW,
-	     MPFROMSHORT(CMA_HORIZONTAL), MPFROMLONG(rcl.xRight - rclViewport.xRight));
+  qrecrct.pRecord = (PRECORDCORE) pmiFirst;
+  WinSendMsg(hwndCnr, CM_QUERYRECORDRECT, MPFROMP(&rclFirst), MPFROMP(&qrecrct));
+  qrecrct.pRecord = (PRECORDCORE) pmiLast;
+  WinSendMsg(hwndCnr, CM_QUERYRECORDRECT, MPFROMP(&rclLast), MPFROMP(&qrecrct));
+  correction = 5 + ((abs(rclFirst.yTop) + abs(rclLast.yTop)) / 22500);
   WinSendMsg(hwndCnr,
 	     CM_SCROLLWINDOW,
 	     MPFROMSHORT(CMA_VERTICAL),
-	     MPFROMLONG((rclViewport.yTop - (rcl.yTop) - 4)));
+             MPFROMLONG((rclViewport.yTop - (rcl.yTop) - correction)));
+#if 0
+  DbgMsg(pszSrcFile, __LINE__, "RECTLFIRST %i RECTLLAST %i %p",
+         rclFirst.yTop, rclLast.yTop, pmiLast);
+  DbgMsg(pszSrcFile, __LINE__, "TOPPORT %i TOPRCL %i RIGHTRCL %i",
+         rclViewport.yTop , rcl.yTop, rcl.xRight);
+#endif
+  WinSendMsg(hwndCnr,
+	     CM_SCROLLWINDOW,
+	     MPFROMSHORT(CMA_HORIZONTAL), MPFROMLONG(rcl.xRight - rclViewport.xRight));
+  
 }
 
 #pragma alloc_text(FINDREC,FindCnrRecord,FindParentRecord,ShowCnrRecord)

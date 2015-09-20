@@ -118,7 +118,10 @@
   22 Aug 15 GKY Remove recurse scan code.
   22 Aug 15 GKY Minimize the occurence of an A:\ Drive not ready error by moving the cursor
 		to the default drive.
-  24 AUG 15 GKY Remove fDummy code
+  24 Aug 15 GKY Remove fDummy code
+  20 Sep 15 GKY Add code for Flesh to skip the directory entry added by Stubby (eliminate
+                use of NULL/Nullstr pszFileNames by Stubby). Add code to relink pci chain
+                following rename, delete, etc. Add "Expanding" window text.
 
 ***********************************************************************/
 
@@ -241,7 +244,7 @@ const PSZ FileAttrToString(ULONG fileAttr)
 
 }
 
-static HPOINTER IDFile(PSZ p)
+HPOINTER IDFile(PSZ p)
 {
   HPOINTER hptr;
   ULONG cmp;
@@ -303,7 +306,7 @@ static HPOINTER IDFile(PSZ p)
   return hptr;
 }
 
-static BOOL IsDefaultIcon(HPOINTER hptr)
+BOOL IsDefaultIcon(HPOINTER hptr)
 {
   HPOINTER hptr2;
   HPOINTER hptr3;
@@ -826,10 +829,11 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		      const BOOL filestoo,
 		      const BOOL recurse,
 		      const BOOL partial,
-		      CHAR *stopflag,
+                      CHAR *stopflag,
 		      DIRCNRDATA *dcd,			// Optional
 		      ULONG *pulTotalFiles,		// Optional
-		      PULONGLONG pullTotalBytes)	// Optional
+                      PULONGLONG pullTotalBytes,        // Optional
+                      CHAR *LoadedFirstChild)	        // Optional
 {
   /**
    * put all the directories (and files if filestoo is TRUE) from a
@@ -855,6 +859,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
   APIRET rc;
   PCNRITEM pci;
   PCNRITEM pciFirst;
+  PCNRITEM pciNext;
   RECORDINSERT ri;
   BOOL ok = TRUE;
   ULONG ulBufBytes;
@@ -913,13 +918,14 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	  goto Abort;
 	pffbFile = paffbFound;
 	ulSelCnt = 0;
-	for (;;) {
+        for (;;) {
 	  if (!*pffbFile->achName ||
 	      (!filestoo && ~pffbFile->attrFile & FILE_DIRECTORY) ||
 	      (pffbFile->attrFile & FILE_DIRECTORY &&
 	       !pffbFile->achName[0] || pffbFile->achName[0] == '.' &&
 	       (!pffbFile->achName[1] ||
-		(pffbFile->achName[1] == '.' && !pffbFile->achName[2])))) {
+                (pffbFile->achName[1] == '.' && !pffbFile->achName[2])) ||
+               (LoadedFirstChild && !stricmp(LoadedFirstChild, pffbFile->achName)))) {
 	    // ulFindCnt--;		// Got . or .. or file to be skipped
 	  }
 	  else
@@ -958,7 +964,10 @@ VOID ProcessDirectory(const HWND hwndCnr,
 		pffbFile = papffbSelected[x];
 		ullBytes = FillInRecordFromFFB(hwndCnr, pci, pszFileSpec,
 					       pffbFile, partial, dcd);
-		pci = (PCNRITEM) pci->rc.preccNextRecord;
+                pciNext = pci;
+                pci = (PCNRITEM) pci->rc.preccNextRecord;
+                if (pci && (INT) pci != -1)
+                  pci->pciPrevious = pciNext;
 		ullTotalBytes += ullBytes;
 	      } // for
 	      // Insert selected in container
@@ -1050,7 +1059,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	for (x = 0; x < cAffbTotal; x++) {
 	  ULONG ulRecsToInsert;
 
-	  if (pci ==NULL) {
+	  if (pci == NULL) {
 	    if (!WinIsWindow(WinQueryAnchorBlock(hwndCnr), hwndCnr)) {
 	      ok = FALSE;
 	      ullTotalBytes = 0;
@@ -1071,16 +1080,21 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	    }
 	    else {
 	      // 04 Jan 08 SHL FIXME like comp.c to handle less than ulSelCnt records
-	      if (hwndStatus && dcd &&
-		  dcd->hwndFrame == WinQueryActiveWindow(dcd->hwndParent)) {
-		WinSetWindowText(hwndStatus, (CHAR *) GetPString(IDS_PLEASEWAITCOUNTINGTEXT));
+              if (hwndStatus && dcd && dcd->hwndFrame ==
+                  WinQueryActiveWindow(dcd->hwndParent)) {
+                WinSetWindowText(hwndStatus, (CHAR *) GetPString(LoadedFirstChild ?
+                                                                 IDS_PLEASEWAITEXPANDINGTEXT :
+                                                                 IDS_PLEASEWAITCOUNTINGTEXT));
 	      }
 	      pci = pciFirst;
 	    }
 	  }
 	  ullBytes = FillInRecordFromFFB(hwndCnr, pci, pszFileSpec,
-					 pffbFile, partial, dcd);
-	  pci = (PCNRITEM) pci->rc.preccNextRecord;
+                                         pffbFile, partial, dcd);
+          pciNext = pci;
+          pci = (PCNRITEM) pci->rc.preccNextRecord;
+          if (pci && (INT) pci != -1)
+            pci->pciPrevious = pciNext;
 	  ullTotalBytes += ullBytes;
 	  // 15 Sep 09 SHL allow timed updates to see
 	  DosRequestMutexSem(hmtxFiltering, SEM_INDEFINITE_WAIT);
@@ -1189,14 +1203,14 @@ Abort:
     while (pci && (INT)pci != -1) {
       if (!pci->pszFileName || !strcmp(pci->pszFileName, NullStr)) {
 	// 2015-08-23 SHL FIXME debug
-	DbgMsg(pszSrcFile, __LINE__, "ProcessDirectory pci %p pci->pszFileName %p %s",
-	       pci, pci->pszFileName,
-	       pci->pszFileName == NullStr ? "NullStr" : "NULL");
+	//DbgMsg(pszSrcFile, __LINE__, "ProcessDirectory pci %p pci->pszFileName %p %s",
+	//       pci, pci->pszFileName,
+	//       pci->pszFileName == NullStr ? "NullStr" : "NULL");
 	Runtime_Error(pszSrcFile, __LINE__, "pci->pszFileName NULL for %p", pci);
 	return;
       }
       if ((pci->attrFile & FILE_DIRECTORY))
-	AddFleshWorkRequest(hwndCnr, pci, eStubby);
+        AddFleshWorkRequest(hwndCnr, pci, eStubby);
       pci = WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pci),
 		       MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
     }
@@ -1225,7 +1239,8 @@ VOID FillDirCnr(HWND hwndCnr,
 		   dcd ? &dcd->stopflag : NULL,
 		   dcd,
 		   NULL,		// total files
-		   pullTotalBytes);
+                   pullTotalBytes,
+                   0);
   DosPostEventSem(CompactSem);
 
 #if 0 // 2011-05-31 SHL FIXME to be gone or to be configurable
@@ -1267,7 +1282,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   static BOOL didonce;
   static ULONG ulLastDriveMap;
 
-  DbgMsg(pszSrcFile, __LINE__, "FillTreeCnr hwndCnr %x hwndParent %x", hwndCnr, hwndParent);	 // 2015-08-03 SHL FIXME debug
+  //DbgMsg(pszSrcFile, __LINE__, "FillTreeCnr hwndCnr %x hwndParent %x", hwndCnr, hwndParent);	 // 2015-08-03 SHL FIXME debug
 
   *szSuggest = 0;
   for (iDrvNum = 0; iDrvNum < 26; iDrvNum++) {
@@ -1674,7 +1689,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   DosSleep(16);
 
   fInitialDriveScan = FALSE;
-  DbgMsg(pszSrcFile, __LINE__, "fInitialDriveScan now FALSE");	 // 2015-08-03 SHL FIXME debug
+  //DbgMsg(pszSrcFile, __LINE__, "fInitialDriveScan now FALSE");	 // 2015-08-03 SHL FIXME debug
   DosPostEventSem(CompactSem);
 
   if (!fDontSuggestAgain) {
@@ -1754,7 +1769,7 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   } // if !fDontSuggestAgain
   didonce = TRUE;
 
-  DbgMsg(pszSrcFile, __LINE__, "FillTreeCnr finished");	 // 2015-08-03 SHL FIXME debug
+  //DbgMsg(pszSrcFile, __LINE__, "FillTreeCnr finished");	 // 2015-08-03 SHL FIXME debug
 
 } // FillTreeCnr
 
@@ -1972,6 +1987,7 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
   // 10 seems a very conservative number
   //  USHORT usTimerCheckCountdown	= RCI_ITEMS_PER_TIMER_CHECK;
   PCNRITEM pci;
+  PCNRITEM pciPrevious;
   ITIMER_DESC itdSleep = { 0 };		// 30 May 11 GKY
 
   if ((usCnt && !pciFirst) || (!usCnt && pciFirst)) {
@@ -1994,10 +2010,18 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
       }
       InitITimer(&itdSleep, 500);
       while (pci) {
-	FreeCnrItemData(pci);
-	pci = (PCNRITEM)pci->rc.preccNextRecord;
+        FreeCnrItemData(pci);
+        if (usCnt > 0)
+          pciPrevious = pci;
+        pci = (PCNRITEM)pci->rc.preccNextRecord;
 	if (!pci)
-	  break;
+          break;
+        if (usCnt > 0 && pciPrevious && pciPrevious->pciPrevious) {
+          pciPrevious->pciPrevious->rc.preccNextRecord = (MINIRECORDCORE *) pci;
+          pci->pciPrevious = pciPrevious->pciPrevious;
+          pciPrevious->pciPrevious = NULL;
+          pciPrevious->rc.preccNextRecord = NULL;
+        }
 	if (remaining && --remaining == 0)
 	  break;
 	if (!bIdlePrioritySet /* && --usTimerCheckCountdown == 0 */) {

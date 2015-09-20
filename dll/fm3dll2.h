@@ -802,6 +802,8 @@
 #define UM_PAINT            (WM_USER + 84)
 #define UM_SETUP            (WM_USER + 85)
 #define UM_SETDIR           (WM_USER + 86)
+#define UM_COLLAPSETREE     (WM_USER + 87)
+#define UM_EXPANDTREE       (WM_USER + 88)
 // WM_USER + 1000 used in FTPAPI.H (IBM Toolkit)
 
 #define COLR_WHITE          0

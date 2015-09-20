@@ -6,14 +6,16 @@
   dircnrs common definitions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2008 Steven H. Levine
+  Copyright (c) 2001, 2015 Steven H. Levine
 
   05 Jan 08 SHL Move dircnrs.c definitions here
   13 Jan 08 GKY Add variables to DIRCNRDATA struct for Subjectwidth/Subjectleft.
   11 Jul 08 JBS Ticket 230: Simplified code and eliminated some local variables by incorporating
                 all the details view settings (both the global variables and those in the
                 DIRCNRDATA struct) into a new struct: DETAILS_SETTINGS.
-  17 JAN 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  17 Jan 10 GKY Changes to get working with Watcom 1.9 Beta (1/16/10). Mostly cast CHAR CONSTANT * as CHAR *.
+  20 Sep 15 GKY Add a flag to indicate when a directory needed to be Fleshed and a PCNRITEM
+                previous to try to keep the pci chain intact on renames, delete etc to PCNRITEM
 
 ***********************************************************************/
 
@@ -39,7 +41,7 @@
 #define CBLIST_TO_EASIZE(cb) ((cb) > 4 ? (cb) / 2 : 0)	// FILEFINDBUF4L.cbList to logical EA size
 
 typedef struct _CNRITEM
-{				/* CONTAINER RECORD STRUCTURE */
+{				/* CONTAINER RECORD STRUCTURE must be first*/
   MINIRECORDCORE rc;		/* Base information */
   HWND hwndCnr;			/* The container holding this record */
   PSZ pszFileName;		// Points to buffer holding full pathname or NullStr
@@ -58,6 +60,8 @@ typedef struct _CNRITEM
   ULONGLONG easize;		// Size of EAs - dirsize uses this - hack cough
   ULONG attrFile;		/* Attributes of this file */
   ULONG flags;
+  BOOL fleshed;
+  struct _CNRITEM *pciPrevious;    // Address of pci we are linked to
 }
 CNRITEM, *PCNRITEM;
 

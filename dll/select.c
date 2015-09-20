@@ -6,7 +6,7 @@
   Container item selection support routines
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2004, 2011 Steven H. Levine
+  Copyright (c) 2004, 2015 Steven H. Levine
 
   01 Aug 04 SHL Rework lstrip/rstrip usage
   25 May 05 SHL Rework for ULONGLONG
@@ -33,6 +33,10 @@
   13 Jun 15 GKY Fixed compare selection replaced pszFileNames with pszDisplayNames
   02 Aug 15 GKY Remove unneed SubbyScan code and improve suppression of blank lines and
                 duplicate subdirectory name caused by running Stubby in worker threads.
+                20 Sep 15 GKY Create CollapseAll and modify ExpandAll to reduce code overhead
+                both to try and speed drive expansion. Change ExpandAll to allow it to loop
+                in UM_EXPAND until until drive is completely expanded. Changes were need to
+                work with Flesh, Stubby and UnFlesh being moved to a thread
 
 ***********************************************************************/
 
@@ -64,6 +68,7 @@
 #include "strips.h"			// bstrip
 #include "stristr.h"			// findstring
 #include "fortify.h"
+#include "flesh.h"
 #if 0
 #define  __PMPRINTF__
 #include "PMPRINTF.H"
@@ -563,7 +568,51 @@ VOID SetMask(PSZ maskstr, MASK *mask)
   DosExitCritSec();
 }
 
-VOID ExpandAll(HWND hwndCnr, BOOL expand, PCNRITEM pciParent)
+BOOL ExpandAll(HWND hwndCnr, INT count, PCNRITEM pciParent)
+{
+  PCNRITEM pci;
+  static BOOL fExpanding = FALSE;
+  static INT counter = 1;
+
+  if (count != counter && count != 0) {
+    if (count > counter) {
+      fExpanding = FALSE;
+      counter++;
+    }
+    else if (count < counter) {
+      fExpanding = FALSE;
+      counter = 1;
+    }
+  }
+  if (!pciParent)
+    pciParent = WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(NULL),
+			   MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
+  if (pciParent) {
+    pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pciParent),
+                                MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
+    // Only expand items that have childern
+    if (pci  && ~pciParent->rc.flRecordAttr & CRA_EXPANDED) {
+      WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciParent), MPVOID);
+      if (count != 0) {
+        fExpanding = TRUE;
+        if (!IsFleshWorkListEmpty()) {
+          WaitFleshWorkListEmpty(NULL); // Let it expand
+        }
+      }
+    }
+    while (pci && (INT)pci != -1) {
+      ExpandAll(hwndCnr, count, pci);
+      if (!IsFleshWorkListEmpty())
+        WaitFleshWorkListEmpty(NULL); // Wait for container to catch up
+      pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pci),
+                                  MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
+    }
+  }
+  //DosSleep(0);
+  return fExpanding;
+}
+
+VOID CollapseAll(HWND hwndCnr, PCNRITEM pciParent)
 {
   PCNRITEM pci;
 
@@ -571,16 +620,14 @@ VOID ExpandAll(HWND hwndCnr, BOOL expand, PCNRITEM pciParent)
     pciParent = WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(NULL),
 			   MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
   if (pciParent) {
-    if (expand && ~pciParent->rc.flRecordAttr & CRA_EXPANDED)
-      WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciParent), MPVOID);
-    else if (!expand && (pciParent->rc.flRecordAttr & CRA_EXPANDED))
-      WinSendMsg(hwndCnr, CM_COLLAPSETREE, MPFROMP(pciParent), MPVOID);
     pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pciParent),
-				MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
-      while (pci && (INT)pci != -1) {
-      ExpandAll(hwndCnr, expand, pci);
+                                MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
+    if ((pciParent->rc.flRecordAttr & CRA_EXPANDED))
+      WinSendMsg(hwndCnr, CM_COLLAPSETREE, MPFROMP(pciParent), MPVOID);
+    while (pci && (INT)pci != -1) {
+      CollapseAll(hwndCnr, pci);
       pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pci),
-				  MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
+                                  MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
     }
   }
   DosSleep(0);

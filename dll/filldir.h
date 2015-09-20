@@ -6,13 +6,16 @@
   filldir.c definitions
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2008 Steven H. Levine
+  Copyright (c) 2001, 2015 Steven H. Levine
 
   05 Jan 08 SHL Split from fm3dll.h
   25 Dec 08 GKY Add ProcessDirectoryThread to allow optional recursive drive scan at startup.
   08 Mar 09 GKY Additional strings move to PCSZs
   06 Jun 09 GKY Add option to show file system type or drive label in tree
   22 Jul 09 GKY Code changes to use semaphores to serialize drive scanning
+  20 Sep 15 GKY Add code for Flesh to skip the directory entry added by Stubby (eliminate
+                use of NULL/Nullstr pszFileNames by Stubby). Add code to relink pci chain
+                following rename, delete, etc. Add "Expanding" window text.
 
 ***********************************************************************/
 
@@ -40,7 +43,8 @@ VOID ProcessDirectory(const HWND hwndCnr, const PCNRITEM pciParent,
 		      const CHAR *szDirBase, const BOOL filestoo,
 		      const BOOL recurse, const BOOL partial,
 		      CHAR *stopflag, DIRCNRDATA *pdcd,
-		      PULONG pullTotalFiles, PULONGLONG pullTotalBytes);
+                      PULONG pullTotalFiles, PULONGLONG pullTotalBytes,
+                      CHAR *LoadedFirstChild);
 ULONGLONG FillInRecordFromFFB(HWND hwndCnr, PCNRITEM pci,
 			      const PSZ pszDirectory,
 			      const PFILEFINDBUF4L pffb, const BOOL partial,
@@ -53,6 +57,8 @@ VOID FreeCnrItemList(HWND hwnd, PCNRITEM pciFirst);
 VOID FreeCnrItemData(PCNRITEM pci);
 INT RemoveCnrItems(HWND hwnd, PCNRITEM pci, USHORT usCnt, USHORT usFlags);
 VOID ProcessDirectoryThread(VOID * arg);
+HPOINTER IDFile(PSZ p);
+BOOL IsDefaultIcon(HPOINTER hptr);
 
 // Data declarations
 extern PCSZ FM3Tools;

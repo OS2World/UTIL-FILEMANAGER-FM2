@@ -6,7 +6,7 @@
   Directory sizes
 
   Copyright (c) 1993-98 M. Kimes
-  Copyright (c) 2001, 2010 Steven H. Levine
+  Copyright (c) 2001, 2015 Steven H. Levine
 
   16 Oct 02 SHL Handle large partitions
   12 Feb 03 SHL Use CBLIST_TO_EASIZE
@@ -55,6 +55,8 @@
   20 Nov 10 GKY Check that pTmpDir IsValid and recreate if not found; Fixes hangs caused
                 by temp file creation failures.
   12 Jun 11 GKY Added SleepIfNeeded in the container fill loop
+  20 Sep 15 GKY Move directory expansion to a thread. Split ExpandAll into ExpandAll and CollapseAll
+                to try to speed proccessing else where.
 
 ***********************************************************************/
 
@@ -105,6 +107,12 @@ typedef struct
   CHAR *pchStopFlag;
   DIRCNRDATA *pDCD;
 } DIRSIZE;
+
+typedef struct
+{
+  HWND hwndCnr;
+  PCNRITEM pci;
+} EXPANDSIZE;
 
 typedef struct
 {
@@ -496,6 +504,42 @@ static VOID FillCnrThread(VOID *args)
   xfree(dirsize, pszSrcFile, __LINE__);
   PostMsg(WinQueryWindow(hwndCnr, QW_PARENT),
 	  UM_CONTAINER_FILLED, MPVOID, MPVOID);
+# ifdef FORTIFY
+  Fortify_LeaveScope();
+#  endif
+}
+
+static VOID ExpandCnrThread(VOID *args)
+{
+  HAB hab;
+  HMQ hmq;
+  INT x = 0;
+  EXPANDSIZE *expandsize = (EXPANDSIZE *)args;
+
+  if (!expandsize) {
+    Runtime_Error(pszSrcFile, __LINE__, NULL);
+    return;
+  }
+# ifdef FORTIFY
+  Fortify_EnterScope();
+  Fortify_BecomeOwner(expandsize);		// We free dirsize
+#  endif
+
+  DosError(FERR_DISABLEHARDERR);
+
+  priority_idle();
+  hab = WinInitialize(0);
+  if (hab) {
+    hmq = WinCreateMsgQueue(hab, 0);
+    if (hmq) {
+      WinCancelShutdown(hmq, TRUE);
+      ExpandAll(expandsize->hwndCnr, x, expandsize->pci);
+      WinDestroyMsgQueue(hmq);
+    }
+    WinTerminate(hab);
+  }
+
+  xfree(expandsize, pszSrcFile, __LINE__);
 # ifdef FORTIFY
   Fortify_LeaveScope();
 #  endif
@@ -1009,9 +1053,24 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinEnableWindow(WinWindowFromID(hwnd, DSZ_EXPAND), FALSE);
 	  WinEnableWindow(WinWindowFromID(hwnd, DSZ_PRINT), FALSE);
 	  WinEnableWindow(WinWindowFromID(hwnd, DID_CANCEL), FALSE);
-	  // fixme to use thread - too slow on large trees
-	  ExpandAll(WinWindowFromID(hwnd, DSZ_CNR),
-		    (SHORT1FROMMP(mp1) == DSZ_EXPAND), pci);
+          if (SHORT1FROMMP(mp1) == DSZ_EXPAND) {
+            EXPANDSIZE *expandsize;
+
+            expandsize = xmalloc(sizeof(EXPANDSIZE), pszSrcFile, __LINE__);
+            if (expandsize) {
+
+            expandsize->pci = pci;
+            expandsize->hwndCnr = WinWindowFromID(hwnd, DSZ_CNR);
+            if (xbeginthread(ExpandCnrThread,
+                             122880 * 5,
+                             expandsize,
+                             pszSrcFile,
+                             __LINE__) == -1)
+              xfree(expandsize, pszSrcFile, __LINE__);
+            }
+          }
+          else
+            CollapseAll(WinWindowFromID(hwnd, DSZ_CNR), pci);
 	  WinEnableWindow(WinWindowFromID(hwnd, DID_OK), TRUE);
 	  WinEnableWindow(WinWindowFromID(hwnd, IDM_HELP), TRUE);
 	  WinEnableWindow(WinWindowFromID(hwnd, DSZ_COLLAPSE), TRUE);

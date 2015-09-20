@@ -36,6 +36,10 @@
   07 Aug 15 SHL Rework to use AddFleshWorkRequest rather than direct calls to Stubby/Flesh/Unflesh
   19 Aug 15 SHL Allow WaitFleshWorkListEmpty to wait for dependent items
   23 Aug 15 GKY Fixed code to notify on drive with no subdirectories in first 64 entries
+  20 Sep 15 GKY Add code for Flesh to skip the directory entry added by Stubby (eliminate
+                use of NULL/Nullstr pszFileNames by Stubby). Add code in Stubby to insert a
+                complete container item. Add a flag to indicate when a directory needed to be
+                Fleshed
 
 ***********************************************************************/
 
@@ -68,7 +72,7 @@
 #include "excputil.h"			// xbeginthread
 #include "listutil.h"			// List...
 #include "common.h"			// IncrThreadUsage DecrThreadUsage
-
+#include "pathutil.h"
 #if 0
 #define  __PMPRINTF__
 #include "PMPRINTF.H"
@@ -83,9 +87,9 @@ static PSZ pszSrcFile = __FILE__;
 static INT tidFleshWorkListThread = -1;	// 2015-08-08 SHL
 
 static PCSZ pszFleshFocusPath;	// 2015-08-20 SHL
-
+#if 0
 BOOL fNoFleshDbgMsg;	// 2015-08-09 SHL FIXME to be gone
-
+#endif
 #pragma data_seg(GLOBAL1)
 ULONG NoBrokenNotify;
 BOOL fFilesInTree;
@@ -188,10 +192,11 @@ BOOL FleshEnv(HWND hwndCnr, PCNRITEM pciParent)
 		ri.zOrder = (ULONG)CMA_TOP;
 		ri.cRecordsInsert = 1;
 		ri.fInvalidateRecord = FALSE;
-		// 2015-08-03 SHL FIXME debug
+#if 0		// 2015-08-03 SHL FIXME debug
 		if (pciL->pszFileName == NullStr)
 		  DbgMsg(pszSrcFile, __LINE__, "Stubby CM_INSERTRECORD pci %p pszFileName \"%s\"", pciL, pciL->pszFileName); // 2015-08-03 SHL FIXME debug
-		if (!WinSendMsg(hwndCnr,
+#endif
+                if (!WinSendMsg(hwndCnr,
 				CM_INSERTRECORD, MPFROMP(pciL), MPFROMP(&ri)))
 		  FreeCnrItem(hwndCnr, pciL);
 	      }
@@ -237,7 +242,7 @@ BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent)
   if (fAmQuitting)
     return FALSE;
 
-  // 2015-08-03 SHL FIXME debug
+#if 0  // 2015-08-03 SHL FIXME debug
   if (!fNoFleshDbgMsg) {
     DbgMsg(pszSrcFile, __LINE__, "Flesh %s pciParent %p pszFileName %p",
 	   pciParent && (INT)pciParent != -1 && pciParent->pszFileName ?
@@ -245,30 +250,28 @@ BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent)
 	   pciParent,
 	   pciParent && (INT)pciParent != -1 ? pciParent->pszFileName : (PVOID)-1); // 2015-08-03 SHL FIXME debug
   }
-
-  pciL = (PCNRITEM)WinSendMsg(hwndCnr,
-			      CM_QUERYRECORD,
-			      MPFROMP(pciParent),
-			      MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
-
+#endif
   // 2015-08-06 SHL allow pciL -1
   // 2015-08-06 SHL FIXME to not need pszFileName check
-  if (!pciL || (INT)pciL == -1 || !*pciL->pszFileName || !strcmp(pciL->pszFileName, NullStr)) {
-
+  if (!pciParent->fleshed) {
+    pciL = (PCNRITEM)WinSendMsg(hwndCnr,
+                                CM_QUERYRECORD,
+                                MPFROMP(pciParent),
+                                MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
     // No children or filename null
     if (pciL && (INT)pciL != -1) {
+      AddFleshWorkRequest(hwndCnr, pciL, eStubby);
       // 2015-08-06 SHL FIXME to ensure this an not happen
-      // if (!*pciL->pszFileName)
-	// Runtime_Error(pszSrcFile, __LINE__, "Flesh called with pci %p pszFileName (null)", pciL);
-
+      if (!*pciL->pszFileName || !strcmp(pciL->pszFileName, NullStr))
+        Runtime_Error(pszSrcFile, __LINE__, "Flesh called with pci %p pszFileName (null)", pciL);
+#if 0
       if (!fNoFleshDbgMsg)
 	DbgMsg(pszSrcFile, __LINE__, "Flesh RemoveCnrItems() pciL %p \"%s\"",
 	       pciL,
 	       pciL->pszFileName ? pciL->pszFileName : "(null)"); // 2015-08-04 SHL FIXME debug
       // Assume refernces to pciL already removed from work list
-      RemoveCnrItems(hwndCnr, pciL, 1, CMA_FREE);
+#endif
     }
-
     dcd = INSTDATA(hwndCnr);
     if (dcd && dcd->size != sizeof(DIRCNRDATA))
       dcd = NULL;
@@ -286,7 +289,9 @@ BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent)
 		     NULL,		// stop flag
 		     dcd,
 		     NULL,		// total files
-		     NULL);		// total bytes
+                     NULL,               // total bytes
+                     (pciL && (INT)pciL != -1) ? pciL->pszDisplayName : 0);
+    pciParent->fleshed = TRUE;
     return TRUE;
   }
 
@@ -305,10 +310,10 @@ VOID UnFlesh(HWND hwndCnr, PCNRITEM pciParent)
 
   if (!pciParent || !hwndCnr)
     return;
-
+#if 0
   if (!fNoFleshDbgMsg)
     DbgMsg(pszSrcFile, __LINE__, "UnFlesh pciParent %p pszFileName \"%s\"", pciParent, pciParent->pszFileName ? pciParent->pszFileName : "(null)"); // 2015-08-03 SHL FIXME debug
-
+#endif
   for (;;) {
     pciL = (PCNRITEM)WinSendMsg(hwndCnr,
 				CM_QUERYRECORD,
@@ -316,9 +321,10 @@ VOID UnFlesh(HWND hwndCnr, PCNRITEM pciParent)
 				MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
     if (!pciL || (INT)pciL == -1)
       break;			// Done
-
+#if 0
     if (!fNoFleshDbgMsg)
       DbgMsg(pszSrcFile, __LINE__, "UnFlesh RemoveCnrItems() pciL %p \"%s\"", pciL, pciL->pszFileName ? pciL->pszFileName : "(null)"); // 2015-08-03 SHL FIXME debug
+#endif
     RemoveCnrItems(hwndCnr, pciL, 1, CMA_FREE);
     removed = TRUE;
   } // for
@@ -327,7 +333,9 @@ VOID UnFlesh(HWND hwndCnr, PCNRITEM pciParent)
     WinSendMsg(hwndCnr,
 	       CM_INVALIDATERECORD,
 	       MPFROMP(&pciParent),
-	       MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
+               MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
+    pciParent->fleshed = FALSE;
+    DosSleep(1); // Let container items go away
   }
   return;
 }
@@ -367,13 +375,14 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
   ULONG flags;
   static BOOL brokenlan = FALSE, isbroken = FALSE;
 
+  //DbgMsg(pszSrcFile, __LINE__,"Stubby pciParent %p", pciParent);
   if (!pciParent || (INT)pciParent == -1 || !*pciParent->pszFileName
       || pciParent->pszFileName == NullStr || !hwndCnr)
     return FALSE;
-
+#if 0
   if (!fNoFleshDbgMsg)
     DbgMsg(pszSrcFile, __LINE__, "Stubby pciParent %p pszFileName %s", pciParent, pciParent->pszFileName); // 2015-08-03 SHL FIXME debug
-
+#endif
   // Build wildcard
   len = strlen(pciParent->pszFileName);
   memcpy(wildcard, pciParent->pszFileName, len + 1);
@@ -385,9 +394,8 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
   // 2015-08-19 SHL FIXME to know how this can happen
   if (!isalpha(*wildcard) || wildcard[1] != ':' || wildcard[2] != '\\') {
     MakeFullName(wildcard);
-    DbgMsg(pszSrcFile, __LINE__, "Stubby MakeFullName returned %s", wildcard); // 2015-08-19 SHL FIXME debug
+    //DbgMsg(pszSrcFile, __LINE__, "Stubby MakeFullName returned %s", wildcard); // 2015-08-19 SHL FIXME debug
   }
-
   drvNum = toupper(*pciParent->pszFileName) - 'A';
   flags = driveflags[drvNum];
   if (!isalpha(*wildcard) ||
@@ -420,7 +428,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 
   fl = includefiles ? FILE_DIRECTORY : MUST_HAVE_DIRECTORY;
 
-  DbgMsg(pszSrcFile, __LINE__, "Stubby DosFindFirst(%s)", wildcard); // 2015-08-19 SHL FIXME debug
+  //DbgMsg(pszSrcFile, __LINE__, "Stubby DosFindFirst(%s)", wildcard); // 2015-08-19 SHL FIXME debug
 
   rc = DosFindFirst(wildcard,
 		    &hDir,
@@ -494,8 +502,6 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
     }
     goto None;				// Done
   }
-
-
   if (!rc) {
     DosFindClose(hDir);
     if (nm) {
@@ -538,7 +544,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 	     (pffb->achName[1] &&
 	      (pffb->achName[1] != '.' || pffb->achName[2]))))
 	{
-	  // Got directory other than . or .. (or a file)
+          // Got directory other than . or .. (or a file)
 	  isadir = TRUE;
 	  break;
 	}
@@ -561,11 +567,59 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 		      GetPString(IDS_RECORDALLOCFAILEDTEXT));
 	  }
 	  else {
-	    RECORDINSERT ri;
-	    // 2015-08-19 SHL FIXME to use BldFullPathName(wildcard, ...)
-	    pci->pszFileName = NullStr;	// 2015-08-19 SHL FIXME to doc why
-	    pci->pszDisplayName = NullStr;
-	    pci->rc.pszIcon = pci->pszDisplayName;
+            RECORDINSERT ri;
+            CHAR szBuffer[CCHMAXPATH + 14];
+            CHAR *p;
+            HPOINTER hptr;
+
+            p = strchr(wildcard, '*');
+            *p = 0;;
+            BldFullPathName(szBuffer, wildcard, pffb->achName);
+	    pci->pszFileName =  xstrdup(szBuffer, pszSrcFile, __LINE__); //NullStr;   // 2015-08-19 SHL FIXME to doc why
+            p = strrchr(pci->pszFileName, '\\');
+            p++;
+            pci->pszDisplayName = p; //NullStr;
+            pci->rc.pszIcon = pci->pszDisplayName;
+            if (fForceUpper)
+              strupr(pci->pszFileName);
+            else if (fForceLower)
+              strlwr(pci->pszFileName);
+          
+            flags = driveflags[toupper(*pci->pszFileName) - 'A'];
+          
+            // get an icon to use with it
+            if (pffb->attrFile & FILE_DIRECTORY) {
+              // is directory
+              if (fNoIconsDirs ||
+                  (flags & DRIVE_NOLOADICONS) ||
+                  !isalpha(*pci->pszFileName)) {
+                hptr = (HPOINTER) 0;
+              }
+              else
+                hptr = WinLoadFileIcon(pci->pszFileName, FALSE);
+            }
+            else {
+              // is file
+              if (fNoIconsFiles ||
+                  (flags & DRIVE_NOLOADICONS) ||
+                  !isalpha(*pci->pszFileName)) {
+                hptr = (HPOINTER) 0;
+              }
+              else
+                hptr = WinLoadFileIcon(pci->pszFileName, FALSE);
+          
+              if (!hptr || IsDefaultIcon(hptr))
+                hptr = IDFile(pci->pszFileName);
+            }
+          
+            if (!hptr) {
+              hptr = pffb->attrFile & FILE_DIRECTORY ?
+                     hptrDir : pffb->attrFile & FILE_SYSTEM ?
+                     hptrSystem : pffb->attrFile & FILE_HIDDEN ?
+                     hptrHidden : pffb->attrFile & FILE_READONLY ?
+                     hptrReadonly : hptrFile;
+            }
+            pci->rc.hptrIcon = hptr;
 	    memset(&ri, 0, sizeof(RECORDINSERT));
 	    ri.cb = sizeof(RECORDINSERT);
 	    ri.pRecordOrder = (PRECORDCORE)CMA_END;
@@ -573,27 +627,30 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 	    ri.zOrder = (ULONG)CMA_TOP;
 	    ri.cRecordsInsert = 1;
 	    ri.fInvalidateRecord = TRUE;
-	     // 2015-08-03 SHL FIXME debug
+#if 0	     // 2015-08-03 SHL FIXME debug
 	    if (pci->pszFileName == NullStr)
 	      DbgMsg(pszSrcFile, __LINE__, "Stubby CM_INSERTRECORD %p \"%s\" %.255s", pci, pci->pszFileName, pffb->achName);
-	    if (!WinSendMsg(hwndCnr,
+#endif
+            if (!WinSendMsg(hwndCnr,
 			    CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
 	      // Assume busy and try again
 	      DosSleep(50); //05 Aug 07 GKY 100
 	      WinSetFocus(HWND_DESKTOP, hwndCnr);
-	      if (WinIsWindow((HAB)0, hwndCnr)) {
+              if (WinIsWindow((HAB)0, hwndCnr)) {
+#if 0
 		if (!fNoFleshDbgMsg) {
-		  // 2015-08-03 SHL FIXME debug
-		  if (pci->pszFileName == NullStr)
-		    DbgMsg(pszSrcFile, __LINE__, "Stubby CM_INSERTRECORD pci %p pszFileName \"%s\"", pci, pci->pszFileName); // 2015-08-03 SHL FIXME debug
-		}
+          	  // 2015-08-03 SHL FIXME debug
+		  //if (pci->pszFileName == NullStr)
+		  //  DbgMsg(pszSrcFile, __LINE__, "Stubby CM_INSERTRECORD pci %p pszFileName \"%s\"", pci, pci->pszFileName); // 2015-08-03 SHL FIXME debug
+                }
+#endif
 		if (!WinSendMsg(hwndCnr,
 				CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
 		  Win_Error(hwndCnr, HWND_DESKTOP, __FILE__, __LINE__,
 			    GetPString(IDS_RECORDINSERTFAILEDTEXT));
 		  FreeCnrItem(hwndCnr, pci);
 		}
-		else
+                else
 		  ok = TRUE;
 	      }
 	    }
@@ -669,7 +726,7 @@ VOID DeleteStaleFleshWorkListItems(PCNRITEM pci)
     item = List2Search(&FleshWorkList, WorkListItemMatches, &match);
     if (!item)
       break;
-    DbgMsg(pszSrcFile, __LINE__, "DeleteStaleFleshWorkListItems deleting %p %s", pci, pci->pszFileName ? pci->pszFileName : "(null)"); // 2015-08-03 SHL FIXME debug
+    //DbgMsg(pszSrcFile, __LINE__, "DeleteStaleFleshWorkListItems deleting %p %s", pci, pci->pszFileName ? pci->pszFileName : "(null)"); // 2015-08-03 SHL FIXME debug
     List2Delete(&FleshWorkList, item);
     xfree(item, pszSrcFile, __LINE__);
   }
@@ -814,6 +871,7 @@ VOID WaitFleshWorkListEmptyDbg(PCSZ pszDirName, PCSZ pszSrcFile_, UINT uSrcLineN
 #   endif
     return;		// Avoid hang
   }
+#if 0
   else if (IsFleshWorkListEmpty()) {
 #   ifdef WaitFleshWorkListEmpty
     DbgMsg(pszSrcFile, __LINE__, "WaitFleshWorkListEmpty called with worklist empty at %s:%u", pszSrcFile_, uSrcLineNo_);
@@ -821,6 +879,7 @@ VOID WaitFleshWorkListEmptyDbg(PCSZ pszDirName, PCSZ pszSrcFile_, UINT uSrcLineN
     DbgMsg(pszSrcFile, __LINE__, "WaitFleshWorkListEmpty called with work list empty");
 #   endif
   }
+#endif
 
   // Can not wait if call from thread 1 or FleshWorkListThread
   for (waited = FALSE; !IsFleshWorkListEmpty(); waited = TRUE) {
@@ -858,7 +917,7 @@ VOID WaitFleshWorkListEmptyDbg(PCSZ pszDirName, PCSZ pszSrcFile_, UINT uSrcLineN
 
       if (!item) {
 	if (waited)
-	  DosSleep(250);		// Let PM do some work
+	  DosSleep(100);		// Let PM do some work
 	break;				// Dependents gone from work list
       }
     } // if pszDirName
@@ -888,7 +947,7 @@ VOID SetFleshFocusPath(PCSZ pszPath) {
   xDosReleaseMutexSem(hmtxFleshWork);
   if (pszOld)
     xfree((PVOID)pszOld, pszSrcFile, __LINE__);
-  DbgMsg(pszSrcFile, __LINE__, "SetFleshFocusPath focus path set to %s", pszFleshFocusPath); // 2015-08-03 SHL FIXME debug
+  //DbgMsg(pszSrcFile, __LINE__, "SetFleshFocusPath focus path set to %s", pszFleshFocusPath); // 2015-08-03 SHL FIXME debug
 
 }
 
@@ -947,19 +1006,22 @@ VOID FleshWorkThread(PVOID arg)
 
 	// Wait for new items to be added to list
 	if (!item) {
-	  ULONG ul;
+          ULONG ul;
+#if 0
 	  if (!fNoFleshDbgMsg)
 	    DbgMsg(pszSrcFile, __LINE__, "FleshWorkThread work list empty - waiting"); // 2015-08-03 SHL FIXME debug
-	  xDosWaitEventSem(hevFleshWorkListChanged, SEM_INDEFINITE_WAIT);
-	  xDosResetEventSem(hevFleshWorkListChanged, &ul);
+#endif
+          xDosWaitEventSem(hevFleshWorkListChanged, SEM_INDEFINITE_WAIT);
+          xDosResetEventSem(hevFleshWorkListChanged, &ul);
+#if 0
 	  if (!fNoFleshDbgMsg)
 	    DbgMsg(pszSrcFile, __LINE__, "FleshWorkThread work hev posted"); // 2015-08-03 SHL FIXME debug
-	  continue;
+#endif
+          continue;
 	}
 
-	if (WinIsWindow((HAB)0, item->hwndCnr)) {
-#if 0 // 2015-08-07 SHL	FIXME debug
-	  // 2015-08-03 SHL FIXME debug
+        if (WinIsWindow((HAB)0, item->hwndCnr)) { 
+#if 0     // 2015-08-07 SHL FIXME debug
 	  {
 	    static PSZ itemNames[] = {
 		    "eStubby", "eFlesh", "eFleshEnv", "eUnFlesh"
@@ -978,15 +1040,17 @@ VOID FleshWorkThread(PVOID arg)
 #endif
 
 	  switch (item->action) {
-	  case eUnFlesh:
-	    UnFlesh(item->hwndCnr, item->pci);
+          case eUnFlesh:
+            UnFlesh(item->hwndCnr, item->pci);
 	    break;
 	  case eFleshEnv:
 	    FleshEnv(item->hwndCnr, item->pci);
 	    break;
 	  case eStubby:
 	    // DbgMsg(pszSrcFile, __LINE__, "FleshWorkThread pci %p pszFileName %s", stubbyArgs->pci, stubbyArgs->pci->pszFileName); // 2015-08-03 SHL FIXME debug
-	    Stubby(item->hwndCnr, item->pci);
+            priority_bumped();
+            Stubby(item->hwndCnr, item->pci);
+            priority_normal();
 	    break;
 	  case eFlesh:
 	    if (Flesh(item->hwndCnr, item->pci)) {
@@ -1040,14 +1104,14 @@ BOOL StartFleshWorkThread()
   rc = xDosCreateEventSem(NULL, &hevFleshWorkListChanged, 0 /* Not shared */, FALSE /* Reset */);
   if (rc)
     return FALSE;			// Give up
-
-  /* DbgMsg is time consuming
+#if 0
+   /*DbgMsg is time consuming
      define FM2_NO_FLESH_DBGMSG to suppress
      2015-08-09 SHL FIXME to be gone
-   */
+     */
 
   fNoFleshDbgMsg = getenv("FM2_NO_FLESH_DBGMSG") != NULL;
-
+#endif
   tidFleshWorkListThread = xbeginthread(FleshWorkThread,
 			   65536,
 			   NULL,
