@@ -1060,7 +1060,7 @@ PVOID SaveEA(CHAR *filename,
   USHORT len, *num, *plen;
   CHAR *p, *peaval;
 
-  DbgMsg(pszSrcFile, __LINE__, "SaveEA: entered for %s", filename);
+  //DbgMsg(pszSrcFile, __LINE__, "SaveEA: entered for %s", filename);
 
   if (!filename || !current)
     return (PVOID)pfealist;		// FIXME to complain

@@ -1404,7 +1404,7 @@ MRESULT EXPENTRY MainWndProc2(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     CloseChildren(hwnd);
     PostMsg(hwnd, UM_CLOSE, MPVOID, MPVOID);
     fAmQuitting = TRUE;			// Let world know quit in progress
-    DbgMsg(pszSrcFile, __LINE__, "MainWndProc2 WM_CLOSE returning with fAmClosing %u", fAmClosing); // 2015-08-16 SHL
+    //DbgMsg(pszSrcFile, __LINE__, "MainWndProc2 WM_CLOSE returning with fAmClosing %u", fAmClosing); // 2015-08-16 SHL
     DosSleep(1);
     return 0;			// Suppress WinDefWindowProc WM_QUIT message generation
 

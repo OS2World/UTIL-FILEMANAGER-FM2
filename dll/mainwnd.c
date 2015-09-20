@@ -2136,7 +2136,7 @@ MRESULT EXPENTRY DriveBackProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (isalpha(*dv)) {
 	  HWND hwndActive = TopWindow(hwnd, (HWND) 0);
 	  if (hwndActive)
-	    DbgMsg(pszSrcFile, __LINE__, "WinSendMsg UM_DRIVECMD %c", *dv); // 2015-08-04 SHL FIXME debug
+	    //DbgMsg(pszSrcFile, __LINE__, "WinSendMsg UM_DRIVECMD %c", *dv); // 2015-08-04 SHL FIXME debug
 	    WinSendMsg(WinWindowFromID(hwndActive, FID_CLIENT),
 		       UM_DRIVECMD, MPFROMP(dv), MPVOID);
 	}
@@ -3467,7 +3467,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
 
   sprintf(szPrefix, "%s.", pszStateName);
 
-  DbgMsg(pszSrcFile, __LINE__, "RestoreDirCnrState %s", pszStateName);	// 2015-08-13 SHL FIXME debug
+  //DbgMsg(pszSrcFile, __LINE__, "RestoreDirCnrState %s", pszStateName);	// 2015-08-13 SHL FIXME debug
 
   // If restoring shutdown state bypass no-prescan drives
   fIsShutDownState = strcmp(pszStateName, PCSZ_SHUTDOWNSTATE) == 0;
@@ -3680,7 +3680,7 @@ static BOOL RestoreDirCnrState(HWND hwndClient, PSZ pszStateName, BOOL noview)
       SavePresParams(hwndPPSave, PCSZ_DIRCNR);
       WinDestroyWindow(hwndPPSave);
     }
-    DbgMsg(pszSrcFile, __LINE__, "RestoreDirCnrState returning fRestored %u", fRestored);	// 2015-08-13 SHL FIXME debug
+    //DbgMsg(pszSrcFile, __LINE__, "RestoreDirCnrState returning fRestored %u", fRestored);	// 2015-08-13 SHL FIXME debug
   }
 
   return fRestored;
@@ -6550,7 +6550,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	    }
 	    else if (SHORT1FROMMP(mp1) == MAIN_DRIVELIST) {
-	      DbgMsg(pszSrcFile, __LINE__, "MainWndProc CBN_ENTER ShowTreeRec(\"%s\")", path); // 2015-08-04 SHL FIXME debug
+	      //DbgMsg(pszSrcFile, __LINE__, "MainWndProc CBN_ENTER ShowTreeRec(\"%s\")", path); // 2015-08-04 SHL FIXME debug
 	      ShowTreeRec(WinWindowFromID(WinWindowFromID(hwndTree,
 							  FID_CLIENT),
 					  TREE_CNR), path, FALSE, TRUE);
@@ -6683,7 +6683,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     }
     fAmQuitting = TRUE;			// Let world know quit in progress
     DosSleep(1);
-    DbgMsg(pszSrcFile, __LINE__, "MainWndProc WM_CLOSE returning with fAmClosing %u", fAmClosing); // 2015-08-16 SHL
+    //DbgMsg(pszSrcFile, __LINE__, "MainWndProc WM_CLOSE returning with fAmClosing %u", fAmClosing); // 2015-08-16 SHL
 
     return 0;		// Suppress WinDefWindowProc WM_QUIT message generation
 
@@ -6713,7 +6713,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_DESTROY:
-    DbgMsg(pszSrcFile, __LINE__, "MainWndProc WM_DESTROY hwnd %p TID %u", hwnd, GetTidForThread());	// 2015-08-09 SHL FIXME debug
+    //DbgMsg(pszSrcFile, __LINE__, "MainWndProc WM_DESTROY hwnd %p TID %u", hwnd, GetTidForThread());	// 2015-08-09 SHL FIXME debug
     hwndMain = (HWND)0;
     if (!PostMsg((HWND)0, WM_QUIT, MPVOID, MPVOID))
       WinSendMsg((HWND)0, WM_QUIT, MPVOID, MPVOID);

@@ -3819,7 +3819,7 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     // If generic call, try to find conditional cascade default
     // 15 Feb 08 SHL fixme to be gone when/if IDM_NOTEBOOK gone?
     if (mp2 == MPFROMLONG(IDM_NOTEBOOK)) {
-      DbgMsg(pszSrcFile, __LINE__, "Trying to translate IDM_NOTEBOOK");
+      //DbgMsg(pszSrcFile, __LINE__, "Trying to translate IDM_NOTEBOOK");
       hwndTemp = WinQueryWindow(hwnd, QW_OWNER);
       if (hwndTemp != HWND_DESKTOP) {
 	HWND hwndMenu;
