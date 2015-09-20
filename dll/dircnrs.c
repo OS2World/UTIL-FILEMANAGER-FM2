@@ -901,10 +901,10 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (hwndTree) {
 	// 2015-08-12 SHL Optimze to update drive tree for only last saved state
 
-	// 2015-08-13 SHL
+#if 0        // 2015-08-13 SHL
 	if (fSwitchTreeOnDirChg)
 	  DbgMsg(pszSrcFile, __LINE__, "DirObjWndProc UM_RESCAN cDirectoriesRestored %u", cDirectoriesRestored); // 2015-08-04 SHL FIXME debug
-
+#endif
 	if (fSwitchTreeOnDirChg) {
 	  // Keep drive tree in sync with directory container
           PSZ pszTempDir;
@@ -912,13 +912,13 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (pszTempDir) {
 	    if (hwndMain) {
 	      if (TopWindow(hwndMain, (HWND)0) == dcd->hwndFrame) {
-		DbgMsg(pszSrcFile, __LINE__, "DirObjWndProc UM_RESCAN PostMsg(UM_SHOWME)"); // 2015-08-04 SHL FIXME debug
+		//DbgMsg(pszSrcFile, __LINE__, "DirObjWndProc UM_RESCAN PostMsg(UM_SHOWME)"); // 2015-08-04 SHL FIXME debug
 		if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
 		  free(pszTempDir);
 	      }
 	    }
 	    else {
-	      DbgMsg(pszSrcFile, __LINE__, "DirObjWndProc UM_RESCAN PostMsg(UM_SHOWME)"); // 2015-08-04 SHL FIXME debug
+	      //DbgMsg(pszSrcFile, __LINE__, "DirObjWndProc UM_RESCAN PostMsg(UM_SHOWME)"); // 2015-08-04 SHL FIXME debug
 	      if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
 		free(pszTempDir);
 	    }
@@ -1430,9 +1430,9 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       // 2015-08-13 SHL
       if (fSwitchTreeOnFocus && hwndTree && dcd && *dcd->directory) {
 	PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
-	DbgMsg(pszSrcFile, __LINE__, "DirCnrWndProc WM_SETFOCUS cDirectoriesRestored %u", cDirectoriesRestored); // 2015-08-04 SHL FIXME debug
+	//DbgMsg(pszSrcFile, __LINE__, "DirCnrWndProc WM_SETFOCUS cDirectoriesRestored %u", cDirectoriesRestored); // 2015-08-04 SHL FIXME debug
 	if (pszTempDir) {
-	  DbgMsg(pszSrcFile, __LINE__, "DirCnrWndProc WM_SETFOCUS PostMsg(UM_SHOWME, %s)", pszTempDir); // 2015-08-04 SHL FIXME debug
+	  //DbgMsg(pszSrcFile, __LINE__, "DirCnrWndProc WM_SETFOCUS PostMsg(UM_SHOWME, %s)", pszTempDir); // 2015-08-04 SHL FIXME debug
 	  if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
 	    free(pszTempDir);		// Failed
 	}
@@ -1971,7 +1971,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
 
 	  if (pszTempDir) {
-	    DbgMsg(pszSrcFile, __LINE__, "DirCnrWndProc IDM_FINDINTREE PostMsg(UM_SHOWME)"); // 2015-08-04 SHL FIXME debug
+	    //DbgMsg(pszSrcFile, __LINE__, "DirCnrWndProc IDM_FINDINTREE PostMsg(UM_SHOWME)"); // 2015-08-04 SHL FIXME debug
 	    if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir),
 			    MPFROMLONG(1L)))
 	      free(pszTempDir);
@@ -2358,14 +2358,10 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
 
       case IDM_RESCAN:
-	//DosEnterCritSec(); //GKY 11-27-08
-	dcd->stopflag++;
-	// DosExitCritSec();
+	dcd->stopflag++;;
 	// DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
 	if (!PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPVOID)) {
-	  //DosEnterCritSec(); //GKY 11-27-08
 	  dcd->stopflag--;
-	  //DosExitCritSec();
 	}
 	break;
 
@@ -2497,15 +2493,11 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (mp2) {
 	  strcpy(dcd->previous, dcd->directory);
 	  strcpy(dcd->directory, (CHAR *)mp2);
-	  //DosEnterCritSec(); // GKY 11-27-08
 	  dcd->stopflag++;
-	  //DosExitCritSec();
 	  //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
 	  if (!PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
 	    strcpy(dcd->directory, dcd->previous);
-	    //DosEnterCritSec(); // GKY 11-27-08
 	    dcd->stopflag--;
-	    //DosExitCritSec();
 	  }
 	  else if (*dcd->directory) {
 	    if (hwndMain)
