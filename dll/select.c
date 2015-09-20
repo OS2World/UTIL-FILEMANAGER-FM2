@@ -33,7 +33,7 @@
   13 Jun 15 GKY Fixed compare selection replaced pszFileNames with pszDisplayNames
   02 Aug 15 GKY Remove unneed SubbyScan code and improve suppression of blank lines and
                 duplicate subdirectory name caused by running Stubby in worker threads.
-                20 Sep 15 GKY Create CollapseAll and modify ExpandAll to reduce code overhead
+  20 Sep 15 GKY Create CollapseAll and modify ExpandAll to reduce code overhead
                 both to try and speed drive expansion. Change ExpandAll to allow it to loop
                 in UM_EXPAND until until drive is completely expanded. Changes were need to
                 work with Flesh, Stubby and UnFlesh being moved to a thread
