@@ -40,6 +40,9 @@
                 use of NULL/Nullstr pszFileNames by Stubby). Add code in Stubby to insert a
                 complete container item. Add a flag to indicate when a directory needed to be
                 Fleshed
+  26 Sep 15 GKY Changes to speed up ExpandAll
+  26 Sep 15 GKY WaitFleshWorkListEmpty now gives error message and returns if semaphore request
+                fails more than 5 consecutive times.
 
 ***********************************************************************/
 
@@ -73,6 +76,7 @@
 #include "listutil.h"			// List...
 #include "common.h"			// IncrThreadUsage DecrThreadUsage
 #include "pathutil.h"
+#include "treecnr.h"                    // fExpandAll
 #if 0
 #define  __PMPRINTF__
 #include "PMPRINTF.H"
@@ -862,6 +866,7 @@ VOID WaitFleshWorkListEmptyDbg(PCSZ pszDirName, PCSZ pszSrcFile_, UINT uSrcLineN
   BOOL pathSaved = FALSE;
   BOOL waited;
   PCSZ pszSavedFleshFocusPath;
+  INT rcCount = 0;
 
   if (tid == 1 || tid == tidFleshWorkListThread) {
 #   ifdef WaitFleshWorkListEmpty
@@ -901,8 +906,17 @@ VOID WaitFleshWorkListEmptyDbg(PCSZ pszDirName, PCSZ pszSrcFile_, UINT uSrcLineN
     // Just wait for dependents to be gone if path name given
     if (pszDirName) {
       rc = xDosRequestMutexSem(hmtxFleshWork, SEM_INDEFINITE_WAIT);
-      if (rc)
-	continue;			// Maybe should return ???
+      if (rc) {
+        rcCount++;
+        if (rcCount < 6)
+          continue;			// Maybe should return ???
+        else {
+          Dos_Error(MB_CANCEL, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
+                    PCSZ_DOSREQUESTMUTEXSEM);
+          return;
+        }
+
+      }
 
       if (!pathSaved) {
 	// Give priority to work items for parents of this path
@@ -914,15 +928,15 @@ VOID WaitFleshWorkListEmptyDbg(PCSZ pszDirName, PCSZ pszSrcFile_, UINT uSrcLineN
       item = (PFLESHWORKITEM)List2Search(&FleshWorkList, IsParentOfChildPath, (PVOID)pszDirName);
 
       xDosReleaseMutexSem(hmtxFleshWork);
+      rcCount = 0;
 
       if (!item) {
 	if (waited)
-	  DosSleep(100);		// Let PM do some work
+          DosSleep(fExpandAll ? 1 : 240);		// Let PM do some work
 	break;				// Dependents gone from work list
       }
     } // if pszDirName
-
-    DosSleep(250);
+    DosSleep(fExpandAll ? 10 : 250);
   } // for
 
   if (pathSaved) {

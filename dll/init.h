@@ -214,7 +214,6 @@ extern PCSZ WC_TREEOPENBUTTON;
 extern PCSZ WC_TREESTATUS;
 extern PCSZ WC_VIEWSTATUS;
 extern BOOL fDontSuggestAgain;
-extern BOOL fInitialDriveScan;
 extern BOOL fAmAV2;
 extern BOOL fChangeTarget;
 extern BOOL fIniExisted;

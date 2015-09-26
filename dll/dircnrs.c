@@ -2863,7 +2863,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     volser.serial)) {
 		  // 2015-08-07 SHL FIXME to wait for Flesh to finish before PostMsg
 		  if (SHORT2FROMMP(mp1) == CN_EXPANDTREE && AddFleshWorkRequest(hwnd, pci, eFlesh) &&
-		      !dcd->suspendview && fTopDir ) {
+		      !dcd->suspendview && fTopDir  && !fSwitchTreeOnDirChg) {
 		    PostMsg(hwnd, UM_TOPDIR, MPFROMP(pci), MPVOID);
 		    //DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
 		  }
@@ -2872,7 +2872,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	    }
 	    else if (SHORT2FROMMP(mp1) == CN_EXPANDTREE) {
-	      if (AddFleshWorkRequest(hwnd, pci, eFlesh) && !dcd->suspendview && fTopDir) {
+              if (AddFleshWorkRequest(hwnd, pci, eFlesh) && !dcd->suspendview &&
+                  fTopDir && !fSwitchTreeOnDirChg) {
 		// 2015-08-07 SHL FIXME to wait for Flesh to finish before PostMsg
 		PostMsg(hwnd, UM_TOPDIR, MPFROMP(pci), MPVOID);
 		//DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);

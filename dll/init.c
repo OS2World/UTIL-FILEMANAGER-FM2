@@ -139,6 +139,7 @@
   22 Aug 15 GKY Remove recurse scan code.
   24 Aug 15 GKY Remove obsolete code fDontAsk?zip
   20 Sep 15 GKY Move tree expand to a thread.
+  26 Sep 15 GKY Remove fInitialDriveScan code
   
 ***********************************************************************/
 
@@ -254,7 +255,6 @@ CHAR TimeSeparator[2];
 ULONG ulTimeFmt;
 ULONG ulDateFmt;
 BOOL fDontSuggestAgain;
-BOOL fInitialDriveScan;
 BOOL fAmAV2;
 BOOL fChangeTarget;
 BOOL fIniExisted;
@@ -1210,8 +1210,7 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
     fMoreButtons = fDrivebar = fCollapseFirst = fSwitchTreeOnDirChg =
     fSwitchTreeExpand = fNoSearch = fCustomFileDlg = fOtherHelp =
     fSaveMiniCmds = fUserComboBox = fFM2Deletes = fConfirmTarget =
-    fShowTarget = fDrivebarHelp = fCheckMM = fInitialDriveScan =
-    fEjectRemovableScan = TRUE;
+    fShowTarget = fDrivebarHelp = fCheckMM = fEjectRemovableScan = TRUE;
   ulCnrType = CCS_EXTENDSEL;
   FilesToGet = FILESTOGET_MAX;
   MaxComLineStrg = MAXCOMLINESTRGDEFAULT;

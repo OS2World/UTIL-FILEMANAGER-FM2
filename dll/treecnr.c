@@ -107,6 +107,10 @@
   20 Sep 15 GKY Get expand and switch code to work with Flesh, UnFlesh and Stubby running on
                 a thread. Loop and idle ExpandAll; Add CollapseAll; Move tree expand to a
                 thread; Have ShowTreeRec wait for the Flesh thread.
+  26 Sep 15 GKY Adjustments to ShowTreeRec to eliminate failures and reduce retries and container
+                noise on tree switches.
+  26 Sep 15 GKY Remove fInitialDriveScan code
+  26 Sep 15 GKY Changes to speed up ExpandAll
 
 ***********************************************************************/
 
@@ -190,6 +194,7 @@ BOOL fDFSee;
 BOOL fFDisk;
 BOOL fMiniLVM;
 BOOL fLVM;
+BOOL fExpandAll;
 HPOINTER hptrDunno;
 HWND hwndMainMenu;
 
@@ -202,7 +207,6 @@ INT TreesortFlags;
 static PSZ pszSrcFile = __FILE__;
 static BOOL fOkayMinimize;
 static HMQ hmqExpandTree;
-static BOOL fExpandAll;
 
 APIRET16 APIENTRY16 Dos16MemAvail(PULONG pulAvailMem);
 
@@ -304,26 +308,16 @@ VOID ShowTreeRec(HWND hwndCnr,
   CHAR szDirArg[CCHMAXPATH];		// Copy of passed value
   CHAR chSaved;
 
-  //DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec called for pszDir_ \"%s\"", pszDir_); // 2015-08-04 SHL FIXME debug
-
-  strcpy(szDirArg, pszDir_);		// Cache here in case arg content changed by some other thread
-
+  strcpy(szDirArg, pszDir_);	// Cache here in case arg content changed by some other thread
+  
   // already positioned to requested record?
   pci = WinSendMsg(hwndCnr,
 		   CM_QUERYRECORDEMPHASIS,
 		   MPFROMLONG(CMA_FIRST), MPFROMSHORT(CRA_CURSORED));
   if (pci && (INT)pci != -1 && !stricmp(pci->pszFileName, szDirArg)) {
-    found = TRUE;
     quickbail = TRUE;			// Already at requested record - bypass repositioning
     goto MakeTop;
   }
-  // 2015-08-23 SHL FIXME to be gone - problem must be elsewhere
-  // 2015-08-22 GKY Without this FM2 has NULL pci->pszFileName errors and switch failures
-  if (fInitialDriveScan)
-    DosSleep(100); // 100 still had errors
-  if (fSwitchTreeOnDirChg)
-    DosSleep(200);
-
   // 2015-08-13 SHL add retry logic 2015-08-22 GKY increase retries from 10 to 100 to
   // eliminate switch failures on deep or large tree state switches
   for (found = FALSE, retries = 0; !found && retries < 100; retries++) {
@@ -390,9 +384,7 @@ VOID ShowTreeRec(HWND hwndCnr,
 	  }
 	}
       }
-
-      DosSleep(100);			// 2015-08-13 SHL Let PM catch up
-
+      WaitFleshWorkListEmpty(NULL);     // 2015-09-26 GKY Let Flesh thread catch up
     } // while expanding
 
   } // for
@@ -403,6 +395,7 @@ VOID ShowTreeRec(HWND hwndCnr,
     // Found it
     if (~pci->rc.flRecordAttr & CRA_CURSORED) {
       if (collapsefirst) {
+        WaitFleshWorkListEmpty(NULL);
 	pciP = WinSendMsg(hwndCnr,
 			  CM_QUERYRECORD,
 			  MPVOID, MPFROM2SHORT(CMA_FIRST, CMA_ITEMORDER));
@@ -446,10 +439,11 @@ VOID ShowTreeRec(HWND hwndCnr,
 	WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciToSelect), MPVOID);
       }
       if (maketop || fTopDir) {
-        if (fCollapseFirst)
+        if (fCollapseFirst && !quickbail) {
           WaitFleshWorkListEmpty(NULL); //Let the root expand first otherwise it makes top
+        }
 	// 2015-08-23 SHL FIXME debug
-	//DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec ShowCnrRecord(%p) fTopDir %i maketop %i", pciToSelect, fTopDir, maketop); // 2015-08-04 SHL FIXME debug
+	//DbgMsg(pszSrcFile, __LINE__, "ShowTreeRec ShowCnrRecord(%p) filename %s", pciToSelect, pciToSelect->pszFileName); // 2015-08-04 SHL FIXME debug
 	ShowCnrRecord(hwndCnr, (PMINIRECORDCORE)pciToSelect);
       }
 
@@ -758,8 +752,10 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  }
 #endif
 	  //DbgMsg(pszSrcFile, __LINE__, "TreeObjWndProc UM_SHOWME calling ShowTreeRec(\"%s\")", mp1); // 2015-08-04 SHL FIXME debug
-	  ShowTreeRec(dcd->hwndCnr, (CHAR *)mp1, fCollapseFirst, TRUE);
-	  //DbgMsg(pszSrcFile, __LINE__, "TreeObjWndProc UM_SHOWME calling PostMsg(IDM_UPDATE)"); // 2015-08-04 SHL FIXME debug
+          priority_idle(); // 2015-09-26 GKY Majority of work done by Flesh and UI threads
+          ShowTreeRec(dcd->hwndCnr, (CHAR *)mp1, fCollapseFirst, TRUE);
+          priority_normal();
+          //DbgMsg(pszSrcFile, __LINE__, "TreeObjWndProc UM_SHOWME calling PostMsg(IDM_UPDATE)"); // 2015-08-04 SHL FIXME debug
 	  PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_UPDATE, 0), MPVOID);
 
 	  dcd->suspendview = (USHORT)tempsusp;	// Restore
@@ -3436,7 +3432,7 @@ static VOID ExpandTreeThread(VOID *args)
                     !volser.serial ||
                     driveserial[toupper(*pci->pszFileName) - 'A'] !=
                     volser.serial)
-                { // 2015-08-28 GKY fixme? I think this code runs on the UI thread
+                { 
                   WaitFleshWorkListEmpty(pci->pszFileName);	// 2015-08-19 SHL in case pci still in work list
                   AddFleshWorkRequest(dcd->hwndCnr, pci, eUnFlesh);
                 }
@@ -3445,7 +3441,7 @@ static VOID ExpandTreeThread(VOID *args)
                      driveserial[toupper(*pci->pszFileName) - 'A'] !=
                      volser.serial)) {
                   if (qmsg.msg == UM_EXPANDTREE && AddFleshWorkRequest(dcd->hwndCnr, pci, eFlesh)
-                      && !dcd->suspendview  && fTopDir) {
+                      && !dcd->suspendview  && fTopDir && !fSwitchTreeOnDirChg) {
                     DosSleep(1);
                     WaitFleshWorkListEmpty(pci->pszFileName);
                     PostMsg(dcd->hwndCnr, UM_TOPDIR, MPFROMP(pci), MPVOID);
@@ -3455,7 +3451,6 @@ static VOID ExpandTreeThread(VOID *args)
               }
               else {
                 driveserial[toupper(*pci->pszFileName) - 'A'] = -1;
-                // 2015-08-28 GKY fixme? I think this code runs on the UI thread
                 WaitFleshWorkListEmpty(pci->pszFileName);	// 2015-08-19 SHL in case pci still in work list
                 AddFleshWorkRequest(dcd->hwndCnr, pci, eUnFlesh);
                 PostMsg(dcd->hwndCnr, UM_RESCAN, MPVOID, MPVOID);

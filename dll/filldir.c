@@ -122,6 +122,7 @@
   20 Sep 15 GKY Add code for Flesh to skip the directory entry added by Stubby (eliminate
                 use of NULL/Nullstr pszFileNames by Stubby). Add code to relink pci chain
                 following rename, delete, etc. Add "Expanding" window text.
+  26 Sep 15 GKY Remove fInitialDriveScan code
 
 ***********************************************************************/
 
@@ -907,7 +908,8 @@ VOID ProcessDirectory(const HWND hwndCnr,
       InitITimer(&itdSleep, 500);
       do {
 	/**
-	 * remove . and .. from list if present
+         * remove . and .. and directories already added
+         * by Stubby from list if present
 	 * also counter file system bugs that sometimes
 	 * allows normal files to slip through when
 	 * only directories should appear (only a few
@@ -1182,7 +1184,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
     }
 
     // 13 Oct 09 SHL FIXME to be saymsg if ERROR_NOT_READY and first try on volume
-    if (rc && rc != ERROR_NO_MORE_FILES && (fDontSuggestAgain || !fInitialDriveScan)) {
+    if (rc && rc != ERROR_NO_MORE_FILES && fDontSuggestAgain) {
       Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 		GetPString(IDS_CANTFINDDIRTEXT), pszFileSpec);
     }
@@ -1687,16 +1689,13 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
     PostMsg(hwndMain, UM_BUILDDRIVEBAR, MPVOID, MPVOID);
 
   DosSleep(16);
-
-  fInitialDriveScan = FALSE;
-  //DbgMsg(pszSrcFile, __LINE__, "fInitialDriveScan now FALSE");	 // 2015-08-03 SHL FIXME debug
   DosPostEventSem(CompactSem);
 
   if (!fDontSuggestAgain) {
     BYTE info;
     BOOL includesyours = FALSE;
 
-    // 02 Mar 14 GKY !didone for fFirstTime so it works again
+    // 02 Mar 14 GKY !didonce for fFirstTime so it works again
    if (*szSuggest || ~driveflags[1] & DRIVE_IGNORE && !didonce) {
       if (!DosDevConfig(&info, DEVINFO_FLOPPY) && info == 1) {
 	if (!*szSuggest) {

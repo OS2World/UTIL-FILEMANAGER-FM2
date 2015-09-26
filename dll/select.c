@@ -37,6 +37,7 @@
                 both to try and speed drive expansion. Change ExpandAll to allow it to loop
                 in UM_EXPAND until until drive is completely expanded. Changes were need to
                 work with Flesh, Stubby and UnFlesh being moved to a thread
+  26 Sep 15 GKY Changes to speed up ExpandAll
 
 ***********************************************************************/
 
@@ -571,7 +572,7 @@ VOID SetMask(PSZ maskstr, MASK *mask)
 BOOL ExpandAll(HWND hwndCnr, INT count, PCNRITEM pciParent)
 {
   PCNRITEM pci;
-  static BOOL fExpanding = FALSE;
+  static BOOL fExpanding = FALSE; // statics are only used by tree container
   static INT counter = 1;
 
   if (count != counter && count != 0) {
@@ -595,6 +596,8 @@ BOOL ExpandAll(HWND hwndCnr, INT count, PCNRITEM pciParent)
       WinSendMsg(hwndCnr, CM_EXPANDTREE, MPFROMP(pciParent), MPVOID);
       if (count != 0) {
         fExpanding = TRUE;
+        if (IsFleshWorkListEmpty())
+          DosSleep(0);       // Yield to EXPANDTREE and Flesh thread
         if (!IsFleshWorkListEmpty()) {
           WaitFleshWorkListEmpty(NULL); // Let it expand
         }
@@ -608,7 +611,6 @@ BOOL ExpandAll(HWND hwndCnr, INT count, PCNRITEM pciParent)
                                   MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
     }
   }
-  //DosSleep(0);
   return fExpanding;
 }
 

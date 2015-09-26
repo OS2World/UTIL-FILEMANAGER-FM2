@@ -44,6 +44,7 @@ extern BOOL fDFSee;
 extern BOOL fFDisk;
 extern BOOL fMiniLVM;
 extern BOOL fLVM;
+extern BOOL fExpandAll;
 extern HPOINTER hptrDunno;
 extern HWND hwndMainMenu;
 
