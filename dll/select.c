@@ -38,6 +38,7 @@
                 in UM_EXPAND until until drive is completely expanded. Changes were need to
                 work with Flesh, Stubby and UnFlesh being moved to a thread
   26 Sep 15 GKY Changes to speed up ExpandAll
+  27 Sep 15 GKY DosSleep times in WaitFleshWorkListEmpty set by caller
 
 ***********************************************************************/
 
@@ -599,14 +600,14 @@ BOOL ExpandAll(HWND hwndCnr, INT count, PCNRITEM pciParent)
         if (IsFleshWorkListEmpty())
           DosSleep(0);       // Yield to EXPANDTREE and Flesh thread
         if (!IsFleshWorkListEmpty()) {
-          WaitFleshWorkListEmpty(NULL); // Let it expand
+          WaitFleshWorkListEmpty(NULL, 10); // Let it expand
         }
       }
     }
     while (pci && (INT)pci != -1) {
       ExpandAll(hwndCnr, count, pci);
-      if (!IsFleshWorkListEmpty())
-        WaitFleshWorkListEmpty(NULL); // Wait for container to catch up
+      if (count != 0 && !IsFleshWorkListEmpty())
+        WaitFleshWorkListEmpty(NULL, 10); // Wait for container to catch up
       pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pci),
                                   MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
     }

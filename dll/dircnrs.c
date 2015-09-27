@@ -92,6 +92,9 @@
   02 Aug 15 GKY Remove unneed SubbyScan code and improve suppression of blank lines and
                 duplicate subdirectory name caused by running Stubby in worker threads.
   07 Aug 15 SHL Rework to use AddFleshWorkRequest rather than direct calls to Stubby/Flesh/Unflesh
+  26 Sep 15 GKY Add code so case UM_TOPDIR actually exists put it in the object window so it
+                can call WaitFleshWorkListEmpty while avoiding thread 1
+  27 Sep 15 GKY DosSleep times in WaitFleshWorkListEmpty set by caller
 
 ***********************************************************************/
 
@@ -852,6 +855,17 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 MPFROMP(pci), MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
       }
       dcd->firsttree = TRUE;
+    }
+    return 0;
+
+  case UM_TOPDIR:
+    if (mp1) {
+      dcd = WinQueryWindowPtr(hwnd, QWL_USER);
+      if (dcd) {
+        PCNRITEM pci = (PCNRITEM) mp1;
+        WaitFleshWorkListEmpty(pci->pszFileName, 240L);
+        ShowCnrRecord(dcd->hwndCnr, (PMINIRECORDCORE) pci);
+      }
     }
     return 0;
 
@@ -2861,22 +2875,26 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    (!volser.serial ||
 		     driveserial[toupper(*pci->pszFileName) - 'A'] !=
 		     volser.serial)) {
-		  // 2015-08-07 SHL FIXME to wait for Flesh to finish before PostMsg
+                  // 2015-08-07 SHL FIXME to wait for Flesh to finish before PostMsg
+                  // 2015-09-26 GKY Waits (WaitFleshWorkListEmpty) in object window
+                  DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
 		  if (SHORT2FROMMP(mp1) == CN_EXPANDTREE && AddFleshWorkRequest(hwnd, pci, eFlesh) &&
-		      !dcd->suspendview && fTopDir  && !fSwitchTreeOnDirChg) {
-		    PostMsg(hwnd, UM_TOPDIR, MPFROMP(pci), MPVOID);
-		    //DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
+		      !dcd->suspendview && fTopDir) {
+		    PostMsg(dcd->hwndObject, UM_TOPDIR, MPFROMP(pci), MPVOID);
+		    DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
 		  }
 		}
 		driveserial[toupper(*pci->pszFileName) - 'A'] = volser.serial;
 	      }
 	    }
-	    else if (SHORT2FROMMP(mp1) == CN_EXPANDTREE) {
+            else if (SHORT2FROMMP(mp1) == CN_EXPANDTREE) {
+              DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
               if (AddFleshWorkRequest(hwnd, pci, eFlesh) && !dcd->suspendview &&
-                  fTopDir && !fSwitchTreeOnDirChg) {
-		// 2015-08-07 SHL FIXME to wait for Flesh to finish before PostMsg
-		PostMsg(hwnd, UM_TOPDIR, MPFROMP(pci), MPVOID);
-		//DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
+                  fTopDir) {
+                // 2015-08-07 SHL FIXME to wait for Flesh to finish before PostMsg
+                // 2015-09-26 GKY Waits (WaitFleshWorkListEmpty) in object window
+		PostMsg(dcd->hwndObject, UM_TOPDIR, MPFROMP(pci), MPVOID);
+		DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
 	      }
 	    }
 	    if (SHORT2FROMMP(mp1) == CN_EXPANDTREE && !dcd->suspendview)

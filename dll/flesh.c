@@ -43,6 +43,7 @@
   26 Sep 15 GKY Changes to speed up ExpandAll
   26 Sep 15 GKY WaitFleshWorkListEmpty now gives error message and returns if semaphore request
                 fails more than 5 consecutive times.
+  27 Sep 15 GKY DosSleep times in WaitFleshWorkListEmpty set by caller
 
 ***********************************************************************/
 
@@ -262,10 +263,10 @@ BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent)
                                 CM_QUERYRECORD,
                                 MPFROMP(pciParent),
                                 MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
-    // No children or filename null
+    // Added by Stubby to create plus sign run Stubby on it here and skip it in ProcessDirectory
     if (pciL && (INT)pciL != -1) {
       AddFleshWorkRequest(hwndCnr, pciL, eStubby);
-      // 2015-08-06 SHL FIXME to ensure this an not happen
+      // 2015-08-06 SHL FIXME to ensure this can not happen
       if (!*pciL->pszFileName || !strcmp(pciL->pszFileName, NullStr))
         Runtime_Error(pszSrcFile, __LINE__, "Flesh called with pci %p pszFileName (null)", pciL);
 #if 0
@@ -855,9 +856,9 @@ BOOL IsParentOfChildPath(PLIST2 item, PVOID data)
  */
 
 #ifndef WaitFleshWorkListEmpty // 2015-08-03 SHL FIXME debug
-VOID WaitFleshWorkListEmpty(PCSZ pszDirName)
+VOID WaitFleshWorkListEmpty(PCSZ pszDirName, ULONG ulSleep)
 #else
-VOID WaitFleshWorkListEmptyDbg(PCSZ pszDirName, PCSZ pszSrcFile_, UINT uSrcLineNo_)
+VOID WaitFleshWorkListEmptyDbg(PCSZ pszDirName, ULONG ulSleep, PCSZ pszSrcFile_, UINT uSrcLineNo_)
 #endif
 {
   APIRET rc;
@@ -932,11 +933,11 @@ VOID WaitFleshWorkListEmptyDbg(PCSZ pszDirName, PCSZ pszSrcFile_, UINT uSrcLineN
 
       if (!item) {
 	if (waited)
-          DosSleep(fExpandAll ? 1 : 240);		// Let PM do some work
+          DosSleep(ulSleep);		// Let PM do some work
 	break;				// Dependents gone from work list
       }
     } // if pszDirName
-    DosSleep(fExpandAll ? 10 : 250);
+    DosSleep(ulSleep);
   } // for
 
   if (pathSaved) {
