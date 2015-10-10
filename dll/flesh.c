@@ -44,6 +44,8 @@
   26 Sep 15 GKY WaitFleshWorkListEmpty now gives error message and returns if semaphore request
                 fails more than 5 consecutive times.
   27 Sep 15 GKY DosSleep times in WaitFleshWorkListEmpty set by caller
+  10 Oct 15 GKY Don't use Flesh thread for floppy drive scans fix them getting mistakenly identified
+                as directories and add nonexistent subdirectories.
 
 ***********************************************************************/
 
@@ -99,11 +101,11 @@ BOOL fNoFleshDbgMsg;	// 2015-08-09 SHL FIXME to be gone
 ULONG NoBrokenNotify;
 BOOL fFilesInTree;
 
-BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent);
+//BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent);
 
 BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent);
 BOOL FleshEnv(HWND hwndCnr, PCNRITEM pciParent);
-VOID UnFlesh(HWND hwndCnr, PCNRITEM pciParent);
+//VOID UnFlesh(HWND hwndCnr, PCNRITEM pciParent);
 
 /**
  * Insert CNRITEMs for members of PATH-like environment variable
@@ -656,7 +658,7 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
 		  FreeCnrItem(hwndCnr, pci);
 		}
                 else
-		  ok = TRUE;
+                  ok = TRUE;
 	      }
 	    }
 	    else

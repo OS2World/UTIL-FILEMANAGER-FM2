@@ -21,7 +21,7 @@
   14 Mar 09 GKY Prevent execution of UM_SHOWME while drive scan is occuring
   22 Jul 09 GKY Code changes to use semaphores to serialize drive scanning
   07 Aug 15 SHL Sync with Flesh/Stubby mods
-
+  10 Oct 15 GKY Eliminate some unnecessary Flesh and UnFlesh calls
 
 ***********************************************************************/
 
@@ -244,7 +244,8 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR *filename, BOOL partial,
 		ri.fInvalidateRecord = TRUE;
 		if (WinSendMsg(hwndCnr,
 			       CM_INSERTRECORD, MPFROMP(pci), MPFROMP(&ri))) {
-		  AddFleshWorkRequest(hwndCnr, pci, eFlesh);
+                  if (!pci->fleshed)
+                    AddFleshWorkRequest(hwndCnr, pci, eFlesh);
 		  *p = temp;
 		  pci = FindCnrRecord(hwndCnr,
 				      filename, pciT, partial, FALSE, TRUE);
@@ -255,8 +256,9 @@ PCNRITEM UpdateCnrRecord(HWND hwndCnr, CHAR *filename, BOOL partial,
 	    }
 	    else {
 	      pciParent = pciT;
-	      if (!(pciT->rc.flRecordAttr & CRA_EXPANDED)) {
-		AddFleshWorkRequest(hwndCnr, pciT, eFlesh);
+              if (!(pciT->rc.flRecordAttr & CRA_EXPANDED)) {
+                if (!pciT->fleshed)
+                  AddFleshWorkRequest(hwndCnr, pciT, eFlesh);
 		*p = temp;
 		pci = FindCnrRecord(hwndCnr,
 				    filename, pciT, partial, FALSE, TRUE);

@@ -12,6 +12,8 @@
   19 Aug 15 SHL Allow WaitFleshWorkListEmpty to wait for dependent items
   22 Aug 15 GKY Remove recurse scan code.
   27 Sep 15 GKY DosSleep times in WaitFleshWorkListEmpty set by caller
+  10 Oct 15 GKY Don't use Flesh thread for floppy drive scans fix them getting mistakenly identified
+                as directories and add nonexistent subdirectories.
 
 ***********************************************************************/
 
@@ -25,7 +27,8 @@ typedef enum {eStubby, eFlesh, eFleshEnv, eUnFlesh} FLESHWORKACTION;
 BOOL IsFleshWorkListEmpty();
 
 VOID SetFleshFocusPath(PCSZ pszPath);
-
+BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent);
+VOID UnFlesh(HWND hwndCnr, PCNRITEM pciParent);
 #if 0 // 2015-08-03 SHL FIXME debug
 VOID WaitFleshWorkListEmpty(PCSZ pszDirName, ULONG ulSleep);
 #else

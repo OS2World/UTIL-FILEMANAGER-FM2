@@ -119,6 +119,10 @@
                 directories are present; treat floppies like invalid drives on rescan (IDM_UPDATE
                 to avoid them seen as directories and having random subdirectories attached to
                 them.
+  10 Oct 15 GKY Eliminate some unnecessary Flesh and UnFlesh calls
+  10 Oct 15 GKY Update icon and display name on CD/DVD eject in all cases.
+  10 Oct 15 GKY Don't use Flesh thread for floppy drive scans fix them getting mistakenly identified
+                as directories and add nonexistent subdirectories.
 
 ***********************************************************************/
 
@@ -867,19 +871,16 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
   case UM_SETUP2:
     {
       PCNRITEM pci = (PCNRITEM) mp1;
-      PCNRITEM pciL;
 
       if (pci) {
-        pciL = (PCNRITEM)WinSendMsg(dcd->hwndCnr,
-                                    CM_QUERYRECORD,
-                                    MPFROMP(pci),
-                                    MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
-        if (pciL && (INT) pciL != -1) {
-          WaitFleshWorkListEmpty(NULL, 10);	// 2015-08-13 SHL in case pci still in work list
-          AddFleshWorkRequest(hwnd, pci, eUnFlesh);
+        if ((INT) mp2 == 21 && pci->rc.hptrIcon == hptrCDROM) {
+          if (fEjectCDScan)
+            PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
+          else {
+            driveflags[toupper(*pci->pszFileName) - 'A'] |= DRIVE_INVALID;
+            PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_UPDATE, 0), MPVOID);
+          }
         }
-        if ((INT) mp2 == 21 && pci->rc.hptrIcon == hptrCDROM)
-          PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
         NotifyError(pci->pszFileName, (ULONG) mp2);
       }
     }
@@ -934,7 +935,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		 MPFROMP(&cnri), MPFROMLONG(sizeof(CNRINFO)));
       if (cnri.cRecords) {
 	sprintf(s, GetPString(IDS_NUMDRIVESTEXT), cnri.cRecords);
-	if (pci && (INT) pci != -1 && pci->pszFileName != NullStr) { //fixme? will try checking pci->pszFileName instead of the pointer
+	if (pci && (INT) pci != -1) { 
 	  if (!(driveflags[toupper(*pci->pszFileName) - 'A'] &
 		DRIVE_REMOVABLE) ||
 	      driveserial[toupper(*pci->pszFileName) - 'A'] != -1) {
@@ -1003,17 +1004,17 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    }
 	  }
           else {
-            PCNRITEM pciL;
 	    // find root record and strip it if needed
             pci = FindParentRecord(dcd->hwndCnr, pci);
             driveserial[toupper(*pci->pszFileName) - 'A'] = -1;
-            pciL = (PCNRITEM)WinSendMsg(dcd->hwndCnr,
-                                        CM_QUERYRECORD,
-                                        MPFROMP(pci),
-                                        MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
-            if (pciL && (INT) pciL != -1) {
+            if (pci->fleshed) {
               WaitFleshWorkListEmpty(pci->pszFileName, 240);	// 2015-08-19 SHL in case pci still in work list
-              AddFleshWorkRequest(dcd->hwndCnr, pci, eUnFlesh);
+              if ((toupper(*pci->pszFileName) - 'A') > 1)  {
+                DbgMsg(pszSrcFile, __LINE__,"UM_RESCAN2 UnFlesh %s", pci->pszFileName);
+                AddFleshWorkRequest(hwnd, pci, eUnFlesh);
+              }
+              else
+                UnFlesh(hwnd, pci);
             }
 	  }
 	}
@@ -1402,28 +1403,12 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinSetWindowText(hwndAttr, pci->pszDispAttr);
 	}
       }
-      //DbgMsg(pszSrcFile, __LINE__, "TreeCnrWndProc UM_RESCAN PostMsg(UM_RESCAN2, %p %s)",
-      //       pci, pci && pci->pszFileName ? pci->pszFileName : "(null)"); // 2015-08-04 SHL FIXME debug
       PostMsg(dcd->hwndObject, UM_RESCAN2, MPFROMP(pci), MPVOID);
       if (hwndStatus2)
 	PostMsg(hwnd, UM_TIMER, MPVOID, MPVOID);
     }
     return 0;
-#if 0
-  case UM_SETUP2:
-    {
-      PCNRITEM pci = (PCNRITEM) mp1;
 
-      if (pci) {
-        WaitFleshWorkListEmpty(NULL, 10);	// 2015-08-13 SHL in case pci still in work list
-	AddFleshWorkRequest(hwnd, pci, eUnFlesh);
-        if ((INT) mp2 == 21)
-          PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
-        NotifyError(pci->pszFileName, (ULONG) mp2);
-      }
-    }
-    return 0;
-#endif
   case UM_SETUP:
 #   ifdef FORTIFY
     // Balance WM_DESTROY
@@ -2019,7 +2004,6 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       FILEFINDBUF3 ffb;
       HDIR hDir = HDIR_CREATE;
       ULONG nm = 1;
-      // APIRET status;
       BOOL IsOk = FALSE;
       ULONG ulDriveNum, ulDriveMap;
       PCNRITEM pciP, pciL, pci;
@@ -2104,11 +2088,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      AddFleshWorkRequest(hwnd, pciP, eFlesh);	// forceFlesh
 	      driveserial[x] = volser.serial;
 	    }
-	    pciL = WinSendMsg(hwnd,
-			      CM_QUERYRECORD,
-			      MPFROMP(pciP),
-			      MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
-	    if (!pciL) {
+	    if (!pciP->fleshed) {
 	      AddFleshWorkRequest(hwnd, pciP, eFlesh);	// forceFlesh
 	    }
 	    if ((fShowFSTypeInTree || fShowDriveLabelInTree) &&
@@ -2452,9 +2432,9 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_DRIVECMD:
     if (mp1) {
-      //DbgMsg(pszSrcFile, __LINE__, "TreeCnrWndProc UM_DRIVECMD ShowTreeRec(\"%s\")", mp1);
+      DbgMsg(pszSrcFile, __LINE__, "TreeCnrWndProc UM_DRIVECMD ShowTreeRec(\"%s\")", mp1);
       ShowTreeRec(hwnd, (CHAR *)mp1, FALSE, TRUE);
-      //DbgMsg(pszSrcFile, __LINE__, "TreeCnrWndProc PostMsg(IDM_UPDATE)");
+      DbgMsg(pszSrcFile, __LINE__, "TreeCnrWndProc PostMsg(IDM_UPDATE)");
       PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_UPDATE, 0), MPVOID);
     }
     return 0;
@@ -2919,16 +2899,33 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    if (pci->attrFile & FILE_DIRECTORY) {
 	      if (pci->flags & RECFLAGS_UNDERENV)
                 break;
-
-              AddFleshWorkRequest(hwnd, pci, eUnFlesh);
+              if (pci->fleshed) {
+                if (x > 1) {
+                  DbgMsg(pszSrcFile, __LINE__,"UM_UPDATE UnFlesh %s", pci->pszFileName);
+                  AddFleshWorkRequest(hwnd, pci, eUnFlesh);
+                }
+                else
+                  UnFlesh(hwnd, pci);
+              }
 
 	      // Check if drive type might need update
 	      if ((driveflag & (DRIVE_INVALID | DRIVE_NOPRESCAN)) ||
-		  (~driveflag & DRIVE_NOPRESCAN && pci->rc.hptrIcon == hptrDunno) || x < 2) {
+		  (~driveflag & DRIVE_NOPRESCAN && pci->rc.hptrIcon == hptrDunno)) {
 		DriveFlagsOne(x, FileSystem, &volser);
 		driveflag = driveflags[x];
-		if (driveflag & DRIVE_INVALID)
-		  pci->rc.hptrIcon = hptrDunno;
+                if (driveflag & DRIVE_INVALID)
+                  if (driveflag & DRIVE_REMOVABLE) {
+                    pci->rc.hptrIcon = hptrRemovable;
+                    if (fShowFSTypeInTree || fShowDriveLabelInTree) {
+                      strcpy(szBuf, pci->pszFileName);
+                      strcat(szBuf, " [");
+                      strcat(szBuf, "]");
+                      pci->pszDisplayName = xstrdup(szBuf, pszSrcFile, __LINE__);
+                      pci->rc.pszIcon = pci->pszDisplayName;
+                    }
+                  }
+                  else 
+                    pci->rc.hptrIcon = hptrDunno;
 		else if (strlen(pci->pszFileName) < 4) {
 		  SelectDriveIcon(pci);
 		  if (fShowFSTypeInTree || fShowDriveLabelInTree) {
@@ -2946,10 +2943,16 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			   MPFROM2SHORT(1, CMA_ERASE | CMA_REPOSITION));
 		if (hwndMain)
 		  PostMsg(hwndMain, UM_BUILDDRIVEBAR, MPVOID, MPVOID);
-	      }
-	      DbgMsg(pszSrcFile, __LINE__, " TreeCnrWndProc IDM_UPDATE %s", pci->pszFileName); // 2015-08-03 SHL FIXME debug
-	      if (~driveflag & DRIVE_INVALID || x < 2)
-		AddFleshWorkRequest(hwnd, pci, eFlesh);
+              }
+              if (~driveflag & DRIVE_INVALID) {
+                if (x > 1)  { 
+                  // Note the UnFlesh above may not have completed when this is called
+                  // We need to keep it behind the UnFlesh in line
+                  AddFleshWorkRequest(hwnd, pci, eFlesh);
+                }
+                else
+                  Flesh(hwnd, pci);
+              }
 	    }
 	  }
 	}
@@ -3483,8 +3486,10 @@ static VOID ExpandTreeThread(VOID *args)
                     driveserial[toupper(*pci->pszFileName) - 'A'] !=
                     volser.serial)
                 {
-                  WaitFleshWorkListEmpty(pci->pszFileName, 10);	// 2015-08-19 SHL in case pci still in work list
-                  AddFleshWorkRequest(dcd->hwndCnr, pci, eUnFlesh);
+                  if (pci->fleshed) {
+                    WaitFleshWorkListEmpty(pci->pszFileName, 10);	// 2015-08-19 SHL in case pci still in work list
+                    AddFleshWorkRequest(dcd->hwndCnr, pci, eUnFlesh);
+                  }
                 }
                 if (qmsg.msg != UM_COLLAPSETREE ||
                     (!volser.serial ||
@@ -3500,8 +3505,10 @@ static VOID ExpandTreeThread(VOID *args)
               }
               else {
                 driveserial[toupper(*pci->pszFileName) - 'A'] = -1;
-                WaitFleshWorkListEmpty(pci->pszFileName, 10);	// 2015-08-19 SHL in case pci still in work list
-                AddFleshWorkRequest(dcd->hwndCnr, pci, eUnFlesh);
+                if (pci->fleshed) {
+                  WaitFleshWorkListEmpty(pci->pszFileName, 10);	// 2015-08-19 SHL in case pci still in work list
+                  AddFleshWorkRequest(dcd->hwndCnr, pci, eUnFlesh);
+                }
                 PostMsg(dcd->hwndCnr, UM_RESCAN, MPVOID, MPVOID);
                 if (!fAlertBeepOff)
                   DosBeep(250, 100);

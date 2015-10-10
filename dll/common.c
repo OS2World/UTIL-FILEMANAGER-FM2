@@ -36,6 +36,7 @@
 		updating the container before CN_ENDEDIT is called. 2) Don't call RemoveCnrItems
 		for tree container and collector.
   07 Aug 15 SHL Clean up and comment
+  10 Oct 15 GKY Update icon and display name on CD/DVD eject in all cases.
 
 ***********************************************************************/
 
@@ -385,19 +386,25 @@ void CommonDriveCmd(HWND hwnd, char *drive, USHORT cmd)
       parm[1] = *dv - 'A';
       DosError(FERR_DISABLEHARDERR);
       rc = DosDevIOCtl(-1L, 8L, 0x40L, &parm, sizeof(parm), &plen, NULL, 0L, &dlen);
-      if (cmd == IDM_EJECT &&
-	  (fEjectFlpyScan ? TRUE : parm[1] > 1) &&
-	  (fEjectCDScan ? TRUE : !(driveflags[parm[1]] & DRIVE_CDROM)) &&
-	  (fEjectRemovableScan ? TRUE : (parm[1] < 2 || driveflags[parm[1]] & DRIVE_CDROM))) {
-	BOOL toggleTree = FALSE;
-
-	if (!hwndTree) {
-	  WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_VTREE, 0), MPVOID);
-	  toggleTree = TRUE;
-	}
-	WinSendMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
-	if (toggleTree)
-	  WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_VTREE, 0), MPVOID);
+      if (cmd == IDM_EJECT) {
+        if ((fEjectFlpyScan ? TRUE : parm[1] > 1) &&
+            (fEjectCDScan ? TRUE : !(driveflags[parm[1]] & DRIVE_CDROM)) &&
+            (fEjectRemovableScan ? TRUE : (parm[1] < 2 ||
+                                           driveflags[parm[1]] & DRIVE_CDROM))) {
+          BOOL toggleTree = FALSE;
+  
+          if (!hwndTree) {
+            WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_VTREE, 0), MPVOID);
+            toggleTree = TRUE;
+          }
+          WinSendMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_RESCAN, 0), MPVOID);
+          if (toggleTree)
+            WinSendMsg(hwndMain, WM_COMMAND, MPFROM2SHORT(IDM_VTREE, 0), MPVOID);
+        }
+        else  if (driveflags[parm[1]] & DRIVE_CDROM) {
+          driveflags[parm[1]] |= DRIVE_INVALID;
+          PostMsg(hwndTree, WM_COMMAND, MPFROM2SHORT(IDM_UPDATE, 0), MPVOID);
+        }
       }
     }
     break;
