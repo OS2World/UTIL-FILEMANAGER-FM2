@@ -122,8 +122,6 @@ PCSZ GetPString(ULONG id)
     ulDbgTid = ptib2->tib2_ultid;
   }
 
-  // DbgMsg(pszSrcFile, __LINE__, "Fetching %lu", id);
-
   // If string already loaded, return it now
   if (id >= ulFirstId &&
       id <= ulLastId &&
@@ -132,7 +130,6 @@ PCSZ GetPString(ULONG id)
     cBusy--;
     if (((ULONG)psz & 0xffff0000) == 0)
       DbgMsg(pszSrcFile, __LINE__, "id %lu corrupted %p", id, psz);
-    // DbgMsg(pszSrcFile, __LINE__, "id %lu \"%s\"", id, psz ? psz : "(null)");
     return psz;
   }
 
@@ -157,7 +154,6 @@ PCSZ GetPString(ULONG id)
 
     if (i < cLongStrings) {
       // Combine stringtable items to build long string
-      // DbgMsg(pszSrcFile, __LINE__, "Building long string %lu", id);
       for (; LongStrings[i].id == id; i++) {
 	uDbgState = 3;
 	l = WinLoadString((HAB)NULL, FM3ModHandle, LongStrings[i].sub_id, sizeof(sz), sz);
@@ -206,8 +202,6 @@ PCSZ GetPString(ULONG id)
 
   uDbgState = 5;
   // Add to cache
-  // DbgMsg(pszSrcFile, __LINE__, "Caching %lu", id);
-
   // Calculate new array limits
   if (!pLoadedStrings) {
     ulNewFirstId = id;
@@ -224,7 +218,6 @@ PCSZ GetPString(ULONG id)
       ulNewLastId != ulLastId ||
       !pLoadedStrings) {
     PSZ *pNewLoadedStrings;
-    // DbgMsg(pszSrcFile, __LINE__, "Reallocating for %lu", id);
     pNewLoadedStrings = xrealloc(pLoadedStrings,
 				 (ulNewLastId - ulNewFirstId + 1) * sizeof(PSZ),
 				 pszSrcFile, __LINE__);
@@ -258,7 +251,6 @@ PCSZ GetPString(ULONG id)
   uDbgState = 6;
   pLoadedStrings[id - ulFirstId] = psz;
   cBusy--;
-  // DbgMsg(pszSrcFile, __LINE__, "id %lu \"%s\"", id, psz ? psz : "(null)");
   return psz;
 }
 

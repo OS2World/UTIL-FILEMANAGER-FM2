@@ -248,7 +248,6 @@ static VOID StartSnapThread(VOID *pargs)
       fp = xfopen(sf->filename, modew, pszSrcFile, __LINE__, FALSE);
       if (fp) {
 	fprintf(fp, "\"%s\"\n", sf->dirname);
-	//DbgMsg(pszSrcFile, __LINE__, "recurse %i", sf->recurse);
 	SnapShot(sf->dirname, fp, sf->recurse);
 	fclose(fp);
       }
@@ -1662,12 +1661,9 @@ static VOID FillCnrsThread(VOID *args)
 	strupr(cmp->leftdir);
       FillDirList(cmp->leftdir, lenl, cmp->includesubdirs,
 		  &filesl, &cmp->cmp->totalleft, &numallocl);
-
       if (filesl)
 	qsort(filesl, cmp->cmp->totalleft, sizeof(CHAR *), CompNames);
-
       // Build list of all files in right directory
-      //DbgMsg(pszSrcFile, __LINE__, "list file %s", cmp->rightlist);
       if (!*cmp->rightlist) {
 	if (fForceLower)
 	  strlwr(cmp->rightdir);
@@ -1729,7 +1725,6 @@ static VOID FillCnrsThread(VOID *args)
 	    lenr = strlen(cmp->rightdir);
 	    if (cmp->rightdir[strlen(cmp->rightdir) - 1] != '\\')
 	      lenr++;
-	    //DbgMsg(pszSrcFile, __LINE__, "end of file %i", feof(fp));
 	    while (!feof(fp)) {
 	      if (!xfgets_bstripcr
 		  (str, sizeof(str), fp, pszSrcFile, __LINE__)) {
@@ -1750,7 +1745,6 @@ static VOID FillCnrsThread(VOID *args)
 		      p = strchr(p, ',');
 		      if (p) {
                         p++;
-                        //DbgMsg(pszSrcFile, __LINE__, "DS %ul comma %ul", strchr(p, '/') ? strchr(p, '/') : strchr(p, DateSeparator[0]),  strchr(p, ','));
                         if (((strchr(p, '/') ? strchr(p, '/') : strchr(p, DateSeparator[0])) - strchr(p, ',')) > 5) {
                           CHAR szTemp[30];
                           CHAR *q;
@@ -3225,7 +3219,7 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    else
 	      strcpy(sf->dirname, cmp->rightdir);
 	    sf->recurse = WinQueryButtonCheckstate(hwnd, COMP_INCLUDESUBDIRS);
-	    //DbgMsg(pszSrcFile, __LINE__, "recurse %i %i", sf->recurse, cmp->includesubdirs);
+
 	    if (xbeginthread(StartSnapThread,
 			     65536,
 			     sf,

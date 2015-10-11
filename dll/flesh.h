@@ -29,19 +29,8 @@ BOOL IsFleshWorkListEmpty();
 VOID SetFleshFocusPath(PCSZ pszPath);
 BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent);
 VOID UnFlesh(HWND hwndCnr, PCNRITEM pciParent);
-#if 0 // 2015-08-03 SHL FIXME debug
 VOID WaitFleshWorkListEmpty(PCSZ pszDirName, ULONG ulSleep);
-#else
-#define WaitFleshWorkListEmpty(pszDirName, ulSleep) WaitFleshWorkListEmptyDbg(pszDirName, ulSleep, __FILE__, __LINE__)
-VOID WaitFleshWorkListEmptyDbg(PCSZ pszDirName, ULONG ulSleep, PCSZ pszSrcFile, UINT uSrcLineNo);
-#endif
-
-#if 0 // 2015-08-03 SHL FIXME debug
 BOOL AddFleshWorkRequest(HWND hwndCnr, PCNRITEM pci, FLESHWORKACTION action);
-#else
-#define AddFleshWorkRequest(hwnCnr, pciParent, action) AddFleshWorkRequestDbg(hwnCnr, pciParent, action, __FILE__, __LINE__)
-BOOL AddFleshWorkRequestDbg(HWND hwndCnr, PCNRITEM pci, FLESHWORKACTION action, PCSZ pszSrcFile, UINT uSrcLineNo);
-#endif
 
 // Data declarations
 extern ULONG NoBrokenNotify;

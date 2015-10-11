@@ -1215,7 +1215,6 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   FilesToGet = FILESTOGET_MAX;
   MaxComLineStrg = MAXCOMLINESTRGDEFAULT;
   AutoviewHeight = 48;
-  //strcpy(printer, "PRN");
   prnwidth = 80;
   prnlength = 66;
   prntmargin = 6;
@@ -1225,8 +1224,6 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   prnspacing = 1;
   prntabspaces = 8;
   CollectorsortFlags = sortFlags = SORT_FILENAME | SORT_DIRSFIRST;
-  //ullDATFileSpaceNeeded = 10000;
-
   //Get default Country info
   {
     COUNTRYCODE Country    = {0};
@@ -1239,7 +1236,6 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
       strcpy(TimeSeparator, CtryInfo.szTimeSeparator);
       ulDateFmt = CtryInfo.fsDateFmt;
       ulTimeFmt = CtryInfo.fsTimeFmt;
-      //DbgMsg(pszSrcFile, __LINE__, "Date Fmt %x", ulDateFmt);
     }
     else {
       strcpy(ThousandsSeparator, ",");
@@ -1276,13 +1272,11 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
       rc = DosQueryModuleHandle("VKBD", &hmod);
       if (rc != NO_ERROR) {
 	fProtectOnly = TRUE;
-	//DbgMsg(pszSrcFile, __LINE__, "DosQModuleHandle VKBD returned %d fProtectOnly=%d", rc, fProtectOnly);
       }
       else {
 	rc = DosQueryModuleHandle("VMOUSE", &hmod);
 	if (rc != NO_ERROR) {
 	  fProtectOnly = TRUE;
-	  //DbgMsg(pszSrcFile, __LINE__, "DosQModuleHandle VMOUSE returned %d fProtectOnly=%d", rc, fProtectOnly);
 	}
       }
     }
@@ -1647,9 +1641,6 @@ BOOL InitFM3DLL(HAB hab, int argc, char **argv)
   if (fThreadNotes)
     ShowNote();
 
-  // 2015-08-11 SHL FIXME debug
-  //DbgMsg(pszSrcFile, __LINE__, "ShowEnv %u SwitchTree %u SwitchTreeExpand %u SwitchTreeOnFocus %u CollapseFirst %u", fShowEnv, fSwitchTreeOnDirChg, fSwitchTreeExpand, fSwitchTreeOnFocus, fCollapseFirst);
-  
   LoadDetailsSwitches(PCSZ_DIRCNR, &dsDirCnrDefault, FALSE);
 
   // load pointers and icons we use

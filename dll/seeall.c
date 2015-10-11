@@ -2153,7 +2153,6 @@ static VOID FindAllThread(VOID * args)
   Fortify_EnterScope();
 #  endif
 
-  // DbgMsg(pszSrcFile, __LINE__, "FindAllThread requesting hmtxScan");
   apiret = DosRequestMutexSem(ad->hmtxScan, SEM_INDEFINITE_WAIT);
   if (apiret != NO_ERROR)
     Dos_Error(MB_CANCEL, apiret, hwnd, pszSrcFile, __LINE__, "DosRequestMutexSem");
@@ -2211,7 +2210,6 @@ static VOID FindAllThread(VOID * args)
       ReSort(hwnd);
     }
 
-    // DbgMsg(pszSrcFile, __LINE__, "FindAllThread releasing hmtxScan");
     DosReleaseMutexSem(ad->hmtxScan);
   }
 
@@ -2717,7 +2715,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case UM_SETUP5:
-    // DbgMsg(pszSrcFile, __LINE__, "SeeAllWndProc UM_SETUP5");
+
     if (pAD) {
       if (mp1 && *((CHAR *)mp1))
 	strcpy(pAD->szFindPath, (CHAR *)mp1);
@@ -2767,7 +2765,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_SETUP2:
-    // DbgMsg(pszSrcFile, __LINE__, "SeeAllWndProc UM_SETUP2");
+
     if (pAD) {
 
       CHAR s[256];
@@ -2798,7 +2796,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_SETUP3:
-    // DbgMsg(pszSrcFile, __LINE__, "SeeAllWndProc UM_SETUP3");
+
     if (pAD) {
       pAD->multiplier = pAD->afindexcnt / 32767;
       if (pAD->multiplier * 32767 != pAD->afindexcnt)
@@ -2837,7 +2835,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_SETUP4:
-    // DbgMsg(pszSrcFile, __LINE__, "SeeAllWndProc UM_SETUP4");
+
     if (pAD)
       pAD->killme = TRUE;
     else
@@ -2845,7 +2843,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_RESCAN:
-    // DbgMsg(pszSrcFile, __LINE__, "SeeAllWndProc UM_RESCAN");
+
     if (pAD && !pAD->stopflag) {
       if (DosRequestMutexSem(pAD->hmtxScan, SEM_IMMEDIATE_RETURN)) {
 	// Assume still working - show progress
@@ -2923,7 +2921,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case UM_SETUP:
-    // DbgMsg(pszSrcFile, __LINE__, "SeeAllWndProc UM_SETUP");
+
     if (pAD) {
       WinSendMsg(pAD->hvscroll, SBM_SETTHUMBSIZE, MPFROM2SHORT(1, 1), MPVOID);
       WinSendMsg(pAD->hhscroll, SBM_SETTHUMBSIZE, MPFROM2SHORT(1, 1), MPVOID);
@@ -3513,7 +3511,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_PAINT:
-    // DbgMsg(pszSrcFile, __LINE__, "SeeAllWndProc WM_PAINT");
+
     if (pAD) {
 
       HPS hpsp;
@@ -3711,7 +3709,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case WM_VSCROLL:
-    // DbgMsg(pszSrcFile, __LINE__, "SeeAllWndProc WM_VSCROLL");
+
     if (pAD && !pAD->stopflag &&
 	!DosRequestMutexSem(pAD->hmtxScan, SEM_IMMEDIATE_RETURN)) {
 
@@ -4405,19 +4403,19 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     return 0;
 
   case WM_SIZE:
-    // DbgMsg(pszSrcFile, __LINE__, "SeeAllWndProc WM_SIZE");
+
     PostMsg(hwnd, UM_SETUP3, MPVOID, MPVOID);
     break;
 
   case WM_CLOSE:
-    // DbgMsg(pszSrcFile, __LINE__, "SeeAllWndProc WM_CLOSE");
+
     if (pAD)
       pAD->stopflag = 1;
     WinDestroyWindow(WinQueryWindow(hwnd, QW_PARENT));
     return 0;
 
   case WM_DESTROY:
-    // DbgMsg(pszSrcFile, __LINE__, "SeeAllWndProc WM_DESTROY");
+
     if (pAD) {
       pAD->stopflag = 1;
       if (pAD->hmtxScan) {

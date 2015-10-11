@@ -1060,8 +1060,6 @@ PVOID SaveEA(CHAR *filename,
   USHORT len, *num, *plen;
   CHAR *p, *peaval;
 
-  //DbgMsg(pszSrcFile, __LINE__, "SaveEA: entered for %s", filename);
-
   if (!filename || !current)
     return (PVOID)pfealist;		// FIXME to complain
 
@@ -1214,15 +1212,14 @@ PVOID SaveEA(CHAR *filename,
     if (current->pfea->cbValue == pfealist->list[0].cbValue &&
 	memcmp(current->pfea->szName + current->pfea->cbName + 1,
 	       pfealist->list[0].szName + pfealist->list[0].cbName + 1,
-	       current->pfea->cbValue) == 0)
-    {
-      DbgMsg(pszSrcFile, __LINE__, "SaveEA: %s unchanged", current->pfea->szName);
+	       current->pfea->cbValue) == 0) {
+      //DbgMsg(pszSrcFile, __LINE__, "SaveEA: %s unchanged", current->pfea->szName);
       rc = 0;				// Suppress rewrite
     }
     else {
       rc = xDosSetPathInfo(filename, FIL_QUERYEASIZE,
 			   &eaop, sizeof(eaop), DSPI_WRTTHRU);
-      DbgMsg(pszSrcFile, __LINE__, "SaveEA: %s updated", current->pfea->szName);
+      //DbgMsg(pszSrcFile, __LINE__, "SaveEA: %s updated", current->pfea->szName);
     }
 #else
     // Rewrite EA

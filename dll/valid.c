@@ -338,7 +338,6 @@ INT CheckDrive(CHAR chDrive, CHAR * pszFileSystem, ULONG * pulType)
   szPath[3] = 0;
   DosFSCtl(&easize, sizeof(EASIZEBUF), &ulDataLen, NULL, ulParmLen,
            &ulParmLen, FSCTL_MAX_EASIZE, szPath, -1, FSCTL_PATHNAME);
-  //DbgMsg(pszSrcFile, __LINE__, "%i %i %s %s", easize.cbMaxEASize, easize.cbMaxEAListSize, szPath, pfsn);
   szPath[2] = 0;
   if (pulType && easize.cbMaxEASize == 0)
     *pulType |= DRIVE_NOEASUPPORT;

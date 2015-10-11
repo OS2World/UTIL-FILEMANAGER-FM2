@@ -123,7 +123,6 @@ VOID fill_setups_list(VOID)
     LINKDIRS *pld;
     load_setups();
     for (pld = pFirstSetup; pld; pld = pld->next) {
-      // DbgMsg(pszSrcFile, __LINE__, "Inserted %s", pld->path);
       WinSendMsg(hwndStatelist,
 		 LM_INSERTITEM,
 		 MPFROM2SHORT(LIT_SORTASCENDING, 0),
@@ -272,8 +271,6 @@ VOID load_setups(VOID)
     // Insert at front of list - drop down will sort
     pld->next = pFirstSetup;
     pFirstSetup = pld;
-    // DbgMsg(pszSrcFile, __LINE__, "Inserted %s", pld->path);
-
     if (ulDataBytes == ulOldSetupsBytes)
       psz += 13;			// Buffers fixed width prior to 3.0.7
     else

@@ -159,8 +159,6 @@ BOOL ShowMultimedia(CHAR * filename)
   DosFreeModule(MMIOModHandle);
 
   // if identified and not FOURCC_DOS  MPEGs are misidentified as DOS
-  //DbgMsg(pszSrcFile, __LINE__, "FOUCC %x %s %i", mmFormatInfo.fccIOProc,
-  //       mmFormatInfo.szDefaultFormatExt, mmFormatInfo.ulMediaType);
   if (!rc && (mmFormatInfo.fccIOProc != FOURCC_DOS ||
               !stricmp(p, PCSZ_DOTMPG) || !stricmp(p, PCSZ_DOTMPEG))) {
     if ((mmFormatInfo.ulFlags & MMIO_CANREADTRANSLATED)) {

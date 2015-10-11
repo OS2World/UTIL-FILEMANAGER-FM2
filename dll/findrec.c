@@ -65,8 +65,6 @@ PCNRITEM FindCnrRecord(HWND hwndCnr, PCSZ filename, PCNRITEM pciParent,
     pciParent = (PCNRITEM) CMA_FIRST;
   pci = WinSendMsg(hwndCnr,
                    CM_SEARCHSTRING, MPFROMP(&srch), MPFROMP(pciParent));
-  //DbgMsg(pszSrcFile, __LINE__,"FindCnrItem pciParent %p pci %p file %s", pciParent,
-  //      pci, file);
   while (pci && (INT) pci != -1) {
     if (!noenv || (pci->flags & (RECFLAGS_ENV | RECFLAGS_UNDERENV)) == 0) {
       // CNRITEM for file/directory
@@ -157,12 +155,6 @@ VOID ShowCnrRecord(HWND hwndCnr, PMINIRECORDCORE pmi)
 	     CM_SCROLLWINDOW,
 	     MPFROMSHORT(CMA_VERTICAL),
              MPFROMLONG((rclViewport.yTop - (rcl.yTop) - correction)));
-#if 0
-  DbgMsg(pszSrcFile, __LINE__, "RECTLFIRST %i RECTLLAST %i %p",
-         rclFirst.yTop, rclLast.yTop, pmiLast);
-  DbgMsg(pszSrcFile, __LINE__, "TOPPORT %i TOPRCL %i RIGHTRCL %i",
-         rclViewport.yTop , rcl.yTop, rcl.xRight);
-#endif
   WinSendMsg(hwndCnr,
 	     CM_SCROLLWINDOW,
 	     MPFROMSHORT(CMA_HORIZONTAL), MPFROMLONG(rcl.xRight - rclViewport.xRight));

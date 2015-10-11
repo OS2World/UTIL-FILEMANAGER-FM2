@@ -569,7 +569,6 @@ MRESULT EXPENTRY ViewInfProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
                 DosBeep(50, 100);
             }
             else {
-              // DbgMsg(pszSrcFile, __LINE__, "Help file %s", p);
               ViewHelp(p);
             }
             break;

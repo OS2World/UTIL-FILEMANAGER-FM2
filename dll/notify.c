@@ -462,7 +462,6 @@ MRESULT EXPENTRY NoteWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					   MPFROM2SHORT(ndx, len), MPFROMP(p));
 	    len--;
 	    if (len2 != len) {
-	      //DbgMsg(pszSrcFile, __LINE__, "len %u unexpected - should be %u", len2, len);	// 18 Jul 08 SHL fixme to be Runtime_Error
 	      xfree((PSZ)p, pszSrcFile, __LINE__);
 	    }
 	    else

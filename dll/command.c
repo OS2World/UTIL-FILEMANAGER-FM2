@@ -838,7 +838,6 @@ BOOL QueryCommandSettings(HWND hwnd, COMMAND *temp)
      temp->HotKeyID = x + IDM_COMMANDNUM0;
    else
      temp->HotKeyID = 0;
-   //DbgMsg(pszSrcFile, __LINE__, "info %i", temp->HotKeyID);
    return TRUE;
 }
 

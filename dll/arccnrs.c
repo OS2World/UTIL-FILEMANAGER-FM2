@@ -501,7 +501,6 @@ static BOOL IsArcThere(HWND hwnd, CHAR * arcname)
 
 static VOID FreeArcItemData(PARCITEM pai)
 {
-  // DbgMsg(pszSrcFile, __LINE__, "FreeArcItemData %p", pai);
   PSZ psz;
 
   if (pai->pszFileName && pai->pszFileName != NullStr) {
@@ -546,13 +545,12 @@ static VOID RemoveArcItems(HWND hwnd, PARCITEM paiFirst, USHORT usCnt, USHORT us
       }
     }
   }
-
-  // DbgMsg(pszSrcFile, __LINE__, "RemoveArcItems %p %u %s", pai, usCnt, pai->pszFileName);
-
   if (remaining != - 1) {
-    remaining = (INT)WinSendMsg(hwnd, CM_REMOVERECORD, MPFROMP(&paiFirst), MPFROM2SHORT(usCnt, usFlags));
+    remaining = (INT)WinSendMsg(hwnd, CM_REMOVERECORD, MPFROMP(&paiFirst),
+                                MPFROM2SHORT(usCnt, usFlags));
     if (remaining == -1) {
-      Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,"CM_REMOVERECORD hwnd %x pai %p cnt %u",
+      Win_Error(hwnd, HWND_DESKTOP, pszSrcFile, __LINE__,
+                "CM_REMOVERECORD hwnd %x pai %p cnt %u",
                 hwnd, paiFirst, usCnt);
     }
   }
@@ -702,7 +700,6 @@ ReTry:
 	  }
           else {
             rc = 0;
- 	    //DbgMsg(pszSrcFile, __LINE__, "Number of tries %i", cnter);
  	    rc = SearchPathForFile(PCSZ_PATH, s, NULL);
  	    if (!rc) {
  	      cnter ++;
@@ -3031,7 +3028,6 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	if (dcd->directory && fFileNameCnrPath &&
 	    stricmp(lastextractpath, dcd->directory)) {
           strcpy(lastextractpath, dcd->directory);
-          //DbgMsg(pszSrcFile, __LINE__, "Extract dir %s", dcd->directory);
 	  SetDir(dcd->hwndParent, hwnd, dcd->directory, 1);
 	}
 	if (dcd->info->extract)

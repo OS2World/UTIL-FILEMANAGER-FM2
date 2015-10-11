@@ -695,7 +695,6 @@ INT make_deleteable(CHAR * filename, INT error, BOOL Dontcheckreadonly)
   INT retrn = SM2_YES;
   FILESTATUS3 fsi;
 
-  //DbgMsg(pszSrcFile, __LINE__, "error %i ", error);
   DosError(FERR_DISABLEHARDERR);
   rc = DosQueryPathInfo(filename, FIL_STANDARD, &fsi, sizeof(fsi));
   if (!rc) {
@@ -706,7 +705,6 @@ INT make_deleteable(CHAR * filename, INT error, BOOL Dontcheckreadonly)
                      GetPString(IDS_READONLYFILEWARNINGTITLE),
                      GetPString(IDS_READONLYFILEWARNING),
                       filename);
-      //DbgMsg(pszSrcFile, __LINE__, "retrn %x ", retrn);
       ret = retrn;
       if (retrn == SM2_YES || retrn == SM2_DONTASK)
         fsi.attrFile = 0;
@@ -738,7 +736,6 @@ INT make_deleteable(CHAR * filename, INT error, BOOL Dontcheckreadonly)
     else
       ret = SM2_NO;
   }
-  //DbgMsg(pszSrcFile, __LINE__, "retrn %x ", ret);
   return ret;
 }
 

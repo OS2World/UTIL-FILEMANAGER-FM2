@@ -396,22 +396,17 @@ static VOID FetchCommonEAs(PCNRITEM pci)
 	if (pcsz) {
 	  if (pgeaPrev) {
 	    pgeaPrev->oNextEntryOffset = (PSZ)pgea - (PSZ)pgeaPrev;
-	    //DbgMsg(pszSrcFile, __LINE__, "pgea %p oNextEntryOffset %u", pgeaPrev, pgeaPrev->oNextEntryOffset);
 	  }
 	  strcpy(pgea->szName, pcsz);
 	  pgea->cbName = strlen(pgea->szName);
 	  pgea->oNextEntryOffset = 0;
-	  //DbgMsg(pszSrcFile, __LINE__, "pgea %p cbName %u szName %s", pgea, pgea->cbName, pgea->szName);
 	  offset = sizeof(GEA2) + pgea->cbName;	// Calc length including null
 	  offset = (offset + 3) & ~3;		// Doubleword align
 	  pgeaPrev = pgea;
 	  pgea = (PGEA2)((PSZ)pgea + offset);	// Point at next available
 	}
       } // for
-
       pgealist->cbList = (PSZ)pgea - (PSZ)pgealist;
-      //DbgMsg(pszSrcFile, __LINE__, "pgealist %p cbList %u", pgealist, pgealist->cbList);
-
       pfealist = xmallocz(65536, pszSrcFile, __LINE__);
       if (pfealist) {
 	pfealist->cbList = 65536;
@@ -428,7 +423,6 @@ static VOID FetchCommonEAs(PCNRITEM pci)
 	  Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 		    s, pci->pszFileName);
 	}
-	  //DbgMsg(pszSrcFile, __LINE__, "DosQueryPathInfo %s failed with rc %u ", pci->pszFileName, rc);
 	else {
 	  PFEA2 pfea = eaop.fpFEA2List->list;
 	  while (pfea) {
@@ -438,14 +432,12 @@ static VOID FetchCommonEAs(PCNRITEM pci)
 		Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 			  GetPString(IDS_ERROREATYPETEXT),
 			  achValue, pfea->cbName, pfea->szName);
-		//DbgMsg(pszSrcFile, __LINE__, "EA type 0x%x unexpected for %.*s", achValue, pfea->cbName, pfea->szName);
 	      else {
 		CHAR ch = achValue[pfea->cbValue];
 		PSZ pszValue;
 		achValue[pfea->cbValue] = 0;
 		pszValue = xstrdup(achValue + (sizeof(USHORT) * 2), pszSrcFile, __LINE__);
 		achValue[pfea->cbValue] = ch;
-		//DbgMsg(pszSrcFile, __LINE__, "pfea %p %.*s cbValue %u %s", pfea, pfea->cbName, pfea->szName, pfea->cbValue, pszValue);
 		if (strncmp(pfea->szName, LONGNAME, pfea->cbName) == 0)
 		  pci->pszLongName = pszValue;
 		else if (strncmp(pfea->szName, SUBJECT, pfea->cbName) == 0)
@@ -453,7 +445,6 @@ static VOID FetchCommonEAs(PCNRITEM pci)
 		else
 		  Dos_Error(MB_ENTER, rc, HWND_DESKTOP, pszSrcFile, __LINE__,
 			    GetPString(IDS_ERROREATYPETEXT), pfea, pfea->cbName, pfea->szName);
-		  //DbgMsg(pszSrcFile, __LINE__, "pfea %p EA %.*s unexpected", pfea, pfea->cbName, pfea->szName);
 	      }
 	    }
 	    if (!pfea->oNextEntryOffset)
@@ -771,7 +762,6 @@ ULONGLONG FillInRecordFromFSA(HWND hwndCnr,
   }
   else {
     pci->pszFmtFileSize = NullStr;
-    //DbgMsg(pszSrcFile, __LINE__, "Bypassed Format size %s", pci->pszDisplayName);
   }
   pci->date.day = pfsa4->fdateLastWrite.day;
   pci->date.month = pfsa4->fdateLastWrite.month;
@@ -1204,10 +1194,6 @@ Abort:
 		     MPFROM2SHORT(CMA_FIRSTCHILD, CMA_ITEMORDER));
     while (pci && (INT)pci != -1) {
       if (!pci->pszFileName || !strcmp(pci->pszFileName, NullStr)) {
-	// 2015-08-23 SHL FIXME debug
-	//DbgMsg(pszSrcFile, __LINE__, "ProcessDirectory pci %p pci->pszFileName %p %s",
-	//       pci, pci->pszFileName,
-	//       pci->pszFileName == NullStr ? "NullStr" : "NULL");
 	Runtime_Error(pszSrcFile, __LINE__, "pci->pszFileName NULL for %p", pci);
 	return;
       }
@@ -1280,11 +1266,8 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
   APIRET rc;
   ULONG startdrive = 3;
   HWND hwndDrivelist;
-
   static BOOL didonce;
   static ULONG ulLastDriveMap;
-
-  //DbgMsg(pszSrcFile, __LINE__, "FillTreeCnr hwndCnr %x hwndParent %x", hwndCnr, hwndParent);	 // 2015-08-03 SHL FIXME debug
 
   *szSuggest = 0;
   for (iDrvNum = 0; iDrvNum < 26; iDrvNum++) {
@@ -1707,7 +1690,6 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
 	szSuggest[1] = 'B';
       }
     }
-    // DbgMsg(pszSrcFile, __LINE__, "szSuggest %x info %x", *szSuggest, info);
     if (*szSuggest) {
       APIRET rc;
       for (iDrvNum = 2; iDrvNum < 26; iDrvNum++) {
@@ -1767,9 +1749,6 @@ VOID FillTreeCnr(HWND hwndCnr, HWND hwndParent)
     } // if suggest
   } // if !fDontSuggestAgain
   didonce = TRUE;
-
-  //DbgMsg(pszSrcFile, __LINE__, "FillTreeCnr finished");	 // 2015-08-03 SHL FIXME debug
-
 } // FillTreeCnr
 
 
@@ -1925,8 +1904,6 @@ VOID FreeCnrItemData(PCNRITEM pci)
 
 VOID FreeCnrItem(HWND hwnd, PCNRITEM pci)
 {
-  // DbgMsg(pszSrcFile, __LINE__, "FreeCnrItem hwnd %x pci %p", hwnd, pci);
-
   FreeCnrItemData(pci);
 
   if (!WinSendMsg(hwnd, CM_FREERECORD, MPFROMP(&pci), MPFROMSHORT(1))) {
@@ -2023,9 +2000,8 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
         }
 	if (remaining && --remaining == 0)
 	  break;
-	if (!bIdlePrioritySet /* && --usTimerCheckCountdown == 0 */) {
+	if (!bIdlePrioritySet) {
 	  bIdlePrioritySet = !IdleIfNeeded(&itdSleep, 30);
-	  // usTimerCheckCountdown = RCI_ITEMS_PER_TIMER_CHECK;
 	}
       } // while
       if (bIdlePrioritySet)
@@ -2034,9 +2010,6 @@ INT RemoveCnrItems(HWND hwnd, PCNRITEM pciFirst, USHORT usCnt, USHORT usFlags)
       DosPostEventSem(CompactSem);
     }
   }
-
-  // DbgMsg(pszSrcFile, __LINE__, "RemoveCnrItems %p %u %s", pci, usCnt, pci->pszFileName);
-
   if (remaining != - 1) {
     remaining = (INT)WinSendMsg(hwnd, CM_REMOVERECORD, MPFROMP(&pciFirst), MPFROM2SHORT(usCnt, usFlags));
     if (remaining == -1) {

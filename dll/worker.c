@@ -1808,7 +1808,6 @@ VOID MassAction(VOID * args)
 		  }
 		  DosReleaseMutexSem(hmtxFM2Delete);
                 }
-                //DbgMsg(pszSrcFile, __LINE__, "error %i retrn %i", error, retrn);
                 if (fWarnReadOnly && error ==  ERROR_FILE_EXISTS) {
                   retrn = SM2_NO;
                 }

@@ -669,7 +669,6 @@ BreakOut:
     int ret;
 
     memset(&ex, 0, sizeof(EXECARGS));
-    //DbgMsg(pszSrcFile, __LINE__, "env %s", environment);
     if (!environment) {
       ULONG size;
 
@@ -694,7 +693,6 @@ BreakOut:
     }
     else
       ex.flags = flags;
-    //DbgMsg(pszSrcFile, __LINE__, "Inserted %s", environment);
     ret = runemf2(ex.flags, hwnd, pszCallingFile, uiLineNumber, path,
 		   *ex.environment ? ex.environment : NULL,
 		   "%s", commandline);

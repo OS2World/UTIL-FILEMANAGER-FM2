@@ -75,7 +75,6 @@ APIRET MassMkdir(HWND hwndClient, CHAR * dir)
     last = DosCreateDir(s, NULL);
     if (!last) {
       Broadcast((HAB) 0, hwndClient, UM_UPDATERECORD, MPFROMP(s), MPVOID);
-      //DbgMsg(pszSrcFile, __LINE__, "UM_UPDATERECORD %s", s);
     }
     else if (last == ERROR_ACCESS_DENIED) {
       if (!IsFile(s))

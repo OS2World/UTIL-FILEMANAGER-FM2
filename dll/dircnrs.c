@@ -914,11 +914,6 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       // 2014-06-26 SHL FM/2 Lite may not have drive tree yet
       if (hwndTree) {
 	// 2015-08-12 SHL Optimze to update drive tree for only last saved state
-
-#if 0        // 2015-08-13 SHL
-	if (fSwitchTreeOnDirChg)
-	  DbgMsg(pszSrcFile, __LINE__, "DirObjWndProc UM_RESCAN cDirectoriesRestored %u", cDirectoriesRestored); // 2015-08-04 SHL FIXME debug
-#endif
 	if (fSwitchTreeOnDirChg) {
 	  // Keep drive tree in sync with directory container
           PSZ pszTempDir;
@@ -926,13 +921,11 @@ MRESULT EXPENTRY DirObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  if (pszTempDir) {
 	    if (hwndMain) {
 	      if (TopWindow(hwndMain, (HWND)0) == dcd->hwndFrame) {
-		//DbgMsg(pszSrcFile, __LINE__, "DirObjWndProc UM_RESCAN PostMsg(UM_SHOWME)"); // 2015-08-04 SHL FIXME debug
 		if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
 		  free(pszTempDir);
 	      }
 	    }
 	    else {
-	      //DbgMsg(pszSrcFile, __LINE__, "DirObjWndProc UM_RESCAN PostMsg(UM_SHOWME)"); // 2015-08-04 SHL FIXME debug
 	      if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
 		free(pszTempDir);
 	    }
@@ -1444,9 +1437,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       // 2015-08-13 SHL
       if (fSwitchTreeOnFocus && hwndTree && dcd && *dcd->directory) {
 	PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
-	//DbgMsg(pszSrcFile, __LINE__, "DirCnrWndProc WM_SETFOCUS cDirectoriesRestored %u", cDirectoriesRestored); // 2015-08-04 SHL FIXME debug
 	if (pszTempDir) {
-	  //DbgMsg(pszSrcFile, __LINE__, "DirCnrWndProc WM_SETFOCUS PostMsg(UM_SHOWME, %s)", pszTempDir); // 2015-08-04 SHL FIXME debug
 	  if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir), MPVOID))
 	    free(pszTempDir);		// Failed
 	}
@@ -1465,15 +1456,10 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (stricmp(dcd->directory, fullname)) {
 	  strcpy(dcd->previous, dcd->directory);
 	  strcpy(dcd->directory, fullname);
-	  // DosEnterCritSec(); // GKY 11-27-08
 	  dcd->stopflag++;
-	  // DosExitCritSec();
-	  // DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
 	  if (!PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
 	    strcpy(dcd->directory, dcd->previous);
-	    // DosEnterCritSec(); // GKY 11-27-08
 	    dcd->stopflag--;
-	    // DosExitCritSec();
 	  }
 	  else if (*dcd->directory) {
 	    if (hwndMain)
@@ -1489,12 +1475,10 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case WM_TIMER:
     // Started/stopped by DirObjWndPro
-    // dcd = WinQueryWindowPtr(hwnd, QWL_USER);
     if (dcd) {
       commafmt(tb, sizeof(tb), dcd->totalfiles);
       CommaFmtULL(tf, sizeof(tf), dcd->ullTotalBytes, 'K');
       sprintf(s, "%s / %s", tb, tf);
-      // DbgMsg(pszSrcFile, __LINE__, "WM_TIMER %s", s);	// 15 Sep 09 SHL fixme debug
       WinSetDlgItemText(dcd->hwndClient, DIR_TOTALS, s);
     }
     break; // WM_TIMER
@@ -1673,7 +1657,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  return 0;
 	}
 	else
-	  DosSleep(32); // 05 Aug 07 GKY 64
+	  DosSleep(32); 
 	WinEnableMenuItem(DirCnrMenu, IDM_FINDINTREE, (hwndTree != (HWND) 0));
       }
 	// 2014-06-11 SHL fm/2 lite can get here before drive scan completes - may not be true anymore
@@ -1687,7 +1671,6 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_SETUP2:
     if (dcd) {
-      // DbgMsg(pszSrcFile, __LINE__, "DirCnrWndProc UM_SETUP2 %x", hwnd);
       AdjustCnrColsForPref(hwnd, NULL, &dcd->ds, FALSE);
       SayFilter(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 		DIR_FILTER), &dcd->mask, FALSE);
@@ -1985,7 +1968,6 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  PSZ pszTempDir = xstrdup(dcd->directory, pszSrcFile, __LINE__);
 
 	  if (pszTempDir) {
-	    //DbgMsg(pszSrcFile, __LINE__, "DirCnrWndProc IDM_FINDINTREE PostMsg(UM_SHOWME)"); // 2015-08-04 SHL FIXME debug
 	    if (!PostMsg(hwndTree, UM_SHOWME, MPFROMP(pszTempDir),
 			    MPFROMLONG(1L)))
 	      free(pszTempDir);
@@ -2372,8 +2354,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
 
       case IDM_RESCAN:
-	dcd->stopflag++;;
-	// DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
+	dcd->stopflag++;
 	if (!PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPVOID)) {
 	  dcd->stopflag--;
 	}
@@ -2508,7 +2489,6 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  strcpy(dcd->previous, dcd->directory);
 	  strcpy(dcd->directory, (CHAR *)mp2);
 	  dcd->stopflag++;
-	  //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
 	  if (!PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
 	    strcpy(dcd->directory, dcd->previous);
 	    dcd->stopflag--;
@@ -2538,7 +2518,6 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      strcpy(dcd->previous, dcd->directory);
 	      strcpy(dcd->directory, tempname2);
 	      dcd->stopflag++;
-	      //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
 	      if (!PostMsg(dcd->hwndObject,
 			   UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
 		strcpy(dcd->directory, dcd->previous);
@@ -2566,8 +2545,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    strcpy(tempname, dcd->directory);
 	    strcpy(dcd->directory, dcd->previous);
 	    strcpy(dcd->previous, tempname);
-	    dcd->stopflag++; ;
-	    //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
+	    dcd->stopflag++;
 	    if (!PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
 	      strcpy(dcd->directory, dcd->previous);
 	      dcd->stopflag--;
@@ -2601,7 +2579,6 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    strcpy(dcd->previous, dcd->directory);
 	    strcpy(dcd->directory, newdir);
 	    dcd->stopflag++;
-	    //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
 	    if (!PostMsg(dcd->hwndObject, UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
 	      strcpy(dcd->directory, dcd->previous);
 	      dcd->stopflag--;
@@ -2877,24 +2854,20 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     volser.serial)) {
                   // 2015-08-07 SHL FIXME to wait for Flesh to finish before PostMsg
                   // 2015-09-26 GKY Waits (WaitFleshWorkListEmpty) in object window
-                  DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
 		  if (SHORT2FROMMP(mp1) == CN_EXPANDTREE && AddFleshWorkRequest(hwnd, pci, eFlesh) &&
 		      !dcd->suspendview && fTopDir) {
 		    PostMsg(dcd->hwndObject, UM_TOPDIR, MPFROMP(pci), MPVOID);
-		    DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
 		  }
 		}
 		driveserial[toupper(*pci->pszFileName) - 'A'] = volser.serial;
 	      }
 	    }
             else if (SHORT2FROMMP(mp1) == CN_EXPANDTREE) {
-              DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
               if (AddFleshWorkRequest(hwnd, pci, eFlesh) && !dcd->suspendview &&
                   fTopDir) {
                 // 2015-08-07 SHL FIXME to wait for Flesh to finish before PostMsg
                 // 2015-09-26 GKY Waits (WaitFleshWorkListEmpty) in object window
 		PostMsg(dcd->hwndObject, UM_TOPDIR, MPFROMP(pci), MPVOID);
-		DbgMsg(pszSrcFile, __LINE__, "UM_TOPDIR %p pci %p", hwnd, pci);
 	      }
 	    }
 	    if (SHORT2FROMMP(mp1) == CN_EXPANDTREE && !dcd->suspendview)
@@ -3453,7 +3426,6 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  strcpy(dcd->previous, dcd->directory);
 		  strcpy(dcd->directory, pci->pszFileName);
 		  dcd->stopflag++;
-		  //DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
 		  if (!PostMsg(dcd->hwndObject,
 			       UM_RESCAN, MPVOID, MPFROMLONG(1))) {
 		    dcd->stopflag--;
@@ -3497,7 +3469,6 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      }
 	      else {
 		dcd->stopflag++;
-		//DbgMsg(pszSrcFile, __LINE__, "WM_RESCAN");
 		if (!PostMsg(dcd->hwndObject,
 			     UM_RESCAN, MPVOID, MPFROMLONG(1L))) {
 		  dcd->stopflag--;

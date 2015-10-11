@@ -257,7 +257,6 @@ APIRET xDosAllocSharedMem(PPVOID ppb,
 
   rc = DosAllocSharedMem(ppb, pszName, cb,
 			 PAG_COMMIT | OBJ_GIVEABLE | PAG_READ | PAG_WRITE | OBJ_ANY);
-  //DbgMsg(pszSrcFile, __LINE__, "ppb %p", *ppb);
   if (rc)
     rc = DosAllocSharedMem(ppb, pszName, cb, PAG_COMMIT | OBJ_GIVEABLE | PAG_READ | PAG_WRITE);
   if (rc)
@@ -280,12 +279,10 @@ APIRET xDosAllocMem(PPVOID ppb,
   APIRET rc;
 
   rc = DosAllocMem(ppb, cb, PAG_COMMIT | PAG_READ | PAG_WRITE | OBJ_ANY);
-  //DbgMsg(pszSrcFile, uiLineNumber, "ppb %p %x", *ppb, rc);
   if (rc)
     rc = DosAllocMem(ppb, cb, PAG_COMMIT | PAG_READ | PAG_WRITE);
   if (rc)
     Runtime_Error(pszSrcFile, uiLineNumber, GetPString(IDS_OUTOFMEMORY));
-  //DbgMsg(pszSrcFile, uiLineNumber, "ppb %p", *ppb);
   return rc;
 }
 
