@@ -708,7 +708,6 @@ HWND DragList(HWND hwnd, HWND hwndObj, CHAR ** list, BOOL moveok)
 	if (pDItem->hstrTargetName)
 	  DrgDeleteStrHandle(pDItem->hstrTargetName);
 	free(pDItem);
-	// pDItem = NULL;	// Why bother, we can count - fixme to be gone
 	dcd->ulItemsToUnHilite = ulNumfiles + 1;
 	break;
       }
@@ -723,7 +722,6 @@ HWND DragList(HWND hwnd, HWND hwndObj, CHAR ** list, BOOL moveok)
       if (IsRoot(list[ulSelect]))
 	pDItem->fsControl = DO_LINKABLE;
       ulNumfiles++;
-      // ppDItem[ulNumfiles] = NULL;	// Why bother - fixme to be gone
     }
   } // for
   if (ulNumfiles) {
@@ -737,7 +735,6 @@ HWND DragList(HWND hwnd, HWND hwndObj, CHAR ** list, BOOL moveok)
       if (IsRoot(list[0]))
 	pDInfo->usOperation = DO_LINK;
       pDInfo->hwndSource = hwndObj ? hwndObj : hwnd;
-      // pDInfo->hwndSource = hwnd;
       for (ulSelect = 0; ulSelect < ulNumfiles; ulSelect++) {
 	if (!DrgSetDragitem(pDInfo, ppDItem[ulSelect], sizeof(DRAGITEM), ulSelect)) {
 	  Win_Error(HWND_DESKTOP, HWND_DESKTOP, pszSrcFile, __LINE__,

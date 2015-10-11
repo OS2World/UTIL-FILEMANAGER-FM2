@@ -2129,12 +2129,11 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		       (li->type == IDM_VIEWBINARY && *binview) ||
 		       (li->type == IDM_EDITTEXT && *editor) ||
 		       (li->type == IDM_EDITBINARY && *bined)) {
-		//DosSleep(32); // Added WAIT to runemf2 12-12-08 GKY
 		ExecOnList(hwnd, ((li->type == IDM_VIEWTEXT) ? viewer :
 				  (li->type == IDM_VIEWBINARY) ? binview :
 				  (li->type == IDM_EDITTEXT) ? editor :
 				  bined),
-                           WINDOWED | SEPARATE, NULL, NULL, // li->targetpath,
+                           WINDOWED | SEPARATE, NULL, NULL, 
                            li->list,
 			   NULL, pszSrcFile, __LINE__);
 	      }
@@ -2237,7 +2236,7 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    else {
 	      WinSendMsg(dcd->hwndCnr, WM_COMMAND,
 			 MPFROM2SHORT(IDM_COLLECTOR, 0), MPVOID);
-	      DosSleep(10); //05 Aug 07 GKY 128
+	      DosSleep(10); 
 	      if (Collector) {
 		if (!PostMsg(Collector, WM_COMMAND,
 			     MPFROM2SHORT(IDM_COLLECTOR, 0), MPFROMP(list2)))
@@ -2265,10 +2264,10 @@ MRESULT EXPENTRY ArcObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     dcd = WinQueryWindowPtr(hwnd, QWL_USER);
     if (dcd) {
       if (*dcd->workdir) {
-	DosSleep(16); //05 Aug 07 GKY 33
+	DosSleep(16);
 	wipeallf(TRUE, "%s\\*", dcd->workdir);
 	if (rmdir(dcd->workdir)) {
-	  DosSleep(100); //05 Aug 07 GKY 256
+	  DosSleep(100);
 	  wipeallf(TRUE, "%s\\*", dcd->workdir);
 	  rmdir(dcd->workdir);
 	}
@@ -2634,11 +2633,9 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  }
 	  if (!SetDir(dcd->hwndParent, hwnd, s, 0)) {
 	    if (stricmp(dcd->directory, s)) {
-	      //DosEnterCritSec();  //GKY 11-29-08
 	      DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
 	      strcpy(lastextractpath, s);
 	      DosReleaseMutexSem(hmtxFM2Globals);
-	      //DosExitCritSec();
 	    }
 	    strcpy(dcd->directory, s);
 	    if ((!isalpha(*s) || s[1] != ':') && *s != '.')
@@ -2666,7 +2663,6 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
       SWP swp;
       CHAR *filename = mp1;
-      //printf("%s %d UM_ENTER %s\n",__FILE__, __LINE__, filename); fflush(stdout);
       if (IsFile(filename) != 1) {
 	free(mp1);
 	return 0;
@@ -3016,7 +3012,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	      TileChildren(dcd->hwndParent, TRUE);
 	    }
 	    WinSetWindowPos(hwndC, HWND_TOP, 0, 0, 0, 0, SWP_ACTIVATE);
-	    DosSleep(100); //05 Aug 07 GKY 128
+	    DosSleep(100); 
 	  }
 	}
 	else
@@ -3089,12 +3085,10 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
       case IDM_SWITCH:
 	if (mp2) {
 	  if (stricmp(dcd->directory, (CHAR *) mp2)) {
-	    //DosEnterCritSec(); //GKY 11-29-08
 	    DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
 	    strcpy(lastextractpath, (CHAR *) mp2);
 	    MakeValidDir(lastextractpath);
 	    DosReleaseMutexSem(hmtxFM2Globals);
-	    //DosExitCritSec();
 	  }
 	  strcpy(dcd->directory, (CHAR *) mp2);
 	  MakeValidDir(dcd->directory);
@@ -3369,9 +3363,7 @@ static MRESULT EXPENTRY ArcCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 
 	  LISTINFO *li;
 
-	  //DosBeep(500, 100);		// fixme to know why beep?
 	  li = DoFileDrop(hwnd, dcd->arcname, FALSE, mp1, mp2);
-	  //DosBeep(50, 100);		// fixme to know why beep?
 	  CheckPmDrgLimit(((PCNRDRAGINFO)mp2)->pDragInfo);
 	  if (li) {
 	    li->type = li->type == DO_MOVE ? IDM_ARCHIVEM : IDM_ARCHIVE;
@@ -3738,11 +3730,9 @@ HWND StartArcCnr(HWND hwndParent, HWND hwndCaller, CHAR * arcname, INT flags,
 	    strcpy(dcd->directory, extractpath);
         }
 	if (!*dcd->directory && *lastextractpath) {
-	  //DosEnterCritSec();  //GKY 11-29-08
 	  DosRequestMutexSem(hmtxFM2Globals, SEM_INDEFINITE_WAIT);
 	  strcpy(dcd->directory, lastextractpath);
 	  DosReleaseMutexSem(hmtxFM2Globals);
-	  //DosExitCritSec();
 	}
 	if (!*dcd->directory) {
 	  if (!ParentIsDesktop(hwndParent, hwndParent))

@@ -102,8 +102,6 @@
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
-//#include <malloc.h>			// _msize _heapchk
-// #include <process.h>			// _beginthread
 
 #define INCL_DOS
 #define INCL_WIN
@@ -2163,7 +2161,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		     !strcmp(realappname, FM3Str))
 	      TileChildren(dcd->hwndParent, TRUE);
 	    WinSetWindowPos(hwndC, HWND_TOP, 0, 0, 0, 0, SWP_ACTIVATE);
-	    DosSleep(100); // 05 Aug 07 GKY 250
+	    DosSleep(100);
 	  }
 	}
 	else
@@ -2186,7 +2184,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
 
       case IDM_COLLECTOR:
-	DosSleep(32); // 05 Aug 07 GKY 64
+	DosSleep(32); 
 	{
 	  CHAR **list;
 
@@ -2702,7 +2700,7 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      TileChildren(dcd->hwndParent, TRUE);
 		    WinSetWindowPos(hwndC, HWND_TOP, 0, 0, 0, 0,
 				    SWP_ACTIVATE);
-		    DosSleep(100); //05 Aug 07 GKY 250
+		    DosSleep(100);
 		  }
 		}
 		else
@@ -2772,9 +2770,8 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	    if (!cmdloaded)
 	      load_commands();
-	    x = SHORT1FROMMP(mp1);// - IDM_COMMANDSTART;
+	    x = SHORT1FROMMP(mp1);
 	    if (x >= 0) {
-	      //x++;
 	      RunCommand(hwnd, x);
 	      if (fUnHilite)
 		UnHilite(hwnd, TRUE, &dcd->lastselection, 0);
@@ -2799,7 +2796,6 @@ MRESULT EXPENTRY DirCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (pci && (INT) pci != -1) {
 	if (pci->attrFile & FILE_DIRECTORY) {
 	  menuHwnd = CheckMenu(hwndMainMenu, &DirMenu, DIR_POPUP);
-	  // WinEnableMenuItem(DirMenu,IDM_TREE,TRUE);
 	}
 	else
 	  menuHwnd = CheckMenu(hwndMainMenu, &FileMenu, FILE_POPUP);
@@ -3689,7 +3685,6 @@ MRESULT EXPENTRY SearchContainer(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       dcd->szCommonName[len] = 0;
       if (len == 0 && key != '\\') {
 	// Let's see if user forgot leading backslash
-	// key = SHORT1FROMMP(mp2);
 	if (SearchContainer(hwnd, msg, mp1, MPFROM2SHORT('\\', 0))) {
 	  if (SearchContainer(hwnd, msg, mp1, mp2))
 	    return (MRESULT)TRUE;	// Grab key from PM
@@ -3803,8 +3798,7 @@ HWND StartDirCnr(HWND hwndParent, CHAR * directory, HWND hwndRestore,
 				       WC_CONTAINER,
 				       NULL,
 				       CCS_AUTOPOSITION | CCS_MINIICONS |
-				       CCS_MINIRECORDCORE | ulCnrType, // |
-				       //WS_VISIBLE,
+				       CCS_MINIRECORDCORE | ulCnrType, 
 				       0,
 				       0,
 				       0,

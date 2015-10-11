@@ -85,9 +85,6 @@ static CHAR *TruncName(CHAR * oldname, CHAR * buffer);
 
 BOOL ignorereadonly = FALSE;
 
-//static CHAR default_disk(VOID);
-//static INT unlink_allf(CHAR * string, ...);
-
 #ifndef WinMoveObject
 HOBJECT APIENTRY WinMoveObject(HOBJECT hObjectofObject,
 			       HOBJECT hObjectofDest, ULONG ulReserved);

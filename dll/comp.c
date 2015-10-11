@@ -1624,7 +1624,6 @@ static VOID FillCnrsThread(VOID *args)
       INT x;
       UINT l;
       UINT r;
-      // UINT cntr;
       FILELIST **filesl = NULL;
       FILELIST **filesr = NULL;
       UINT numallocl = 0;
@@ -2011,7 +2010,6 @@ static VOID FillCnrsThread(VOID *args)
 	    pcir->pszFileName = xstrdup(szBuf, pszSrcFile, __LINE__);	// 31 Jul 07 SHL
 	    pcir->pszDisplayName = pcir->pszFileName + lenr;
 	    pcir->attrFile = filesr[r]->attrFile;
-	    // pcir->rc.hptrIcon = hptrFile;
 	    pcir->pszDispAttr = FileAttrToString(pcir->attrFile);
 	    pcir->cbFile = filesr[r]->cbFile;
 	    // 12 Jan 08 SHL fixme to used cached size here too
@@ -2670,8 +2668,6 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       switch (SHORT2FROMMP(mp1)) {
       case BN_CLICKED:
 	cmp = INSTDATA(hwnd);
-	//if (cmp)
-	//  *cmp->rightlist = 0;
 	PostMsg(hwnd, UM_SETUP, MPVOID, MPVOID);
 	PostMsg(hwnd, UM_SETDIR, MPVOID, MPVOID);
 	break;
@@ -2922,14 +2918,12 @@ MRESULT EXPENTRY CompareDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       WinSetDlgItemText(hwnd, COMP_NOTE,
 			(CHAR *) GetPString(IDS_COMPHOLDFILTERINGTEXT));
-      // cmp->dcd.suspendview = 1;	// 12 Jan 08 SHL appears not to be used here
       priority_idle();			// Don't hog resources
       WinSendMsg(GetHwndLeft(hwnd), CM_FILTER, MPFROMP(Filter),
 		 MPFROMP(&cmp->dcd.mask));
       WinSendMsg(GetHwndRight(hwnd), CM_FILTER, MPFROMP(Filter),
 		 MPFROMP(&cmp->dcd.mask));
       priority_normal();
-      // cmp->dcd.suspendview = 0;	// 12 Jan 08 SHL appears not to be used here
       if (*cmp->dcd.mask.szMask) {
 	sprintf(s,
 		GetPString(IDS_COMPREADYFILTEREDTEXT),

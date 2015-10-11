@@ -172,8 +172,6 @@ static BOOL ProcessDir(HWND hwndCnr,
 
   strcpy(maskstr, pszFileName);
   AddBackslashToPath(maskstr);
-  //if (maskstr[strlen(maskstr) - 1] != '\\')
-  //  strcat(maskstr, "\\");
   pEndMask = &maskstr[strlen(maskstr)];	// Point after last backslash
   strcat(maskstr, "*");
 
@@ -442,7 +440,7 @@ static VOID PrintToFile(HWND hwndCnr, ULONG indent, PCNRITEM pciParent,
       *p = 0;
     fprintf(fp, "%*.*s%s %lu %s%s\n",
 	    indent * 2, indent * 2, " ",
-	    pciParent->pszDisplayName,  //
+	    pciParent->pszDisplayName,
 	    pciParent->attrFile,
 	    GetPString(IDS_FILETEXT), &"s"[pciParent->attrFile == 1]);
     if (p)
@@ -452,7 +450,7 @@ static VOID PrintToFile(HWND hwndCnr, ULONG indent, PCNRITEM pciParent,
 				  MPFROM2SHORT(CMA_FIRSTCHILD,
 					       CMA_ITEMORDER));
       while (pci && (INT) pci != -1) {
-	DosSleep(0); //26 Aug 07 GKY 1
+	DosSleep(0); 
 	PrintToFile(hwndCnr, indent + 1, pci, fp);
 	pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pci),
 				    MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
@@ -934,8 +932,6 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    strcpy(szTemp, pci->pszFileName);
             strrev(szTemp);
             AddBackslashToPath(szFileName);
-	    //if (*szFileName && *szTemp != '\\')
-	    //  strcat(szFileName, "\\");
 	    strcat(szFileName, szTemp);
 	    pci = WinSendDlgItemMsg(hwnd, DSZ_CNR, CM_QUERYRECORD,
 				    MPFROMP(pci),
@@ -1121,7 +1117,7 @@ MRESULT EXPENTRY DirSizeProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       pState->chStopFlag = (CHAR)0xff;
       if (pState->hptr)
 	WinDestroyPointer(pState->hptr);
-      DosSleep(16); //05 Aug 07 GKY 33
+      DosSleep(16);
       xfree(pState, pszSrcFile, __LINE__); // Let's hope no one is still looking
 #     ifdef FORTIFY
       Fortify_LeaveScope();

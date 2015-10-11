@@ -97,7 +97,6 @@
 #include <ctype.h>
 #include <share.h>
 #include <limits.h>			// USHRT_MAX
-// #include <process.h>			// _beginthread
 
 #define INCL_DOS			// QSV_MS_COUNT
 #define INCL_WIN
@@ -2582,8 +2581,6 @@ MRESULT EXPENTRY CollectorCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 	  USHORT uso;
 
 	  pci = (PCNRITEM) ((PCNRDRAGINFO) mp2)->pRecord;
-	  // if(SHORT1FROMMP(mp1) == CN_DRAGAFTER)
-	  //    pci = NULL;
 	  pDInfo = ((PCNRDRAGINFO) mp2)->pDragInfo;
 	  if (!DrgAccessDraginfo(pDInfo)) {
 	    Win_Error(hwnd, hwnd, pszSrcFile, __LINE__,

@@ -98,7 +98,6 @@ VOID load_cmdlines(BOOL DoItYourself)
   FILE *fp;
   LINKCMDLINES *info, *last = NULL, *CmdLineHead;
   PSZ pszCmdLine;
-  //CHAR s[1024];
   INT x = 0;
   CHAR *moder = "r";
 
@@ -155,7 +154,6 @@ VOID save_cmdlines(BOOL DoItYourself)
   LINKCMDLINES *info, *CmdLineHead;
   FILE *fp;
   PSZ pszCmdLine;
-  //CHAR s[CCHMAXPATH + 14];
   CHAR *modew = "w";
 
   CmdLineHead = (DoItYourself) ? DoItYourselfCmdLine : MiniCmdLine;
@@ -398,7 +396,6 @@ MRESULT EXPENTRY CmdLineDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     MLEsetformat(WinWindowFromID(hwnd, EXEC_ENVIRON), MLFIE_NOTRANS);
     MLEsetlimit(WinWindowFromID(hwnd, EXEC_ENVIRON), 1000);
     WinSetDlgItemText(hwnd, EXEC_ENVIRON, ex->environment);
-//      WinEnableWindow(WinWindowFromID(hwnd,EXEC_ENVIRON),FALSE);
     WinSendMsg(hwnd, UM_SETUP, MPVOID, MPVOID);
     PosOverOkay(hwnd);
     break;
@@ -420,8 +417,6 @@ MRESULT EXPENTRY CmdLineDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (*ex->path) {
         strcpy(executable, ex->path);
         AddBackslashToPath(executable);
-	//if (executable[strlen(executable) - 1] != '\\')
-	//  strcat(executable, "\\");
       }
       else
 	*executable = 0;
@@ -437,16 +432,11 @@ MRESULT EXPENTRY CmdLineDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (p)
 	  *p = 0;
 	if (IsFile(executable) == -1) {
-// 	  p = searchpath(executable);
-// 	  if (*p)
 	  if (SearchPathForFile(PCSZ_PATH, executable, executable))	// jbs: OK to have same source and destination?
-// 	    strcpy(executable, p);
-// 	  else {
 	    WinSetDlgItemText(hwnd,
 			      EXEC_WARNING2,
 			      (CHAR *) GetPString(IDS_CANTFINDFILETEXT));
 	    break;
-// 	  }
 	}
       }
       if (xDosQueryAppType(executable, &apptype) ||

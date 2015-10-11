@@ -885,7 +885,6 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinQueryDlgItemText(hwnd, ASS_OFFSET, sizeof(dummy), dummy);
 	  temp.offset = atol(dummy);
 	}
-        //bstrip(temp.mask);
         sprintf(key, "ASSOC.%senv", temp.pszCmdLine);
 	PrfWriteProfileString(fmprof, FM3Str, key, NULL);
 	if (kill_association(&temp)) {
@@ -979,7 +978,6 @@ MRESULT EXPENTRY AssocDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinQueryDlgItemText(hwnd, ASS_OFFSET, sizeof(dummy), dummy);
 	  temp.offset = atol(dummy);
 	}
-        //bstrip(temp.mask);
         sprintf(key, "ASSOC.%senv", temp.pszCmdLine);
 	PrfWriteProfileString(fmprof, FM3Str, key, NULL);
 	if (!kill_association(&temp))

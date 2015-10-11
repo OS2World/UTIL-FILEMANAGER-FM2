@@ -152,7 +152,6 @@ MRESULT EXPENTRY ColorDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       if (WinQueryButtonCheckstate(hwnd, SHORT1FROMMP(mp1))) {
 	co->colors[co->currentcolor] = (LONG) (SHORT1FROMMP(mp1) -
 					       COLOR_FIRST);
-	//DosBeep(1000, 1);		// fixme to be gone?
       }
       break;
 
