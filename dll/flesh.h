@@ -24,7 +24,7 @@ BOOL StartFleshWorkThread(VOID);
 
 typedef enum {eStubby, eFlesh, eFleshEnv, eUnFlesh} FLESHWORKACTION;
 
-BOOL IsFleshWorkListEmpty();
+BOOL IsFleshWorkListEmpty(VOID);
 
 VOID SetFleshFocusPath(PCSZ pszPath);
 BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent);

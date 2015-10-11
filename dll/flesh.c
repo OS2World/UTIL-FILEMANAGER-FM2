@@ -726,7 +726,7 @@ BOOL AddFleshWorkRequest(HWND hwndCnr, PCNRITEM pci, FLESHWORKACTION action)
  * Advisory only
  */
 
-BOOL IsFleshWorkListEmpty()
+BOOL IsFleshWorkListEmpty(VOID)
 {
   return FleshWorkList.next == NULL;
 }
@@ -950,7 +950,7 @@ VOID FleshWorkThread(PVOID arg)
  * @return TRUE if OK
  */
 
-BOOL StartFleshWorkThread()
+BOOL StartFleshWorkThread(VOID)
 {
   APIRET rc = DosCreateMutexSem(NULL, &hmtxFleshWork, 0L /* Not shared */, FALSE /* Not owned */);
   if (rc) {

@@ -28,7 +28,7 @@ MRESULT EXPENTRY TreeClientWndProc(HWND hwnd, ULONG msg, MPARAM mp1,
 				   MPARAM mp2);
 MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
 MRESULT EXPENTRY TreeStatProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2);
-BOOL StartExpandTreeThread();
+BOOL StartExpandTreeThread(VOID);
 
 // Data declarations
 extern ULONG FM3UL;

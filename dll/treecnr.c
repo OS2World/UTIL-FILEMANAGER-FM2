@@ -3495,7 +3495,7 @@ static VOID ExpandTreeThread(VOID *args)
 #  endif
 }
 
-BOOL StartExpandTreeThread()
+BOOL StartExpandTreeThread(VOID)
 {
   TID tid;
   tid = xbeginthread(ExpandTreeThread,

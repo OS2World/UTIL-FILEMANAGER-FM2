@@ -646,7 +646,6 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg,
       DRAGIMAGE dimage;
       HWND hwndDrop;
 
-      // fprintf(stderr, "SDlgListboxSubclassProc: BEGINDRAG\n");
       cur_ndx = WinQueryLboxSelectedItem(hwnd);
 
       if (cur_ndx != LIT_NONE) {
@@ -697,11 +696,9 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg,
       ptl.y = SHORT2FROMMP(mp2);
       ptl2 = ptl;
       WinMapWindowPoints(HWND_DESKTOP, hwnd, &ptl2, 1);
-      // fprintf(stderr, "DRAGOVER mapped x y %d %d to %d %d\n", ptl.x, ptl.y, ptl2.x, ptl2.y);
       WinPostMsg(hwnd, WM_BUTTON1CLICK,
 		 MPFROM2SHORT((SHORT) ptl2.x, (SHORT) ptl2.y),
 		 MPFROM2SHORT(HT_NORMAL, KC_NONE));
-      // fprintf(stderr, "DRAGOVER posted 0x%x WM_BUTTON1CLICK x y %d %d\n", hwnd, ptl2.x, ptl2.y);
     }
     pDInfo = (PDRAGINFO) mp1;		// Get DRAGINFO pointer
     if (pDInfo) {
@@ -724,8 +721,6 @@ static MRESULT EXPENTRY SDlgListboxSubclassProc(HWND hwnd, ULONG msg,
       emphasized = FALSE;
       // fixme to draw listbox item emphasized
       // DrawTargetEmphasis(hwnd, emphasized);
-      // fprintf(stderr, "DRAGLEAVE\n");
-      // fflush(stderr);
     }
     return 0;
 
