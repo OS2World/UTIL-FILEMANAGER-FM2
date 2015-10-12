@@ -123,6 +123,7 @@
   10 Oct 15 GKY Update icon and display name on CD/DVD eject in all cases.
   10 Oct 15 GKY Don't use Flesh thread for floppy drive scans fix them getting mistakenly identified
                 as directories and add nonexistent subdirectories.
+  12 Oct 15 GKY Increase ExpandAll waits for removable drives avoids directory name corruption
 
 ***********************************************************************/
 

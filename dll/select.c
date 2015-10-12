@@ -39,6 +39,7 @@
                 work with Flesh, Stubby and UnFlesh being moved to a thread
   26 Sep 15 GKY Changes to speed up ExpandAll
   27 Sep 15 GKY DosSleep times in WaitFleshWorkListEmpty set by caller
+  12 Oct 15 GKY Increase ExpandAll waits for removable drives avoids directory name corruption
 
 ***********************************************************************/
 
