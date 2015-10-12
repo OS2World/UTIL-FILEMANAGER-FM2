@@ -78,7 +78,6 @@
 #include "listutil.h"			// List...
 #include "common.h"			// IncrThreadUsage DecrThreadUsage
 #include "pathutil.h"
-#include "treecnr.h"                    // fExpandAll
 #if 0
 #define  __PMPRINTF__
 #include "PMPRINTF.H"

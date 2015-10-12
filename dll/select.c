@@ -71,6 +71,7 @@
 #include "stristr.h"			// findstring
 #include "fortify.h"
 #include "flesh.h"
+#include "treecnr.h"                    // fExpandAll
 #if 0
 #define  __PMPRINTF__
 #include "PMPRINTF.H"
@@ -598,16 +599,16 @@ BOOL ExpandAll(HWND hwndCnr, INT count, PCNRITEM pciParent)
       if (count != 0) {
         fExpanding = TRUE;
         if (IsFleshWorkListEmpty())
-          DosSleep(0);       // Yield to EXPANDTREE and Flesh thread
+          DosSleep(fExpandAll ? 0 : 10);       // Yield to EXPANDTREE and Flesh thread
         if (!IsFleshWorkListEmpty()) {
-          WaitFleshWorkListEmpty(NULL, 10); // Let it expand
+          WaitFleshWorkListEmpty(NULL, fExpandAll ? 1 : 50); // Let it expand
         }
       }
     }
     while (pci && (INT)pci != -1) {
       ExpandAll(hwndCnr, count, pci);
       if (count != 0 && !IsFleshWorkListEmpty())
-        WaitFleshWorkListEmpty(NULL, 10); // Wait for container to catch up
+        WaitFleshWorkListEmpty(NULL, fExpandAll ? 1 : 50); // Wait for container to catch up
       pci = (PCNRITEM) WinSendMsg(hwndCnr, CM_QUERYRECORD, MPFROMP(pci),
                                   MPFROM2SHORT(CMA_NEXT, CMA_ITEMORDER));
     }

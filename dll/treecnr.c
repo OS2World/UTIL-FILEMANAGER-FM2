@@ -794,23 +794,29 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       BOOL tempsusp = dcd->suspendview;
       INT x = 0;
       BOOL fExpanding = TRUE;
+      PCNRITEM pci = (PCNRITEM) mp2;
 
+      if (!pci) {
+        Runtime_Error(pszSrcFile, __LINE__, NULL);
+        return 0;
+      }
       dcd->suspendview = TRUE;
       priority_idle();
       if (SHORT1FROMMP(mp1) == IDM_EXPAND) {
-        fExpandAll = TRUE;
+        if (!(driveflags[toupper(*pci->pszFileName) - 'A'] & DRIVE_REMOVABLE))
+          fExpandAll = TRUE;
         while (fExpanding) { // Not serialized not practical to wait on very large directories
           x++;
           if (!IsFleshWorkListEmpty()) {
-            WaitFleshWorkListEmpty(NULL, 10); // Let it expand
+            WaitFleshWorkListEmpty(NULL, fExpandAll ? 1 : 50); // Let it expand
           }
-          fExpanding = ExpandAll(dcd->hwndCnr, x, (PCNRITEM) mp2);
+          fExpanding = ExpandAll(dcd->hwndCnr, x, pci);
           DosSleep(240);
         }
         fExpandAll = FALSE;
       }
       else
-        CollapseAll(dcd->hwndCnr, (PCNRITEM) mp2);
+        CollapseAll(dcd->hwndCnr, pci);
       priority_normal();
       DosSleep(1); // Fixes tree epansion (dir text and icons all placed on
 		       // the same line as the drive) failure on startup using RWS
