@@ -1953,7 +1953,6 @@ MRESULT EXPENTRY CfgDDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  // Save state and restore to refresh windows with new settings
 	  if (SaveDirCnrState(hwndMain, PCSZ_FM2TEMPTEXT) > 0) {
 	    PostMsg(MainObjectHwnd, UM_RESTORE, MPVOID, MPFROMLONG(RESTORE_STATE_CLOSE_CHILDREN));
-//          PostMsg(hwndMain, UM_RESTORE, MPVOID, MPVOID);
 	    PostMsg(MainObjectHwnd, UM_RESTORE, (PSZ) PCSZ_FM2TEMPTEXT, MPFROMLONG(RESTORE_STATE_RESTORE));
 	  }
 	}
@@ -3835,9 +3834,6 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	    Runtime_Error(pszSrcFile, __LINE__, "IDM_NOTEBOOKSUBMENU");
 	  else {
 	    mp2 = WinSendMsg(mi.hwndSubMenu, MM_QUERYDEFAULTITEMID, MPVOID, MPVOID);
-	    //if (!mp2) // causes spurious error message on new installs GKY 1-9-09
-	    //  mp2 = MPFROMLONG(IDM_QUICKSETTINGS);
-	      //Runtime_Error(pszSrcFile, __LINE__, "MM_QUERYDEFAULTITEMID");
 	  }
 	}
       }
@@ -4026,7 +4022,6 @@ MRESULT EXPENTRY CfgDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     hwndNotebook = (HWND) 0;
     break;
   case WM_CLOSE:
-    //SaveLastPageIndex(hwnd);
     break;
   }
   return WinDefDlgProc(hwnd, msg, mp1, mp2);

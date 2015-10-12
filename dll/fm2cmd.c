@@ -62,8 +62,6 @@ static VOID fullname(CHAR * directory, CHAR * name)
     if (*name != '\\' && *name != '/') {
       strcpy(temp, directory);
       AddBackslashToPath(directory);
-      //if (directory[strlen(directory) - 1] != '\\')
-      //  strcat(temp, "\\");
     }
     else {
       *temp = *directory;

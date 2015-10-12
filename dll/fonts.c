@@ -28,8 +28,6 @@
 #include "fm3dll.h"
 #include "init.h"                       // Global semaphore
 
-//static VOID SetFont(HWND hwnd);
-
 #pragma data_seg(DATA1)
 
 

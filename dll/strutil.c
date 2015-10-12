@@ -95,7 +95,6 @@ PCSZ GetPString(ULONG id)
   extern void SMPSafeDec(void);
   #pragma aux SMPSafeInc = "lock inc cBusy" modify exact [];
   #pragma aux SMPSafeDec = "lock dec cBusy" modify exact [];
-  // SMPSafeInc();
   for (c = 0; ; c++) {
     if (SMPSafeInc(), cBusy == 1)
       break;
@@ -113,12 +112,8 @@ PCSZ GetPString(ULONG id)
   {
     extern PTIB2 GetPTIB2(void);
     #pragma aux GetPTIB2 = "mov eax,fs:[12]" value [eax];
-    // PIB *ppib;
-    // TIB *ptib;
     TIB2 *ptib2 = GetPTIB2();
-    // APIRET apiret = DosGetInfoBlocks(&ptib, &ppib);
     ulDbgId = id;
-    // ulDbgTid = apiret == 0 ? ptib->tib_ptib2->tib2_ultid : 0;
     ulDbgTid = ptib2->tib2_ultid;
   }
 

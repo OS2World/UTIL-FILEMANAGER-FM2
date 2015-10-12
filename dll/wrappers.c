@@ -304,7 +304,6 @@ APIRET xDosAllocMemLow(PPVOID ppb,
   rc = DosAllocMem(ppb, cb, PAG_COMMIT | PAG_READ | PAG_WRITE);
   if (rc)
     Runtime_Error(pszSrcFile, uiLineNumber, GetPString(IDS_OUTOFMEMORY));
-  //DbgMsg(pszSrcFile, uiLineNumber, "ppb %p", *ppb);
   return rc;
 }
 

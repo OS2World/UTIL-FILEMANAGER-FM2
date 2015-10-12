@@ -1020,8 +1020,6 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	HDIR hDir;
 	APIRET rc;
 
-	// *szBuffer = 0;
-	// WinQueryDlgItemText(hwnd,WALK_RECENT,CCHMAXPATH,szBuffer);
 	if (!*szBuffer)
 	  break;
 	DosError(FERR_DISABLEHARDERR);
@@ -1154,8 +1152,6 @@ MRESULT EXPENTRY WalkDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (*szBuffer) {
           strcpy(szBuff, wa->szCurrentPath);
           AddBackslashToPath(szBuff);
-	  //if (szBuff[strlen(szBuff) - 1] != '\\')
-	  //  strcat(szBuff, "\\");
 	  strcat(szBuff, szBuffer);
 	  MakeFullName(szBuff);
 	  DosError(FERR_DISABLEHARDERR);
@@ -1543,8 +1539,6 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (*szBuffer) {
           strcpy(szBuff, wa->szCurrentPath1);
           AddBackslashToPath(szBuff);
-	  //if (szBuff[strlen(szBuff) - 1] != '\\')
-	  //  strcat(szBuff, "\\");
 	  strcat(szBuff, szBuffer);
 	  MakeFullName(szBuff);
 	  DosError(FERR_DISABLEHARDERR);
@@ -1609,8 +1603,6 @@ MRESULT EXPENTRY WalkTwoDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	if (*szBuffer) {
           strcpy(szBuff, wa->szCurrentPath2);
           AddBackslashToPath(szBuff);
-	  //if (szBuff[strlen(szBuff) - 1] != '\\')
-	  //  strcat(szBuff, "\\");
 	  strcat(szBuff, szBuffer);
 	  MakeFullName(szBuff);
 	  DosError(FERR_DISABLEHARDERR);

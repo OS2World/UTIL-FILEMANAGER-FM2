@@ -136,8 +136,6 @@ MRESULT EXPENTRY InstantDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		      (path[strlen(path) - 1] == '\\') ? NullStr : PCSZ_BACKSLASH,
 		      batches++);
 	      fp = xfopen(s, modew, pszSrcFile, __LINE__, FALSE);
-	      //if (!fp)
-	      //  Runtime_Error(pszSrcFile, __LINE__, "fopen");
 	      if (fp) {
 		if (!strncmp(bat, "/*", 2)) {
 		  rexx = "'";

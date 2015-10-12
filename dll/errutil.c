@@ -88,18 +88,15 @@ VOID DbgMsg(PCSZ pszSrcFile, UINT uSrcLineNo, PCSZ pszFmt, ...)
 #if 1 // fixme to be selectable
 
   static ULONG ul1stMSec;
-  // static ULONG ulLastMSec;
 
   ULONG msec = GetMSecTimer();
   ULONG delta;
 
   if (!ul1stMSec) {
-    ul1stMSec = msec;
-    // ulLastMSec = msec;		// Avoid big delta 1st time
+    ul1stMSec = msec;      // Avoid big delta 1st time
   }
 
   delta = msec - ul1stMSec;
-  // ulLastMSec = msec;
   fprintf(stderr, "%03lu.%03lu ", delta / 1000, delta % 1000);
 
 #endif

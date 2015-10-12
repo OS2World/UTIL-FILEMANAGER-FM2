@@ -1241,7 +1241,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	  sd.BondInd = SET_SESSION_UNCHANGED;
 	  for (ctr = 0;; ctr++)
 	  {
-            DosSleep(50);//05 Aug 07 GKY 200
+            DosSleep(50);
 	    if (DosSetSession(ulSessID, &sd))   // Check if session gone (i.e. finished)
 	      break;
 	    if (ctr > 10) {
@@ -1257,7 +1257,7 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	      rc = DosReadQueue(hTermQ, &rq, &ulLength, (PPVOID)&pTermInfo, 0,
                                 DCWW_NOWAIT, &bPriority, hTermQSem);
 	      if (rc == ERROR_QUE_EMPTY) {
-		DosSleep(50);//05 Aug 07 GKY 100
+		DosSleep(50);
 		continue;
 	      }
 	    }
@@ -1272,12 +1272,9 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	    if (rc) {
 	      // Oh heck
 	      Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosReadQueue");
-	      DosSleep(100);//05 Aug 07 GKY 500
+	      DosSleep(100);
 	      continue;
 	    }
-
-	    //  printf("%s %d DosReadQueue thread 0x%x sess %u sessRC %u rq.pid 0x%x rq.data 0x%x\n",
-	    //       __FILE__, __LINE__,ptib->tib_ordinal,pTermInfo->usSessID,pTermInfo->usRC,rq.pid, rq.ulData); fflush(stdout);
 
 	    if (pTermInfo->usSessID == ulSessID)
 	      break;                    // Our session is done
@@ -1285,24 +1282,19 @@ int runemf2(int type, HWND hwnd, PCSZ pszCallingFile, UINT uiLineNumber,
 	    // Requeue session for other thread
 	    {
 	      static ULONG ulLastSessID;
-	      // printf("%s %d requeue thread 0x%x our sess %u term sess %u term rc %u\n",
-	      //       __FILE__, __LINE__,ptib->tib_ordinal,ulSessID,pTermInfo->usSessID,pTermInfo->usRC); fflush(stdout);
-	      // fixme to be gone when no longer needed for debug?
 	      if (ulLastSessID) {
-		DosSleep(100);//05 Aug 07 GKY 500
+		DosSleep(100);
 		ulLastSessID = pTermInfo->usSessID;
 	      }
 	      // requeue term report for other thread and do not free yet
 	      rc = DosWriteQueue(hTermQ, rq.ulData, ulLength,(PVOID)pTermInfo, bPriority);
 	      if (rc)
 		Dos_Error(MB_CANCEL,rc,hwnd,pszSrcFile,__LINE__,"DosWriteQueue");
-	      DosSleep(50); //05 Aug 07 GKY 100         // Let other thread see queue entry
+	      DosSleep(50);          // Let other thread see queue entry
 	    }
 	  } // for
 
 	  ret = pTermInfo->usRC == 0;           // Set 1 if rc 0 else 0
-	  // printf("%s %d thread 0x%x term for sess %u\n",
-	  //      __FILE__, __LINE__,ptib->tib_ordinal,ulSessID);fflush(stdout);
 	  DosFreeMem(pTermInfo);
 	}
       } // if wait

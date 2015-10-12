@@ -14,8 +14,6 @@
 
 ***********************************************************************/
 
-// #include <process.h>			// _beginthread
-
 #define INCL_DOS
 #define INCL_DOSERRORS
 #define INCL_WIN

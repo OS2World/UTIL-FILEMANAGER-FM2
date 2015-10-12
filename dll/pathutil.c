@@ -69,8 +69,6 @@ PSZ AddBackslashToPath(PSZ pszPathName)
   return pszPathName;
 }
 
-// #pragma data_seg(DATA1)
-
 /**
  * Build full path name in callers buffer given directory
  * name and filename

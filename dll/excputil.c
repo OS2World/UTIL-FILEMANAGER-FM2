@@ -25,7 +25,6 @@
 #define INCL_DOSEXCEPTIONS		// XCTP_...
 #define INCL_DOSMISC			// DosDumpProcess?
 #define INCL_DOSERRORS			// NO_ERROR
-// #include <os2.h>
 
 #include "wrappers.h"			// xmalloc xfree
 #include "errutil.h"			// Dos_Error Runtime_Error
@@ -64,14 +63,6 @@ static VOID WrapperThread(PVOID pvArgs)
     Dos_Error(MB_ENTER, apiret, HWND_DESKTOP, pszSrcFile, __LINE__,
 	      "DosSetExceptionHandler");
   }
-
-#if 0 // 11 Dec 08 SHL fixme tobe gone - debug
-  {
-    static UINT when;
-    if (++when == 2)
-      *(char*)0 = 0;
-  }
-#endif
 
   (*ptd->pfnThread)(ptd->pvArgs);	// Invoke thread
 

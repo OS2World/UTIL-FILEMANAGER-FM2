@@ -52,7 +52,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-//#include <malloc.h>
 
 #define INCL_DOS
 #define INCL_DOSERRORS
@@ -99,11 +98,8 @@ static PCSZ pszFleshFocusPath;	// 2015-08-20 SHL
 ULONG NoBrokenNotify;
 BOOL fFilesInTree;
 
-//BOOL Flesh(HWND hwndCnr, PCNRITEM pciParent);
-
 BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent);
 BOOL FleshEnv(HWND hwndCnr, PCNRITEM pciParent);
-//VOID UnFlesh(HWND hwndCnr, PCNRITEM pciParent);
 
 /**
  * Insert CNRITEMs for members of PATH-like environment variable
@@ -542,10 +538,10 @@ BOOL Stubby(HWND hwndCnr, PCNRITEM pciParent)
             p = strchr(wildcard, '*');
             *p = 0;;
             BldFullPathName(szBuffer, wildcard, pffb->achName);
-	    pci->pszFileName =  xstrdup(szBuffer, pszSrcFile, __LINE__); //NullStr;   // 2015-08-19 SHL FIXME to doc why
+	    pci->pszFileName =  xstrdup(szBuffer, pszSrcFile, __LINE__); 
             p = strrchr(pci->pszFileName, '\\');
             p++;
-            pci->pszDisplayName = p; //NullStr;
+            pci->pszDisplayName = p; 
             pci->rc.pszIcon = pci->pszDisplayName;
             if (fForceUpper)
               strupr(pci->pszFileName);
@@ -745,7 +741,6 @@ BOOL IsParentOfChildPath(PLIST2 item, PVOID data)
     return FALSE;
   }
   c = strlen(((PFLESHWORKITEM)item)->pci->pszFileName);
-  // 2015-08-23 SHL FIXME to not trap for Gregg
   return strncmp(((PFLESHWORKITEM)item)->pci->pszFileName, (PCSZ)data, c) == 0;
 }
 

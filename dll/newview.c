@@ -49,7 +49,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-// #include <process.h>			// 10 Dec 08 SHL
 #include <limits.h>
 #include <share.h>
 #include <ctype.h> 
@@ -252,7 +251,6 @@ PSZ mailstr(CHAR *pszSrc, CHAR *pszFindChar, LONG StrLens)
   CHAR *pszCharCounter;
   CHAR *pszTestStr = pszSrc;
   CHAR szMailTo[SEARCHSTRINGLEN] = "mailto:";
-  //CHAR szMailEnd[] = ">";
 
   if (!strnstr(pszTestStr, pszFindChar, StrLens))
     return NULL;
@@ -264,7 +262,6 @@ PSZ mailstr(CHAR *pszSrc, CHAR *pszFindChar, LONG StrLens)
       strip_lead_char("<", pszSrc);
       strip_trail_char(">", pszSrc);
       strcat(szMailTo, pszSrc);
-     // strcat(szMailTo, szMailEnd);
       strcpy(pszSrc, szMailTo);
       return pszSrc;
     }
@@ -291,7 +288,6 @@ PSZ mailstr(CHAR *pszSrc, CHAR *pszFindChar, LONG StrLens)
     strip_lead_char("'<", pszSrc);
     strip_trail_char(",.;:'>", pszSrc);
     strcat(szMailTo, pszSrc);
-    //strcat(szMailTo, szMailEnd);
     strcpy(pszSrc, szMailTo);
     return pszSrc;
     }
@@ -1160,7 +1156,7 @@ static VOID SearchThread(VOID * args)
 	      WinSetWindowText(WinWindowFromID(ad->hwndFrame,
 					       NEWVIEW_STATUS1),
 			       (CHAR *) GetPString(IDS_NOMATCHINGTEXT));
-	      DosSleep(150);//05 Aug 07 GKY 1500
+	      DosSleep(150);
 	      PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
 	      PostMsg(hwnd, UM_SETUP4, MPVOID, MPVOID);
 	    }
@@ -1272,7 +1268,7 @@ static VOID ClipboardThread(VOID * args)
 	      WinSetWindowText(WinWindowFromID(ad->hwndFrame,
 					       NEWVIEW_STATUS1),
 			       (CHAR *) GetPString(IDS_NVNOLINESSELTEXT));
-	      DosSleep(150);//05 Aug 07 GKY 1500
+	      DosSleep(150);
 	    }
 	  }
 	  if (!released)
@@ -2034,7 +2030,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 			 __LINE__) != -1)
 	{
 	  WinSendMsg(hwnd, UM_SETUP5, MPVOID, MPVOID);
-	  DosSleep(16); //05 Aug 07 GKY 32
+	  DosSleep(16); 
 	  return (MRESULT) 1;
 	}
       }
@@ -3948,7 +3944,6 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		       MPFROMLONG(FCF_SIZEBORDER), MPVOID);
 	    WinInvalidateRect(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 					      NEWVIEW_DRAG), NULL, FALSE);
-	    //WinInvalidateRect(ad->hhscroll, NULL, FALSE);
 	  }
 	  DosReleaseMutexSem(ad->ScanSem);
 	}
@@ -3987,7 +3982,6 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		       MPFROMLONG(FCF_SIZEBORDER), MPVOID);
 	    WinInvalidateRect(WinWindowFromID(WinQueryWindow(hwnd, QW_PARENT),
 					      NEWVIEW_DRAG), NULL, FALSE);
-	    //WinInvalidateRect(ad->hhscroll, NULL, FALSE);
 	  }
 	  DosReleaseMutexSem(ad->ScanSem);
 	}
@@ -4072,7 +4066,7 @@ MRESULT EXPENTRY ViewWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  DosCloseMutexSem(ad->ScanSem);
 	}
 	if (ad->busy)
-	  DosSleep(100); //05 Aug 07 GKY 128
+	  DosSleep(100); 
 	if (ad->hps) {
 	  GpiDeleteSetId(ad->hps, NEWVIEWMLE_FONT_LCID);
 	  GpiAssociate(ad->hps, 0);
@@ -4226,7 +4220,6 @@ HWND StartViewer(HWND hwndParent, USHORT flags, CHAR * filename,
       if (!WinSendMsg(hwndClient, UM_SETUP, MPVOID, MPVOID))
 	hwndFrame = (HWND) 0;
       else {
-	//DosSleep(32);
 	if (!(FrameFlags & FCF_TASKLIST) && !(flags & 2)) {
 	  SWP swp;
 

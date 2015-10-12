@@ -46,7 +46,6 @@
 #include <string.h>
 #include <ctype.h>
 #include <share.h>
-// #include <process.h>                    // _beginthread
 
 #define INCL_DOS
 #define INCL_DOSERRORS
@@ -2261,7 +2260,6 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinSetDlgItemText(hwnd, INI_NUMKEYS, s);
       WinSetDlgItemText(hwnd, INI_NUMDATA, "0");
       WinSendDlgItemMsg(hwnd, INI_DATALIST, LM_DELETEALL, MPVOID, MPVOID);
-      // inidata = WinQueryWindowPtr(hwnd, QWL_USER);   // 09 Jan 08 SHL
     }
     return 0;
 
@@ -2546,7 +2544,7 @@ MRESULT EXPENTRY IniProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		  free(prfp);
 		}
 		else
-		  DosSleep(100); //05 Aug 07 GKY 250
+		  DosSleep(100);
 	      }
 	    }
 	  }

@@ -322,7 +322,6 @@ VOID GrepThread(VOID *arg)
     if (ghmq) {
       WinCancelShutdown(ghmq, TRUE);
       IncrThreadUsage();
-      // DosSleep(100); //05 Aug 07 GKY 128     // 07 Feb 08 SHL
       // hwndStatus does not exist for applet
       WinSetWindowText(hwndStatus ? hwndStatus : grep.hwndCurFile,
 		       (CHAR *) GetPString(grep.finddupes ? IDS_GREPDUPETEXT :
@@ -787,7 +786,6 @@ static BOOL DoInsertion(GREP *grep,
     FillInRecordFromFFB(grep->hwndFiles,
 			pci, grep->dir[x], grep->insertffb[x], FALSE, dcd);
     pci = (PCNRITEM) pci->rc.preccNextRecord;
-    //SleepIfNeeded(pitdSleep, 1);
     if (pci == NULL && ulRecsToInsert) {
       memset(&ri, 0, sizeof(RECORDINSERT));
       ri.cb = sizeof(RECORDINSERT);
@@ -807,8 +805,6 @@ static BOOL DoInsertion(GREP *grep,
     }
     SleepIfNeeded(pitdSleep, 1);
   }//for
-    // if (grep->toinsert == FilesToGet)        // 07 Feb 08 SHL
-    //  DosSleep(0);  //26 Aug 07 GKY 1 // 07 Feb 08 SHL
     freegreplist(grep);
     PostMsg(grep->hwndFiles, UM_RESCAN, MPVOID, MPVOID);
     return TRUE;
@@ -1055,7 +1051,6 @@ static BOOL DoOneFile(GREP *grep,
 	info = info->next;
       }                                 // while
       Free_FEAList(head);
-      // DosSleep(1);                   // 07 Feb 08 SHL
     }
   }
 
@@ -1093,7 +1088,6 @@ static BOOL DoOneFile(GREP *grep,
 #     ifdef FORTIFY
       Fortify_LeaveScope();
 #      endif
-      // DosSleep(1);                   // 07 Feb 08 SHL
     }
   } // if
 
@@ -1202,10 +1196,8 @@ LONG CRCFile(CHAR *pszFileName, INT *error)
 	  CRC = CRCBlock(buffer, len, CRC);
 	else
 	  break;
-	// DosSleep(0); //26 Aug 07 GKY 1       // 07 Feb 08 SHL
       }
       fclose(fp);
-      // DosSleep(1);                   // 07 Feb 08 SHL
     }
     free(buffer);
 #   ifdef FORTIFY
@@ -1372,10 +1364,7 @@ static VOID FillDupes(GREP *grep,
   INT error;
   ULONG x;
   ULONG y;
-  // ULONG cntr = 1000;                 // 09 Feb 08 SHL
 
-  // if (grep->CRCdupes)                // 09 Feb 08 SHL
-  //  cntr = 100;                       // 09 Feb 08 SHL
   x = 0;
   for (i = grep->dupehead; i; i = i->next)
     x++;                                // Count
@@ -1385,7 +1374,6 @@ static VOID FillDupes(GREP *grep,
       WinSetWindowText(grep->hwndCurFile, (CHAR *) GetPString(IDS_GREPDUPESORTINGTEXT));
     else if (WinQueryFocus(HWND_DESKTOP) == grep->hwndFiles)
       WinSetWindowText(hwndStatus, (CHAR *) GetPString(IDS_GREPDUPESORTINGTEXT));
-    // DosSleep(0);  //26 Aug 07 GKY 1  // 07 Feb 08 SHL
     grep->dupenames = xmalloc(sizeof(DUPES *) * (x + 1), pszSrcFile, __LINE__);
     if (!grep->nosizedupes)
       grep->dupesizes = xmalloc(sizeof(DUPES *) * (x + 1), pszSrcFile, __LINE__);
@@ -1403,18 +1391,14 @@ static VOID FillDupes(GREP *grep,
 
       InitITimer(pitdSleep, 0);         // Reset rate estimator
       SleepIfNeeded(pitdSleep, 1);
-      // DosSleep(0); //26 Aug 07 GKY 1 // 07 Feb 08 SHL
-
       qsort(grep->dupenames,
 	    x,
 	    sizeof(DUPES *),
 	    grep->ignoreextdupes ? comparenamesqe : comparenamesq);
       SleepIfNeeded(pitdSleep, 1);
-      // DosSleep(0); //26 Aug 07 GKY 1 // 07 Feb 08 SHL
       if (!grep->nosizedupes) {
 	qsort(grep->dupesizes, x, sizeof(DUPES *), comparesizesq);
 	SleepIfNeeded(pitdSleep, 1);
-	// DosSleep(0); //26 Aug 07 GKY 1       // 07 Feb 08 SHL
       }
 
       if (!hwndStatus)
@@ -1596,14 +1580,13 @@ static VOID FillDupes(GREP *grep,
 	SleepIfNeeded(pitdSleep, 1);
 	if (!(i->flags & GF_SKIPME)) {
 	  if (IsITimerExpired(pitdReport)) {
-	    // if (!(y % cntr)) { }
-	    CHAR s[44];
+            CHAR s[44];
+
 	    sprintf(s, GetPString(IDS_GREPDUPECHECKPROGTEXT), y, grep->numfiles);
 	    if (!hwndStatus)
 	      WinSetWindowText(grep->hwndCurFile, s);
 	    else if (WinQueryFocus(HWND_DESKTOP) == grep->hwndFiles)
 	      WinSetWindowText(hwndStatus, s);
-	    // DosSleep(0); //26 Aug 07 GKY 1   // 07 Feb 08 SHL
 	  }
 	  y++;
 	  pi = strrchr(i->name, '\\');
@@ -1666,8 +1649,6 @@ static VOID FillDupes(GREP *grep,
 		  i->flags |= GF_SKIPME;
 		}
 	      }
-	      // else if (!(x % 100))   // 07 Feb 08 SHL
-	      //        DosSleep(0);  //26 Aug 07 GKY 1 // 07 Feb 08 SHL
 	    }
 	    c = c->next;
 	  }

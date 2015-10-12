@@ -334,7 +334,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       sLastMaskSelect = LIT_NONE;
       fInitDone = TRUE;
     }
-    else {//if (sLastMaskSelect == LIT_NONE) {
+    else {
       size = sizeof(sLastMaskSelect);
       PrfQueryProfileData(fmprof, appname, (CHAR *) PSCZ_GREP_LASTMASK_SELECT, &sLastMaskSelect, &size);
       if (sLastMaskSelect >= 0)
@@ -444,11 +444,6 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       }
       fclose(fp);
     }
-    // 25 Sep 09 SHL Reselect last last used item
-    //if (sLastMaskSelect >= 0)
-    //  WinSendDlgItemMsg(hwnd, GREP_LISTBOX, LM_SELECTITEM,
-    //		MPFROMSHORT(sLastMaskSelect), MPFROMSHORT(TRUE));
-
     FillPathListBox(hwnd,
 		    WinWindowFromID(hwnd, GREP_DRIVELIST),
 		    (HWND) 0, NULL, FALSE);
@@ -1135,7 +1130,7 @@ MRESULT EXPENTRY GrepDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinDismissDlg(hwnd, 0);
 	  break;
 	}
-	DosSleep(100);			//05 Aug 07 GKY 128
+	DosSleep(100);	  
 	free(p);
 #	ifdef FORTIFY
 	Fortify_LeaveScope();

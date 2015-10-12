@@ -48,7 +48,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <share.h>
-// #include <process.h>			// _beginthread
 
 #define INCL_DOS
 #define INCL_WIN
@@ -462,7 +461,6 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1,
   case IDM_AUTOVIEW:
   case IDM_CONFIRMDELETE:		// 2014-05-17 SHL
   case IDM_TOGGLEDRAGDIALOG:		// 2014-05-15 SHL
-//    case IDM_SYSINFO:
   case IDM_HIDENOTEWND:
   case IDM_SHOWNOTEWND:
   case IDM_INSTANT:
@@ -723,9 +721,8 @@ static MRESULT EXPENTRY MainWMCommand2(HWND hwnd, ULONG msg, MPARAM mp1,
 	Runtime_Error(pszSrcFile, __LINE__, NULL);
 	break;
       }
-      x = SHORT1FROMMP(mp1);// - IDM_COMMANDSTART;
+      x = SHORT1FROMMP(mp1);
       if (x >= 0) {
-	//x++;
 	RunCommand(hwndCnr, x);
 	if (fUnHilite) {
 
@@ -810,7 +807,7 @@ static MRESULT EXPENTRY MainWMOnce2(HWND hwnd, ULONG msg, MPARAM mp1,
       return 0;
     }
     else
-      DosSleep(32);//05 Aug 07 GKY 64
+      DosSleep(32);
 
     pd = xmallocz(sizeof(PERSON1DATA), pszSrcFile, __LINE__);
     if (!pd)

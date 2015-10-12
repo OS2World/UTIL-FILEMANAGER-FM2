@@ -129,7 +129,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-// #include <process.h>			// _beginthread
 
 #define INCL_DOS
 #define INCL_WIN
@@ -866,7 +865,7 @@ MRESULT EXPENTRY TreeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 #     endif
       dcd->hwndObject = hwnd;
       if (ParentIsDesktop(hwnd, dcd->hwndParent))
-	DosSleep(100); //05 Aug 07 GKY 250
+	DosSleep(100); 
     }
     return 0;
 
@@ -1265,9 +1264,6 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  menuHwnd = CheckMenu(hwndMainMenu, &TreeMenu, TREE_POPUP);
 	else {
 	  menuHwnd = CheckMenu(hwndMainMenu, &DirMenu, DIR_POPUP);
-//            WinEnableMenuItem(DirMenu,
-//                              IDM_TREE,
-//                              FALSE);
 	}
 	if (!(pci->attrFile & FILE_DIRECTORY))
 	  menuHwnd = CheckMenu(hwndMainMenu, &FileMenu, FILE_POPUP);
@@ -2777,7 +2773,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	      TileChildren(dcd->hwndParent, TRUE);
 	  }
 	  WinSetWindowPos(hwndC, HWND_TOP, 0, 0, 0, 0, SWP_ACTIVATE);
-	  DosSleep(100);//05 Aug 07 GKY 250
+	  DosSleep(100);
 	}
 	else
 	  StartCollector(dcd->hwndParent, 4);
@@ -2799,7 +2795,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	break;
 
       case IDM_COLLECTOR:
-	DosSleep(32);//05 Aug 07 GKY 64
+	DosSleep(32);
 	{
 	  CHAR **list;
 
@@ -3106,9 +3102,8 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 	  if (!cmdloaded)
 	    load_commands();
-	  x = SHORT1FROMMP(mp1);// - IDM_COMMANDSTART;
+	  x = SHORT1FROMMP(mp1);
 	  if (x >= 0) {
-	    //x++;
 	    RunCommand(hwnd, x);
 	    if (fUnHilite)
 	      UnHilite(hwnd, TRUE, &dcd->lastselection, 0);
@@ -3150,7 +3145,7 @@ MRESULT EXPENTRY TreeCnrWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     if (dcd && hwndMain) {
       fOkayMinimize = TRUE;
       if (dcd->hwndObject) {
-	DosSleep(50);//05 Aug 07 GKY 100
+	DosSleep(50);
 	  fOkayMinimize = FALSE;
 	  WinSetWindowPos(((hwndMain) ? WinQueryWindow(hwndMain, QW_PARENT) :
 			   dcd->hwndFrame), HWND_TOP, 0, 0, 0, 0,

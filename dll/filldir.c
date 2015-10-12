@@ -131,7 +131,6 @@
 #include <malloc.h>			// _msize _heapchk
 #include <ctype.h>
 #include <limits.h>
-// #include <process.h>			// _beginthread
 
 #define INCL_DOS
 #define INCL_WIN
@@ -918,7 +917,7 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	       (!pffbFile->achName[1] ||
                 (pffbFile->achName[1] == '.' && !pffbFile->achName[2])) ||
                (LoadedFirstChild && !stricmp(LoadedFirstChild, pffbFile->achName)))) {
-	    // ulFindCnt--;		// Got . or .. or file to be skipped
+	    		// Got . or .. or file to be skipped
 	  }
 	  else
 	    papffbSelected[ulSelCnt++] = pffbFile;	// Remember selected file
@@ -1062,8 +1061,6 @@ VOID ProcessDirectory(const HWND hwndCnr,
 				  MPFROMLONG(EXTRA_RECORD_BYTES), MPFROMLONG(ulRecsToInsert));
 
 	    if (!pciFirst) {
-	      //ERRORID erridErrorCode = WinGetLastError(WinQueryAnchorBlock(hwndCnr));
-	      //PmpfF(("Allocation failed %i", erridErrorCode));
 	      Win_Error(hwndCnr, HWND_DESKTOP, pszSrcFile, __LINE__,
 			GetPString(IDS_CMALLOCRECERRTEXT));
 	      ok = FALSE;
@@ -1146,7 +1143,6 @@ VOID ProcessDirectory(const HWND hwndCnr,
 	      }
 	    }
 	  }
-	  //SleepIfNeeded(&itdSleep, 1);
 	}
 	priority_normal();
 	if (ok) {

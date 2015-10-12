@@ -71,7 +71,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-// #include <process.h>
 
 #define INCL_DOS
 #define INCL_DOSERRORS
@@ -718,7 +717,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		FreeList(list);
 		goto Abort;
 	      }
-	      DosSleep(0);		//26 Aug 07 GKY 1
+	      DosSleep(0);		
 	      if (mv.skip || !*mv.target)
 		break;
 	      if (mv.dontask)
@@ -1193,7 +1192,7 @@ MRESULT EXPENTRY SeeObjWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	WinSetWindowText(WinWindowFromID(hwndFrame, SEEALL_STATUS), message);
 	if (toupper(*path) < 'C' && !fAlertBeepOff)
 	  DosBeep(1000, 25);
-	DosSleep(16);			// 05 Aug 07 GKY 33
+	DosSleep(16);			
 	break;
 
       default:
@@ -1394,12 +1393,12 @@ static VOID CollectList(HWND hwnd, CHAR ** list)
 	else
 	  TileChildren(hwndMain, TRUE);
 	WinSetWindowPos(hwndC, HWND_TOP, 0, 0, 0, 0, SWP_ACTIVATE);
-	DosSleep(100);//05 Aug 07 GKY 250
+	DosSleep(100);
       }
     }
     else {
       StartCollector(HWND_DESKTOP, 4);
-      DosSleep(100);//05 Aug 07 GKY 250
+      DosSleep(100);
     }
   }
   if (!PostMsg(hwnd, WM_COMMAND, MPFROM2SHORT(IDM_COLLECTOR, 0),
@@ -1747,7 +1746,7 @@ VOID FindDupesThread(VOID * args)
 	if (ad->cursored <= ad->afindexcnt) {
 	  for (x = 0; x < ad->afheadcnt; x++)
 	    ad->afhead[x].flags &= (~(AF_DUPE | AF_SELECTED));
-	  DosSleep(0);  //26 Aug 07 GKY 1
+	  DosSleep(0);  
 	  for (x = 0; x < ad->afheadcnt && !ad->stopflag; x++) {
 	    if (!(ad->afhead[x].flags & (AF_DUPE | AF_FILTERED))) {
 	      if (!(x % 50)) {
@@ -2175,7 +2174,7 @@ static VOID FindAllThread(VOID * args)
 		if (ad->stopflag)
 		  break;
 		PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
-		DosSleep(0); //26 Aug 07 GKY 1
+		DosSleep(0); 
 	      }
 	    } // for
 	  }
@@ -2735,7 +2734,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	PostMsg(hwnd, WM_CLOSE, MPVOID, MPVOID);
       }
       else {
-	DosSleep(50);//05 Aug 07 GKY 100
+	DosSleep(50);
 	PostMsg(hwnd, UM_SETUP, MPVOID, MPVOID);
 	PostMsg(hwnd, UM_SETUP2, MPVOID, MPVOID);
       }
@@ -4204,7 +4203,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	}
 	else {
 	  DosReleaseMutexSem(pAD->hmtxScan);
-	  DosSleep(50);//05 Aug 07 GKY 100
+	  DosSleep(50);
 	  WinInvalidateRect(hwnd, NULL, FALSE);
 	  PostMsg(hwnd, UM_SETUP2, MPVOID, MPVOID);
 	  PostMsg(hwnd, UM_RESCAN, MPVOID, MPVOID);
@@ -4387,7 +4386,7 @@ MRESULT EXPENTRY SeeAllWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	DosReleaseMutexSem(pAD->hmtxScan);
       }
       else if (SHORT1FROMMP(mp1) == IDM_COLLECTOR) {
-	DosSleep(50);//05 Aug 07 GKY 100
+	DosSleep(50);
 	if (!PostMsg(hwnd, msg, mp1, mp2))
 	  WinSendMsg(hwnd, msg, mp1, mp2);
       }

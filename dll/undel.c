@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-// #include <process.h>			// _beginthread
 
 #define INCL_DOS
 #define INCL_WIN
@@ -215,8 +214,6 @@ MRESULT EXPENTRY UndeleteDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
       strcpy(s, (CHAR *)mp2);
       AddBackslashToPath(s);
-      //if (s[strlen(s) - 1] != '\\')
-      //  strcat(s, "\\");
       strcat(s, "*");
       WinSetDlgItemText(hwnd, UNDEL_ENTRY, s);
       WinCheckButton(hwnd, UNDEL_SUBDIRS, TRUE);
@@ -261,7 +258,7 @@ MRESULT EXPENTRY UndeleteDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinDismissDlg(hwnd, 0);
 	}
 	else
-	  DosSleep(100);//05 Aug 07 GKY 500
+	  DosSleep(100);
       }
       refresh = FALSE;
     }

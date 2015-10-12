@@ -31,7 +31,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-// #include <process.h>			// _beginthread
 
 #define INCL_DOS
 #define INCL_WIN
@@ -103,8 +102,6 @@ static VOID ProcessDir(HWND hwndCnr,
     return;                             // Error already reported
   strcpy(maskstr, filename);
   AddBackslashToPath(maskstr);
-  //if (maskstr[strlen(maskstr) - 1] != '\\')
-  //  strcat(maskstr, "\\");
   endpath = &maskstr[strlen(maskstr)];
   strcat(maskstr, "*");
   hdir = HDIR_CREATE;
@@ -323,7 +320,6 @@ MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
     break;
 
   case UM_SETUP:
-    // WinEnableWindowUpdate(WinWindowFromID(hwnd,OBJCNR_CNR),FALSE);
     {
       CNRINFO cnri;
 
@@ -346,7 +342,6 @@ MRESULT EXPENTRY ObjCnrDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_CONTAINER_FILLED:
     WinSetDlgItemText(hwnd, OBJCNR_NOTE, NullStr);
-//      WinEnableWindowUpdate(WinWindowFromID(hwnd,OBJCNR_CNR),TRUE);
     WinSendDlgItemMsg(hwnd, OBJCNR_CNR, CM_INVALIDATERECORD, MPVOID,
 		      MPFROM2SHORT(0, CMA_ERASE | CMA_INVALIDATE));
     data = INSTDATA(hwnd);

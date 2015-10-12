@@ -92,7 +92,6 @@ MRESULT EXPENTRY RenameProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
       WinShowWindow(WinWindowFromID(hwnd, REN_NOROWARN), FALSE);
     }
     if (mv->compare) {
-      //WinShowWindow(WinWindowFromID(hwnd, REN_DONTASK), FALSE);
       WinShowWindow(WinWindowFromID(hwnd, REN_OVEROLD), FALSE);
       WinShowWindow(WinWindowFromID(hwnd, REN_OVERNEW), FALSE);
       WinShowWindow(WinWindowFromID(hwnd, REN_NOROWARN), FALSE);

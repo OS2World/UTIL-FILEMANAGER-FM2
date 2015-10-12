@@ -5610,9 +5610,8 @@ MRESULT EXPENTRY MainWMCommand(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  Runtime_Error(pszSrcFile, __LINE__, NULL);
 	  break;
 	}
-	x = SHORT1FROMMP(mp1);// - IDM_COMMANDSTART;
+	x = SHORT1FROMMP(mp1);
 	if (x >= 0) {
-	  //x++;
 	  RunCommand(hwndCnr, x);
 	  if (fUnHilite) {
 
@@ -5703,7 +5702,7 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
       return 0;
     }
     else
-      DosSleep(32);//05 Aug 07 GKY 64
+      DosSleep(32);
 
     hwndFrame = WinQueryWindow(hwnd, QW_PARENT);
 
@@ -5834,7 +5833,6 @@ static MRESULT EXPENTRY MainWMOnce(HWND hwnd, ULONG msg, MPARAM mp1,
     hwndDrivelist = WinCreateWindow(hwndFrame,
 				    (CHAR *) WC_COMBOBOX,
 				    (PSZ) NULL,
-				    //WS_VISIBLE |
 				    CBS_DROPDOWN,
 				    (swp.x +
 				     WinQuerySysValue(HWND_DESKTOP,
@@ -6595,7 +6593,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		    PostMsg(MainObjectHwnd,
 			    UM_RESTORE,
 			    MPVOID,
-			    MPFROMLONG(1));                // Autotile
+			    MPFROMLONG(RESTORE_STATE_TILE_CHILDREN));     // Autotile
 		  }
 		}
 		// Request restore
@@ -6624,8 +6622,7 @@ MRESULT EXPENTRY MainWndProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 		p++;
 		WinPostMsg(hwnd,
 			   WM_COMMAND,
-			   MPFROM2SHORT(atol(p), 0), //fixme GKY this traps in atol the {} probably don't exist
-			   //IDM_COMMANDSTART + sSelect, 0),
+			   MPFROM2SHORT(atol(p), 0), 
 			   MPVOID);
 	      }
 		WinSetWindowText(hwndCmdlist, (CHAR *) GetPString(IDS_COMMANDSTEXT));

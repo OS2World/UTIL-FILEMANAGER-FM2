@@ -184,8 +184,6 @@ MRESULT EXPENTRY CustomFileDlg(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 					   CCHMAXPATH), MPFROMP(szBuffer));
             if (*szBuffer) {
               AddBackslashToPath(szBuffer);
-	      //if (szBuffer[strlen(szBuffer) - 1] != '\\')
-	      //  strcat(szBuffer, "\\");
 	      *szTemp = 0;
 	      WinQueryDlgItemText(hwnd, 258, CCHMAXPATH, szTemp);
 	      p = strrchr(szTemp, '\\');

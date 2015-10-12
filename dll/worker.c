@@ -82,11 +82,8 @@
 
 #define INCL_DOS
 #define INCL_DOSERRORS
-// #define INCL_WINPROGRAMLIST		// 13 Jul 09 SHL dropped
-// #define INCL_WINHELP			// 13 Jul 09 SHL dropped
 #define INCL_LONGLONG
 #define INCL_WINPOINTERS		// WinSetFileIcon
-// #define INCL_WINWORKPLACE		// 13 Jul 09 SHL dropped
 #define INCL_WINSHELLDATA		// PrfQueryProfileData
 
 #include "fm3dll.h"
@@ -466,8 +463,7 @@ VOID Action(VOID * args)
 			    GetPString(IDS_UUDECODECOMPLETETEXT),
 			    wk->li->list[x]);
 		    AddNote(message);
-		    if (//fSyncUpdates ||
-			AddToList(outname, &files, &cFilesModified, &cItemsAllocated))
+		    if (AddToList(outname, &files, &cFilesModified, &cItemsAllocated))
 		      Broadcast(hab2,
 				wk->hwndCnr,
 				UM_UPDATERECORD, MPFROMP(outname), MPVOID);
@@ -571,8 +567,7 @@ VOID Action(VOID * args)
 		  if (!ret)
 		    goto Abort;
 		  if (ret == 1) {
-		    if (//fSyncUpdates ||
-			AddToList(wk->li->list[x],
+		    if (AddToList(wk->li->list[x],
 				  &files, &cFilesModified, &cItemsAllocated))
 		      Broadcast(hab2,
 				wk->hwndCnr,
@@ -1093,9 +1088,9 @@ VOID Action(VOID * args)
 	      Notify(message);
 	      if (toupper(*wk->li->targetpath) < 'C' && !fAlertBeepOff)
 		DosBeep(1000, 25);	// Wake up user
-	      DosSleep(16);//05 Aug 07 GKY 33
+	      DosSleep(16);
 	      if (wk->li->type == IDM_WPSMOVE || wk->li->type == IDM_WPSCOPY)
-		DosSleep(48);//05 Aug 07 GKY 96
+		DosSleep(48);
 	      break;
 	    default:
 	      break;
@@ -1297,8 +1292,6 @@ VOID MassAction(VOID * args)
 		break;
 	      strcpy(szBuffer, wk->li->targetpath);
 	      AddBackslashToPath(wk->li->targetpath);
-	      //if (wk->li->targetpath[strlen(wk->li->targetpath) - 1] != '\\')
-	      //  strcat(szBuffer, "\\");
 	      p = szBuffer + strlen(szBuffer);
 	      for (x = 0; wk->li->list[x]; x++) {
 		strcpy(p, wk->li->list[x]);
@@ -1835,8 +1828,7 @@ VOID MassAction(VOID * args)
 			  GetPString(IDS_DELETEDTEXT), wk->li->list[x]);
 		  AddNote(prompt);
 		}
-		if (//fSyncUpdates ||
-		    AddToList(wk->li->list[x], &files, &numfiles, &numalloc)) {
+		if (AddToList(wk->li->list[x], &files, &numfiles, &numalloc)) {
 		  Broadcast(hab2,
 			    wk->hwndCnr,
 			    UM_UPDATERECORD,

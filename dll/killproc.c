@@ -42,7 +42,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-// #include <process.h>
 #include <limits.h>
 
 #define INCL_DOS
@@ -471,7 +470,7 @@ MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinDismissDlg(hwnd, 0);
 	}
 	else
-	  DosSleep(100);		// 05 Aug 07 GKY 250
+	  DosSleep(100);		
       }
       else if (fUseQSysState)
 	if (xbeginthread(FillKillListThread3,
@@ -483,7 +482,7 @@ MRESULT EXPENTRY KillDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  WinDismissDlg(hwnd, 0);
 	}
 	else
-	  DosSleep(100);//05 Aug 07 GKY 250
+	  DosSleep(100);
       else {
 	if (xbeginthread(FillKillListThread,
 			 65536,

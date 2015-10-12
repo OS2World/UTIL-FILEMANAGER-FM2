@@ -126,58 +126,58 @@ MRESULT EXPENTRY AboutDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 	  DosSleep(16);
 	  WinSendDlgItemMsg(hwnd, ABT_ICON, SM_SETHANDLE,
 			    MPFROMLONG(sk1), MPVOID);
-	  DosSleep(16);//05 Aug 07 GKY 33
+	  DosSleep(16);
 	  WinSendDlgItemMsg(hwnd, ABT_ICON, SM_SETHANDLE,
 			    MPFROMLONG(sk2), MPVOID);
-	  DosSleep(16);//05 Aug 07 GKY 33
+	  DosSleep(16);
 	  WinSendDlgItemMsg(hwnd, ABT_ICON, SM_SETHANDLE,
 			    MPFROMLONG(sk3), MPVOID);
-	  DosSleep(16);//05 Aug 07 GKY 33
+	  DosSleep(16);
 	  WinSendDlgItemMsg(hwnd, ABT_ICON, SM_SETHANDLE,
 			    MPFROMLONG(sk4), MPVOID);
-	  DosSleep(16);//05 Aug 07 GKY 33
+	  DosSleep(16);
 	  WinSendDlgItemMsg(hwnd, ABT_ICON, SM_SETHANDLE,
 			    MPFROMLONG(sk5), MPVOID);
-	  DosSleep(16);//05 Aug 07 GKY 33
+	  DosSleep(16);
 	  WinSendDlgItemMsg(hwnd, ABT_ICON, SM_SETHANDLE,
 			    MPFROMLONG(sk6), MPVOID);
-	  DosSleep(16);//05 Aug 07 GKY 33
+	  DosSleep(16);
 	  WinSendDlgItemMsg(hwnd, ABT_ICON, SM_SETHANDLE,
 			    MPFROMLONG(sk7), MPVOID);
-	  DosSleep(16);//05 Aug 07 GKY 33
+	  DosSleep(16);
 	  WinSendDlgItemMsg(hwnd, ABT_ICON, SM_SETHANDLE,
 			    MPFROMLONG(sk8), MPVOID);
-	  DosSleep(16);//05 Aug 07 GKY 33
+	  DosSleep(16);
 	  WinSendDlgItemMsg(hwnd, ABT_ICON, SM_SETHANDLE,
 			    MPFROMLONG(sk9), MPVOID);
-	  DosSleep(100);//05 Aug 07 GKY 257
+	  DosSleep(100);
 	  WinSendDlgItemMsg(hwnd, ABT_ICON, SM_SETHANDLE,
 			    MPFROMLONG(sk8), MPVOID);
-	  DosSleep(16);//05 Aug 07 GKY 33
+	  DosSleep(16);
 	  WinSendDlgItemMsg(hwnd, ABT_ICON, SM_SETHANDLE,
 			    MPFROMLONG(sk7), MPVOID);
-	  DosSleep(16);//05 Aug 07 GKY 33
+	  DosSleep(16);
 	  WinSendDlgItemMsg(hwnd, ABT_ICON, SM_SETHANDLE,
 			    MPFROMLONG(sk6), MPVOID);
-	  DosSleep(16);//05 Aug 07 GKY 33
+	  DosSleep(16);
 	  WinSendDlgItemMsg(hwnd, ABT_ICON, SM_SETHANDLE,
 			    MPFROMLONG(sk5), MPVOID);
-	  DosSleep(16);//05 Aug 07 GKY 33
+	  DosSleep(16);
 	  WinSendDlgItemMsg(hwnd, ABT_ICON, SM_SETHANDLE,
 			    MPFROMLONG(sk4), MPVOID);
-	  DosSleep(16);//05 Aug 07 GKY 33
+	  DosSleep(16);
 	  WinSendDlgItemMsg(hwnd, ABT_ICON, SM_SETHANDLE,
 			    MPFROMLONG(sk3), MPVOID);
-	  DosSleep(16);//05 Aug 07 GKY 33
+	  DosSleep(16);
 	  WinSendDlgItemMsg(hwnd, ABT_ICON, SM_SETHANDLE,
 			    MPFROMLONG(sk2), MPVOID);
-	  DosSleep(16);//05 Aug 07 GKY 33
+	  DosSleep(16);
 	  WinSendDlgItemMsg(hwnd, ABT_ICON, SM_SETHANDLE,
 			    MPFROMLONG(sk1), MPVOID);
-	  DosSleep(16);//05 Aug 07 GKY 33
+	  DosSleep(16);
 	  WinSendDlgItemMsg(hwnd, ABT_ICON, SM_SETHANDLE,
 			    MPFROMLONG(sk0), MPVOID);
-	  DosSleep(16);//05 Aug 07 GKY 33
+	  DosSleep(16);
 	  WinShowWindow(WinWindowFromID(hwnd, ABT_ICON), FALSE);
 	  WinSendDlgItemMsg(hwnd, ABT_ICON, SM_SETHANDLE,
 			    MPFROMLONG(hbm), MPVOID);
@@ -212,7 +212,7 @@ MRESULT EXPENTRY AboutDlgProc(HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
   case UM_SETDIR:
     WinSetFocus(HWND_DESKTOP, HWND_DESKTOP);
-    DosSleep(250);//05 Aug 07 GKY 2500
+    DosSleep(250);
     return 0;
 
   case WM_TIMER:

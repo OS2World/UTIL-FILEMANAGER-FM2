@@ -33,7 +33,6 @@
 #include <string.h>
 #include <ctype.h>
 #include <share.h>
-// #include <process.h>			// _beginthread
 
 #define INCL_DOS
 #define INCL_WIN
@@ -559,7 +558,6 @@ BOOL MLEHexLoad(HWND h, CHAR * filename)
 		WinEnableWindowUpdate(h, FALSE);
 		first = FALSE;
 	      }
-// fprintf(stderr,"%d bytes of %d imported\n",howmuch,numimport);
 	      if (howmuch < 1) {
 		numimport = 0;
 		break;
@@ -567,7 +565,7 @@ BOOL MLEHexLoad(HWND h, CHAR * filename)
 	      while (howmuch < numimport) {
 		numimport -= howmuch;
 		memmove(hexbuff, hexbuff + howmuch, numimport);
-		DosSleep(0);  //26 Aug 07 GKY 1
+		DosSleep(0);  
 		if (!WinIsWindow(hab, h) || (vw && vw->killme))
 		  break;
 		howmuch = (INT) WinSendMsg(h,
@@ -704,7 +702,6 @@ BOOL MLEinsertfile(HWND h, CHAR * filename)
 	      WinEnableWindowUpdate(h, FALSE);
 	      first = FALSE;
 	    }
-// fprintf(stderr,"%d bytes of %d imported\n",howmuch,numread);
 	    if (howmuch < 1) {
 	      numread = 0;
 	      break;
@@ -722,7 +719,7 @@ BOOL MLEinsertfile(HWND h, CHAR * filename)
 		else
 		  numread = tempnum;
 	      }
-	      DosSleep(0); //26 Aug 07 GKY 1
+	      DosSleep(0); 
 	    }
 	    else
 	      numread = fread(buffer, 1, min(50000, len), fp);
@@ -733,7 +730,7 @@ BOOL MLEinsertfile(HWND h, CHAR * filename)
 	    sprintf(s, GetPString(IDS_LOADINGMLETEXT), len);
 	    WinSetWindowText(grandpa, s);
 	  }
-	  DosSleep(0); //26 Aug 07 GKY 1
+	  DosSleep(0); 
 	}
 	DosFreeMem(buffer);
       }
@@ -811,7 +808,6 @@ VOID LoadThread(VOID * arg)
 # ifdef FORTIFY
   Fortify_LeaveScope();
 #  endif
-  // _endthread();			// 10 Dec 08 SHL
 }
 
 INT MLEbackgroundload(HWND hwndReport, ULONG msg, HWND h, CHAR * filename,
