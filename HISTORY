@@ -1,8 +1,32 @@
 New stuff at the top.  This list is not necessarily complete.
 
 3.24
- o Rework Flesh/Stubby logic to avoid doing work on thread 1
- o Add generic linked list support routines
+ o Rework Flesh/Stubby logic to avoid doing work on thread 1 (Steven)
+ o Add generic linked list support routines (Steven)
+ o Get tree switch code to work with new Flesh/Stubby code (Steven, Gregg)
+ o Move tree expand code off thread 1 (Gregg)
+ o Get ExpandAll to work with new Flesh/Stubby code (Gregg)
+ o Fix failure of CD/DVD icon and display name to revert on disk eject (Gregg)
+ o Stop Stubby from adding a null string file name eliminating some random traps
+   and occasional blank lines in the tree (Gregg)
+ o Get notify on hard drive without subdirectories code working (Gregg)
+ o Add missing MAKETOP code in directory containers works in tree view (Gregg)
+ o Removed recurse drive scan code -- obsolete with Flesh/Stubby changes (Gregg)
+ o Fixed occasional spurious A:\ drive not ready error on startup (Gregg)
+ o Improved consistency of MAKETOP in tree container (Gregg)
+ o Release tool improvements (John)
+ o Created high-mem safe wrappers for all API functions that fail when loaded high (John)
+ o Fixed trap in Stubby on startup (Gregg)
+ o Fixed failure of rename dialog to update the tree container (Gregg)
+ o Fixed trap on close while direct editing a file name (Gregg)
+ o Fixed heap corruption trap on rescan while a scan was still running (Gregg)
+ o Prevent a file name from being left blank during direct editing (Gregg)
+ o Fixed direct edit code prevents double free attempts and misc traps (Gregg)
+ o Made searchapath thread safe prevents potential traps (John)
+ o Corrected failure to show error message on attempted delete of locked nonexecutable
+   files (Gregg)
+ o Fix directory container compare selection code (Gregg)
+ o Fix real object creation when generating multiple objects (Gregg)
 
 3.23 
  o Rework FM/2 Lite Config menu.  Add drag&drop dialog toggle. (Steven)

@@ -4,6 +4,22 @@
  �       See end of document for contact info           �
  읕컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴컴켸
 
+FM/2 3.24 includes a major performance enhancement by moving almost all the file
+scanning onto a background thread leaving the user interface accessible during
+scans. The only negative side effect of this is that expand all runs slower. However,
+I am not sure why anyone would use this regularly on large drives (except me of 
+course to get it working with the scanning changes). This release should also be
+much more stable as we identified several areas (apparently little used) where 
+reproducible traps occurred. We also eliminated a major potential cause of 
+random hard to reproduce traps and hangs when we re-did the scanning code. Some
+tree container cosmetic issues have been fixed including removal of occasional
+blank lines and double enters; fixing CD/DVD drives so they always change icon
+and if needed display name on eject; improved the consistency of the "make top"
+code and fixed it so the container updates on renaming a directory. We also
+fixed the failure to generate multiple real objects (broken in 3.23 my bad), 
+some issues with the direct edit code and fix the directory container compare
+select code. See the history for more details.
+
 FM/2 3.23 provides several enhancements. Implemented creation of a JAVA executable
 object from a jar file. Select a jar file and "Real object" from the "Create 
 object" sub-menu. You will be prompted to select the JAVA exe you wish to use.
@@ -15,7 +31,7 @@ experienced WPS hangs forcing a reboot when accessing the desktop or trashcan
 context menu following the icon loss described above. I have not had any problem
 if I restarted the desktop. We have added menu toggles for confirm delete and the 
 drag & drop dialog options. Newview now handles selecting and utilizing email 
-addresses and urls much better and more completely (https is supported) than 
+addresses and URLs much better and more completely (https is supported) than 
 in previous versions. The EA editor now checks for EAs marked as critical and
 report this to the user.
 
