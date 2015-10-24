@@ -8,11 +8,15 @@
  *    19 Oct 15 JBS Ticket #574: Support multiple levels of destination directories
  *
  * TODO:
- *    -  Add logic to read script to determine
- *       -  Number of packages
- *       -  Package numbers
+ *    -  Redo code for NOFILESPACKAGE code so that the dirs are created after all the lines
+ *       of the input file have been read (and the max packagenumber length is set). The
+ *       current code will not work if a longer package number follows the NOFILESPACKAGE line.
  *    -  Document errors internally (Error. ?)
  *    -  Display more descriptive error messages to user
+ *    -  ? Add support for filenames with spaces
+ *    -  ? Add logic to read script to determine
+ *       -  Number of packages
+ *       -  Package numbers
  *
  */
 
@@ -109,10 +113,8 @@ ReadFile: procedure expose (globals)
                do
                   f = f + 1
                   WPI.fileline.f = strip(txtline)
-/*
-                  if word3 > WPI.max_package_number then
-                      WPI.max_package_number = word3
-*/
+                  if length(word3) > WPI.max_package_number then
+                      WPI.max_package_number = length(word3)
                end
          end
       else
